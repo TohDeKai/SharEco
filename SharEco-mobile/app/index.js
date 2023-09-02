@@ -1,14 +1,12 @@
-import { View, Text, ScrollView, SafeAreaView } from 'react-native';
-import { useState } from 'react';
+import { Text, View } from 'react-native';
 
-import { COLORS, icons, images, SIZES } from '../constants';
+import { useAuth } from '../context/auth';
 
-const Home = () => {
+export default function Index() {
+  const { signOut } = useAuth();
   return (
-    <View>
-      <Text>Home</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text onPress={() => signOut()}>Sign Out</Text>
     </View>
-  )
+  );
 }
-
-export default Home;
