@@ -36,39 +36,59 @@ app.use(express.json());
 
 //Get all users
 app.get("/api/v1/users", async (req, res) => {
-	//const result = await pool.query("SELECT * FROM account"); 
-	//console.log(result); 
+	try {
+    const result = await pool.query('SELECT * FROM "sharEco-schema"."account"'); 
+    console.log(result); 
 
-	res.status(200).json({ 
-		status: "success",
-		data: {
-			user: ["User 1", "User 2", "User 3"], //STUB
-		},
-	});
+    res.status(200).json({ 
+      status: "success",
+      results: result.rows.length,
+      data: {
+        users: result.rows,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 //Get a user
-app.get("/api/v1/users/:userId", (req, res) => {
-	console.log(req.params);
+app.get("/api/v1/users/:userId", async (req, res) => {
+  console.log("Getting user with userId: " + req.params.userId);
 
-	res.status(200).json({
-		status: "success",
-		data: {
-			user: "User 1",
-		},
-	});
+  try {
+    const result = await pool.query(`SELECT * FROM "sharEco-schema"."account" 
+    WHERE "accountId" = $1`, [req.params.userId]); 
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: result.rows[0],
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 //Create a user
-app.post("/api/v1/users", (req, res) => {
+app.post("/api/v1/users", async (req, res) => {
 	console.log(req.body);
 
-	res.status(201).json({
-		status: "success",
-		data: {
-			user: "User 1",
-		},
-	});
+  try { 
+    const result = await pool.query(`INSERT INTO "sharEco-schema"."account" 
+    (username, password) values ($1, $2) returning *`, [req.body.username, req.body.password]);
+    console.log(result);
+    
+    res.status(201).json({
+      status: "success",
+      data: {
+        user: result.rows[0],
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 //Update user
