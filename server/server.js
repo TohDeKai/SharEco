@@ -25,4 +25,4 @@ app.post("/api/v1/users", db.createUser);
 app.put("/api/v1/users/:userId", db.updateUser);
 app.delete("/api/v1/users/:userId", db.deleteUser);
 
-app.get("/api/v1/login", auth.SignIn);
+app.post("/api/v1/login", auth.SignIn);
