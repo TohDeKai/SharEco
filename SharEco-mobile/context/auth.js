@@ -36,12 +36,22 @@ export function Provider(props) {
   const [user, setAuth] = React.useState(null);
 
   useProtectedRoute(user);
+  
+  const signIn = (email, password) => {
+    setAuth("email");
+    console.log("Signed in with: " + user);
+  } 
+
+  const signOut = () => {
+    setAuth(null);
+    console.log("Signed out");
+  }
 
   return (
     <AuthContext.Provider
       value={{
-        signIn: () => setAuth({}),
-        signOut: () => setAuth(null),
+        signIn,
+        signOut,
         user,
       }}>
       {props.children}
