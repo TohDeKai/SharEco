@@ -27,7 +27,7 @@ const getUsers = async (req, res) => {
   }
 };
 
-//Get a user
+//Get a user by ID
 const getUserById = async (req, res) => {
   console.log("Getting user with userId: " + req.params.userId);
 
@@ -44,6 +44,23 @@ const getUserById = async (req, res) => {
         user: result.rows[0],
       },
     });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+//Get a user by username
+const getUserByUsername = async (req, res) => {
+  console.log("Getting user with username: " + req.params.username);
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."account" 
+    WHERE username = $1`,
+      [req.params.username]
+    );
+
+    return result.rows[0];
   } catch (err) {
     console.log(err);
   }
@@ -129,4 +146,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  getUserByUsername,
 };

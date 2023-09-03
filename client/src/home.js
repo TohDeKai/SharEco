@@ -1,11 +1,11 @@
 import React from "react";
 import Button from "@mui/material/Button";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-  // Define your logout function here
+  const navigate = useNavigate();
   const handleLogout = () => {
-    // Implement your logout logic here
-    // For example, clearing user session and redirecting to the login page
+    navigate("../signin");
   };
 
   return (
