@@ -18,7 +18,8 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 app.get("/api/v1/users", db.getUsers);
-app.get("/api/v1/users/:userId", db.getUserById);
+app.get("/api/v1/users/userId/:userId", db.getUserById);
+app.get("/api/v1/users/username/:username", db.getUserByUsername);
 app.post("/api/v1/users", db.createUser);
 app.put("/api/v1/users/:userId", db.updateUser);
 app.delete("/api/v1/users/:userId", db.deleteUser);
