@@ -74,7 +74,7 @@ const createUser = async (req, res) => {
 
 //Update user
 const updateUser = async (req, res) => {
-  console.log("Getting user with userId: " + req.params.userId);
+  console.log("Updating user with userId: " + req.params.userId);
 
   try {
     const result = await pool.query(
@@ -99,10 +99,28 @@ const updateUser = async (req, res) => {
 };
 
 //Delete user
-const deleteUser = (req, res) => {
-  res.status(204).json({
-    status: "success",
-  });
+const deleteUser = async (req, res) => {
+  console.log("Deleting user with userId: " + req.params.userId);
+  try {
+    const result = await pool.query(
+      `
+    DELETE FROM "sharEco-schema"."account" 
+    WHERE "accountId" = $1
+    RETURNING *`,
+      [req.params.userId]
+    );
+
+    console.log(result);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: result.rows[0],
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 module.exports = {
