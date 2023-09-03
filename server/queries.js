@@ -60,12 +60,7 @@ const getUserByUsername = async (req, res) => {
       [req.params.username]
     );
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        user: result.rows[0],
-      },
-    });
+    return result.rows[0];
   } catch (err) {
     console.log(err);
   }

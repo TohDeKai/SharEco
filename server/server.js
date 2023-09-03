@@ -3,6 +3,7 @@ const { application } = require("express");
 const express = require("express");
 const morgan = require("morgan");
 const db = require("./queries");
+const auth = require("./auth.js");
 const app = express();
 
 // Choosing port for Express to listen on
@@ -23,3 +24,5 @@ app.get("/api/v1/users/username/:username", db.getUserByUsername);
 app.post("/api/v1/users", db.createUser);
 app.put("/api/v1/users/:userId", db.updateUser);
 app.delete("/api/v1/users/:userId", db.deleteUser);
+
+app.get("/api/v1/login", auth.SignIn);
