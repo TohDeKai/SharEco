@@ -2,11 +2,11 @@ import React from 'react';
 import styled from 'styled-components/native';
 import { colours } from '../ColourPalette';
 
-const { white } = colours;
+const { white, black } = colours;
 
 const StyledText = styled.Text`
     font-size: 15px;
-    color: ${white};
+    color: ${black};
     text-align: left;
 `
 
