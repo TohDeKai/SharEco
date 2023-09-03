@@ -73,15 +73,29 @@ const createUser = async (req, res) => {
 };
 
 //Update user
-const updateUser = (req, res) => {
-  console.log(req.params);
-  console.log(req.body);
-  res.status(200).json({
-    status: "success",
-    data: {
-      user: "User 1",
-    },
-  });
+const updateUser = async (req, res) => {
+  console.log("Getting user with userId: " + req.params.userId);
+
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."account" 
+      SET username = $1, 
+      password = $2 
+      WHERE "accountId" = $3
+        RETURNING *`,
+      [req.body.username, req.body.password, req.params.userId]
+    );
+    console.log(result);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: result.rows[0],
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 //Delete user
