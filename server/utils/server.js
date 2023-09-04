@@ -1,6 +1,14 @@
-require("dotenv").config();
+const path = require("path");
+const dotenv = require("dotenv");
 const express = require("express");
 const { Pool } = require("pg");
+const cors = require("cors");
+
+// Set the path to your .env file (assuming it's in the same directory as server.js)
+const envPath = path.resolve(__dirname, ".env");
+
+// Load the environment variables from the specified file
+dotenv.config({ path: envPath });
 
 const app = express();
 
@@ -15,6 +23,13 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
   port: process.env.PGPORT,
 });
+
+// middleware
+app.use(cors());
+app.use(express.json());
+
+// Register and Login routes
+app.use("/auth", require("../routes/jwtAuth"));
 
 // Testing the database connection
 pool.connect((err, client, release) => {
