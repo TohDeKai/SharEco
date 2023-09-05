@@ -10,7 +10,7 @@ import MessageBox from "../../components/text/MessageBox";
 import { Link, router } from "expo-router";
 import RegularText from "../../components/text/RegularText";
 import { colours } from '../../components/ColourPalette';
-const { primary } = colours;
+const { primary, white } = colours;
 
 export default function SignIn() {
   const [message, setMessage] = useState('');
@@ -30,7 +30,7 @@ export default function SignIn() {
 	};
 
 	return (
-		<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+		<View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: white}}>
 			<Image
 				source={require("../../assets/logo-light.png")} // Replace with your logo file path
 				style={{ width: "50%", height: 100 }} // Adjust the width and height as needed

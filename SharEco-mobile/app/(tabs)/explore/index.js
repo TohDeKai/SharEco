@@ -9,4 +9,4 @@ const explore = () => {
   )
 }
 
-export default explore
+export default explore;

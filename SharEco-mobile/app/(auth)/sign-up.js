@@ -10,7 +10,7 @@ import RoundedButton from "../../components/buttons/RoundedButton";
 import MessageBox from "../../components/text/MessageBox";
 import RegularText from "../../components/text/RegularText";
 import { colours } from '../../components/ColourPalette';
-const { primary } = colours;
+const { primary, white } = colours;
 
 export default function SignIn() {
   const [message, setMessage] = useState('');
@@ -30,7 +30,7 @@ export default function SignIn() {
 	};
 
 	return (
-		<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+		<View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "white" }}>
 			<Formik
 				initialValues={{ email: "", password: "", confirmPassword: "", phoneNumber: ""}}
 				onSubmit={(values, { setSubmitting }) => {

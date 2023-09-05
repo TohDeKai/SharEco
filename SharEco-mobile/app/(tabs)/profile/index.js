@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import React from 'react';
-import { useAuth } from '../../context/auth';
+import { useAuth } from '../../../context/auth';
 
 const profile = () => {
   const { signOut } = useAuth();

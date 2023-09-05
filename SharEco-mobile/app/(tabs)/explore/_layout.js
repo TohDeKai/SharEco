@@ -9,9 +9,8 @@ const layout = () => {
         headerShown: false,
       }}>
           <Stack.Screen name="index" />
-          <Stack.Screen name="listingDetails" />
     </Stack>
   )
 }
 
-export default layout
+export default layout;
