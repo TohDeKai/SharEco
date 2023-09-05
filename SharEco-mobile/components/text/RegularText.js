@@ -6,7 +6,7 @@ const { white, black } = colours;
 
 const StyledText = styled.Text`
     font-size: 15px;
-    color: ${black};
+    color: ${props => props.color || black};
     text-align: left;
 `
 
