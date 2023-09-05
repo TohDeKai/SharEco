@@ -1,11 +1,12 @@
-import { View, Text } from 'react-native';
+import { View, Text, SafeAreaView } from 'react-native';
 import React from 'react';
+import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
 
 const explore = () => {
   return (
-    <View>
+    <SafeAreaContainer>
       <Text>explore</Text>
-    </View>
+    </SafeAreaContainer>
   )
 }
 

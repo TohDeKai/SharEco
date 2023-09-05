@@ -12,6 +12,7 @@ export default () => {
       tabBarShowLabel: false,
       tabBarActiveTintColor: primary,
       tabBarInactiveTintColor: black,
+      headerShown: false,
     }}>
       <Tabs.Screen 
         name="home"

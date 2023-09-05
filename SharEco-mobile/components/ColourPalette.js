@@ -1,6 +1,6 @@
 export const colours = {
   primary: "#419682", //lighter green
-  dark: "#336b5e", //darker green
+  secondary: "#336b5e", //darker green
   black: "#222222", //text
   placeholder: "#959595",
   inputbackground: "#f3f3f3",
