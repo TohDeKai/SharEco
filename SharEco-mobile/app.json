@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "scheme": "acme",
+    "splash": {
+      "image": "./assets/splash.png"
+    },
+    "icon" : "./assets/icon.png",
+    "web": {
+      "bundler": "metro"
+    },
+    "ios": {
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "name": "SharEco-mobile",
+    "slug": "SharEco-mobile"
+  }
+}
