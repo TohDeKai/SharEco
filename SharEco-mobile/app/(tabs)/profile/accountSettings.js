@@ -10,6 +10,11 @@ import Header from "../../../components/Header";
 import {colours} from "../../../components/ColourPalette";
 const { black, white } = colours;
 
+const viewportWidthInPixels = (percentage) => {
+	const screenWidth = Dimensions.get("window").width;
+	return (percentage / 100) * screenWidth;
+};
+
 const accountSettings = () => {
   const { signOut } = useAuth();
 
@@ -19,7 +24,7 @@ const accountSettings = () => {
 
   return (
     <SafeAreaContainer>
-      <View style={{ width: "85%"}}>
+      <View style={styles.content}>
         <Header title="Account Settings" action="back" onPress={handleBack}/>
         <View style={styles.itemContainer}>
           <View style={styles.itemListing}>
@@ -63,6 +68,11 @@ const accountSettings = () => {
 export default accountSettings;
 
 const styles = StyleSheet.create({
+  content: {
+    flex: 1,
+    alignSelf: "center",
+    width: viewportWidthInPixels(85),
+  },
   itemListing: {
     flexDirection: "row",
     alignItems: "center",
@@ -82,6 +92,7 @@ const styles = StyleSheet.create({
   },
   roundedButton: {
     justifySelf: 'center',
-    marginHorizontal: 25,
+    position: 'absolute',
+    bottom: 30,
   },
 });
