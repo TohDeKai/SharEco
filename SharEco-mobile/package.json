@@ -9,11 +9,13 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.2.3",
+    "@expo-google-fonts/plus-jakarta-sans": "^0.2.3",
     "@react-navigation/drawer": "^6.6.3",
     "axios": "^1.5.0",
     "expo": "^49.0.9",
     "expo-constants": "~14.4.2",
-    "expo-font": "^11.4.0",
+    "expo-font": "~11.4.0",
     "expo-linking": "~5.0.2",
     "expo-router": "2.0.0",
     "expo-splash-screen": "~0.20.4",

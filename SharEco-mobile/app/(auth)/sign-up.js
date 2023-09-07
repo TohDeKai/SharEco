@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Formik } from "formik";
 import { Link, router } from "expo-router";
 import { ProgressBar } from 'react-native-paper';
+import SignupProgressBar from "../../components/SignupProgressBar";
 import { useAuth } from "../../context/auth";
 import SafeAreaContainer from "../../components/containers/SafeAreaContainer";
 
@@ -17,11 +18,11 @@ const { primary, white, inputbackground } = colours;
 export default function SignIn() {
 	const [message, setMessage] = useState("");
 	const [isSuccessMessage, setIsSuccessMessage] = useState("false");
-	const [ isSecondStep, setIsSecondStep ] = useState("false"); 
+	const [ step, setStep ] = useState("personal-information"); 
 	const { signIn } = useAuth();
 
 	const handleContinue = () => {
-		setIsSecondStep(true);
+		setStep("your-profile");
 	}
 
 	const handleSignup = (credentials) => {
@@ -52,6 +53,8 @@ export default function SignIn() {
 						password: "",
 						confirmPassword: "",
 						phoneNumber: "",
+						username: "",
+						displayName: "",
 					}}
 					onSubmit={(values, { setSubmitting }) => {
 						if (
@@ -59,7 +62,9 @@ export default function SignIn() {
 							values.password == "" ||
 							values.username == "" ||
 							values.confirmPassword == "" ||
-							values.phoneNumber == ""
+							values.phoneNumber == "" ||
+							values.username == "" ||
+							values.displayName == "" 
 						) {
 							setMessage("Please fill in all fields");
 							setIsSuccessMessage(false);
@@ -80,39 +85,68 @@ export default function SignIn() {
 					{({ handleChange, handleBlur, handleSubmit, values }) => (
 						<View style={{ width: "85%" }}>
 							<View>
-								<RegularText color={primary}> Personal Information </RegularText>
-								<ProgressBar animatedValue={0.5} color={primary} style={styles.progressBar}/>
+								<SignupProgressBar step={step}/>
 							</View>
-							<StyledTextInput
-								placeholder="Email"
-								keyboardType="email-address"
-								value={values.email}
-								onChangeText={handleChange("email")}
-							/>
-							<StyledTextInput
-								placeholder="Password"
-								secureTextEntry
-								isPassword={true}
-								value={values.password}
-								onChangeText={handleChange("password")}
-							/>
-							<StyledTextInput
-								placeholder="Confirm Password"
-								secureTextEntry
-								isPassword={true}
-								value={values.confirmPassword}
-								onChangeText={handleChange("confirmPassword")}
-							/>
-							<StyledTextInput
-								placeholder="Phone Number"
-								keyboardType="phone-pad"
-								value={values.phoneNumber}
-								onChangeText={handleChange("phoneNumber")}
-							/>
+
+							{/*the input needs to be conditionally rendered based on whether continue is pressed*/}
+							{step == "personal-information" && (
+								<React.Fragment>
+									<StyledTextInput
+										placeholder="Email"
+										keyboardType="email-address"
+										value={values.email}
+										onChangeText={handleChange("email")}
+									/>
+									
+									<StyledTextInput
+										placeholder="Password"
+										secureTextEntry
+										isPassword={true}
+										value={values.password}
+										onChangeText={handleChange("password")}
+									/>
+									
+									<StyledTextInput
+										placeholder="Confirm Password"
+										secureTextEntry
+										isPassword={true}
+										value={values.confirmPassword}
+										onChangeText={handleChange("confirmPassword")}
+									/>
+								
+									<StyledTextInput
+										placeholder="Phone Number"
+										keyboardType="phone-pad"
+										value={values.phoneNumber}
+										onChangeText={handleChange("phoneNumber")}
+									/>
+
+									<RoundedButton typography={"B1"} color={white} onPress={handleContinue}>Continue</RoundedButton>
+								</React.Fragment>
+              )}
+							
+							{step == "your-profile" && (
+								<React.Fragment>
+									<StyledTextInput
+										placeholder="Username"
+										value={values.username}
+										onChangeText={handleChange("username")}
+									/>
+
+									<StyledTextInput
+										placeholder="Display Name"
+										value={values.displayName}
+										onChangeText={handleChange("displayName")}
+									/>
+
+									<RoundedButton typography={"B1"} color={white} onPress={handleSubmit}>Create My Account</RoundedButton>
+								</React.Fragment>
+              )}
+
 							<MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
 								{message || " "}
 							</MessageBox>
-							<RoundedButton onPress={handleContinue}>Continue</RoundedButton>
+							
 						</View>
 					)}
 				</Formik>
@@ -123,7 +157,7 @@ export default function SignIn() {
 						alignSelf: "center", // Center horizontally
 					}}
 				>
-					<RegularText>
+					<RegularText typography="B2">
 						Already have an account?{" "}
 						<Link href="/sign-in">
 							<Text style={{ color: primary, textDecorationLine: "underline" }}>

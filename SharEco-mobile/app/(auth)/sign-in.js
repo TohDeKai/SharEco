@@ -73,7 +73,7 @@ export default function SignIn() {
 							<MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
 								{message || " "}
 							</MessageBox>
-							<RoundedButton onPress={handleSubmit}>Log In</RoundedButton>
+							<RoundedButton typography={"B1"} color={white} onPress={handleSubmit}>Log In</RoundedButton>
 						</View>
 					)}
 				</Formik>
@@ -84,7 +84,7 @@ export default function SignIn() {
 						alignSelf: "center", // Center horizontally
 					}}
 				>
-					<RegularText>
+					<RegularText typography="B2">
 						Don't have an account?{" "}
 						<Link href="/sign-up">
 							<Text style={{ color: primary, textDecorationLine: "underline" }}>

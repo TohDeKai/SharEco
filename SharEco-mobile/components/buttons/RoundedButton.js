@@ -17,8 +17,8 @@ const ButtonView = styled.TouchableOpacity`
 `
 const RoundedButton = (props) => {
     return (
-        <ButtonView onPress={props.onPress} {...props}>
-            <RegularText style={[{color: white}, {...props?.textStyle}]}>{props.children}</RegularText>
+        <ButtonView {...props}>
+            <RegularText typography={props.typography} color={props.color} >{props.children}</RegularText>
         </ButtonView>
     );
 };
