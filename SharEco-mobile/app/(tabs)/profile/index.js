@@ -1,14 +1,8 @@
-import {
-	View,
-	Text,
-	ScrollView,
-	StyleSheet,
-	Dimensions,
-	Pressable,
-	Button,
-} from "react-native";
+import {View, Text, ScrollView, StyleSheet, Dimensions, Pressable} from "react-native";
 import React, { useState } from "react";
 import { useAuth } from "../../../context/auth";
+import { Link } from "expo-router";
+import { router } from "expo-router";
 
 //components
 import { Ionicons } from "@expo/vector-icons";
@@ -29,6 +23,10 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const ProfileHeader = () => {
+  const toAccountSettings = () => {
+    router.push("profile/accountSettings");
+  };
+
 	return (
 		<View style={styles.header}>
 			<View style={styles.headerGreen}>
@@ -40,12 +38,12 @@ const ProfileHeader = () => {
 					onPress={() => console.log("hello")}
 				/>
 				<Ionicons
-					name="settings-outline"
-					color={white}
-					size={26}
-					style={styles.headerIcon}
-					onPress={() => console.log("hello")}
-				/>
+          name="settings-outline"
+          color={white}
+          size={26}
+          style={styles.headerIcon}
+          onPress={toAccountSettings}
+        />
 			</View>
 			<View style={styles.headerWhite}>
 				<RegularText typography="H3" style={{ marginTop: 60 }}>
