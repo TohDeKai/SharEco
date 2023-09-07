@@ -1,5 +1,6 @@
 const db = require("./queries");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const SignIn = async (req, res) => {
   const { username, password } = req.body; // Destructure username and password from the request body
