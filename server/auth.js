@@ -48,6 +48,27 @@ const SignIn = async (req, res) => {
   }
 };
 
+const SignUp = async (req, res) => {
+  const { username, password } = req.body; // Destructure username and password from the request body
+  try {
+    req.params.username = username;
+    req.params.password = password;
+    const user = db.createUser(req, res);
+    res.status(200).json({
+      status: "success",
+      message: "Signed up successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    // Handle other errors (e.g., database connection issues) with a 500 response
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   SignIn,
+  SignUp,
 };
