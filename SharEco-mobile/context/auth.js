@@ -5,8 +5,7 @@ import {
   useRootNavigationState,
 } from "expo-router";
 import React from "react";
-import { AsyncStorage } from "react-native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const AuthContext = React.createContext();
 
 // This hook can be used to access the user info.
@@ -66,7 +65,7 @@ export function Provider(props) {
     setAuth({ email, password });
     storeUserData({ email, password });
     console.log("user email signIn here ", email);
-    console.log("Signed in with: " + user);
+    console.log("Signed in with: " + email);
   };
 
   const signOut = () => {
