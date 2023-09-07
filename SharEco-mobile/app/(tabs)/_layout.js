@@ -1,8 +1,8 @@
-import { Tabs } from "expo-router";
+import { Tabs, withLayoutContext } from "expo-router";
 import { Ionicons } from '@expo/vector-icons'; 
 import { useIsFocused } from '@react-navigation/native';
-import { colours } from '../../components/ColourPalette';
-const {primary, black} = colours;
+import { colours } from "../../components/ColourPalette";
+const {primary, black, white} = colours;
 
 export default () => {
   const isFocused = useIsFocused(); 
@@ -13,6 +13,9 @@ export default () => {
       tabBarActiveTintColor: primary,
       tabBarInactiveTintColor: black,
       headerShown: false,
+      tabBarStyle: {
+        backgroundColor: white,
+      }
     }}>
       <Tabs.Screen 
         name="home"
