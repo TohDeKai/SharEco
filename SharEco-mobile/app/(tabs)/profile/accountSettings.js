@@ -1,91 +1,74 @@
 import React from "react";
 import { ScrollView, Text, View, StyleSheet, Dimensions } from "react-native";
 import { useAuth } from "../../../context/auth";
-import {
-  Feather,
-  FontAwesome,
-  MaterialCommunityIcons,
-  Ionicons,
-} from "@expo/vector-icons";
+import { router } from "expo-router";
+import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
+import RegularText from "../../../components/text/RegularText";
+import RoundedButton from "../../../components/buttons/RoundedButton";
+import Header from "../../../components/Header";
+import {colours} from "../../../components/ColourPalette";
+const { black, white } = colours;
 
 const accountSettings = () => {
   const { signOut } = useAuth();
+
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
-    <ScrollView>
-      <View>
-        <View style={styles.headerContainer}>
-          <Ionicons name="chevron-back-outline" size={28} color="black" />
-          <Text style={styles.header}>Account Settings</Text>
-        </View>
+    <SafeAreaContainer>
+      <View style={{ width: "85%"}}>
+        <Header title="Account Settings" action="back" onPress={handleBack}/>
         <View style={styles.itemContainer}>
           <View style={styles.itemListing}>
-            <MaterialCommunityIcons name="account" size={24} color="black" />
-            <Text style={styles.itemWording}>Account Details</Text>
+            <Ionicons name="person-outline" size={24} color={black}/>
+            <RegularText typography="B1" style={styles.text}>Account Details</RegularText>
           </View>
           <View style={styles.itemListing}>
-            <Feather name="lock" size={24} color="black" />
-            <Text style={styles.itemWording}>Change Password</Text>
+            <Ionicons name="lock-closed-outline" size={24} color={black}/>
+            <RegularText typography="B1" style={styles.text}>Change Password</RegularText>
           </View>
           <View style={styles.itemListing}>
-            <FontAwesome name="bell-o" size={24} color="black" />
-            <Text style={styles.itemWording}>Notifications</Text>
+            <Ionicons name="notifications-outline" size={24} color={black}/>
+            <RegularText typography="B1" style={styles.text}>Notifications</RegularText>
           </View>
           <View style={styles.itemListing}>
-            <FontAwesome name="suitcase" size={24} color="black" />
-            <Text style={styles.itemWording}>SharEco Biz</Text>
+            <Ionicons name="briefcase-outline" size={24} color={black}/>
+            <RegularText typography="B1" style={styles.text}>SharEco Biz</RegularText>
           </View>
           <View style={styles.subheadingContainer}>
-            <Text style={styles.subheading}>Help & Support</Text>
+            <RegularText typography="H3">Help & Support</RegularText>
           </View>
           <View style={styles.itemListing}>
             <MaterialCommunityIcons
               name="frequently-asked-questions"
               size={24}
-              color="black"
+              color={black}
             />
-            <Text style={styles.itemWording}>FAQs</Text>
+            <RegularText typography="B1" style={styles.text}>FAQs</RegularText>
           </View>
           <View style={styles.itemListing}>
-            <Ionicons name="call" size={24} color="black" />
-            <Text style={styles.itemWording}>Contact Us</Text>
+            <Ionicons name="call" size={24} color={black} />
+            <RegularText typography="B1" style={styles.text}>Contact Us</RegularText>
           </View>
         </View>
+        <RoundedButton typography={"B1"} color={white} onPress={signOut} style={styles.roundedButton}>Log Out</RoundedButton>
       </View>
-    </ScrollView>
+    </SafeAreaContainer>
   );
 };
 
 export default accountSettings;
 
 const styles = StyleSheet.create({
-  header: {
-    fontWeight: "bold",
-    fontSize: 23,
-    alignItems: "center",
-    paddingLeft: 50,
-  },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingLeft: 35,
-    marginBottom: 40,
-    marginTop: 14,
-    paddingTop: 70,
-  },
   itemListing: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
     paddingLeft: 45,
     marginBottom: 40,
-  },
-  itemWording: {
-    marginLeft: 20,
-    fontSize: 16,
-    fontWeight: 700,
-  },
-  itemContainer: {
-    height: 250,
   },
   subheadingContainer: {
     flexDirection: "row",
@@ -94,8 +77,11 @@ const styles = StyleSheet.create({
     paddingLeft: 32,
     marginBottom: 40,
   },
-  subheading: {
-    fontSize: 18,
-    fontWeight: "bold",
+  text: {
+    marginLeft: 17,
+  },
+  roundedButton: {
+    justifySelf: 'center',
+    marginHorizontal: 25,
   },
 });
