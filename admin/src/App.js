@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SignIn from "./login";
 import Home from "./home";
-import { AuthProvider } from "react-auth-kit";
+import { AuthProvider, RequireAuth } from "react-auth-kit";
 
 export default function App() {
   return (
@@ -14,9 +14,15 @@ export default function App() {
     >
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/signin" />} />
+          <Route
+            path="/"
+            element={
+              <RequireAuth loginPath="signin">
+                <Home />
+              </RequireAuth>
+            }
+          ></Route>
           <Route path="signin" element={<SignIn />} />
-          <Route path="home" element={<Home />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
