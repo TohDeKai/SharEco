@@ -1,40 +1,58 @@
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
-import React from 'react';
-import { useAuth } from '../../../context/auth';
+import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native";
+import React from "react";
+import { useAuth } from "../../../context/auth";
+import { Link } from "expo-router";
+import { router } from "expo-router";
 
 //components
-import { Ionicons } from '@expo/vector-icons'; 
-import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
-import RegularText from '../../../components/text/RegularText';
-import { colours } from '../../../components/ColourPalette';
-import UserAvatar from '../../../components/UserAvatar';
+import { Ionicons } from "@expo/vector-icons";
+import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
+import RegularText from "../../../components/text/RegularText";
+import { colours } from "../../../components/ColourPalette";
+import UserAvatar from "../../../components/UserAvatar";
 const { primary, secondary, black, white } = colours;
 
 const viewportHeightInPixels = (percentage) => {
-  const screenHeight = Dimensions.get('window').height;
-  return percentage / 100 * screenHeight;
-}
+  const screenHeight = Dimensions.get("window").height;
+  return (percentage / 100) * screenHeight;
+};
 
 const ProfileHeader = () => {
+  const toAccountSettings = () => {
+    router.push("profile/accountSettings");
+  };
+
   return (
     <View style={styles.header}>
       <View style={styles.headerGreen}>
-        <Ionicons name="create-outline" color={white} size={26} style={styles.headerIcon} onPress={() => console.log('hello')}/>
-        <Ionicons name="settings-outline" color={white} size={26} style={styles.headerIcon} onPress={() => console.log('hello')}/>
+        <Ionicons
+          name="create-outline"
+          color={white}
+          size={26}
+          style={styles.headerIcon}
+          onPress={() => console.log("hello")}
+        />
+        <Ionicons
+          name="settings-outline"
+          color={white}
+          size={26}
+          style={styles.headerIcon}
+          onPress={toAccountSettings}
+        />
       </View>
       <View style={styles.headerWhite}>
         <RegularText>THIS IS THE SECOND PART OF HEADER</RegularText>
       </View>
-      <UserAvatar size="small" source={require('../../../assets/icon.png')}/>
+      <UserAvatar size="small" source={require("../../../assets/icon.png")} />
     </View>
-  )
-}
+  );
+};
 
 const profile = () => {
   const { signOut } = useAuth();
   return (
     <ScrollView>
-      <ProfileHeader/>
+      <ProfileHeader />
       <SafeAreaContainer>
         <View style={styles.listingView}>
           <Text>profile</Text>
@@ -42,8 +60,8 @@ const profile = () => {
         </View>
       </SafeAreaContainer>
     </ScrollView>
-  )
-}
+  );
+};
 
 export default profile;
 
@@ -56,9 +74,9 @@ const styles = StyleSheet.create({
   },
   headerGreen: {
     flex: 0.5,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
     paddingHorizontal: 25,
     backgroundColor: secondary,
   },
@@ -66,7 +84,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   avatar: {
-    position: 'relative',
+    position: "relative",
     left: 25,
     top: viewportHeightInPixels(20),
   },
@@ -79,7 +97,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: viewportHeightInPixels(65),
     backgroundColor: white,
-    justifyContent: 'center', 
-    alignItems: 'center',
-  }
-})
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
