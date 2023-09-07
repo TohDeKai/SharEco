@@ -1,7 +1,12 @@
-import { router, useSegments, useRouter, useRootNavigationState } from 'expo-router';
-import React from 'react';
-
-const AuthContext = React.createContext(null);
+import {
+  router,
+  useSegments,
+  useRouter,
+  useRootNavigationState,
+} from "expo-router";
+import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+const AuthContext = React.createContext();
 
 // This hook can be used to access the user info.
 export function useAuth() {
@@ -21,11 +26,11 @@ function useProtectedRoute(user) {
 
     console.log("user", user);
 
-     // If user not signed in and the initial segment is not anything in the auth group.
+    // If user not signed in and the initial segment is not anything in the auth group.
     if (!user && !inAuthGroup) {
       // Redirect to the login page.
       router.replace("/sign-in");
-    } else if (user && inAuthGroup) { 
+    } else if (user && inAuthGroup) {
       // If user is signed in, redirect away from the login page.
       router.replace("/");
     }
@@ -36,16 +41,38 @@ export function Provider(props) {
   const [user, setAuth] = React.useState(null);
 
   useProtectedRoute(user);
-  
+
+  // store user session data
+  const storeUserData = async (user) => {
+    try {
+      const userDataString = JSON.stringify(user);
+      await AsyncStorage.setItem("user", userDataString);
+    } catch (error) {
+      console.log("Error storing user data: ", error);
+    }
+  };
+
+  // remove user session data
+  const removeUserSessionData = async () => {
+    try {
+      await AsyncStorage.removeItem("user");
+    } catch (error) {
+      console.log("Error removing user data: ", error);
+    }
+  };
+
   const signIn = (email, password) => {
-    setAuth("email");
-    console.log("Signed in with: " + user);
-  } 
+    setAuth({ email, password });
+    storeUserData({ email, password });
+    console.log("user email signIn here ", email);
+    console.log("Signed in with: " + email);
+  };
 
   const signOut = () => {
     setAuth(null);
+    removeUserSessionData();
     console.log("Signed out");
-  }
+  };
 
   return (
     <AuthContext.Provider
@@ -53,7 +80,8 @@ export function Provider(props) {
         signIn,
         signOut,
         user,
-      }}>
+      }}
+    >
       {props.children}
     </AuthContext.Provider>
   );
