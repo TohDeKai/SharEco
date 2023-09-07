@@ -12,6 +12,7 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useSignIn } from "react-auth-kit";
 
 function Copyright(props) {
   return (
@@ -37,6 +38,7 @@ const defaultTheme = createTheme();
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const signIn = useSignIn();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -52,6 +54,13 @@ export default function SignIn() {
 
       if (response.status === 200) {
         // Successful login
+        signIn({
+          token: response.data.token,
+          expiresIn: 3600, // expires in an hour
+          tokenType: "Bearer",
+          authState: { username: username },
+        });
+
         console.log("Logged in successfully");
         navigate("../home");
         // You can redirect the user or perform any other actions here
