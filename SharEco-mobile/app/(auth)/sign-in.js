@@ -1,6 +1,7 @@
 import { Text, View, Image, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
+import axios from "axios";
 import { useAuth } from "../../context/auth";
 import SafeAreaContainer from "../../components/containers/SafeAreaContainer";
 
@@ -18,16 +19,38 @@ export default function SignIn() {
 	const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 	const { signIn } = useAuth();
 
-	const handleSignIn = (credentials) => {
-		//no clue why this cant be printed
+	const handleSignIn = async(credentials) => {
 		console.log(
 			"Calling auth with email: " +
-				credentials.email +
+				credentials.username +
 				" and password: " +
 				credentials.password
 		);
-		//TO REPLACE THIS WITH AXIOS API CALL
+		//TO REPLACE THIS WITH AXIOS API CALL BELOW
 		signIn(credentials.email, credentials.password);
+		
+		/*
+		const username = credentials.username;
+		const password = credentials.password;
+		try {
+      const response = await axios.post("http://localhost:4000/api/v1/login", {
+        username,
+        password,
+      });
+
+      if (response.status === 200) {
+        // Successful login
+        console.log("Logged in successfully");
+        signIn(credentials.email, credentials.password);
+      } else {
+        console.log("Login failed");
+      }
+    } catch (error) {
+      // Handle network errors or server issues
+      console.error("Error during login:", error);
+    }
+		*/
+	
 	};
 
 	return (
@@ -45,8 +68,8 @@ export default function SignIn() {
 					style={{ width: "50%", height: 100 }} // Adjust the width and height as needed
 				/>
 				<Formik
-					initialValues={{ email: "", password: "" }}
-					onSubmit={(values, { setSubmitting }) => {
+					initialValues={{ username: "", password: "" }}
+					onSubmit={(values) => {
 						if (values.email == "" || values.password == "") {
 							setMessage("Please fill in all fields");
 							setIsSuccessMessage(false);
@@ -58,10 +81,9 @@ export default function SignIn() {
 					{({ handleChange, handleBlur, handleSubmit, values }) => (
 						<View style={{ width: "85%" }}>
 							<StyledTextInput
-								placeholder="Email"
-								keyboardType="email-address"
-								value={values.email}
-								onChangeText={handleChange("email")}
+								placeholder="Username"
+								value={values.username}
+								onChangeText={handleChange("username")}
 							/>
 							<StyledTextInput
 								placeholder="Password"
