@@ -1,24 +1,32 @@
-import { View, Text, StyleSheet } from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet } from "react-native";
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import RegularText from './text/RegularText';
-import { colours } from './ColourPalette';
+import RegularText from "./text/RegularText";
+import { colours } from "./ColourPalette";
 const { black } = colours;
 
 const Header = (props) => {
   let icon = "";
   if (props.action === "back") {
-    icon = "chevron-back-outline"
+    icon = "chevron-back-outline";
   } else if (props.icon === "cross") {
-    icon = "close"
+    icon = "close";
   }
   return (
     <View style={styles.headerContainer}>
-      <Ionicons name={icon} size={28} color={black} style={styles.backButton} onPress={props.onPress}/>
-      <RegularText typography="H2" style={styles.header}>{props.title}</RegularText>
+      <Ionicons
+        name={icon}
+        size={28}
+        color={black}
+        style={styles.backButton}
+        onPress={props.onPress}
+      />
+      <RegularText typography="H2" style={styles.header}>
+        {props.title}
+      </RegularText>
     </View>
-  )
-}
+  );
+};
 
 export default Header;
 
@@ -32,8 +40,8 @@ const styles = StyleSheet.create({
     paddingTop: 17,
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     left: 15,
     top: 17,
   },
-})
+});
