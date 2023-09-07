@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SignIn from "./signin";
 import Home from "./home";
 import { AuthProvider, RequireAuth } from "react-auth-kit";
+import SignUp from "./signup";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
             }
           ></Route>
           <Route path="signin" element={<SignIn />} />
+          <Route path="signup" element={<SignUp />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
