@@ -1,12 +1,13 @@
 const db = require("./queries");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const saltRounds = 12;
 
 const SignIn = async (req, res) => {
   const { username, password } = req.body; // Destructure username and password from the request body
   req.params.username = username;
   try {
-    const user = await db.getUserByUsername(req, res); // Get the user data
+    const user = await db.getUserByUsername(username); // Get the user data
     console.log(user);
     if (!user) {
       // If the user is not found, send a 404 response
@@ -16,8 +17,7 @@ const SignIn = async (req, res) => {
       });
     }
 
-    // Check if the provided password matches the user's password
-    if (password === user.password) {
+    if (bcrypt.compareSync(password, user.password)) {
       // If the passwords match, send a success response
       const jwtToken = jwt.sign(
         {
@@ -50,15 +50,16 @@ const SignIn = async (req, res) => {
 };
 
 const SignUp = async (req, res) => {
-  const { username, password } = req.body; // Destructure username and password from the request body
   try {
-    req.params.username = username;
-    req.params.password = password;
-    const user = db.createUser(req, res);
-    res.status(200).json({
-      status: "success",
-      message: "Signed up successfully",
-    });
+    const hashed = bcrypt.hashSync(req.body.password, saltRounds);
+    const user = db.createUser(req.body.username, hashed);
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        message: "Signed up successfully",
+        data: user,
+      });
+    }
   } catch (err) {
     console.error(err);
     // Handle other errors (e.g., database connection issues) with a 500 response
