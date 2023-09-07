@@ -68,6 +68,9 @@ const accountSettings = () => {
 export default accountSettings;
 
 const styles = StyleSheet.create({
+  itemContainer: {
+    top: 17,
+  },
   content: {
     flex: 1,
     alignSelf: "center",
@@ -77,14 +80,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    paddingLeft: 45,
     marginBottom: 40,
   },
   subheadingContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    paddingLeft: 32,
     marginBottom: 40,
   },
   text: {

@@ -33,20 +33,30 @@ const ProfileHeader = () => {
 	return (
 		<View style={styles.header}>
 			<View style={styles.headerGreen}>
-				<Ionicons
-					name="create-outline"
-					color={white}
-					size={26}
-					style={styles.headerIcon}
-					onPress={toEditProfile}
-				/>
-				<Ionicons
-          name="settings-outline"
-          color={white}
-          size={26}
-          style={styles.headerIcon}
+        <Pressable 
+          onPress={toEditProfile}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1
+          })}>
+          <Ionicons
+            name="create-outline"
+            color={white}
+            size={26}
+            style={styles.headerIcon}
+          />
+        </Pressable>
+        <Pressable 
           onPress={toAccountSettings}
-        />
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1
+          })}>
+          <Ionicons
+            name="settings-outline"
+            color={white}
+            size={26}
+            style={styles.headerIcon}
+          />  
+        </Pressable>
 			</View>
 			<View style={styles.headerWhite}>
 				<RegularText typography="H3" style={{ marginTop: 60 }}>
