@@ -24,8 +24,8 @@ const accountSettings = () => {
 
   return (
     <SafeAreaContainer>
+      <Header title="Account Settings" action="back" onPress={handleBack}/>
       <View style={styles.content}>
-        <Header title="Account Settings" action="back" onPress={handleBack}/>
         <View style={styles.itemContainer}>
           <View style={styles.itemListing}>
             <Ionicons name="person-outline" size={24} color={black}/>
