@@ -1,15 +1,25 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import React from 'react';
 import { Ionicons } from "@expo/vector-icons";
 import RegularText from './text/RegularText';
 import { colours } from './ColourPalette';
 const { black } = colours;
 
+const viewportHeightInPixels = (percentage) => {
+	const screenHeight = Dimensions.get("window").height;
+	return (percentage / 100) * screenHeight;
+};
+
+const viewportWidthInPixels = (percentage) => {
+	const screenWidth = Dimensions.get("window").width;
+	return (percentage / 100) * screenWidth;
+};
+
 const Header = (props) => {
   let icon = "";
   if (props.action === "back") {
     icon = "chevron-back-outline"
-  } else if (props.icon === "cross") {
+  } else if (props.action === "close") {
     icon = "close"
   }
   return (
@@ -24,10 +34,9 @@ export default Header;
 
 const styles = StyleSheet.create({
   headerContainer: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingLeft: 35,
+    width: viewportWidthInPixels(100),
     marginBottom: 40,
     paddingTop: 17,
   },

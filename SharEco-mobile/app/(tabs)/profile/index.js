@@ -26,6 +26,9 @@ const ProfileHeader = () => {
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
   };
+  const toEditProfile = () => {
+    router.push("profile/editProfile");
+  }
 
 	return (
 		<View style={styles.header}>
@@ -35,7 +38,7 @@ const ProfileHeader = () => {
 					color={white}
 					size={26}
 					style={styles.headerIcon}
-					onPress={() => console.log("hello")}
+					onPress={toEditProfile}
 				/>
 				<Ionicons
           name="settings-outline"
