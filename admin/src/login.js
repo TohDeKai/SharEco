@@ -62,7 +62,7 @@ export default function SignIn() {
         });
 
         console.log("Logged in successfully");
-        navigate("../home");
+        navigate("../");
         // You can redirect the user or perform any other actions here
       } else {
         // Handle other status codes (e.g., 400 for incorrect password)
