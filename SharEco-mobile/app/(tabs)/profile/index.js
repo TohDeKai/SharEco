@@ -25,7 +25,9 @@ const ProfileHeader = () => {
       <View style={styles.headerWhite}>
         <RegularText>THIS IS THE SECOND PART OF HEADER</RegularText>
       </View>
-      <UserAvatar size="small" source={require('../../../assets/icon.png')}/>
+      <View style={styles.avatarContainer}>
+        <UserAvatar size="big" source={require('../../../assets/icon.png')}/>
+      </View>
     </View>
   )
 }
@@ -65,10 +67,10 @@ const styles = StyleSheet.create({
   headerIcon: {
     marginLeft: 5,
   },
-  avatar: {
-    position: 'relative',
+  avatarContainer: {
+    position: 'absolute',
+    top: viewportHeightInPixels(40 / 2) - 51,
     left: 25,
-    top: viewportHeightInPixels(20),
   },
   headerWhite: {
     flex: 0.5,
