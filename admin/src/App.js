@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import SignIn from "./login";
+import SignIn from "./signin";
 import Home from "./home";
 import { AuthProvider, RequireAuth } from "react-auth-kit";
 
