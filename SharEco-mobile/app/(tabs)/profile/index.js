@@ -40,8 +40,8 @@ const ProfileHeader = () => {
   }, []);
 
 	//DOESNT WORK EITHER
-	const {user} = useAuth();
-	console.log("DEBUG " + user.data);
+	//const {user} = useAuth();
+	//console.log("DEBUG " + user.data);
 
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
