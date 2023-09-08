@@ -31,9 +31,9 @@ export default function SignIn() {
 			password
 		);
 		//TO REPLACE THIS WITH AXIOS API CALL BELOW
-		//signIn(username, password);
+		signIn(username, password);
 		
-		
+		/*
 		try {
       const response = await axios.post("http://localhost:4000/api/v1/signIn", {
         username,
@@ -51,6 +51,7 @@ export default function SignIn() {
       // Handle network errors or server issues
       console.error("Error during login:", error);
     }	
+		*/
 	};
 
 	return (
