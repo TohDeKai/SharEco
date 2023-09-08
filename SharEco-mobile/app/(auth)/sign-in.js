@@ -24,34 +24,49 @@ export default function SignIn() {
 	const handleSignIn = async(credentials) => {
 		const username = credentials.username;
 		const password = credentials.password;
-		console.log(
-			"Calling auth with username: " +
-			username +
-				" and password: " +
-			password
-		);
 		//TO REPLACE THIS WITH AXIOS API CALL BELOW
-		signIn(username, password);
+		//signIn(username, password);
 		
-		/*
 		try {
-      const response = await axios.post("http://localhost:4000/api/v1/signIn", {
+			//IF YOUR NETWORK IP ADDRESS IS DIFFERENT, CHANGE THIS
+      const response = await axios.post("http://172.20.10.2:4000/api/v1/signIn", {
         username,
         password,
       });
 
       if (response.status === 200) {
-        // Successful login
-        console.log("Logged in successfully");
-        signIn(credentials.username, credentials.password);
-      } else {
-        console.log("Login failed");
-      }
-    } catch (error) {
-      // Handle network errors or server issues
-      console.error("Error during login:", error);
-    }	
-		*/
+				// Successful login, get user data
+				const userDataResponse = await axios.get(
+					`http://172.20.10.2:4000/api/v1/users/username/${username}`
+				);
+	
+				if (userDataResponse.status === 200) {
+					// Successfully retrieved user data, useAuth to signIn with this user
+					const userData = userDataResponse.data.data.user;
+					console.log('User object: ', userData);
+					signIn(userData); // Update the user object in the state
+				} else {
+					//shouldnt come here
+					console.log("Failed to retrieve user data");
+				}
+			} 
+		} catch (error) {
+			if (error.response && error.response.status === 404) {
+				// User not found
+				console.log("User not found");
+				setMessage("Invalid username");
+				setIsSuccessMessage(false);
+			} else if (error.response && error.response.status === 400) {
+				// Wrong password
+				console.log("Wrong password");
+				setMessage("Invalid password");
+				setIsSuccessMessage(false);
+			} else {
+				console.error("Error during login:", error);
+				setMessage("Error: " + error);
+				setIsSuccessMessage(false);
+			}
+		}
 	};
 
 	return (

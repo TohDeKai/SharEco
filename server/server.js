@@ -13,7 +13,7 @@ const port = process.env.PORT || 4000;
 // Configure CORS to allow requests from your React app's domain (http://localhost:3000)
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with your React app's URL
+    origin: "*", // Replace with your React app's URL
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Enable credentials (cookies, authorization headers, etc.)
   })

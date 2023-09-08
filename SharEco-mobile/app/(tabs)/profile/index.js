@@ -1,5 +1,5 @@
 import {View, Text, ScrollView, StyleSheet, Dimensions, Pressable} from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
 import { Link } from "expo-router";
 import { router } from "expo-router";
@@ -23,6 +23,26 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const ProfileHeader = () => {
+	
+	//this doesnt work!
+	const [username, setUsername] = useState('');
+	const { getUserData } = useAuth();
+	useEffect(() => {
+    async function fetchUserData() {
+      const userData = await getUserData();
+      if (userData) {
+        console.log("User data retrieved: ", userData);
+        setUsername(userData.username);
+				console.log("This is the username: " + username);
+      }
+    }
+    fetchUserData();
+  }, []);
+
+	//DOESNT WORK EITHER
+	const {user} = useAuth();
+	console.log("DEBUG " + user.data);
+
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
   };
@@ -63,7 +83,7 @@ const ProfileHeader = () => {
 					Replace With Name
 				</RegularText>
 				<RegularText typography="Subtitle" style={{ marginTop: 5 }}>
-					@ReplaceWithUsername
+				@ReplaceWithUsername
 				</RegularText>
 				<RegularText typography="Subtitle" style={{ marginTop: 5 }}>
 					This is the bio. Lorem Ipsum We need to limit the bio to xxx

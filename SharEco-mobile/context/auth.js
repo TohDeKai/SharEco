@@ -52,6 +52,19 @@ export function Provider(props) {
     }
   };
 
+  const getUserData = async () => {
+    try {
+      const userDataString = await AsyncStorage.getItem("user");
+      if (userDataString) {
+        const userData = JSON.parse(userDataString);
+        return userData;
+      }
+    } catch (error) {
+      console.log("Error retrieving user data: ", error);
+    }
+    return null; // Return null if user data is not found or an error occurs
+  };
+
   // remove user session data
   const removeUserSessionData = async () => {
     try {
@@ -61,11 +74,10 @@ export function Provider(props) {
     }
   };
 
-  const signIn = (email, password) => {
-    setAuth({ email, password });
-    storeUserData({ email, password });
-    console.log("user email signIn here ", email);
-    console.log("Signed in with: " + email);
+  const signIn = (user) => {
+    setAuth({ user });
+    storeUserData({ user });
+    console.log("Signed in with: " + user.username);
   };
 
   const signOut = () => {
@@ -80,6 +92,7 @@ export function Provider(props) {
         signIn,
         signOut,
         user,
+        getUserData
       }}
     >
       {props.children}
