@@ -9,134 +9,87 @@ const pool = new Pool({
   port: process.env.PGPORT,
 });
 
-//Get all users
-const getUsers = async (req, res) => {
+// Get all users
+const getUsers = async () => {
   try {
     const result = await pool.query('SELECT * FROM "sharEco-schema"."account"');
-    console.log(result);
-
-    res.status(200).json({
-      status: "success",
-      results: result.rows.length,
-      data: {
-        users: result.rows,
-      },
-    });
+    return result.rows;
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
 
 //Get a user by ID
-const getUserById = async (req, res) => {
-  console.log("Getting user with userId: " + req.params.userId);
-
+const getUserById = async (userId) => {
   try {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."account" 
     WHERE "accountId" = $1`,
-      [req.params.userId]
+      [userId]
     );
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        user: result.rows[0],
-      },
-    });
+    return result.rows[0];
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
 
-//Get a user by username
-const getUserByUsername = async (req, res) => {
-  console.log("Getting user with username: " + req.params.username);
-
+// Get user by username
+const getUserByUsername = async (username) => {
   try {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."account" 
-    WHERE username = $1`,
-      [req.params.username]
+      WHERE username = $1`,
+      [username]
     );
-
     return result.rows[0];
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
 
-//Create a user
-const createUser = async (req, res) => {
-  console.log(req.body);
-
+// Create a user
+const createUser = async (username, password) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."account" 
-    (username, password) values ($1, $2) returning *`,
-      [req.body.username, req.body.password]
+      (username, password) values ($1, $2) returning *`,
+      [username, password]
     );
-    console.log(result);
-
-    res.status(201).json({
-      status: "success",
-      data: {
-        user: result.rows[0],
-      },
-    });
+    return result.rows[0];
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
 
-//Update user
-const updateUser = async (req, res) => {
-  console.log("Updating user with userId: " + req.params.userId);
-
+// Update user
+const updateUser = async (userId, username, password) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."account" 
       SET username = $1, 
       password = $2 
       WHERE "accountId" = $3
-        RETURNING *`,
-      [req.body.username, req.body.password, req.params.userId]
+      RETURNING *`,
+      [username, password, userId]
     );
-    console.log(result);
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        user: result.rows[0],
-      },
-    });
+    return result.rows[0];
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
 
-//Delete user
-const deleteUser = async (req, res) => {
-  console.log("Deleting user with userId: " + req.params.userId);
+// Delete user
+const deleteUser = async (userId) => {
   try {
     const result = await pool.query(
-      `
-    DELETE FROM "sharEco-schema"."account" 
-    WHERE "accountId" = $1
-    RETURNING *`,
-      [req.params.userId]
+      `DELETE FROM "sharEco-schema"."account" 
+      WHERE "accountId" = $1
+      RETURNING *`,
+      [userId]
     );
-
-    console.log(result);
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        user: result.rows[0],
-      },
-    });
+    return result.rows[0];
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
 
