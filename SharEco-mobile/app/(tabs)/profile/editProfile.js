@@ -1,5 +1,5 @@
 import React, { useState }from "react";
-import { View, StyleSheet, Dimensions, Pressable } from "react-native";
+import { View, ScrollView, StyleSheet, Dimensions, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { useAuth } from "../../../context/auth";
 import { router } from "expo-router";
 import * as ImagePicker from 'expo-image-picker';
@@ -67,7 +67,13 @@ const accountSettings = () => {
   }
 
   return (
+    <KeyboardAvoidingView
+      behavior="padding" // Push content up when keyboard opens
+      style={{ flex: 1 }} // Ensure it takes up the entire available space
+    >
     <SafeAreaContainer>
+      <Header title="Edit Profile" action="close" onPress={handleBack}/>
+      
       <Formik
         initialValues={{
           //we need to get the existing data 
@@ -89,7 +95,6 @@ const accountSettings = () => {
       >
         {({ handleChange, handleBlur, handleSubmit, values }) => (
           <View style={styles.content}>
-            <Header title="Edit Profile" action="close" onPress={handleBack}/>
             <View style={styles.avatarContainer}>
               <UserAvatar size="big" source={profilePic}/>
               <Pressable 
@@ -101,23 +106,26 @@ const accountSettings = () => {
             <View style={{width:"100%", marginTop: 50}}>
               <LabelledTextInput
                 label="Name"
-                placeholder="Weneedtoretrivethis"
+                placeholder="Weneedtoretrievethis"
                 value={values.name}
                 onChangeText={handleChange("name")}
               />
               <LabelledTextInput
                 label="Username"
-                placeholder="Weneedtoretrivethis"
+                placeholder="Weneedtoretrievethis"
                 value={values.username}
                 onChangeText={handleChange("username")}
               />
               <LabelledTextInput
                 label="About Me"
-                placeholder="Weneedtoretrivethis"
+                placeholder="Weneedtoretrievethis"
                 value={values.aboutMe}
                 onChangeText={handleChange("aboutMe")}
+                maxLength={100}
+                multiline={true}
+                style={{minHeight: 80}}
               />
-              <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>{message || " "}</MessageBox>
+              <MessageBox style={{ marginTop: 50 }} success={isSuccessMessage}>{message || " "}</MessageBox>
             </View>
             <RoundedButton typography={"B1"} color={white} onPress={handleSubmit} style={styles.saveButton}>Save</RoundedButton>
           </View>
@@ -125,6 +133,7 @@ const accountSettings = () => {
       }
       </Formik>
     </SafeAreaContainer>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -136,6 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: "center",
     width: viewportWidthInPixels(85),
+    top: 40,
   },
   avatarContainer: {
     alignItems: 'center',
@@ -143,6 +153,6 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 60,
   }
 });

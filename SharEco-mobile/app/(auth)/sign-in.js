@@ -1,4 +1,4 @@
-import { Text, View, Image, TouchableOpacity } from "react-native";
+import { Text, View, Image, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import axios from "axios";
@@ -71,7 +71,7 @@ export default function SignIn() {
 
 	return (
 		<SafeAreaContainer>
-			<View
+			<KeyboardAvoidingView
 				style={{
 					flex: 1,
 					justifyContent: "center",
@@ -131,7 +131,7 @@ export default function SignIn() {
 						</Link>
 					</RegularText>
 				</View>
-			</View>
+			</KeyboardAvoidingView>
 		</SafeAreaContainer>
 	);
 }

@@ -44,7 +44,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: viewportWidthInPixels(100),
-    marginBottom: 40,
     paddingTop: 17,
   },
   backButton: {

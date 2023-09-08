@@ -1,4 +1,4 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, View, Image, TouchableOpacity, StyleSheet, KeyboardAvoidingView } from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import { Link, router } from "expo-router";
@@ -39,7 +39,7 @@ export default function SignIn() {
 
 	return (
 		<SafeAreaContainer>
-			<View
+			<KeyboardAvoidingView
 				style={{
 					flex: 1,
 					justifyContent: "center",
@@ -117,6 +117,7 @@ export default function SignIn() {
 									<StyledTextInput
 										placeholder="Phone Number"
 										keyboardType="phone-pad"
+										returnKeyType="done"
 										value={values.phoneNumber}
 										onChangeText={handleChange("phoneNumber")}
 									/>
@@ -166,7 +167,7 @@ export default function SignIn() {
 						</Link>
 					</RegularText>
 				</View>
-			</View>
+			</KeyboardAvoidingView>
 		</SafeAreaContainer>
 	);
 }
