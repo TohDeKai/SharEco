@@ -19,21 +19,23 @@ export default function SignIn() {
 	const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 	const { signIn } = useAuth();
 
+	
+
 	const handleSignIn = async(credentials) => {
-		console.log(
-			"Calling auth with email: " +
-				credentials.username +
-				" and password: " +
-				credentials.password
-		);
-		//TO REPLACE THIS WITH AXIOS API CALL BELOW
-		signIn(credentials.email, credentials.password);
-		
-		/*
 		const username = credentials.username;
 		const password = credentials.password;
+		console.log(
+			"Calling auth with username: " +
+			username +
+				" and password: " +
+			password
+		);
+		//TO REPLACE THIS WITH AXIOS API CALL BELOW
+		//signIn(username, password);
+		
+		
 		try {
-      const response = await axios.post("http://localhost:4000/api/v1/login", {
+      const response = await axios.post("http://localhost:4000/api/v1/signIn", {
         username,
         password,
       });
@@ -41,16 +43,14 @@ export default function SignIn() {
       if (response.status === 200) {
         // Successful login
         console.log("Logged in successfully");
-        signIn(credentials.email, credentials.password);
+        signIn(credentials.username, credentials.password);
       } else {
         console.log("Login failed");
       }
     } catch (error) {
       // Handle network errors or server issues
       console.error("Error during login:", error);
-    }
-		*/
-	
+    }	
 	};
 
 	return (
