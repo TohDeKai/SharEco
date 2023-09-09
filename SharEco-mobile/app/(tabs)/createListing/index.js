@@ -1,25 +1,68 @@
-import { View, ScrollView, Text, KeyboardAvoidingView, StyleSheet } from 'react-native';
+import { View, ScrollView, Text, KeyboardAvoidingView, StyleSheet, Pressable } from 'react-native';
 import React, { useState} from 'react';
 import { Formik } from 'formik';
 import {router, Link } from 'expo-router'
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons'; 
 
 //components
 import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
+import ImagePickerContainer from '../../../components/containers/ImagePickerContainer';
 import Header from '../../../components/Header';
 import RoundedButton from '../../../components/buttons/RoundedButton';
 import MessageBox from '../../../components/text/MessageBox';
 import StyledTextInput from '../../../components/inputs/LoginTextInputs';
 import RegularText from '../../../components/text/RegularText';
 import { colours } from '../../../components/ColourPalette';
-const { white, primary } = colours;
+const { white, primary, inputbackground, black } = colours;
 
 const createListing = () => {
   const [message, setMessage] = useState("");
 	const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 
-  const [image, setImage] = useState(null);
-  let profilePic = "";
+  const [images, setImages] = useState([null, null, null, null, null]);
+  const [image1, setImage1] = useState(null);
+  const [image2, setImage2] = useState(null);
+  const [image3, setImage3] = useState(null);
+  const [image4, setImage4] = useState(null);
+  const [image5, setImage5] = useState(null);
+
+  const handleOpenGallery = (imageNumber) => {
+    console.log("Opening gallery");
+    pickImage(imageNumber);
+  };
+  
+  const pickImage = async (imageNumber) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+  
+    if (!result.canceled) {
+      const newImages = [...images];
+      newImages[imageNumber - 1] = result.assets[0].uri;
+      setImages(newImages);
+    }
+  };
+  
+  const handleRemovePicture = (imageNumber) => {
+    const newImages = [...images];
+    newImages[imageNumber - 1] = null;
+    setImages(newImages);
+  };
+  
+  // Render the ImagePickerContainers
+  const imageContainers = images.map((imageSource, index) => (
+    <ImagePickerContainer
+      key={index}
+      imageSource={imageSource}
+      onImagePress={() => handleOpenGallery(index + 1)}
+      onRemovePress={() => handleRemovePicture(index + 1)}
+    />
+  ));
 
   const handleBack = () => {
     router.back();
@@ -82,6 +125,14 @@ const createListing = () => {
                 />
 
                 <RegularText typography="H3" style={styles.headerText}>Upload Images</RegularText>
+                <RegularText typography="Subtitle" style={{marginTop: 7}}>Up to 5 images</RegularText>
+                <ScrollView
+                  horizontal
+                  contentContainerStyle={styles.imageCarousel}
+                  style={{paddingVertical: 7}}
+                >
+                  {imageContainers}
+                </ScrollView>
 
                 <RegularText typography="H3" style={styles.headerText}>Category</RegularText>
 
@@ -151,5 +202,8 @@ const styles = StyleSheet.create({
   headerText: {
     marginTop: 20,
     alignSelf: "flex-start",
-  }
+  },
+  imageCarousel: {
+    gap: 10,
+  },
 })
