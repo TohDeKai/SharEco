@@ -123,7 +123,8 @@ const accountSettings = () => {
                   onChangeText={handleChange("aboutMe")}
                   maxLength={100}
                   multiline={true}
-                  style={{minHeight: 80}}
+                  scrollEnabled={false}
+                  height={80}
                 />
                 <MessageBox style={{ marginTop: 50 }} success={isSuccessMessage}>{message || " "}</MessageBox>  
                 <RoundedButton typography={"B1"} color={white} onPress={handleSubmit} >Save</RoundedButton>

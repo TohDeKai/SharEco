@@ -12,7 +12,6 @@ const InputField = styled.TextInput`
     padding-right: 28px;
     border-radius: 9px;
     font-size: 14px;
-    height: 50px;
     width: 100%;
     margin-top: 3px;
     margin-bottom: 15px;

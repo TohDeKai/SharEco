@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     backgroundColor: white,
   },
   scrollContainer: {
-		top: 60,
+		top: 40,
     flexGrow: 1,
     alignItems: "center",
   },
