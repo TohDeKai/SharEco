@@ -7,6 +7,7 @@ import SafeAreaContainer from "../../../components/containers/SafeAreaContainer"
 import RegularText from "../../../components/text/RegularText";
 import RoundedButton from "../../../components/buttons/RoundedButton";
 import Header from "../../../components/Header";
+import SettingsItem from "../../../components/buttons/SettingsItem";
 import {colours} from "../../../components/ColourPalette";
 const { black, white } = colours;
 
@@ -30,47 +31,45 @@ const accountSettings = () => {
     <SafeAreaContainer>
       <Header title="Account Settings" action="back" onPress={handleBack}/>
       <View style={styles.content}>
-        <Pressable 
-          onPress={() => handleSettingsPress("accountDetails")}
-          style={({ pressed }) => [
-            { opacity: pressed ? 0.5 : 1 },
-            styles.itemListing,
-        ]}>
-          <Ionicons name="person-outline" size={24} color={black}/>
-          <RegularText typography="B1" style={styles.text}>Account Details</RegularText>
-        </Pressable>
-        <Pressable 
-          onPress={() => handleSettingsPress("changePassword")}
-          style={({ pressed }) => [
-            { opacity: pressed ? 0.5 : 1 },
-            styles.itemListing,
-        ]}>
-          <Ionicons name="lock-closed-outline" size={24} color={black}/>
-          <RegularText typography="B1" style={styles.text}>Change Password</RegularText>
-        </Pressable>
-        <View style={styles.itemListing}>
-          <Ionicons name="notifications-outline" size={24} color={black}/>
-          <RegularText typography="B1" style={styles.text}>Notifications</RegularText>
-        </View>
-        <View style={styles.itemListing}>
-          <Ionicons name="briefcase-outline" size={24} color={black}/>
-          <RegularText typography="B1" style={styles.text}>SharEco Biz</RegularText>
-        </View>
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="person-outline"
+          text="Account Details"
+          onPress={() => handleSettingsPress('accountDetails')}
+        />
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="lock-closed-outline"
+          text="Change Password"
+          onPress={() => handleSettingsPress('changePassword')}
+        />
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="notifications-outline"
+          text="Notifications"
+          onPress={() => handleSettingsPress('notifications')}
+        />
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="briefcase-outline"
+          text="SharEco Biz"
+          onPress={() => handleSettingsPress('sharEcoBiz')}
+        />
         <View style={styles.subheadingContainer}>
           <RegularText typography="H3">Help & Support</RegularText>
         </View>
-        <View style={styles.itemListing}>
-          <MaterialCommunityIcons
-            name="frequently-asked-questions"
-            size={24}
-            color={black}
-          />
-          <RegularText typography="B1" style={styles.text}>FAQs</RegularText>
-        </View>
-        <View style={styles.itemListing}>
-          <Ionicons name="call" size={24} color={black} />
-          <RegularText typography="B1" style={styles.text}>Contact Us</RegularText>
-        </View>
+        <SettingsItem
+          iconProvider={MaterialCommunityIcons}
+          iconName="frequently-asked-questions"
+          text="FAQs"
+          onPress={() => handleSettingsPress('faq')}
+        />
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="call"
+          text="Contact Us"
+          onPress={() => handleSettingsPress('contactUs')}
+        />
         <RoundedButton typography={"B1"} color={white} onPress={signOut} style={styles.roundedButton}>Log Out</RoundedButton>
       </View>
     </SafeAreaContainer>
@@ -86,20 +85,11 @@ const styles = StyleSheet.create({
     width: viewportWidthInPixels(85),
     top: 40,
   },
-  itemListing: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    marginBottom: 40,
-  },
   subheadingContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
     marginBottom: 40,
-  },
-  text: {
-    marginLeft: 17,
   },
   roundedButton: {
     justifySelf: 'center',

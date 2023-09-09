@@ -1,4 +1,4 @@
-import { Text, View, Image, TouchableOpacity, KeyboardAvoidingView } from "react-native";
+import { Text, View, Image, TouchableOpacity, KeyboardAvoidingView, ScrollView, StyleSheet, Dimensions } from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import axios from "axios";
@@ -13,13 +13,15 @@ import { Link, router } from "expo-router";
 import RegularText from "../../components/text/RegularText";
 import { colours } from "../../components/ColourPalette";
 const { primary, white } = colours;
+const viewportHeightInPixels = (percentage) => {
+	const screenHeight = Dimensions.get("window").height;
+	return (percentage / 100) * screenHeight;
+};	
 
 export default function SignIn() {
 	const [message, setMessage] = useState("");
 	const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 	const { signIn } = useAuth();
-
-	
 
 	const handleSignIn = async(credentials) => {
 		const username = credentials.username;
@@ -71,14 +73,7 @@ export default function SignIn() {
 
 	return (
 		<SafeAreaContainer>
-			<KeyboardAvoidingView
-				style={{
-					flex: 1,
-					justifyContent: "center",
-					alignItems: "center",
-					backgroundColor: white,
-				}}
-			>
+			<View style= {styles.container}	>
 				<Image
 					source={require("../../assets/logo-light.png")} // Replace with your logo file path
 					style={{ width: "50%", height: 100 }} // Adjust the width and height as needed
@@ -115,23 +110,35 @@ export default function SignIn() {
 						</View>
 					)}
 				</Formik>
-				<View
-					style={{
-						position: "absolute",
-						bottom: 50, // Adjust the bottom position as needed
-						alignSelf: "center", // Center horizontally
-					}}
-				>
-					<RegularText typography="B2">
-						Don't have an account?{" "}
-						<Link href="/sign-up">
-							<Text style={{ color: primary, textDecorationLine: "underline" }}>
-								Sign up
-							</Text>
-						</Link>
-					</RegularText>
-				</View>
-			</KeyboardAvoidingView>
+			</View>
+			<View style={styles.bottomContainer}>
+				<RegularText typography="B2">
+					Don't have an account?{" "}
+					<Link href="/sign-up">
+						<Text style={{ color: primary, textDecorationLine: "underline" }}>
+							Sign up
+						</Text>
+					</Link>
+				</RegularText>
+			</View>
 		</SafeAreaContainer>
 	);
 }
+
+const styles = StyleSheet.create({
+	container: {
+    flex: 1,
+		alignItems: "center",
+		backgroundColor: white,
+		top: viewportHeightInPixels(20)
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+	bottomContainer: {
+		marginBottom: 20,
+		alignSelf: "center", // Center horizontally
+	}
+});
