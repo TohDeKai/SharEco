@@ -6,6 +6,7 @@ import {
 } from "expo-router";
 import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const AuthContext = React.createContext();
 
 // This hook can be used to access the user info.

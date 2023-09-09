@@ -14,16 +14,13 @@ const accountDetails = () => {
 
   return (
     <SafeAreaContainer>
-      <View style={{ width: "85%" }}>
-        <View style={styles.detailsContainer}>
+      <View style={styles.detailsContainer}>
+        <View>
           <Header
             title="Account Details"
             action="close"
             onPress={handleCross}
           />
-          <View style={styles.save}>
-            <RegularText>Save</RegularText>
-          </View>
         </View>
       </View>
     </SafeAreaContainer>
@@ -35,12 +32,5 @@ export default accountDetails;
 const styles = StyleSheet.create({
   detailsContainer: {
     flexDirection: "row",
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  save: {
-    fontWeight: "bold",
-    fontSize: 20,
   },
 });
