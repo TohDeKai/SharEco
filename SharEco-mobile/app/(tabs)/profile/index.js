@@ -23,26 +23,20 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const ProfileHeader = () => {
-	
-	//this doesnt work!
-	const [username, setUsername] = useState('');
+	const [user, setUser] = useState('');
 	const { getUserData } = useAuth();
 	useEffect(() => {
     async function fetchUserData() {
       const userData = await getUserData();
       if (userData) {
         console.log("User data retrieved: ", userData);
-        setUsername(userData.username);
-				console.log("This is the username: " + username);
+				console.log("This is the username: " + userData.user.username);
+        setUser(userData.user);
       }
     }
     fetchUserData();
   }, []);
-
-	//DOESNT WORK EITHER
-	//const {user} = useAuth();
-	//console.log("DEBUG " + user.data);
-
+	
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
   };
@@ -83,7 +77,7 @@ const ProfileHeader = () => {
 					Replace With Name
 				</RegularText>
 				<RegularText typography="Subtitle" style={{ marginTop: 5 }}>
-				@ReplaceWithUsername
+				@{user.username}
 				</RegularText>
 				<RegularText typography="Subtitle" style={{ marginTop: 5 }}>
 					This is the bio. Lorem Ipsum We need to limit the bio to xxx
