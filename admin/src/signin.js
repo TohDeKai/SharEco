@@ -11,7 +11,8 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useSignIn } from "react-auth-kit";
 
 function Copyright(props) {
   return (
@@ -37,6 +38,7 @@ const defaultTheme = createTheme();
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const signIn = useSignIn();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -45,15 +47,22 @@ export default function SignIn() {
     const password = event.currentTarget.password.value;
 
     try {
-      const response = await axios.post("http://localhost:4000/api/v1/login", {
+      const response = await axios.post("http://localhost:4000/api/v1/signIn", {
         username,
         password,
       });
 
       if (response.status === 200) {
         // Successful login
+        signIn({
+          token: response.data.token,
+          expiresIn: 3600, // expires in an hour
+          tokenType: "Bearer",
+          authState: { username: username },
+        });
+
         console.log("Logged in successfully");
-        navigate("../home");
+        navigate("../");
         // You can redirect the user or perform any other actions here
       } else {
         // Handle other status codes (e.g., 400 for incorrect password)
@@ -99,7 +108,7 @@ export default function SignIn() {
           </Button>
           <Grid container>
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link component={RouterLink} to="/signup" variant="body2">
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>
