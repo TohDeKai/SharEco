@@ -184,7 +184,7 @@ const createAdmin = async (username, password) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."admin" 
-      (username, password") values ($1, $2) returning *`,
+      (username, password) values ($1, $2) returning *`,
       [username, password]
     );
     return result.rows[0];
