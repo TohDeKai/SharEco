@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
 import { useAuth } from "../../../context/auth";
 import { router } from "expo-router";
 import { Formik } from "formik";
+import axios from "axios";
 
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -29,6 +30,23 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const accountDetails = () => {
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, []);
+
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 
@@ -69,14 +87,14 @@ const accountDetails = () => {
             <View style={{ width: "100%" }}>
               <LabelledTextInput
                 label="Email"
-                placeholder="weneedtogettherealemail@gmail.com"
+                placeholder={user.email}
                 keyboardType="email-address"
                 value={values.email}
                 onChangeText={handleChange("email")}
               />
               <LabelledTextInput
                 label="Phone Number"
-                placeholder="91234567"
+                placeholder={user.contactNumber}
                 keyboardType="number-pad"
                 returnKeyType="done"
                 value={values.phoneNumber}

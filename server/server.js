@@ -63,7 +63,8 @@ app.get("/api/v1/users/userId/:userId", async (req, res) => {
 
 app.get("/api/v1/users/username/:username", async (req, res) => {
   try {
-    const user = await db.getUserByUsername(req.params.username);
+    const { username } = req.body;
+    const user = await db.getUserByUsername(username);
 
     if (user) {
       res.status(200).json({
@@ -76,26 +77,6 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
       // Handle the case where the user is not found
       res.status(404).json({ error: "User not found" });
     }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-app.post("/api/v1/users", async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await db.createUser(username, password);
-
-    // Send the newly created user as the response
-    res.status(201).json({
-      status: "success",
-      data: {
-        user: user,
-      },
-    });
   } catch (err) {
     // Handle the error here if needed
     console.log(err);
@@ -151,5 +132,44 @@ app.delete("/api/v1/users/:userId", async (req, res) => {
   }
 });
 
-app.post("/api/v1/signIn", auth.SignIn);
-app.post("/api/v1/signUp", auth.SignUp);
+// Create a new User upon Signing Up
+app.post("/api/v1/userSignUp", async (req, res) => {
+  const { username, password, email, contactNumber, displayName, isBanned } =
+    req.body;
+
+  try {
+    const result = await db.createUser(
+      username,
+      password,
+      email,
+      contactNumber,
+      displayName,
+      isBanned
+    );
+
+    res.status(201).json({
+      status: "success",
+      data: {
+        result: result,
+      },
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+app.get("/api/v1/users/:username/:password", async (req, res) => {
+  const { username, password } = req.params;
+
+  try {
+    const result = await db.getUserByUsernameAndPassword(username, password);
+    res.status(201).json({
+      status: "success",
+      data: {
+        result: result,
+      },
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+});

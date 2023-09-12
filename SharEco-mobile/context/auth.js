@@ -4,7 +4,7 @@ import {
   useRouter,
   useRootNavigationState,
 } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AuthContext = React.createContext();
@@ -75,10 +75,10 @@ export function Provider(props) {
     }
   };
 
-  const signIn = (user) => {
-    setAuth({ user });
-    storeUserData({ user });
-    console.log("Signed in with: " + user.username);
+  const signIn = async (user) => {
+    setAuth(user);
+    storeUserData(user);
+    console.log("Signed in with: " + user.email);
   };
 
   const signOut = () => {
@@ -93,7 +93,7 @@ export function Provider(props) {
         signIn,
         signOut,
         user,
-        getUserData
+        getUserData,
       }}
     >
       {props.children}
