@@ -12,7 +12,7 @@ const pool = new Pool({
 // Get all users
 const getUsers = async () => {
   try {
-    const result = await pool.query('SELECT * FROM "sharEco-schema"."account"');
+    const result = await pool.query('SELECT * FROM "sharEco-schema"."user"');
     return result.rows;
   } catch (err) {
     throw err;
@@ -23,8 +23,8 @@ const getUsers = async () => {
 const getUserById = async (userId) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."account" 
-    WHERE "accountId" = $1`,
+      `SELECT * FROM "sharEco-schema"."user" 
+    WHERE "userId" = $1`,
       [userId]
     );
     return result.rows[0];
@@ -37,7 +37,7 @@ const getUserById = async (userId) => {
 const getUserByUsername = async (username) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."account" 
+      `SELECT * FROM "sharEco-schema"."user" 
       WHERE username = $1`,
       [username]
     );
@@ -48,12 +48,29 @@ const getUserByUsername = async (username) => {
 };
 
 // Create a user
-const createUser = async (username, password) => {
+const createUser = async (
+  username,
+  password,
+  email,
+  contactNumber,
+  userPhotoUrl,
+  displayName
+) => {
   try {
     const result = await pool.query(
-      `INSERT INTO "sharEco-schema"."account" 
-      (username, password) values ($1, $2) returning *`,
-      [username, password]
+      `INSERT INTO "sharEco-schema"."user" 
+      (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName") values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
+      [
+        username,
+        password,
+        email,
+        contactNumber,
+        userPhotoUrl,
+        false,
+        [],
+        [],
+        displayName,
+      ]
     );
     return result.rows[0];
   } catch (err) {
@@ -62,15 +79,44 @@ const createUser = async (username, password) => {
 };
 
 // Update user
-const updateUser = async (userId, username, password) => {
+const updateUser = async (
+  userId,
+  username,
+  password,
+  email,
+  contactNumber,
+  userPhotoUrl,
+  isBanned,
+  likedItem,
+  wishList,
+  displayName
+) => {
   try {
     const result = await pool.query(
-      `UPDATE "sharEco-schema"."account" 
+      `UPDATE "sharEco-schema"."user" 
       SET username = $1, 
-      password = $2 
-      WHERE "accountId" = $3
+      password = $2,
+      email = $3,
+      "contactNumber" = $4,
+      "userPhotoUrl" = $5,
+      "isBanned" = $6,
+      "likedItem" = $7,
+      "wishList" = $8,
+      "displayName" = $9
+      WHERE "userId" = $10
       RETURNING *`,
-      [username, password, userId]
+      [
+        username,
+        password,
+        email,
+        contactNumber,
+        userPhotoUrl,
+        isBanned,
+        likedItem,
+        wishList,
+        displayName,
+        userId,
+      ]
     );
     return result.rows[0];
   } catch (err) {
@@ -82,8 +128,8 @@ const updateUser = async (userId, username, password) => {
 const deleteUser = async (userId) => {
   try {
     const result = await pool.query(
-      `DELETE FROM "sharEco-schema"."account" 
-      WHERE "accountId" = $1
+      `DELETE FROM "sharEco-schema"."user" 
+      WHERE "userId" = $1
       RETURNING *`,
       [userId]
     );

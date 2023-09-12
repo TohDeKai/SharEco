@@ -84,10 +84,24 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
 });
 
 app.post("/api/v1/users", async (req, res) => {
-  const { username, password } = req.body;
+  const {
+    username,
+    password,
+    email,
+    contactNumber,
+    userPhotoUrl,
+    displayName,
+  } = req.body;
 
   try {
-    const user = await db.createUser(username, password);
+    const user = await db.createUser(
+      username,
+      password,
+      email,
+      contactNumber,
+      userPhotoUrl,
+      displayName
+    );
 
     // Send the newly created user as the response
     res.status(201).json({
@@ -108,7 +122,14 @@ app.put("/api/v1/users/:userId", async (req, res) => {
     const user = await db.updateUser(
       req.params.userId,
       req.body.username,
-      req.body.password
+      req.body.password,
+      req.body.email,
+      req.body.contactNumber,
+      req.body.userPhotoUrl,
+      req.body.isBanned,
+      req.body.likedItem,
+      req.body.wishList,
+      req.body.displayName
     );
     if (user) {
       res.status(200).json({
