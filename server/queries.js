@@ -48,6 +48,8 @@ const getUserByUsername = async (username) => {
 };
 
 // Create a user
+// User will be created with isBanned = false, likedItem & wishList = []
+// Each user will not be banned and have an empty likedItem and wishList upon creation
 const createUser = async (
   username,
   password,
