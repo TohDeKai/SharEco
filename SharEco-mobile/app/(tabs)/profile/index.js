@@ -1,5 +1,5 @@
 import {View, Text, ScrollView, StyleSheet, Dimensions, Pressable} from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
 import { Link } from "expo-router";
 import { router } from "expo-router";
@@ -23,6 +23,20 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const ProfileHeader = () => {
+	const [user, setUser] = useState('');
+	const { getUserData } = useAuth();
+	useEffect(() => {
+    async function fetchUserData() {
+      const userData = await getUserData();
+      if (userData) {
+        console.log("User data retrieved: ", userData);
+				console.log("This is the username: " + userData.user.username);
+        setUser(userData.user);
+      }
+    }
+    fetchUserData();
+  }, []);
+	
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
   };
@@ -33,27 +47,37 @@ const ProfileHeader = () => {
 	return (
 		<View style={styles.header}>
 			<View style={styles.headerGreen}>
-				<Ionicons
-					name="create-outline"
-					color={white}
-					size={26}
-					style={styles.headerIcon}
-					onPress={toEditProfile}
-				/>
-				<Ionicons
-          name="settings-outline"
-          color={white}
-          size={26}
-          style={styles.headerIcon}
+        <Pressable 
+          onPress={toEditProfile}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1
+          })}>
+          <Ionicons
+            name="create-outline"
+            color={white}
+            size={26}
+            style={styles.headerIcon}
+          />
+        </Pressable>
+        <Pressable 
           onPress={toAccountSettings}
-        />
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1
+          })}>
+          <Ionicons
+            name="settings-outline"
+            color={white}
+            size={26}
+            style={styles.headerIcon}
+          />  
+        </Pressable>
 			</View>
 			<View style={styles.headerWhite}>
 				<RegularText typography="H3" style={{ marginTop: 60 }}>
 					Replace With Name
 				</RegularText>
 				<RegularText typography="Subtitle" style={{ marginTop: 5 }}>
-					@ReplaceWithUsername
+				@{user.username}
 				</RegularText>
 				<RegularText typography="Subtitle" style={{ marginTop: 5 }}>
 					This is the bio. Lorem Ipsum We need to limit the bio to xxx

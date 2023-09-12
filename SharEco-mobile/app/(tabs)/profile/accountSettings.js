@@ -1,5 +1,13 @@
 import React from "react";
-import { ScrollView, Text, View, StyleSheet, Dimensions } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  KeyboardAvoidingView,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+} from "react-native";
 import { useAuth } from "../../../context/auth";
 import { router } from "expo-router";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
@@ -7,8 +15,14 @@ import SafeAreaContainer from "../../../components/containers/SafeAreaContainer"
 import RegularText from "../../../components/text/RegularText";
 import RoundedButton from "../../../components/buttons/RoundedButton";
 import Header from "../../../components/Header";
+import SettingsItem from "../../../components/buttons/SettingsItem";
 import { colours } from "../../../components/ColourPalette";
 const { black, white } = colours;
+
+const viewportWidthInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").width;
+  return (percentage / 100) * screenWidth;
+};
 
 const accountSettings = () => {
   const { signOut } = useAuth();
@@ -17,73 +31,61 @@ const accountSettings = () => {
     router.back();
   };
 
-  const toAccountDetails = () => {
-    router.push("profile/accountDetails");
+  const handleSettingsPress = (route) => {
+    router.push(`profile/${route}`);
   };
 
   return (
     <SafeAreaContainer>
-      <View style={{ width: "85%" }}>
-        <Header title="Account Settings" action="back" onPress={handleBack} />
-        <View style={styles.itemContainer}>
-          <View style={styles.itemListing}>
-            <Ionicons name="person-outline" size={24} color={black} />
-            <RegularText
-              typography="B1"
-              style={styles.text}
-              onPress={toAccountDetails}
-            >
-              Account Details
-            </RegularText>
-          </View>
-          <View style={styles.itemListing}>
-            <Ionicons name="lock-closed-outline" size={24} color={black} />
-            <RegularText typography="B1" style={styles.text}>
-              Change Password
-            </RegularText>
-          </View>
-          <View style={styles.itemListing}>
-            <Ionicons name="notifications-outline" size={24} color={black} />
-            <RegularText typography="B1" style={styles.text}>
-              Notifications
-            </RegularText>
-          </View>
-          <View style={styles.itemListing}>
-            <Ionicons name="briefcase-outline" size={24} color={black} />
-            <RegularText typography="B1" style={styles.text}>
-              SharEco Biz
-            </RegularText>
-          </View>
-          <View style={styles.subheadingContainer}>
-            <RegularText typography="H3">Help & Support</RegularText>
-          </View>
-          <View style={styles.itemListing}>
-            <MaterialCommunityIcons
-              name="frequently-asked-questions"
-              size={24}
-              color={black}
-            />
-            <RegularText typography="B1" style={styles.text}>
-              FAQs
-            </RegularText>
-          </View>
-          <View style={styles.itemListing}>
-            <Ionicons name="call" size={24} color={black} />
-            <RegularText typography="B1" style={styles.text}>
-              Contact Us
-            </RegularText>
-          </View>
+      <Header title="Account Settings" action="back" onPress={handleBack} />
+      <View style={styles.content}>
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="person-outline"
+          text="Account Details"
+          onPress={() => handleSettingsPress("accountDetails")}
+        />
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="lock-closed-outline"
+          text="Change Password"
+          onPress={() => handleSettingsPress("changePassword")}
+        />
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="notifications-outline"
+          text="Notifications"
+          onPress={() => handleSettingsPress("notifications")}
+        />
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="briefcase-outline"
+          text="SharEco Biz"
+          onPress={() => handleSettingsPress("sharEcoBiz")}
+        />
+        <View style={styles.subheadingContainer}>
+          <RegularText typography="H3">Help & Support</RegularText>
         </View>
-        <View style={styles.buttonContainer}>
-          <RoundedButton
-            typography={"B1"}
-            color={white}
-            onPress={signOut}
-            style={styles.roundedButton}
-          >
-            Log Out
-          </RoundedButton>
-        </View>
+        <SettingsItem
+          iconProvider={MaterialCommunityIcons}
+          iconName="frequently-asked-questions"
+          text="FAQs"
+          onPress={() => handleSettingsPress("faq")}
+        />
+        <SettingsItem
+          iconProvider={Ionicons}
+          iconName="call"
+          text="Contact Us"
+          onPress={() => handleSettingsPress("contactUs")}
+        />
+        <RoundedButton
+          typography={"B1"}
+          color={white}
+          onPress={signOut}
+          style={styles.roundedButton}
+        >
+          Log Out
+        </RoundedButton>
       </View>
     </SafeAreaContainer>
   );
@@ -92,26 +94,22 @@ const accountSettings = () => {
 export default accountSettings;
 
 const styles = StyleSheet.create({
-  itemListing: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingLeft: 45,
-    marginBottom: 40,
+  content: {
+    flex: 1,
+    alignSelf: "center",
+    width: viewportWidthInPixels(85),
+    top: 40,
   },
   subheadingContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    paddingLeft: 32,
     marginBottom: 40,
-  },
-  text: {
-    marginLeft: 17,
   },
   roundedButton: {
     justifySelf: "center",
-    marginHorizontal: 25,
+    position: "absolute",
+    bottom: 60,
   },
   buttonContainer: {
     height: 240,

@@ -1,5 +1,5 @@
-import { View, StyleSheet, Dimensions } from "react-native";
-import React from "react";
+import { View, StyleSheet, Dimensions, Pressable } from 'react-native';
+import React from 'react';
 import { Ionicons } from "@expo/vector-icons";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
@@ -24,16 +24,15 @@ const Header = (props) => {
   }
   return (
     <View style={styles.headerContainer}>
-      <Ionicons
-        name={icon}
-        size={28}
-        color={black}
-        style={styles.backButton}
-        onPress={props.onPress}
-      />
-      <RegularText typography="H2" style={styles.header}>
-        {props.title}
-      </RegularText>
+    <Pressable 
+          onPress={props.onPress}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1,
+            ...styles.backButton 
+  })}>  
+      <Ionicons name={icon} size={28} color={black}/>
+    </Pressable>
+      <RegularText typography="H2" style={styles.header}>{props.title}</RegularText>
     </View>
   );
 };
@@ -45,7 +44,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: viewportWidthInPixels(100),
-    marginBottom: 40,
     paddingTop: 17,
   },
   backButton: {
