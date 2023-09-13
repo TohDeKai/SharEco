@@ -38,10 +38,27 @@ export default function SignIn() {
 
     try {
       const response = await axios.get(
-        `http://192.168.2.90:4000/api/v1/users/${username}/${password}`
+        `http://192.168.2.90:4000/api/v1/users/username/${username}`
       );
-      const user = response.data.data.result;
-      signIn(user);
+      const userDataByUsername = response.data.data.user;
+
+      if (response.status === 404) {
+        console.log("User not found");
+        setMessage("Invalid username");
+        setIsSuccessMessage(false);
+      } else {
+        const result = await axios.get(
+          `http://192.168.2.90:4000/api/v1/users/${username}/${password}`
+        );
+        const user = result.data.data.result;
+        if (result.status == 400) {
+          console.log("Wrong password");
+          setMessage("Invalid password");
+          setIsSuccessMessage(false);
+        } else {
+          signIn(user);
+        }
+      }
     } catch (error) {
       console.log(error.message);
     }

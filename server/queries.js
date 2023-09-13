@@ -97,6 +97,18 @@ const updateUser = async (userId, username, password) => {
   }
 };
 
+const updateAccountUser = async (username, email, contactNumber) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."user" SET email = $1, "contactNumber" = $2 WHERE username = $3 RETURNING *`,
+      [email, contactNumber, username]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Delete user
 const deleteUser = async (userId) => {
   try {
@@ -120,4 +132,5 @@ module.exports = {
   deleteUser,
   getUserByUsername,
   getUserByUsernameAndPassword,
+  updateAccountUser,
 };

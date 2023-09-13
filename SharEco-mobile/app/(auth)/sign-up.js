@@ -41,7 +41,6 @@ export default function SignIn() {
   };
 
   const handleSignup = async (credentials) => {
-    //no clue why this cant be printed
     console.log(
       "Calling auth with username: " +
         credentials.username +

@@ -6,6 +6,8 @@ const db = require("./queries");
 const auth = require("./auth.js");
 const app = express();
 const cors = require("cors");
+const bcrypt = require("bcrypt");
+const saltRounds = 12;
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
@@ -63,7 +65,7 @@ app.get("/api/v1/users/userId/:userId", async (req, res) => {
 
 app.get("/api/v1/users/username/:username", async (req, res) => {
   try {
-    const { username } = req.body;
+    const { username } = req.params;
     const user = await db.getUserByUsername(username);
 
     if (user) {
@@ -91,6 +93,30 @@ app.put("/api/v1/users/:userId", async (req, res) => {
       req.body.username,
       req.body.password
     );
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.put("/api/v1/users/username/:username", async (req, res) => {
+  const { username } = req.params;
+  const { email, contactNumber } = req.body;
+
+  try {
+    const user = await db.updateAccountUser(username, email, contactNumber);
     if (user) {
       res.status(200).json({
         status: "success",
@@ -137,10 +163,12 @@ app.post("/api/v1/userSignUp", async (req, res) => {
   const { username, password, email, contactNumber, displayName, isBanned } =
     req.body;
 
+  const hashedPassword = bcrypt.hashSync(password, saltRounds);
+
   try {
     const result = await db.createUser(
       username,
-      password,
+      hashedPassword,
       email,
       contactNumber,
       displayName,
@@ -162,13 +190,22 @@ app.get("/api/v1/users/:username/:password", async (req, res) => {
   const { username, password } = req.params;
 
   try {
-    const result = await db.getUserByUsernameAndPassword(username, password);
-    res.status(201).json({
-      status: "success",
-      data: {
-        result: result,
-      },
-    });
+    const result = await db.getUserByUsername(username);
+
+    if (bcrypt.compareSync(password, result.password)) {
+      res.status(201).json({
+        status: "success",
+        data: {
+          result: result,
+        },
+      });
+    } else {
+      // If the passwords don't match, send a 400 response
+      res.status(400).json({
+        status: "error",
+        message: "Incorrect password",
+      });
+    }
   } catch (error) {
     console.log(error.message);
   }

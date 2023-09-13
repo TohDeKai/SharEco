@@ -54,11 +54,29 @@ const accountDetails = () => {
     router.back();
   };
 
-  const handleSave = (details) => {
-    console.log("Im supposed to save the changes to db! ");
-    //PUT operations to update profile details.phoneNumber, details.email,
-    //if no issue, redirect
-    router.back();
+  const handleSave = async (details) => {
+    const username = user.username;
+    const newDetails = {
+      email: details.email,
+      contactNumber: details.phoneNumber,
+    };
+
+    try {
+      const response = await axios.put(
+        `http://192.168.2.90:4000/api/v1/users/username/${username}`,
+        newDetails
+      );
+
+      console.log(response.data);
+
+      if (response.status === 200) {
+        router.back();
+      } else {
+        console.log("Unable to update Account Details");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   return (
@@ -66,7 +84,6 @@ const accountDetails = () => {
       <Header title="Account Details" action="close" onPress={handleBack} />
       <Formik
         initialValues={{
-          //we need to get the existing data
           email: "",
           phoneNumber: "",
         }}

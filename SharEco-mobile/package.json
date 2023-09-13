@@ -16,9 +16,12 @@
     "@rneui/base": "^4.0.0-rc.8",
     "@rneui/themed": "^4.0.0-rc.8",
     "axios": "^1.5.0",
+    "bcrypt": "^5.1.1",
     "expo": "^49.0.9",
     "expo-constants": "~14.4.2",
     "expo-font": "~11.4.0",
+    "expo-image": "~1.3.2",
+    "expo-image-picker": "~14.3.2",
     "expo-linking": "~5.0.2",
     "expo-router": "2.0.0",
     "expo-splash-screen": "~0.20.4",
@@ -37,9 +40,7 @@
     "react-native-vector-icons": "^10.0.0",
     "react-native-web": "~0.19.6",
     "styled-components": "^6.0.7",
-    "stylis": "^4.3.0",
-    "expo-image-picker": "~14.3.2",
-    "expo-image": "~1.3.2"
+    "stylis": "^4.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
