@@ -1,28 +1,29 @@
-const db = require("./queries");
+const db = require("./queries/admin");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
 
-const SignIn = async (req, res) => {
+// Sign in for admin portal
+const AdminSignIn = async (req, res) => {
   const { username, password } = req.body; // Destructure username and password from the request body
   req.params.username = username;
   try {
-    const user = await db.getUserByUsername(username); // Get the user data
-    console.log(user);
-    if (!user) {
-      // If the user is not found, send a 404 response
+    const admin = await db.getAdminByUsername(username); // Get the admin data
+    console.log(admin);
+    if (!admin) {
+      // If the admin is not found, send a 404 response
       return res.status(404).json({
         status: "error",
-        message: "User not found",
+        message: "Admin not found",
       });
     }
 
-    if (bcrypt.compareSync(password, user.password)) {
+    if (bcrypt.compareSync(password, admin.password)) {
       // If the passwords match, send a success response
       const jwtToken = jwt.sign(
         {
-          id: user.id,
-          username: user.username,
+          id: admin.id,
+          username: admin.username,
         },
         process.env.JWT_SECRET
       );
@@ -49,15 +50,16 @@ const SignIn = async (req, res) => {
   }
 };
 
-const SignUp = async (req, res) => {
+// Sign up for admin portal
+const AdminSignUp = async (req, res) => {
   try {
     const hashed = bcrypt.hashSync(req.body.password, saltRounds);
-    const user = db.createUser(req.body.username, hashed);
-    if (user) {
+    const admin = db.createAdmin(req.body.username, hashed);
+    if (admin) {
       res.status(200).json({
         status: "success",
         message: "Signed up successfully",
-        data: user,
+        data: admin,
       });
     }
   } catch (err) {
@@ -71,6 +73,6 @@ const SignUp = async (req, res) => {
 };
 
 module.exports = {
-  SignIn,
-  SignUp,
+  AdminSignIn,
+  AdminSignUp,
 };
