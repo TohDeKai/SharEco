@@ -14,25 +14,9 @@ import axios from "axios";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { useSignIn } from "react-auth-kit";
 import { styled } from "@mui/system";
+import { styles } from "./styles";
 
 // TODO remove, this demo shouldn't need to reset the theme.
-
-const shareCoTheme = createTheme({
-  palette: {
-    primary: {
-      main: "#419682",
-    },
-  },
-});
-
-const MyMessageBox = styled("div")({
-  position: "fixed",
-  width: "100%",
-  bottom: 0,
-  margin: 0,
-  padding: 0,
-  zIndex: -1,
-});
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -72,7 +56,7 @@ export default function SignIn() {
     }
   };
   return (
-    <ThemeProvider theme={shareCoTheme}>
+    <ThemeProvider theme={styles.shareCoTheme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
@@ -120,7 +104,7 @@ export default function SignIn() {
           </Button>
         </Box>
       </Container>
-      <MyMessageBox>
+      <styles.FooterBox>
         <svg
           width="inherit"
           height="inherit"
@@ -139,7 +123,7 @@ export default function SignIn() {
             d="M0,288L34.3,277.3C68.6,267,137,245,206,202.7C274.3,160,343,96,411,112C480,128,549,224,617,261.3C685.7,299,754,277,823,229.3C891.4,181,960,107,1029,101.3C1097.1,96,1166,160,1234,192C1302.9,224,1371,224,1406,224L1440,224L1440,320L1405.7,320C1371.4,320,1303,320,1234,320C1165.7,320,1097,320,1029,320C960,320,891,320,823,320C754.3,320,686,320,617,320C548.6,320,480,320,411,320C342.9,320,274,320,206,320C137.1,320,69,320,34,320L0,320Z"
           ></path>
         </svg>
-      </MyMessageBox>
+      </styles.FooterBox>
     </ThemeProvider>
   );
 }
