@@ -382,3 +382,7 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// Auth functionalities
+app.post("/api/v1/admin/signIn", auth.AdminSignIn);
+app.post("/api/v1/admin/signUp", auth.AdminSignUp);
