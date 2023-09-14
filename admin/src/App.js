@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SignIn from "./signin";
 import Home from "./home";
+import Users from "./users";
 import { AuthProvider, RequireAuth } from "react-auth-kit";
 import SignUp from "./signup";
 
@@ -31,7 +32,7 @@ export default function App() {
             path="users"
             element={
               <RequireAuth loginPath="../signin">
-                <Home />
+                <Users />
               </RequireAuth>
             }
           ></Route>

@@ -4,14 +4,25 @@ import Sidebar from "./sidebar";
 import { styles } from "./styles";
 import { ThemeProvider } from "@mui/material/styles";
 
-const Home = () => {
+const Users = () => {
   return (
-    <div>
-      <ThemeProvider theme={styles.shareCoTheme}>
-        <Sidebar></Sidebar>
-      </ThemeProvider>
-    </div>
+    <ThemeProvider theme={styles.shareCoTheme}>
+      <div style={{ display: "flex" }}>
+        {/* Sidebar */}
+        <Sidebar />
+
+        {/* Content */}
+        <div style={{ marginLeft: "240px", padding: "16px" }}>
+          {/* Add your content here */}
+          <h1>Welcome to the Home Page</h1>
+          <p>This is additional content alongside the sidebar.</p>
+          <Button variant="contained" color="primary">
+            Click Me
+          </Button>
+        </div>
+      </div>
+    </ThemeProvider>
   );
 };
 
-export default Home;
+export default Users;
