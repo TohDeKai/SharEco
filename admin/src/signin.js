@@ -21,10 +21,14 @@ export default function SignIn() {
     const password = event.currentTarget.password.value;
 
     try {
-      const response = await axios.post("http://localhost:4000/api/v1/signIn", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        // API endpoint for admin sign in
+        "http://localhost:4000/api/v1/admin/signIn",
+        {
+          username,
+          password,
+        }
+      );
 
       if (response.status === 200) {
         // Successful login
