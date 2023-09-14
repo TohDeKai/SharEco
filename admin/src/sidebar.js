@@ -13,9 +13,21 @@ import ListItemText from "@mui/material/ListItemText";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import MailIcon from "@mui/icons-material/Mail";
 import Button from "@mui/material/Button";
+import { useNavigate } from "react-router-dom";
+import { useSignOut } from "react-auth-kit";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+  const signOut = useSignOut();
+
+  // Adjust width of sidebar here
   const drawerWidth = 240;
+
+  const handleLogout = () => {
+    signOut();
+    navigate("../signin");
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -71,7 +83,7 @@ const Sidebar = () => {
         <Button
           variant="outlined"
           color="primary"
-          onClick={""}
+          onClick={handleLogout}
           size="medium"
           style={{
             marginLeft: "10%",
