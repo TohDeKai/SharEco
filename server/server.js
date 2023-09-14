@@ -6,6 +6,8 @@ const db = require("./queries");
 const auth = require("./auth.js");
 const app = express();
 const cors = require("cors");
+const bcrypt = require("bcrypt");
+const saltRounds = 12;
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
@@ -13,7 +15,7 @@ const port = process.env.PORT || 4000;
 // Configure CORS to allow requests from your React app's domain (http://localhost:3000)
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with your React app's URL
+    origin: "*", // Replace with your React app's URL
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Enable credentials (cookies, authorization headers, etc.)
   })
@@ -64,7 +66,8 @@ app.get("/api/v1/users/userId/:userId", async (req, res) => {
 
 app.get("/api/v1/users/username/:username", async (req, res) => {
   try {
-    const user = await db.getUserByUsername(req.params.username);
+    const { username } = req.params;
+    const user = await db.getUserByUsername(username);
 
     if (user) {
       res.status(200).json({
@@ -83,6 +86,30 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+app.put("/api/v1/users/:userId", async (req, res) => {
+  try {
+    const user = await db.updateUser(
+      req.params.userId,
+      req.body.username,
+      req.body.password
+    );
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  });
 
 app.post("/api/v1/users", async (req, res) => {
   const {
@@ -111,6 +138,7 @@ app.post("/api/v1/users", async (req, res) => {
         user: user,
       },
     });
+
   } catch (err) {
     // Handle the error here if needed
     console.log(err);
@@ -118,7 +146,10 @@ app.post("/api/v1/users", async (req, res) => {
   }
 });
 
-app.put("/api/v1/users/:userId", async (req, res) => {
+app.put("/api/v1/users/username/:username", async (req, res) => {
+  const { username } = req.params;
+  const { email, contactNumber } = req.body;
+
   try {
     const user = await db.updateUser(
       req.params.userId,
@@ -132,6 +163,7 @@ app.put("/api/v1/users/:userId", async (req, res) => {
       req.body.wishList,
       req.body.displayName
     );
+
     if (user) {
       res.status(200).json({
         status: "success",
@@ -173,6 +205,59 @@ app.delete("/api/v1/users/:userId", async (req, res) => {
   }
 });
 
+// Create a new User upon Signing Up
+app.post("/api/v1/userSignUp", async (req, res) => {
+  const { username, password, email, contactNumber, displayName, isBanned } =
+    req.body;
+
+  const hashedPassword = bcrypt.hashSync(password, saltRounds);
+
+  try {
+    const result = await db.createUser(
+      username,
+      hashedPassword,
+      email,
+      contactNumber,
+      displayName,
+      isBanned
+    );
+
+    res.status(201).json({
+      status: "success",
+      data: {
+        result: result,
+      },
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+app.get("/api/v1/users/:username/:password", async (req, res) => {
+  const { username, password } = req.params;
+
+  try {
+    const result = await db.getUserByUsername(username);
+
+    if (bcrypt.compareSync(password, result.password)) {
+      res.status(201).json({
+        status: "success",
+        data: {
+          result: result,
+        },
+      });
+    } else {
+      // If the passwords don't match, send a 400 response
+      res.status(400).json({
+        status: "error",
+        message: "Incorrect password",
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+=======
 // Admin CRUD operations
 app.get("/api/v1/admins", async (req, res) => {
   try {

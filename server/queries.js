@@ -47,6 +47,19 @@ const getUserByUsername = async (username) => {
   }
 };
 
+// Get user by username and password
+const getUserByUsernameAndPassword = async (username, password) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."user" WHERE username = $1 AND password = $2`,
+      [username, password]
+      );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Create a user
 // User will be created with isBanned = false, likedItem & wishList = []
 // Each user will not be banned and have an empty likedItem and wishList upon creation
@@ -73,10 +86,31 @@ const createUser = async (
         [],
         displayName,
       ]
+
     );
     return result.rows[0];
-  } catch (err) {
-    throw err;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Create a user
+const createUser = async (
+  username,
+  password,
+  email,
+  contactNumber,
+  displayName,
+  isBanned
+) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO "sharEco-schema"."user" (username, password, email, "contactNumber", "displayName", "isBanned") values ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [username, password, email, contactNumber, displayName, isBanned]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -123,6 +157,18 @@ const updateUser = async (
     return result.rows[0];
   } catch (err) {
     throw err;
+  }
+};
+
+const updateAccountUser = async (username, email, contactNumber) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."user" SET email = $1, "contactNumber" = $2 WHERE username = $3 RETURNING *`,
+      [email, contactNumber, username]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -232,6 +278,8 @@ module.exports = {
   updateUser,
   deleteUser,
   getUserByUsername,
+  getUserByUsernameAndPassword,
+  updateAccountUser,
 
   getAdmins,
   getAdminById,
