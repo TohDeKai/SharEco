@@ -10,6 +10,9 @@ const shareCoTheme = createTheme({
   },
   typography: {
     fontFamily: ["Plus Jakarta Sans", "Roboto"].join(","),
+    button: {
+      textTransform: "none",
+    },
   },
 });
 
