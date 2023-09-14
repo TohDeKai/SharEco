@@ -15,6 +15,10 @@ export default function App() {
     >
       <BrowserRouter>
         <Routes>
+          {/* Unprotected routes */}
+          <Route path="signin" element={<SignIn />} />
+          <Route path="signup" element={<SignUp />} />
+          {/* Protected routes */}
           <Route
             path="/"
             element={
@@ -23,8 +27,14 @@ export default function App() {
               </RequireAuth>
             }
           ></Route>
-          <Route path="signin" element={<SignIn />} />
-          <Route path="signup" element={<SignUp />} />
+          <Route
+            path="users"
+            element={
+              <RequireAuth loginPath="../signin">
+                <Home />
+              </RequireAuth>
+            }
+          ></Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>
