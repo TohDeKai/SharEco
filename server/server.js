@@ -30,6 +30,7 @@ app.use(morgan("dev"));
 // retrieve data from body
 app.use(express.json());
 
+// User CRUD operations
 app.get("/api/v1/users", async (req, res) => {
   try {
     const users = await db.getUsers();
@@ -103,7 +104,41 @@ app.put("/api/v1/users/:userId", async (req, res) => {
     } else {
       // Handle the case where the user is not found
       res.status(404).json({ error: "User not found" });
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
     }
+  });
+
+app.post("/api/v1/users", async (req, res) => {
+  const {
+    username,
+    password,
+    email,
+    contactNumber,
+    userPhotoUrl,
+    displayName,
+  } = req.body;
+
+  try {
+    const user = await db.createUser(
+      username,
+      password,
+      email,
+      contactNumber,
+      userPhotoUrl,
+      displayName
+    );
+
+    // Send the newly created user as the response
+    res.status(201).json({
+      status: "success",
+      data: {
+        user: user,
+      },
+    });
+
   } catch (err) {
     // Handle the error here if needed
     console.log(err);
@@ -116,7 +151,19 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
   const { email, contactNumber } = req.body;
 
   try {
-    const user = await db.updateAccountUser(username, email, contactNumber);
+    const user = await db.updateUser(
+      req.params.userId,
+      req.body.username,
+      req.body.password,
+      req.body.email,
+      req.body.contactNumber,
+      req.body.userPhotoUrl,
+      req.body.isBanned,
+      req.body.likedItem,
+      req.body.wishList,
+      req.body.displayName
+    );
+
     if (user) {
       res.status(200).json({
         status: "success",
@@ -210,3 +257,131 @@ app.get("/api/v1/users/:username/:password", async (req, res) => {
     console.log(error.message);
   }
 });
+=======
+// Admin CRUD operations
+app.get("/api/v1/admins", async (req, res) => {
+  try {
+    const admins = await db.getAdmins();
+    res.status(200).json({
+      status: "success",
+      data: {
+        admin: admins,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.get("/api/v1/admins/adminId/:adminId", async (req, res) => {
+  try {
+    console.log("Getting admin with adminId: " + req.params.adminId);
+    const admin = await db.getAdminById(req.params.adminId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        admin: admin,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.get("/api/v1/admins/username/:username", async (req, res) => {
+  try {
+    const admin = await db.getAdminByUsername(req.params.username);
+
+    if (admin) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          admin: admin,
+        },
+      });
+    } else {
+      // Handle the case where the admin is not found
+      res.status(404).json({ error: "Admin not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.post("/api/v1/admins", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const admin = await db.createAdmin(username, password);
+
+    // Send the newly created user as the response
+    res.status(201).json({
+      status: "success",
+      data: {
+        admin: admin,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.put("/api/v1/admins/:adminId", async (req, res) => {
+  try {
+    const admin = await db.updateAdmin(
+      req.params.adminId,
+      req.body.username,
+      req.body.password
+    );
+    if (admin) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          admin: admin,
+        },
+      });
+    } else {
+      // Handle the case where the admin is not found
+      res.status(404).json({ error: "Admin not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.delete("/api/v1/admins/:adminId", async (req, res) => {
+  const adminId = req.params.adminId;
+  try {
+    const admin = await db.deleteAdmin(adminId);
+
+    if (admin) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          admin: admin,
+        },
+      });
+    } else {
+      // Handle the case where the admin is not found
+      res.status(404).json({ error: "Admin not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Auth functionalities
+app.post("/api/v1/signIn", auth.SignIn);
+app.post("/api/v1/signUp", auth.SignUp);
