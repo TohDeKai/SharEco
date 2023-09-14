@@ -4,7 +4,6 @@ import SignIn from "./signin";
 import Home from "./home";
 import { AuthProvider, RequireAuth } from "react-auth-kit";
 import SignUp from "./signup";
-import Dashboard from "./dashboard/Dashboard";
 
 export default function App() {
   return (
@@ -26,7 +25,6 @@ export default function App() {
           ></Route>
           <Route path="signin" element={<SignIn />} />
           <Route path="signup" element={<SignUp />} />
-          <Route path="dashboard" element={<Dashboard />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
