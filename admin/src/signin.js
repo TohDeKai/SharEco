@@ -58,14 +58,17 @@ export default function SignIn() {
           alignItems="center"
           flexDirection={"column"}
           onSubmit={handleSubmit}
+          style={{ margin: "auto" }}
           noValidate
           sx={{ mt: 1 }}
         >
           <img
-            src={require("./images/logos/logo light bg.png")}
-            width={250}
-            height={250}
+            src={require("./images/logos/logo light bg cropped.png")}
+            width={300}
+            height={75}
+            style={{ marginTop: "20%" }}
           />
+          <h1 style={{ marginTop: "0%" }}>Admin Portal</h1>
           <TextField
             margin="normal"
             required
