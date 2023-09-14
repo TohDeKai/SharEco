@@ -10,12 +10,17 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { useSignOut } from "react-auth-kit";
 import { useAuthUser } from "react-auth-kit";
+import { Link } from "react-router-dom";
+import SpaceDashboardOutlinedIcon from "@mui/icons-material/SpaceDashboardOutlined";
+import ShoppingBasketOutlinedIcon from "@mui/icons-material/ShoppingBasketOutlined";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
+import NoteAltOutlinedIcon from "@mui/icons-material/NoteAltOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -29,6 +34,40 @@ const Sidebar = () => {
     signOut();
     navigate("../signin");
   };
+
+  // Menu items
+  const customListItems = [
+    {
+      text: "Dashboard",
+      path: "/dashboard",
+      icon: <SpaceDashboardOutlinedIcon />,
+    },
+    {
+      text: "Rental",
+      path: "/rental",
+      icon: <ShoppingBasketOutlinedIcon />,
+    },
+    {
+      text: "Users",
+      path: "/users",
+      icon: <PersonOutlinedIcon />,
+    },
+    {
+      text: "Businesses",
+      path: "/businesses",
+      icon: <BusinessCenterOutlinedIcon />,
+    },
+    {
+      text: "Listings",
+      path: "/listings",
+      icon: <NoteAltOutlinedIcon />,
+    },
+    {
+      text: "Transactions",
+      path: "/transactions",
+      icon: <PaymentsOutlinedIcon />,
+    },
+  ];
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -65,20 +104,11 @@ const Sidebar = () => {
 
         <Divider />
         <List>
-          {[
-            "Dashboard",
-            "Rental",
-            "Users",
-            "Businesses",
-            "Listings",
-            "Transactions",
-          ].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
+          {customListItems.map((item, index) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton component={Link} to={item.path}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
               </ListItemButton>
             </ListItem>
           ))}
