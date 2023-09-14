@@ -15,10 +15,12 @@ import MailIcon from "@mui/icons-material/Mail";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { useSignOut } from "react-auth-kit";
+import { useAuthUser } from "react-auth-kit";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const signOut = useSignOut();
+  const auth = useAuthUser();
 
   // Adjust width of sidebar here
   const drawerWidth = 240;
@@ -55,8 +57,10 @@ const Sidebar = () => {
             height={43.75}
             style={{ marginBottom: "10%" }}
           />
-          <h4>Welcome back</h4>
-          <h3>(Insert Admin Username here)</h3>
+          <subtitle1>Welcome back</subtitle1>
+          <h3 style={{ marginTop: "0%", textTransform: "capitalize" }}>
+            {auth().username}
+          </h3>
         </Box>
 
         <Divider />
