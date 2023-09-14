@@ -1,4 +1,4 @@
-const db = require("./queries");
+const db = require("./queries/admin");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;

@@ -2,7 +2,8 @@ require("dotenv").config();
 const { application } = require("express");
 const express = require("express");
 const morgan = require("morgan");
-const db = require("./queries");
+const userdb = require("./queries/user");
+const admindb = require("./queries/admin");
 const auth = require("./auth.js");
 const app = express();
 const cors = require("cors");
@@ -33,7 +34,7 @@ app.use(express.json());
 // User CRUD operations
 app.get("/api/v1/users", async (req, res) => {
   try {
-    const users = await db.getUsers();
+    const users = await userdb.getUsers();
     res.status(200).json({
       status: "success",
       data: {
@@ -50,7 +51,7 @@ app.get("/api/v1/users", async (req, res) => {
 app.get("/api/v1/users/userId/:userId", async (req, res) => {
   try {
     console.log("Getting user with userId: " + req.params.userId);
-    const user = await db.getUserById(req.params.userId);
+    const user = await userdb.getUserById(req.params.userId);
     res.status(200).json({
       status: "success",
       data: {
@@ -67,7 +68,7 @@ app.get("/api/v1/users/userId/:userId", async (req, res) => {
 app.get("/api/v1/users/username/:username", async (req, res) => {
   try {
     const { username } = req.params;
-    const user = await db.getUserByUsername(username);
+    const user = await userdb.getUserByUsername(username);
 
     if (user) {
       res.status(200).json({
@@ -87,9 +88,10 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
   }
 });
 
+// Updating user based on userId
 app.put("/api/v1/users/:userId", async (req, res) => {
   try {
-    const user = await db.updateUser(
+    const user = await userdb.updateUser(
       req.params.userId,
       req.body.username,
       req.body.password
@@ -104,13 +106,15 @@ app.put("/api/v1/users/:userId", async (req, res) => {
     } else {
       // Handle the case where the user is not found
       res.status(404).json({ error: "User not found" });
-    } catch (err) {
-      // Handle the error here if needed
-      console.log(err);
-      res.status(500).json({ error: "Database error" });
     }
-  });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 
+// Creating new user
 app.post("/api/v1/users", async (req, res) => {
   const {
     username,
@@ -122,7 +126,7 @@ app.post("/api/v1/users", async (req, res) => {
   } = req.body;
 
   try {
-    const user = await db.createUser(
+    const user = await userdb.createUser(
       username,
       password,
       email,
@@ -138,7 +142,6 @@ app.post("/api/v1/users", async (req, res) => {
         user: user,
       },
     });
-
   } catch (err) {
     // Handle the error here if needed
     console.log(err);
@@ -146,13 +149,11 @@ app.post("/api/v1/users", async (req, res) => {
   }
 });
 
+// Updating user based on username
 app.put("/api/v1/users/username/:username", async (req, res) => {
-  const { username } = req.params;
-  const { email, contactNumber } = req.body;
-
   try {
-    const user = await db.updateUser(
-      req.params.userId,
+    const user = await userdb.updateUser(
+      req.params.username,
       req.body.username,
       req.body.password,
       req.body.email,
@@ -185,7 +186,7 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
 app.delete("/api/v1/users/:userId", async (req, res) => {
   const userId = req.params.userId;
   try {
-    const user = await db.deleteUser(userId);
+    const user = await userdb.deleteUser(userId);
 
     if (user) {
       res.status(200).json({
@@ -213,7 +214,7 @@ app.post("/api/v1/userSignUp", async (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, saltRounds);
 
   try {
-    const result = await db.createUser(
+    const result = await userdb.createUser(
       username,
       hashedPassword,
       email,
@@ -237,7 +238,7 @@ app.get("/api/v1/users/:username/:password", async (req, res) => {
   const { username, password } = req.params;
 
   try {
-    const result = await db.getUserByUsername(username);
+    const result = await admindb.getUserByUsername(username);
 
     if (bcrypt.compareSync(password, result.password)) {
       res.status(201).json({
@@ -257,11 +258,11 @@ app.get("/api/v1/users/:username/:password", async (req, res) => {
     console.log(error.message);
   }
 });
-=======
+
 // Admin CRUD operations
 app.get("/api/v1/admins", async (req, res) => {
   try {
-    const admins = await db.getAdmins();
+    const admins = await admindb.getAdmins();
     res.status(200).json({
       status: "success",
       data: {
@@ -278,7 +279,7 @@ app.get("/api/v1/admins", async (req, res) => {
 app.get("/api/v1/admins/adminId/:adminId", async (req, res) => {
   try {
     console.log("Getting admin with adminId: " + req.params.adminId);
-    const admin = await db.getAdminById(req.params.adminId);
+    const admin = await admindb.getAdminById(req.params.adminId);
     res.status(200).json({
       status: "success",
       data: {
@@ -294,7 +295,7 @@ app.get("/api/v1/admins/adminId/:adminId", async (req, res) => {
 
 app.get("/api/v1/admins/username/:username", async (req, res) => {
   try {
-    const admin = await db.getAdminByUsername(req.params.username);
+    const admin = await admindb.getAdminByUsername(req.params.username);
 
     if (admin) {
       res.status(200).json({
@@ -318,7 +319,7 @@ app.post("/api/v1/admins", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const admin = await db.createAdmin(username, password);
+    const admin = await admindb.createAdmin(username, password);
 
     // Send the newly created user as the response
     res.status(201).json({
@@ -336,7 +337,7 @@ app.post("/api/v1/admins", async (req, res) => {
 
 app.put("/api/v1/admins/:adminId", async (req, res) => {
   try {
-    const admin = await db.updateAdmin(
+    const admin = await admindb.updateAdmin(
       req.params.adminId,
       req.body.username,
       req.body.password
@@ -362,7 +363,7 @@ app.put("/api/v1/admins/:adminId", async (req, res) => {
 app.delete("/api/v1/admins/:adminId", async (req, res) => {
   const adminId = req.params.adminId;
   try {
-    const admin = await db.deleteAdmin(adminId);
+    const admin = await admindb.deleteAdmin(adminId);
 
     if (admin) {
       res.status(200).json({
@@ -381,7 +382,3 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-
-// Auth functionalities
-app.post("/api/v1/signIn", auth.SignIn);
-app.post("/api/v1/signUp", auth.SignUp);
