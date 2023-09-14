@@ -10,8 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { useSignIn } from "react-auth-kit";
 import { styles } from "./styles";
 
-// TODO remove, this demo shouldn't need to reset the theme.
-
 export default function SignIn() {
   const navigate = useNavigate();
   const signIn = useSignIn();
