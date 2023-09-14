@@ -3,6 +3,18 @@ import Button from "@mui/material/Button";
 import Sidebar from "./sidebar";
 import { styles } from "./styles";
 import { ThemeProvider } from "@mui/material/styles";
+import {
+  Box,
+  Toolbar,
+  Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Input,
+  InputAdornment,
+  FilledInput,
+} from "@mui/material";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 
 const Users = () => {
   return (
@@ -12,14 +24,28 @@ const Users = () => {
         <Sidebar />
 
         {/* Content */}
-        <div style={{ marginLeft: "240px", padding: "16px" }}>
-          {/* Add your content here */}
-          <h1>Welcome to the Home Page</h1>
-          <p>This is additional content alongside the sidebar.</p>
-          <Button variant="contained" color="primary">
-            Click Me
-          </Button>
-        </div>
+        <Box
+          component="main"
+          sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
+        >
+          <Toolbar />
+          <h1>Users</h1>
+
+          {/* Search Bar */}
+          <TextField
+            id="input-with-icon-textfield"
+            size="small"
+            placeholder="Search"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchOutlinedIcon />
+                </InputAdornment>
+              ),
+            }}
+            variant="filled"
+          />
+        </Box>
       </div>
     </ThemeProvider>
   );

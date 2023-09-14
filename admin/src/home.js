@@ -3,14 +3,17 @@ import Button from "@mui/material/Button";
 import Sidebar from "./sidebar";
 import { styles } from "./styles";
 import { ThemeProvider } from "@mui/material/styles";
-
+import { Box } from "@mui/material";
 const Home = () => {
   return (
-    <div>
-      <ThemeProvider theme={styles.shareCoTheme}>
-        <Sidebar></Sidebar>
-      </ThemeProvider>
-    </div>
+    <ThemeProvider theme={styles.shareCoTheme}>
+      <div style={{ display: "flex" }}>
+        {/* Sidebar */}
+        <Sidebar />
+
+        {/* Content */}
+      </div>
+    </ThemeProvider>
   );
 };
 
