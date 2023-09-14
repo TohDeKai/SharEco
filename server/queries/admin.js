@@ -9,23 +9,23 @@ const pool = new Pool({
   port: process.env.PGPORT,
 });
 
-// Get all users
-const getUsers = async () => {
+// Get all admin
+const getAdmins = async () => {
   try {
-    const result = await pool.query('SELECT * FROM "sharEco-schema"."account"');
+    const result = await pool.query('SELECT * FROM "sharEco-schema"."admin"');
     return result.rows;
   } catch (err) {
     throw err;
   }
 };
 
-//Get a user by ID
-const getUserById = async (userId) => {
+//Get a admin by ID
+const getAdminById = async (adminId) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."account" 
-    WHERE "accountId" = $1`,
-      [userId]
+      `SELECT * FROM "sharEco-schema"."admin" 
+    WHERE "adminId" = $1`,
+      [adminId]
     );
     return result.rows[0];
   } catch (err) {
@@ -33,11 +33,11 @@ const getUserById = async (userId) => {
   }
 };
 
-// Get user by username
-const getUserByUsername = async (username) => {
+// Get admin by username
+const getAdminByUsername = async (username) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."account" 
+      `SELECT * FROM "sharEco-schema"."admin" 
       WHERE username = $1`,
       [username]
     );
@@ -47,11 +47,11 @@ const getUserByUsername = async (username) => {
   }
 };
 
-// Create a user
-const createUser = async (username, password) => {
+// Create an admin
+const createAdmin = async (username, password) => {
   try {
     const result = await pool.query(
-      `INSERT INTO "sharEco-schema"."account" 
+      `INSERT INTO "sharEco-schema"."admin" 
       (username, password) values ($1, $2) returning *`,
       [username, password]
     );
@@ -61,16 +61,16 @@ const createUser = async (username, password) => {
   }
 };
 
-// Update user
-const updateUser = async (userId, username, password) => {
+// Update admin
+const updateAdmin = async (adminId, username, password) => {
   try {
     const result = await pool.query(
-      `UPDATE "sharEco-schema"."account" 
+      `UPDATE "sharEco-schema"."admin" 
       SET username = $1, 
-      password = $2 
-      WHERE "accountId" = $3
+      password = $2
+      WHERE "adminId" = $3
       RETURNING *`,
-      [username, password, userId]
+      [username, password, adminId]
     );
     return result.rows[0];
   } catch (err) {
@@ -78,14 +78,14 @@ const updateUser = async (userId, username, password) => {
   }
 };
 
-// Delete user
-const deleteUser = async (userId) => {
+// Delete admin
+const deleteAdmin = async (adminId) => {
   try {
     const result = await pool.query(
-      `DELETE FROM "sharEco-schema"."account" 
-      WHERE "accountId" = $1
+      `DELETE FROM "sharEco-schema"."admin" 
+      WHERE "adminId" = $1
       RETURNING *`,
-      [userId]
+      [adminId]
     );
     return result.rows[0];
   } catch (err) {
@@ -94,10 +94,10 @@ const deleteUser = async (userId) => {
 };
 
 module.exports = {
-  getUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser,
-  getUserByUsername,
+  getAdmins,
+  getAdminById,
+  createAdmin,
+  updateAdmin,
+  deleteAdmin,
+  getAdminByUsername,
 };
