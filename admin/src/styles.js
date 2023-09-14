@@ -1,11 +1,15 @@
 import { createTheme } from "@mui/material/styles";
 import { styled } from "@mui/system";
+import "./style.css";
 
 const shareCoTheme = createTheme({
   palette: {
     primary: {
       main: "#419682",
     },
+  },
+  typography: {
+    fontFamily: ["Plus Jakarta Sans", "Roboto"].join(","),
   },
 });
 
