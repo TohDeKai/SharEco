@@ -2,6 +2,7 @@ import React from "react";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { useSignOut } from "react-auth-kit";
+import Sidebar from "./sidebar";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -14,7 +15,9 @@ const Home = () => {
 
   return (
     <div>
+      <Sidebar></Sidebar>
       <h1>Welcome</h1>
+
       <Button
         variant="contained"
         color="primary"
