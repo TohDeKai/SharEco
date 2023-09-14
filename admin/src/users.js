@@ -43,7 +43,7 @@ const Users = () => {
                 </InputAdornment>
               ),
             }}
-            variant="filled"
+            variant="outlined"
           />
         </Box>
       </div>
