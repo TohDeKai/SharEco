@@ -88,6 +88,7 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
   }
 });
 
+// Updating user based on userId
 app.put("/api/v1/users/:userId", async (req, res) => {
   try {
     const user = await userdb.updateUser(
@@ -113,6 +114,7 @@ app.put("/api/v1/users/:userId", async (req, res) => {
   }
 });
 
+// Creating new user
 app.post("/api/v1/users", async (req, res) => {
   const {
     username,
@@ -147,13 +149,11 @@ app.post("/api/v1/users", async (req, res) => {
   }
 });
 
+// Updating user based on username
 app.put("/api/v1/users/username/:username", async (req, res) => {
-  const { username } = req.params;
-  const { email, contactNumber } = req.body;
-
   try {
     const user = await userdb.updateUser(
-      req.params.userId,
+      req.params.username,
       req.body.username,
       req.body.password,
       req.body.email,
@@ -382,7 +382,3 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-
-// Auth functionalities
-app.post("/api/v1/signIn", auth.SignIn);
-app.post("/api/v1/signUp", auth.SignUp);
