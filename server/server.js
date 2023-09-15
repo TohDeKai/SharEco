@@ -4,6 +4,7 @@ const express = require("express");
 const morgan = require("morgan");
 const userdb = require("./queries/user");
 const admindb = require("./queries/admin");
+const listingdb = require("./queries/listing");
 const auth = require("./auth.js");
 const app = express();
 const cors = require("cors");
@@ -380,5 +381,155 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
     // Handle the error here if needed
     console.log(err);
     res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Create item
+app.post("/api/v1/items", async (req, res) => {
+  const {
+    userId,
+    itemTitle,
+    itemDescription,
+    itemOriginalPrice,
+    rentalRateHourly,
+    rentalRateDaily,
+    depositFee,
+    images,
+    category,
+    collectionLocations,
+  } = req.body;
+
+  try {
+    const item = await listingdb.createItem(
+      userId,
+      itemTitle,
+      itemDescription,
+      itemOriginalPrice,
+      rentalRateHourly,
+      rentalRateDaily,
+      depositFee,
+      images,
+      category,
+      collectionLocations
+    );
+
+    // Send the newly created user as the response
+    res.status(201).json({
+      status: "success",
+      data: {
+        item: item,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Update item
+app.put("/api/v1/items/itemId/:itemId", async (req, res) => { 
+  try {
+    const item = await listingdb.updateItem(
+      req.params.itemId,
+      req.body.itemTitle,
+      req.body.itemDescription,
+      req.body.itemOriginalPrice,
+      req.body.rentalRateHourly,
+      req.body.rentalRateDaily,
+      req.body.depositFee,
+      req.body.images,
+      req.body.category,
+      req.body.collectionLocations,
+    );
+
+    if (item) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          item: item,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Delete item
+//Disabling item
+app.put("/api/v1/items/:itemId", async (req, res) => {
+  try {
+    const item = await listingdb.disableItem(
+      req.params.itemId,
+      req.body.disabled,
+    );
+
+    if (item) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          item: item,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get item
+app.get("/api/v1/items/itemId/:itemId", async (req, res) => {
+  const itemId = req.params.itemId;
+
+  try {
+    const item = await listingdb.getItemByItemId(itemId);
+
+    if (item) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          item: item,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+//Get items by user id
+app.get("/api/v1/items/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const items = await listingdb.getItemsByUserId(userId);
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    console.log(error.message);
   }
 });
