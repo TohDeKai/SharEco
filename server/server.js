@@ -533,3 +533,7 @@ app.get("/api/v1/items/:userId", async (req, res) => {
     console.log(error.message);
   }
 });
+
+// Auth functionalities
+app.post("/api/v1/admin/signIn", auth.AdminSignIn);
+app.post("/api/v1/admin/signUp", auth.AdminSignUp);
