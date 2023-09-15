@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const userdb = require("./queries/user");
 const admindb = require("./queries/admin");
 const auth = require("./auth.js");
+const userAuth = require("./userAuth");
 const app = express();
 const cors = require("cors");
 const bcrypt = require("bcrypt");
@@ -386,3 +387,5 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
 // Auth functionalities
 app.post("/api/v1/admin/signIn", auth.AdminSignIn);
 app.post("/api/v1/admin/signUp", auth.AdminSignUp);
+app.post("/api/v1/user/signIn", userAuth.UserSignIn);
+app.post("/api/v1/user/signUp", userAuth.UserSignUp);

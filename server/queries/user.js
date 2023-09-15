@@ -64,12 +64,12 @@ const getUserByUsernameAndPassword = async (username, password) => {
 // User will be created with isBanned = false, likedItem & wishList = []
 // Each user will not be banned and have an empty likedItem and wishList upon creation
 const createUser = async (
-  username,
   password,
   email,
   contactNumber,
   userPhotoUrl,
-  displayName
+  displayName,
+  username,
 ) => {
   try {
     const result = await pool.query(
@@ -80,7 +80,7 @@ const createUser = async (
         password,
         email,
         contactNumber,
-        userPhotoUrl,
+        "",
         false,
         [],
         [],
