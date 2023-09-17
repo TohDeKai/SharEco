@@ -35,75 +35,49 @@ export default function SignIn() {
   const handleSignIn = async (credentials) => {
     const username = credentials.username;
     const password = credentials.password;
+    console.log(username + " " + password);
 
     try {
-      const response = await axios.get(
-        `http://192.168.2.90:4000/api/v1/users/username/${username}`
+      const response = await axios.post(
+        `http://192.168.2.90:4000/api/v1/user/signIn`,
+        {
+          username,
+          password,
+        }
       );
-      const userDataByUsername = response.data.data.user;
-
-      if (response.status === 404) {
-        console.log("User not found");
-        setMessage("Invalid username");
-        setIsSuccessMessage(false);
-      } else {
-        const result = await axios.get(
-          `http://192.168.2.90:4000/api/v1/users/${username}/${password}`
+      console.log(response.status);
+      if (response.status == 200) {
+        const userDataResponse = await axios.get(
+          `http://192.168.2.90:4000/api/v1/users/username/${username}`
         );
-        const user = result.data.data.result;
-        if (result.status == 400) {
-          console.log("Wrong password");
-          setMessage("Invalid password");
-          setIsSuccessMessage(false);
+        if (userDataResponse.status === 200) {
+          // Successfully retrieved user data, useAuth to signIn with this user
+          const userData = userDataResponse.data.data.user;
+          console.log("User object: ", userData);
+          signIn(userData); // Update the user object in the state
         } else {
-          signIn(user);
+          //shouldnt come here
+          console.log("Failed to retrieve user data");
         }
       }
     } catch (error) {
-      console.log(error.message);
+      if (error.response && error.response.status === 404) {
+        // User not found
+        console.log("User not found");
+        setMessage("Invalid username");
+        setIsSuccessMessage(false);
+      } else if (error.response && error.response.status === 400) {
+        // Wrong password
+        console.log("Wrong password");
+        setMessage("Invalid password");
+        setIsSuccessMessage(false);
+      } else {
+        console.error("Error during login:", error);
+        setMessage("Error: " + error);
+        setIsSuccessMessage(false);
+      }
     }
   };
-
-  // try {
-  //   //IF YOUR NETWORK IP ADDRESS IS DIFFERENT, CHANGE THIS
-  //   const response = await axios.get(
-  //     `http://192.168.2.90:4000/api/v1/users/${username}/${password}`
-  //   );
-
-  //   if (response.status === 200) {
-  //     // Successful login, get user data
-  //     const userDataResponse = await axios.get(
-  //       `http://192.168.2.90:4000/api/v1/users/username/${username}`
-  //     );
-
-  //     if (userDataResponse.status === 200) {
-  //       // Successfully retrieved user data, useAuth to signIn with this user
-  //       const userData = userDataResponse.data.data.user;
-  //       console.log("User object: ", userData);
-  //       signIn(userData); // Update the user object in the state
-  //     } else {
-  //       //shouldnt come here
-  //       console.log("Failed to retrieve user data");
-  //     }
-  //   }
-  // } catch (error) {
-  //   if (error.response && error.response.status === 404) {
-  //     // User not found
-  //     console.log("User not found");
-  //     setMessage("Invalid username");
-  //     setIsSuccessMessage(false);
-  //   } else if (error.response && error.response.status === 400) {
-  //     // Wrong password
-  //     console.log("Wrong password");
-  //     setMessage("Invalid password");
-  //     setIsSuccessMessage(false);
-  //   } else {
-  //     console.error("Error during login:", error);
-  //     setMessage("Error: " + error);
-  //     setIsSuccessMessage(false);
-  //   }
-  // }
-  // };
 
   return (
     <SafeAreaContainer>

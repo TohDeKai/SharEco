@@ -64,28 +64,17 @@ const getUserByUsernameAndPassword = async (username, password) => {
 // User will be created with isBanned = false, likedItem & wishList = []
 // Each user will not be banned and have an empty likedItem and wishList upon creation
 const createUser = async (
-  username,
   password,
   email,
   contactNumber,
-  userPhotoUrl,
-  displayName
+  displayName,
+  username
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."user" 
         (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName") values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
-      [
-        username,
-        password,
-        email,
-        contactNumber,
-        userPhotoUrl,
-        false,
-        [],
-        [],
-        displayName,
-      ]
+      [username, password, email, contactNumber, "", false, [], [], displayName]
     );
     return result.rows[0];
   } catch (error) {
@@ -95,7 +84,6 @@ const createUser = async (
 
 // Update user
 const updateUser = async (
-  userId,
   username,
   password,
   email,
@@ -118,7 +106,7 @@ const updateUser = async (
       "likedItem" = $7,
       "wishList" = $8,
       "displayName" = $9
-      WHERE "userId" = $10
+      WHERE "username" = $1
       RETURNING *`,
       [
         username,
@@ -130,7 +118,6 @@ const updateUser = async (
         likedItem,
         wishList,
         displayName,
-        userId,
       ]
     );
     return result.rows[0];

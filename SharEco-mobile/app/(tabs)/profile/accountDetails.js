@@ -57,8 +57,14 @@ const accountDetails = () => {
   const handleSave = async (details) => {
     const username = user.username;
     const newDetails = {
+      password: user.password,
       email: details.email,
       contactNumber: details.phoneNumber,
+      userPhotoUrl: user.userPhotoUrl,
+      isBanned: user.isBanned,
+      likedItem: user.likedItem,
+      wishList: user.wishList,
+      displayName: user.displayName,
     };
 
     try {

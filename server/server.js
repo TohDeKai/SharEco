@@ -6,6 +6,7 @@ const userdb = require("./queries/user");
 const admindb = require("./queries/admin");
 const listingdb = require("./queries/listing");
 const auth = require("./auth.js");
+const userAuth = require("./userAuth");
 const app = express();
 const cors = require("cors");
 const bcrypt = require("bcrypt");
@@ -155,7 +156,6 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
   try {
     const user = await userdb.updateUser(
       req.params.username,
-      req.body.username,
       req.body.password,
       req.body.email,
       req.body.contactNumber,
@@ -537,3 +537,5 @@ app.get("/api/v1/items/:userId", async (req, res) => {
 // Auth functionalities
 app.post("/api/v1/admin/signIn", auth.AdminSignIn);
 app.post("/api/v1/admin/signUp", auth.AdminSignUp);
+app.post("/api/v1/user/signIn", userAuth.UserSignIn);
+app.post("/api/v1/user/signUp", userAuth.UserSignUp);
