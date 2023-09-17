@@ -7,7 +7,7 @@ const saltRounds = 12;
 const UserSignIn = async (req, res) => {
   const { username, password } = req.body; // Destructure username and password from the request body
   //req.params.username = username;
-  console.log(username + " " + password)
+  console.log(username + " " + password);
   try {
     const user = await db.getUserByUsername(username); // Get the user data
     console.log(user);
@@ -56,7 +56,13 @@ const UserSignIn = async (req, res) => {
 const UserSignUp = async (req, res) => {
   try {
     const hashed = bcrypt.hashSync(req.body.password, saltRounds);
-    const user = db.createUser(hashed, req.body.email, req.body.contactNumber, displayName, req.body.username);
+    const user = db.createUser(
+      hashed,
+      req.body.email,
+      req.body.contactNumber,
+      req.body.displayName,
+      req.body.username
+    );
     if (user) {
       res.status(200).json({
         status: "success",

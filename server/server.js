@@ -155,7 +155,6 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
   try {
     const user = await userdb.updateUser(
       req.params.username,
-      req.body.username,
       req.body.password,
       req.body.email,
       req.body.contactNumber,
