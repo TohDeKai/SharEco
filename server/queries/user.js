@@ -73,8 +73,8 @@ const createUser = async (
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."user" 
-        (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName") values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
-      [username, password, email, contactNumber, "", false, [], [], displayName]
+        (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName", "aboutMe") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning *`,
+      [username, password, email, contactNumber, "", false, [], [], displayName, ""]
     );
     return result.rows[0];
   } catch (error) {

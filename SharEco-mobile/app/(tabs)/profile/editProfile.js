@@ -135,7 +135,7 @@ const accountSettings = () => {
                 />
                 <LabelledTextInput
                   label="About Me"
-                  placeholder={"Weneedtoretrievethis"}
+                  placeholder={user.aboutMe}
                   value={values.aboutMe}
                   onChangeText={handleChange("aboutMe")}
                   maxLength={100}
