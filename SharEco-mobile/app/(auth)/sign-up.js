@@ -58,16 +58,27 @@ export default function SignIn() {
         email: credentials.email,
         contactNumber: credentials.phoneNumber,
         displayName: credentials.displayName,
-        isBanned: false,
       };
       const response = await axios.post(
-        "http://192.168.2.90:4000/api/v1/userSignUp",
+        "http://192.168.2.90:4000/api/v1/user/signUp",
         userData
       );
+
       console.log(response.data);
-      router.push("/sign-in");
+
+      if (response.status === 200) {
+        console.log("User successfully signed up");
+        router.push("/sign-in");
+      } else {
+        //shouldnt come here
+        console.log("User sign up unsuccessful");
+      }
     } catch (error) {
-      console.log(error.message);
+      if (error.response && error.response.status === 500) {
+        console.log("Internal server error");
+      } else {
+        console.log("Error during sign up: ", error.message);
+      }
     }
   };
 
