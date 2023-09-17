@@ -86,7 +86,7 @@ const ProfileHeader = () => {
       </View>
       <View style={styles.headerWhite}>
         <RegularText typography="H3" style={{ marginTop: 60 }}>
-          Replace With Name
+          {user.displayName}
         </RegularText>
         <RegularText typography="Subtitle" style={{ marginTop: 5 }}>
           @{user.username}

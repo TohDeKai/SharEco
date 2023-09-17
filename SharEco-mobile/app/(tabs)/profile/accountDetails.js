@@ -69,7 +69,7 @@ const accountDetails = () => {
 
     try {
       const response = await axios.put(
-        `http://192.168.2.90:4000/api/v1/users/username/${username}`,
+        `http://172.20.10.2:4000/api/v1/users/username/${username}`,
         newDetails
       );
 

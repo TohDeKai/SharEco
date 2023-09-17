@@ -1,4 +1,4 @@
-import React, { useState }from "react";
+import React, { useState, useEffect }from "react";
 import { View, ScrollView, StyleSheet, Dimensions, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { useAuth } from "../../../context/auth";
 import { router } from "expo-router";
@@ -27,6 +27,23 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const accountSettings = () => {
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, []);
+
   const [message, setMessage] = useState("");
 	const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   //need to initialise image as the user's actual profilepic url
@@ -106,19 +123,19 @@ const accountSettings = () => {
               <View style={{ width: "85%"}}>
                 <LabelledTextInput
                   label="Name"
-                  placeholder="Weneedtoretrievethis"
+                  placeholder={user.displayName}
                   value={values.name}
                   onChangeText={handleChange("name")}
                 />
                 <LabelledTextInput
                   label="Username"
-                  placeholder="Weneedtoretrievethis"
+                  placeholder={user.username}
                   value={values.username}
                   onChangeText={handleChange("username")}
                 />
                 <LabelledTextInput
                   label="About Me"
-                  placeholder="Weneedtoretrievethis"
+                  placeholder={"Weneedtoretrievethis"}
                   value={values.aboutMe}
                   onChangeText={handleChange("aboutMe")}
                   maxLength={100}
