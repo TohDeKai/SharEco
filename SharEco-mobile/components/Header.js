@@ -1,26 +1,26 @@
 import { View, StyleSheet, Dimensions, Pressable } from 'react-native';
 import React from 'react';
 import { Ionicons } from "@expo/vector-icons";
-import RegularText from './text/RegularText';
-import { colours } from './ColourPalette';
+import RegularText from "./text/RegularText";
+import { colours } from "./ColourPalette";
 const { black } = colours;
 
 const viewportHeightInPixels = (percentage) => {
-	const screenHeight = Dimensions.get("window").height;
-	return (percentage / 100) * screenHeight;
+  const screenHeight = Dimensions.get("window").height;
+  return (percentage / 100) * screenHeight;
 };
 
 const viewportWidthInPixels = (percentage) => {
-	const screenWidth = Dimensions.get("window").width;
-	return (percentage / 100) * screenWidth;
+  const screenWidth = Dimensions.get("window").width;
+  return (percentage / 100) * screenWidth;
 };
 
 const Header = (props) => {
   let icon = "";
   if (props.action === "back") {
-    icon = "chevron-back-outline"
+    icon = "chevron-back-outline";
   } else if (props.action === "close") {
-    icon = "close"
+    icon = "close";
   }
   return (
     <View style={styles.headerContainer}>
@@ -34,8 +34,8 @@ const Header = (props) => {
     </Pressable>
       <RegularText typography="H2" style={styles.header}>{props.title}</RegularText>
     </View>
-  )
-}
+  );
+};
 
 export default Header;
 
@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
     paddingTop: 17,
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     left: 15,
     top: 17,
   },
-})
+});

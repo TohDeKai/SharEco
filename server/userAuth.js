@@ -1,29 +1,31 @@
-const db = require("./queries/admin");
+const db = require("./queries/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
 
-// Sign in for admin portal
-const AdminSignIn = async (req, res) => {
+// Sign in for user portal
+const UserSignIn = async (req, res) => {
   const { username, password } = req.body; // Destructure username and password from the request body
-  req.params.username = username;
+  //req.params.username = username;
+  console.log(username + " " + password);
   try {
-    const admin = await db.getAdminByUsername(username); // Get the admin data
-    console.log(admin);
-    if (!admin) {
-      // If the admin is not found, send a 404 response
+    const user = await db.getUserByUsername(username); // Get the user data
+    console.log(user);
+    console.log("DEBUG " + username + " " + password);
+    if (!user) {
+      // If the user is not found, send a 404 response
       return res.status(404).json({
         status: "error",
-        message: "Admin not found",
+        message: "User not found",
       });
     }
 
-    if (bcrypt.compareSync(password, admin.password)) {
+    if (bcrypt.compareSync(password, user.password)) {
       // If the passwords match, send a success response
       const jwtToken = jwt.sign(
         {
-          id: admin.id,
-          username: admin.username,
+          id: user.id,
+          username: user.username,
         },
         process.env.JWT_SECRET
       );
@@ -50,16 +52,22 @@ const AdminSignIn = async (req, res) => {
   }
 };
 
-// Sign up for admin portal
-const AdminSignUp = async (req, res) => {
+// Sign up for user portal NOT DONE
+const UserSignUp = async (req, res) => {
   try {
     const hashed = bcrypt.hashSync(req.body.password, saltRounds);
-    const admin = db.createAdmin(req.body.username, hashed);
-    if (admin) {
+    const user = db.createUser(
+      hashed,
+      req.body.email,
+      req.body.contactNumber,
+      req.body.displayName,
+      req.body.username
+    );
+    if (user) {
       res.status(200).json({
         status: "success",
         message: "Signed up successfully",
-        data: admin,
+        data: user,
       });
     }
   } catch (err) {
@@ -73,6 +81,6 @@ const AdminSignUp = async (req, res) => {
 };
 
 module.exports = {
-  AdminSignIn,
-  AdminSignUp,
+  UserSignIn,
+  UserSignUp,
 };

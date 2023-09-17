@@ -222,19 +222,11 @@ const createListing = () => {
                   scrollEnabled={false}
                   height={80}
                 />
-                <RegularText
-                  typography="Subtitle"
-                  style={{ alignSelf: "center" }}
-                >
-                  Already have an account?{" "}
+                <RegularText typography="Subtitle" style={{alignSelf: "center", marginTop: 10}}>
+                  By proceeding, you are agreeing to our{" "}
                   <Link href="/termsAndConditionsModal">
-                    <Text
-                      style={{
-                        color: primary,
-                        textDecorationLine: "underline",
-                      }}
-                    >
-                      Log in
+                    <Text style={{ color: primary, textDecorationLine: "underline" }}>
+                      terms & conditions
                     </Text>
                   </Link>
                 </RegularText>
