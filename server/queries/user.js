@@ -84,7 +84,8 @@ const createUser = async (
 
 // Update user
 const updateUser = async (
-  username,
+  oldUsername,
+  newUsername,
   password,
   email,
   contactNumber,
@@ -92,24 +93,27 @@ const updateUser = async (
   isBanned,
   likedItem,
   wishList,
-  displayName
+  displayName,
+  aboutMe
 ) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."user" 
-      SET username = $1, 
-      password = $2,
-      email = $3,
-      "contactNumber" = $4,
-      "userPhotoUrl" = $5,
-      "isBanned" = $6,
-      "likedItem" = $7,
-      "wishList" = $8,
-      "displayName" = $9
+      SET username = $2, 
+      password = $3,
+      email = $4,
+      "contactNumber" = $5,
+      "userPhotoUrl" = $6,
+      "isBanned" = $7,
+      "likedItem" = $8,
+      "wishList" = $9,
+      "displayName" = $10,
+      "aboutMe" = $11
       WHERE "username" = $1
       RETURNING *`,
       [
-        username,
+        oldUsername,
+        newUsername,
         password,
         email,
         contactNumber,
@@ -118,6 +122,7 @@ const updateUser = async (
         likedItem,
         wishList,
         displayName,
+        aboutMe,
       ]
     );
     return result.rows[0];

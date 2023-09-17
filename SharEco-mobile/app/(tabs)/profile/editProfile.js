@@ -4,6 +4,7 @@ import { useAuth } from "../../../context/auth";
 import { router } from "expo-router";
 import * as ImagePicker from 'expo-image-picker';
 import { Formik } from "formik";
+import axios from "axios";
 
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -76,13 +77,38 @@ const accountSettings = () => {
     console.log("Opening gallery");
     pickImage();
   }
-  const handleSave = (details) => {
-    console.log("Im supposed to save the changes to db! ")
-    //PUT operations to update profile details.name, details.username, details.aboutMe
-    //PUT operations to update image upload
-    //if no issue, redirect
-    router.back();
-  }
+  const handleSave = async(details) => {
+    const username = user.username;
+    const newDetails = {
+      username: details.username, //changed
+      password: user.password,
+      email: user.email,
+      contactNumber: user.contactNumber,
+      userPhotoUrl: user.userPhotoUrl, //toChange
+      isBanned: user.isBanned,
+      likedItem: user.likedItem,
+      wishList: user.wishList,
+      displayName: details.name, //changed
+      aboutMe: details.aboutMe // changed
+    };
+
+    try {
+      const response = await axios.put(
+        `http://172.20.10.2:4000/api/v1/users/username/${username}`,
+        newDetails
+      );
+
+      console.log(response.data);
+
+      if (response.status === 200) {
+        router.back();
+      } else {
+        console.log("Unable to update Account Details");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   return (
     <SafeAreaContainer>
