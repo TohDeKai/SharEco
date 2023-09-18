@@ -60,7 +60,7 @@ export default function SignIn() {
         displayName: credentials.displayName,
       };
       const response = await axios.post(
-        "http://192.168.2.90:4000/api/v1/user/signUp",
+        "http://172.20.10.2:4000/api/v1/user/signUp",
         userData
       );
 

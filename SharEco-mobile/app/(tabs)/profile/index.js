@@ -86,14 +86,13 @@ const ProfileHeader = () => {
       </View>
       <View style={styles.headerWhite}>
         <RegularText typography="H3" style={{ marginTop: 60 }}>
-          Replace With Name
+          {user.displayName}
         </RegularText>
         <RegularText typography="Subtitle" style={{ marginTop: 5 }}>
           @{user.username}
         </RegularText>
         <RegularText typography="Subtitle" style={{ marginTop: 5 }}>
-          This is the bio. Lorem Ipsum We need to limit the bio to xxx
-          characters to stop overflow. (100 max)
+          {user.aboutMe}
         </RegularText>
       </View>
       <View style={styles.avatarContainer}>

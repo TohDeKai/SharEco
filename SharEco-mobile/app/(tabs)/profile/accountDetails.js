@@ -57,19 +57,21 @@ const accountDetails = () => {
   const handleSave = async (details) => {
     const username = user.username;
     const newDetails = {
+      username: user.username,
       password: user.password,
-      email: details.email,
-      contactNumber: details.phoneNumber,
+      email: details.email, //changed
+      contactNumber: details.phoneNumber, //changed
       userPhotoUrl: user.userPhotoUrl,
       isBanned: user.isBanned,
       likedItem: user.likedItem,
       wishList: user.wishList,
       displayName: user.displayName,
+      aboutMe: user.aboutMe,
     };
 
     try {
       const response = await axios.put(
-        `http://192.168.2.90:4000/api/v1/users/username/${username}`,
+        `http://172.20.10.2:4000/api/v1/users/username/${username}`,
         newDetails
       );
 
