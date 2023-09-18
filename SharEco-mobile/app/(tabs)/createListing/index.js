@@ -205,11 +205,24 @@ const createListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Rental Rates
                 </RegularText>
+                <View style={styles.perDayContainer}>
+                  <RegularText typography="B2" style={styles.perDayText}>Per hour</RegularText>
+                  <StyledTextInput
+                    property1="money"
+                    property2="inactive"
+                    placeholder="0.00"
+                    keyboardType="numeric"
+                    style={styles.perDayInputBox}
+                  />
+                </View>
 
                 <RegularText typography="H3" style={styles.headerText}>
                   Collection & return location
                 </RegularText>
-                <MultipleDropdownList data={locations} setSelected={(val) => setSelectedList(val)}/>
+                <MultipleDropdownList
+                  data={locations}
+                  setSelected={(val) => setSelectedList(val)}
+                />
                 <RegularText typography="B2" style={styles.headerText}>
                   Other meet up location
                 </RegularText>
@@ -222,10 +235,18 @@ const createListing = () => {
                   scrollEnabled={false}
                   height={80}
                 />
-                <RegularText typography="Subtitle" style={{alignSelf: "center", marginTop: 10}}>
+                <RegularText
+                  typography="Subtitle"
+                  style={{ alignSelf: "center", marginTop: 10 }}
+                >
                   By proceeding, you are agreeing to our{" "}
                   <Link href="/termsAndConditionsModal">
-                    <Text style={{ color: primary, textDecorationLine: "underline" }}>
+                    <Text
+                      style={{
+                        color: primary,
+                        textDecorationLine: "underline",
+                      }}
+                    >
                       terms & conditions
                     </Text>
                   </Link>
@@ -275,4 +296,20 @@ const styles = StyleSheet.create({
   imageCarousel: {
     gap: 10,
   },
+  perDayContainer: {
+    flexDirection:"row",
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "space-between",
+    position: "relative",
+    width: 328,
+  },
+  perDayText:{
+    position: "relative",
+    width: "fit-content"
+  },
+  perDayInputBox:{
+    display: "flex !important",
+    width: "134 !important",
+  }
 });

@@ -39,7 +39,7 @@ export default function SignIn() {
 
     try {
       const response = await axios.post(
-        `http://192.168.2.90:4000/api/v1/user/signIn`,
+        `http://172.20.10.3:4000/api/v1/user/signIn`,
         {
           username,
           password,
@@ -48,7 +48,7 @@ export default function SignIn() {
       console.log(response.status);
       if (response.status == 200) {
         const userDataResponse = await axios.get(
-          `http://192.168.2.90:4000/api/v1/users/username/${username}`
+          `http://172.20.10.3:4000/api/v1/users/username/${username}`
         );
         if (userDataResponse.status === 200) {
           // Successfully retrieved user data, useAuth to signIn with this user
