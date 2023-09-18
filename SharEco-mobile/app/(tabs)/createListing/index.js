@@ -176,20 +176,6 @@ const createListing = () => {
                 />
 
                 <RegularText typography="H3" style={styles.headerText}>
-                  Item Original Price
-                </RegularText>
-                <StyledTextInput
-                  placeholder="Add your item's original price"
-                  value={values.originalPrice}
-                  onChangeText={handleChange("originalPrice")}
-                  maxLength={200}
-                  multiline={true}
-                  scrollEnabled={false}
-                  height={80}
-                  keyboardType="numeric"
-                />
-
-                <RegularText typography="H3" style={styles.headerText}>
                   Description
                 </RegularText>
                 <StyledTextInput
@@ -202,16 +188,39 @@ const createListing = () => {
                   height={120}
                 />
 
-                <RegularText typography="H3" style={styles.headerText}>
-                  Rental Rates
-                </RegularText>
                 <View style={styles.perDayContainer}>
-                  <RegularText typography="B2" style={styles.perDayText}>Per hour</RegularText>
+                  <RegularText typography="H3" style={styles.headerText}>
+                    Item Original Price
+                  </RegularText>
                   <StyledTextInput
-                    property1="money"
-                    property2="inactive"
                     placeholder="0.00"
-                    keyboardType="numeric"
+                    value={values.originalPrice}
+                    onChangeText={handleChange("originalPrice")}
+                    style={{width:134}}
+                    scrollEnabled={false}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+
+                <View style={styles.perDayContainer}>
+                  <RegularText typography="H3" style={styles.perDayText}>
+                    Hourly Rental Rate
+                  </RegularText>
+                  <StyledTextInput
+                    value={values.rentalRateHour}
+                    placeholder="0.00"
+                    keyboardType="decimal-pad"
+                    style={styles.perDayInputBox}
+                  />
+                </View>
+                <View style={styles.perDayContainer}>
+                  <RegularText typography="H3" style={styles.perDayText}>
+                    Daiy Rental Rate
+                  </RegularText>
+                  <StyledTextInput
+                    value={values.rentalRateDay}
+                    placeholder="0.00"
+                    keyboardType="decimal-pad"
                     style={styles.perDayInputBox}
                   />
                 </View>
@@ -302,14 +311,14 @@ const styles = StyleSheet.create({
     display: "flex",
     justifyContent: "space-between",
     position: "relative",
-    width: 328,
+    width: 364,
   },
   perDayText:{
     position: "relative",
     width: "fit-content"
   },
   perDayInputBox:{
-    display: "flex !important",
-    width: "134 !important",
+    justifyContent:"flex-end",
+    width: 134,
   }
 });
