@@ -32,6 +32,7 @@ const viewportWidthInPixels = (percentage) => {
 const accountDetails = () => {
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+  const { signIn } = useAuth();
 
   useEffect(() => {
     async function fetchUserData() {
@@ -71,16 +72,27 @@ const accountDetails = () => {
 
     try {
       const response = await axios.put(
-        `http://172.20.10.2:4000/api/v1/users/username/${username}`,
+        `http://192.168.2.90:4000/api/v1/users/username/${username}`,
         newDetails
       );
 
       console.log(response.data);
 
       if (response.status === 200) {
-        router.back();
-      } else {
-        console.log("Unable to update Account Details");
+        //update user
+        const userDataResponse = await axios.get(
+          `http://192.168.2.90:4000/api/v1/users/username/${username}`
+        );
+        if (userDataResponse.status === 200) {
+          // Successfully retrieved user data, useAuth to update this user
+          const userData = userDataResponse.data.data.user;
+          console.log("User object: ", userData);
+          signIn(userData); // Update the user object in the state
+          router.back();
+        } else {
+          //shouldnt come here
+          console.log("Failed to retrieve user data");
+        }
       }
     } catch (error) {
       console.log(error.message);
