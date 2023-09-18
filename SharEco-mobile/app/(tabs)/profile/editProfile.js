@@ -27,8 +27,9 @@ const viewportWidthInPixels = (percentage) => {
 	return (percentage / 100) * screenWidth;
 };
 
-const accountSettings = () => {
+const editProfile = () => {
   const [user, setUser] = useState("");
+  const { signIn } = useAuth();
   const { getUserData } = useAuth();
 
   useEffect(() => {
@@ -43,7 +44,7 @@ const accountSettings = () => {
       }
     }
     fetchUserData();
-  }, []);
+  }, [user]);
 
   const [message, setMessage] = useState("");
 	const [isSuccessMessage, setIsSuccessMessage] = useState("false");
@@ -101,9 +102,20 @@ const accountSettings = () => {
       console.log(response.data);
 
       if (response.status === 200) {
-        router.back();
-      } else {
-        console.log("Unable to update Account Details");
+        //update user
+        const userDataResponse = await axios.get(
+          `http://172.20.10.2:4000/api/v1/users/username/${details.username}`
+        );
+        if (userDataResponse.status === 200) {
+          // Successfully retrieved user data, useAuth to update this user
+          const userData = userDataResponse.data.data.user;
+          console.log("User object: ", userData);
+          signIn(userData); // Update the user object in the state
+          router.back();
+        } else {
+          //shouldnt come here
+          console.log("Failed to retrieve user data");
+        }
       }
     } catch (error) {
       console.log(error.message);
@@ -181,7 +193,7 @@ const accountSettings = () => {
   );
 };
 
-export default accountSettings;
+export default editProfile;
 
 const styles = StyleSheet.create({
   container: {

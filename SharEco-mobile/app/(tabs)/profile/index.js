@@ -45,7 +45,7 @@ const ProfileHeader = () => {
       }
     }
     fetchUserData();
-  }, []);
+  }, [user]);
 
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
