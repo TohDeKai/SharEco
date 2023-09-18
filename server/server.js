@@ -156,6 +156,7 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
   try {
     const user = await userdb.updateUser(
       req.params.username,
+      req.body.username,
       req.body.password,
       req.body.email,
       req.body.contactNumber,
@@ -163,7 +164,8 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
       req.body.isBanned,
       req.body.likedItem,
       req.body.wishList,
-      req.body.displayName
+      req.body.displayName,
+      req.body.aboutMe,
     );
 
     if (user) {

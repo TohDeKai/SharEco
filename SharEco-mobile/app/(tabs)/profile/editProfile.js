@@ -1,9 +1,10 @@
-import React, { useState }from "react";
+import React, { useState, useEffect }from "react";
 import { View, ScrollView, StyleSheet, Dimensions, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { useAuth } from "../../../context/auth";
 import { router } from "expo-router";
 import * as ImagePicker from 'expo-image-picker';
 import { Formik } from "formik";
+import axios from "axios";
 
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -27,6 +28,23 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const accountSettings = () => {
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, []);
+
   const [message, setMessage] = useState("");
 	const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   //need to initialise image as the user's actual profilepic url
@@ -59,13 +77,38 @@ const accountSettings = () => {
     console.log("Opening gallery");
     pickImage();
   }
-  const handleSave = (details) => {
-    console.log("Im supposed to save the changes to db! ")
-    //PUT operations to update profile details.name, details.username, details.aboutMe
-    //PUT operations to update image upload
-    //if no issue, redirect
-    router.back();
-  }
+  const handleSave = async(details) => {
+    const username = user.username;
+    const newDetails = {
+      username: details.username, //changed
+      password: user.password,
+      email: user.email,
+      contactNumber: user.contactNumber,
+      userPhotoUrl: user.userPhotoUrl, //toChange
+      isBanned: user.isBanned,
+      likedItem: user.likedItem,
+      wishList: user.wishList,
+      displayName: details.name, //changed
+      aboutMe: details.aboutMe // changed
+    };
+
+    try {
+      const response = await axios.put(
+        `http://172.20.10.2:4000/api/v1/users/username/${username}`,
+        newDetails
+      );
+
+      console.log(response.data);
+
+      if (response.status === 200) {
+        router.back();
+      } else {
+        console.log("Unable to update Account Details");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   return (
     <SafeAreaContainer>
@@ -106,19 +149,19 @@ const accountSettings = () => {
               <View style={{ width: "85%"}}>
                 <LabelledTextInput
                   label="Name"
-                  placeholder="Weneedtoretrievethis"
+                  placeholder={user.displayName}
                   value={values.name}
                   onChangeText={handleChange("name")}
                 />
                 <LabelledTextInput
                   label="Username"
-                  placeholder="Weneedtoretrievethis"
+                  placeholder={user.username}
                   value={values.username}
                   onChangeText={handleChange("username")}
                 />
                 <LabelledTextInput
                   label="About Me"
-                  placeholder="Weneedtoretrievethis"
+                  placeholder={user.aboutMe}
                   value={values.aboutMe}
                   onChangeText={handleChange("aboutMe")}
                   maxLength={100}
