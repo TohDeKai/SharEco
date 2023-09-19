@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Dimensions,
   Pressable,
+  FlatList,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
@@ -17,6 +18,8 @@ import { Rating } from "react-native-stock-star-rating";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
+import Listing from "../../../components/ListingCard";
+import axios from "axios";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 
 const viewportHeightInPixels = (percentage) => {
@@ -85,13 +88,17 @@ const ProfileHeader = () => {
         </Pressable>
       </View>
       <View style={styles.headerWhite}>
-        <RegularText typography="H3" style={{ marginTop: 60 }}>
+        <RegularText typography="H2" style={{ marginTop: 60 }}>
           {user.displayName}
         </RegularText>
-        <RegularText typography="Subtitle" style={{ marginTop: 5 }}>
+        <RegularText
+          typography="Subtitle"
+          style={{ marginTop: 5 }}
+          color={secondary}
+        >
           @{user.username}
         </RegularText>
-        <RegularText typography="Subtitle" style={{ marginTop: 5 }}>
+        <RegularText typography="Subtitle" style={{ marginTop: 8 }}>
           {user.aboutMe}
         </RegularText>
       </View>
@@ -148,6 +155,59 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   );
 };
 
+//THIS METHOD
+const Content = ({ activeTab }) => {
+  const [userItems, setUserItems] = useState();
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          const userId = userData.userId;
+          try {
+            const response = await axios.get(
+              `http://172.20.10.8:4000/api/v1/items/${userId}`
+            );
+            console.log(response.status);
+            if (response.status === 200) {
+              const items = response.data.data.items;
+              setUserItems(items);
+            } else {
+              //Shouldn't come here
+              console.log("Failed to retrieve user's items");
+            }
+          } catch (error) {
+            console.log("Error");
+          }
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, []);
+
+  const ListingCard = ({ item }) => {
+    console.log("ListingCard");
+    return <Listing item={item} />;
+  };
+
+  return (
+    <View style={{ flex: 1}}>
+      <FlatList
+        activeTab={activeTab}
+        data={userItems}
+        numColumns={2}
+		scrollsToTop={false}
+        renderItem={({ item }) => <ListingCard item={item} />}
+      />
+    </View>
+  );
+};
+
+//Main
 const profile = () => {
   const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState("Listings");
@@ -163,12 +223,11 @@ const profile = () => {
         <ProfileHeader />
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
       </View>
-      <ScrollView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <View style={styles.contentContainer}>
-          <Text>profile</Text>
-          <Text onPress={() => signOut()}>Sign Out</Text>
+          <Content />
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -227,9 +286,11 @@ const styles = StyleSheet.create({
     borderBottomColor: primary,
   },
   contentContainer: {
-    minHeight: viewportHeightInPixels(60) - 36,
+	flex: 1,
+    height: viewportHeightInPixels(100),
     width: viewportWidthInPixels(100),
     backgroundColor: white,
-    padding: 23,
+    paddingHorizontal: 27,
+    paddingBottom: 120,
   },
 });
