@@ -81,16 +81,16 @@ const editProfile = () => {
   const handleSave = async(details) => {
     const username = user.username;
     const newDetails = {
-      username: details.username, //changed
+      username: details.username || user.username, // Use the new value if provided, otherwise keep the original value
       password: user.password,
       email: user.email,
       contactNumber: user.contactNumber,
-      userPhotoUrl: user.userPhotoUrl, //toChange
+      userPhotoUrl: user.userPhotoUrl, // toChange
       isBanned: user.isBanned,
       likedItem: user.likedItem,
       wishList: user.wishList,
-      displayName: details.name, //changed
-      aboutMe: details.aboutMe // changed
+      displayName: details.name || user.displayName, // Use the new value if provided, otherwise keep the original value
+      aboutMe: details.aboutMe || user.aboutMe, // Use the new value if provided, otherwise keep the original value
     };
 
     try {
@@ -141,10 +141,41 @@ const editProfile = () => {
           <Formik
             initialValues={{
               //we need to get the existing data 
-              name: "",
-              username: "",
+              name: user.displayName,
+              username: user.username,
+              aboutMe: user.aboutMe,
             }}
             onSubmit={(values, { setSubmitting }) => {
+              //checks for changed fields
+              const changedFields = {};
+              if (values.name !== user.displayName) {
+                changedFields.name = values.name;
+              }
+              if (values.username !== user.username) {
+                changedFields.username = values.username;
+              }
+              if (values.aboutMe !== user.aboutMe) {
+                changedFields.aboutMe = values.aboutMe;
+              }
+
+              if (values.name == undefined) {
+                changedFields.name = user.displayName;
+              }
+              if (values.username == undefined) {
+                changedFields.username = user.username;
+              }
+              if (values.aboutMe == undefined) {
+                changedFields.aboutMe = user.aboutMe;
+              }
+
+              //this doesnt seem to actually get called but doesnt really affect functionality
+              if (Object.keys(changedFields).length === 0) {
+                setMessage("No fields have changed");
+                setIsSuccessMessage(false);
+                return;
+              }
+
+              //checks for empty fields
               if (
                 values.name == "" ||
                 values.username == "" ||
@@ -153,7 +184,7 @@ const editProfile = () => {
                 setMessage("Please fill in all fields");
                 setIsSuccessMessage(false);
               } else {
-                handleSave(values, setSubmitting);
+                handleSave(changedFields, setSubmitting);
               } 	
             }}	
           >
@@ -162,18 +193,21 @@ const editProfile = () => {
                 <LabelledTextInput
                   label="Name"
                   placeholder={user.displayName}
+                  defaultValue={user.displayName} 
                   value={values.name}
                   onChangeText={handleChange("name")}
                 />
                 <LabelledTextInput
                   label="Username"
                   placeholder={user.username}
+                  defaultValue={user.username}
                   value={values.username}
                   onChangeText={handleChange("username")}
                 />
                 <LabelledTextInput
                   label="About Me"
                   placeholder={user.aboutMe}
+                  defaultValue={user.aboutMe}
                   value={values.aboutMe}
                   onChangeText={handleChange("aboutMe")}
                   maxLength={100}

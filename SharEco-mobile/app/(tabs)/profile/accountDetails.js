@@ -60,8 +60,8 @@ const accountDetails = () => {
     const newDetails = {
       username: user.username,
       password: user.password,
-      email: details.email, //changed
-      contactNumber: details.phoneNumber, //changed
+      email: details.email || user.email, // Use the new value if provided, otherwise keep the original value
+      contactNumber: details.phoneNumber || user.contactNumber, // Use the new value if provided, otherwise keep the original value
       userPhotoUrl: user.userPhotoUrl,
       isBanned: user.isBanned,
       likedItem: user.likedItem,
@@ -104,18 +104,38 @@ const accountDetails = () => {
       <Header title="Account Details" action="close" onPress={handleBack} />
       <Formik
         initialValues={{
-          email: "",
-          phoneNumber: "",
+          email: user.email,
+          phoneNumber: user.phoneNumber,
         }}
         onSubmit={(values, { setSubmitting }) => {
-          if (values.email == "" || values.phoneNumber == "") {
-            setMessage("Please fill in all fields");
-            setIsSuccessMessage(false);
-          } else if (values.phoneNumber.length != 8) {
+          const changedFields = {};
+          if (values.email !== user.email) {
+            changedFields.email = values.email;
+          }
+          if (values.phoneNumber !== user.phoneNumber) {
+            changedFields.phoneNumber = values.phoneNumber;
+          }
+
+          // Check if phoneNumber is defined and has a length property
+          if (typeof values.phoneNumber !== 'undefined' && values.phoneNumber.length !== 8) {
             setMessage("Phone number must be 8 digits long");
             setIsSuccessMessage(false);
+            return;
+          }
+
+          //this doesnt seem to actually get called but doesnt really affect functionality
+          if (Object.keys(changedFields).length === 0) {
+            setMessage("No fields have changed");
+            setIsSuccessMessage(false);
+            return;
+          }
+
+          //checks for empty fields
+          if (values.email === "" || (typeof values.phoneNumber !== 'undefined' && values.phoneNumber === "")) {
+            setMessage("Please fill in all fields");
+            setIsSuccessMessage(false);
           } else {
-            handleSave(values, setSubmitting);
+            handleSave(changedFields, setSubmitting);
           }
         }}
       >
@@ -126,6 +146,7 @@ const accountDetails = () => {
                 label="Email"
                 placeholder={user.email}
                 keyboardType="email-address"
+                defaultValue={user.email}
                 value={values.email}
                 onChangeText={handleChange("email")}
               />
@@ -134,6 +155,7 @@ const accountDetails = () => {
                 placeholder={user.contactNumber}
                 keyboardType="number-pad"
                 returnKeyType="done"
+                defaultValue={user.contactNumber}
                 value={values.phoneNumber}
                 onChangeText={handleChange("phoneNumber")}
               />
