@@ -118,7 +118,7 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   return (
     <View
       style={
-        styles.cstickyHeader ? styles.stickyTabContainer : styles.tabContainer
+        styles.stickyHeader ? styles.stickyTabContainer : styles.tabContainer
       }
     >
       <Pressable
@@ -200,7 +200,7 @@ const Content = ({ activeTab }) => {
         activeTab={activeTab}
         data={userItems}
         numColumns={2}
-		scrollsToTop={false}
+		    scrollsToTop={false}
         renderItem={({ item }) => <ListingCard item={item} />}
       />
     </View>
@@ -286,11 +286,8 @@ const styles = StyleSheet.create({
     borderBottomColor: primary,
   },
   contentContainer: {
-	flex: 1,
-    height: viewportHeightInPixels(100),
-    width: viewportWidthInPixels(100),
+	  flex: 1,
     backgroundColor: white,
     paddingHorizontal: 27,
-    paddingBottom: 120,
   },
 });
