@@ -78,11 +78,8 @@ const changePassword = () => {
       const comparisionResponse = await axios.get(
         `http://${BASE_URL}:4000/api/v1/users/${username}/${oldPassword}`
       );
-
-      if (comparisionResponse.status !== 201) {
-        console.log("Invalid old password");
-        setMessage("Invalid old password");
-      } else {
+      //change password if old password is correct
+      if (comparisionResponse.status === 201) {
         const response = await axios.put(
           `http://${BASE_URL}:4000/api/v1/users/username/changePassword/${username}`,
           newDetails
@@ -108,7 +105,14 @@ const changePassword = () => {
         }
       }
     } catch (error) {
-      console.log(error.message);
+      if (error.response && error.response.status === 400) {
+        // wrong password
+        console.log("Invalid old password");
+        setMessage("Invalid old password");
+        setIsSuccessMessage(false);
+      } else {
+        console.log("Error changing password: " + error.message);
+      }
     }
   };
 
