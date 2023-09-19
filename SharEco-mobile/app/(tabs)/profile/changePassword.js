@@ -19,6 +19,8 @@ import { colours } from "../../../components/ColourPalette";
 import axios from "axios";
 const { black, white, primary } = colours;
 
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
   return (percentage / 100) * screenHeight;
@@ -74,7 +76,7 @@ const changePassword = () => {
 
     try {
       const comparisionResponse = await axios.get(
-        `http://192.168.2.90:4000/api/v1/users/${username}/${oldPassword}`
+        `http://${BASE_URL}:4000/api/v1/users/${username}/${oldPassword}`
       );
 
       if (comparisionResponse.status !== 201) {
@@ -82,7 +84,7 @@ const changePassword = () => {
         setMessage("Invalid old password");
       } else {
         const response = await axios.put(
-          `http://192.168.2.90:4000/api/v1/users/username/changePassword/${username}`,
+          `http://${BASE_URL}:4000/api/v1/users/username/changePassword/${username}`,
           newDetails
         );
 
@@ -91,7 +93,7 @@ const changePassword = () => {
         if (response.status === 200) {
           //update user
           const userDataResponse = await axios.get(
-            `http://192.168.2.90:4000/api/v1/users/username/${username}`
+            `http://${BASE_URL}:4000/api/v1/users/username/${username}`
           );
           if (userDataResponse.status === 200) {
             // Successfully retrieved user data, useAuth to update this user

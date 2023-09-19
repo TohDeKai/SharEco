@@ -25,6 +25,8 @@ import UserAvatar from "../../../components/UserAvatar";
 import { colours } from "../../../components/ColourPalette";
 const { black, white, primary } = colours;
 
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
   return (percentage / 100) * screenHeight;
@@ -102,7 +104,7 @@ const editProfile = () => {
 
     try {
       const response = await axios.put(
-        `http://192.168.2.90:4000/api/v1/users/username/${username}`,
+        `http://${BASE_URL}:4000/api/v1/users/username/${username}`,
         newDetails
       );
 
@@ -111,7 +113,7 @@ const editProfile = () => {
       if (response.status === 200) {
         //update user
         const userDataResponse = await axios.get(
-          `http://192.168.2.90:4000/api/v1/users/username/${details.username}`
+          `http://${BASE_URL}:4000/api/v1/users/username/${details.username}`
         );
         if (userDataResponse.status === 200) {
           // Successfully retrieved user data, useAuth to update this user
