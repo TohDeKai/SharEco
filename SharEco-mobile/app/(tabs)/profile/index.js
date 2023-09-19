@@ -172,7 +172,8 @@ const Content = ({ activeTab }) => {
             console.log(response.status);
             if (response.status === 200) {
               const items = response.data.data.items;
-              setUserItems(items);
+			  const sortByNewest = items.reverse();
+              setUserItems(sortByNewest);
             } else {
               //Shouldn't come here
               console.log("Failed to retrieve user's items");
@@ -210,7 +211,6 @@ const Content = ({ activeTab }) => {
 
 //Main
 const profile = () => {
-  const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState("Listings");
 
   const handleTabPress = (tabName) => {

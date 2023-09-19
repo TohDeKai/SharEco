@@ -120,7 +120,7 @@ const createListing = () => {
         otherLocation:values.meetupLocation,
       };
       const response = await axios.post(
-        "http://172.20.10.3:4000/api/v1/items",
+        "http://172.20.10.8:4000/api/v1/items",
         itemData
       );
 
