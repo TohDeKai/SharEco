@@ -130,7 +130,7 @@ const getItemByItemId = async (itemId) => {
   }
 };
 
-//Get items by item Id
+//Get items by user Id
 //Available listings
 const getItemsByUserId = async (userId) => {
   try {
