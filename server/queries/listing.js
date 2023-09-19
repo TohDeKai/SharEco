@@ -20,13 +20,14 @@ const createItem = async (
   depositFee,
   images,
   category,
-  collectionLocations
+  collectionLocations,
+  otherLocation
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."item" 
-        ("userId", "itemTitle", "itemDescription", "itemOriginalPrice", "rentalRateHourly", "rentalRateDaily", "depositFee", images, category, "collectionLocations", "usersLikedCount", impressions, "totalRentCollected") 
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`,
+        ("userId", "itemTitle", "itemDescription", "itemOriginalPrice", "rentalRateHourly", "rentalRateDaily", "depositFee", images, category, "collectionLocations", "otherLocation", "usersLikedCount", impressions, "totalRentCollected") 
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) returning *`,
       [
         userId,
         itemTitle,
@@ -38,6 +39,7 @@ const createItem = async (
         images,
         category,
         collectionLocations,
+        otherLocation,
         0,
         0,
         0,
@@ -60,7 +62,8 @@ const updateItem = async (
   depositFee,
   images,
   category,
-  collectionLocations
+  collectionLocations,
+  otherLocation
 ) => {
   try {
     const result = await pool.query(
@@ -73,8 +76,9 @@ const updateItem = async (
         "depositFee" = $6,
         images = $7,
         category = $8,
-        "collectionLocations" = $9
-        WHERE "itemId" = $10
+        "collectionLocations" = $9,
+        "otherLocation" = $10
+        WHERE "itemId" = $11
         RETURNING *`,
       [
         itemTitle,
@@ -86,6 +90,7 @@ const updateItem = async (
         images,
         category,
         collectionLocations,
+        otherLocation,
         itemId,
       ]
     );
