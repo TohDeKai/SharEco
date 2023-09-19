@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   StyleSheet,
   Pressable,
+  Dimensions,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Formik } from "formik";
@@ -27,6 +28,16 @@ const { white, primary, inputbackground, black } = colours;
 import DropdownList from "../../../components/inputs/DropdownList";
 import MultipleDropdownList from "../../../components/inputs/MultipleDropdownList";
 import { useAuth } from "../../../context/auth";
+
+const viewportWidthInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").width;
+  return (percentage / 100) * screenWidth;
+};
+
+const viewportHeightInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").height;
+  return (percentage / 100) * screenWidth;
+};
 
 const createListing = () => {
   const [message, setMessage] = useState("");
@@ -366,7 +377,7 @@ const styles = StyleSheet.create({
     display: "flex",
     justifyContent: "space-between",
     position: "relative",
-    width: 364,
+    width: viewportWidthInPixels(85),
   },
   perDayText:{
     position: "relative",
@@ -374,6 +385,6 @@ const styles = StyleSheet.create({
   },
   perDayInputBox:{
     justifyContent:"flex-end",
-    width: 134,
+    width: viewportWidthInPixels(20),
   }
 });
