@@ -88,7 +88,7 @@ const ProfileHeader = () => {
         </Pressable>
       </View>
       <View style={styles.headerWhite}>
-        <RegularText typography="H2" style={{ marginTop: 60 }}>
+        <RegularText typography="H2" style={{ marginTop: 40 }}>
           {user.displayName}
         </RegularText>
         <RegularText
@@ -106,9 +106,9 @@ const ProfileHeader = () => {
         <UserAvatar size="big" source={require("../../../assets/icon.png")} />
       </View>
       <View style={styles.ratingsContainer}>
-        <RegularText typography="B1">4.5</RegularText>
-        <Rating stars={5} size={19} color={yellow} />
-        <RegularText typography="B1">(23)</RegularText>
+        <RegularText typography="B1">0.0</RegularText>
+        <Rating stars={0} size={20} color={yellow} />
+        <RegularText typography="B1">(0)</RegularText>
       </View>
     </View>
   );
@@ -172,7 +172,7 @@ const Content = ({ activeTab }) => {
             console.log(response.status);
             if (response.status === 200) {
               const items = response.data.data.items;
-			  const sortByNewest = items.reverse();
+              const sortByNewest = items.reverse();
               setUserItems(sortByNewest);
             } else {
               //Shouldn't come here
@@ -220,13 +220,15 @@ const profile = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={styles.header}>
-        <ProfileHeader />
-        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+      <View style={{ flex: 0.85}}>
+        <View style={styles.header}>
+          <ProfileHeader />
+          <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+        </View>
       </View>
       <View style={{ flex: 1 }}>
         <View style={styles.contentContainer}>
-          <Content activeTab={activeTab}/>
+          <Content activeTab={activeTab} />
         </View>
       </View>
     </View>
@@ -240,9 +242,10 @@ const styles = StyleSheet.create({
     flex: 1,
     height: viewportHeightInPixels(40),
     zIndex: 1,
+    flexDirection: "column",
   },
   headerGreen: {
-    flex: 0.5,
+    flex: 1,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
@@ -250,7 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: secondary,
   },
   headerWhite: {
-    flex: 0.5,
+    flex: 1,
     paddingHorizontal: 25,
     backgroundColor: white,
   },
@@ -259,7 +262,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: "absolute",
-    top: viewportHeightInPixels(40 / 2) - 51,
+    top: viewportHeightInPixels(16) - 51,
     left: 25,
   },
   ratingsContainer: {
@@ -267,7 +270,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     justifyContent: "center",
     alignItems: "center",
-    top: viewportHeightInPixels(40 / 2) + 5,
+    top: viewportHeightInPixels(19) + 5,
     right: 25,
     paddingTop: 5,
   },
@@ -290,6 +293,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     backgroundColor: white,
-    paddingHorizontal: 27,
+    paddingHorizontal: viewportWidthInPixels(7),
+    justifyContent: "space-evenly",
   },
 });
