@@ -72,7 +72,7 @@ const accountDetails = () => {
 
     try {
       const response = await axios.put(
-        `http://172.20.10.2:4000/api/v1/users/username/${username}`,
+        `http://192.168.2.90:4000/api/v1/users/username/${username}`,
         newDetails
       );
 
@@ -81,7 +81,7 @@ const accountDetails = () => {
       if (response.status === 200) {
         //update user
         const userDataResponse = await axios.get(
-          `http://172.20.10.2:4000/api/v1/users/username/${username}`
+          `http://192.168.2.90:4000/api/v1/users/username/${username}`
         );
         if (userDataResponse.status === 200) {
           // Successfully retrieved user data, useAuth to update this user
