@@ -36,8 +36,6 @@ export default function ListingCard(props) {
     usersLikedCount,
     userId,
   } = props.item;
-  console.log(props);
-  console.log(props.images);
 
   return (
     <Pressable>
@@ -50,7 +48,16 @@ export default function ListingCard(props) {
           style={style.image}
         />
 
-        <RegularText typography="H4">{itemTitle}</RegularText>
+        <View>
+          <RegularText
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            typography="H4"
+            style={style.overflowEllipsis}
+          >
+            {itemTitle}
+          </RegularText>
+        </View>
 
         <View style={style.rates}>
           <View style={style.pricing}>
@@ -83,6 +90,12 @@ const style = StyleSheet.create({
   },
   card: {
     paddingRight: viewportWidthInPixels(5),
+  },
+  overflowEllipsis: {
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    maxWidth: viewportWidthInPixels(40),
   },
   rates: {
     paddingVertical: 5,

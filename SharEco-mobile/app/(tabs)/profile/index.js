@@ -98,7 +98,7 @@ const ProfileHeader = () => {
         >
           @{user.username}
         </RegularText>
-        <RegularText typography="Subtitle" style={{ marginTop: 8 }}>
+        <RegularText typography="B2" style={{ marginTop: 8 }}>
           {user.aboutMe}
         </RegularText>
       </View>
@@ -106,9 +106,9 @@ const ProfileHeader = () => {
         <UserAvatar size="big" source={require("../../../assets/icon.png")} />
       </View>
       <View style={styles.ratingsContainer}>
-        <RegularText typography="Subtitle">4.5</RegularText>
+        <RegularText typography="B1">4.5</RegularText>
         <Rating stars={5} size={19} color={yellow} />
-        <RegularText typography="Subtitle">(23)</RegularText>
+        <RegularText typography="B1">(23)</RegularText>
       </View>
     </View>
   );
@@ -155,7 +155,6 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   );
 };
 
-//THIS METHOD
 const Content = ({ activeTab }) => {
   const [userItems, setUserItems] = useState();
   const { getUserData } = useAuth();
@@ -195,14 +194,16 @@ const Content = ({ activeTab }) => {
   };
 
   return (
-    <View style={{ flex: 1}}>
-      <FlatList
-        activeTab={activeTab}
-        data={userItems}
-        numColumns={2}
-		    scrollsToTop={false}
-        renderItem={({ item }) => <ListingCard item={item} />}
-      />
+    <View style={{ flex: 1 }}>
+      {activeTab == "Listings" && (
+        <FlatList
+          data={userItems}
+          numColumns={2}
+          scrollsToTop={false}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => <ListingCard item={item} />}
+        />
+      )}
     </View>
   );
 };
@@ -225,7 +226,7 @@ const profile = () => {
       </View>
       <View style={{ flex: 1 }}>
         <View style={styles.contentContainer}>
-          <Content />
+          <Content activeTab={activeTab}/>
         </View>
       </View>
     </View>
@@ -268,6 +269,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     top: viewportHeightInPixels(40 / 2) + 5,
     right: 25,
+    paddingTop: 5,
   },
   tabContainer: {
     flexDirection: "row",
@@ -286,7 +288,7 @@ const styles = StyleSheet.create({
     borderBottomColor: primary,
   },
   contentContainer: {
-	  flex: 1,
+    flex: 1,
     backgroundColor: white,
     paddingHorizontal: 27,
   },
