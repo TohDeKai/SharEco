@@ -155,7 +155,7 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   );
 };
 
-const Content = ({ activeTab }) => {
+const Content = ({ navigation, activeTab }) => {
   const [userItems, setUserItems] = useState();
   const { getUserData } = useAuth();
 
@@ -210,7 +210,7 @@ const Content = ({ activeTab }) => {
 };
 
 //Main
-const profile = () => {
+const profile = ({navigation}) => {
   const [activeTab, setActiveTab] = useState("Listings");
 
   const handleTabPress = (tabName) => {

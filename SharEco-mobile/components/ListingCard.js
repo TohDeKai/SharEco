@@ -27,18 +27,23 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-export default function ListingCard(props) {
+export default function ListingCard({item}) {
   const {
+    itemId,
     itemTitle,
     images,
     rentalRateHourly,
     rentalRateDaily,
     usersLikedCount,
     userId,
-  } = props.item;
+  } = item;
+
+  const toMyListing = () => {
+    router.push({ pathname:"profile/myListing", params: {id: 11} })
+  }; 
 
   return (
-    <Pressable>
+    <Pressable onPressOut={toMyListing}>
       <View style={style.card}>
         <Image
           resizeMode="contain"
