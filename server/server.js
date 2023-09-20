@@ -482,7 +482,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
       req.body.images,
       req.body.category,
       req.body.collectionLocations,
-      otherLocation,
+      req.body.otherLocation,
     );
 
     if (item) {
