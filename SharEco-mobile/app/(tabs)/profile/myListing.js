@@ -22,6 +22,8 @@ import {
   import axios from "axios";
   import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
   const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL
+
   
   const viewportHeightInPixels = (percentage) => {
     const screenHeight = Dimensions.get("window").height;
@@ -32,6 +34,7 @@ import {
     const screenWidth = Dimensions.get("window").width;
     return (percentage / 100) * screenWidth;
   };
+
   
   const ItemInformation = () => {
       const [listingItem, setListingItem] = useState({});
@@ -40,7 +43,7 @@ import {
       async function fetchUserData() {
         try {
           const response = await axios.get(
-            `http://172.20.10.8:4000/api/v1/items/itemId/11`
+            `http://${BASE_URL}:4000/api/v1/items/itemId/11`
           );
           console.log("get");
           console.log(response.status);
