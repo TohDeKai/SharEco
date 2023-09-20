@@ -32,9 +32,9 @@ const viewportWidthInPixels = (percentage) => {
   const screenWidth = Dimensions.get("window").width;
   return (percentage / 100) * screenWidth;
 };
-const listing = () => {
-  const params = useLocalSearchParams();
-  const [listingItem, setListingItem] = useState();
+
+const ItemInformation = () => {
+    const [listingItem, setListingItem] = useState();
 
   useEffect(() => {
     async function fetchUserData() {
@@ -58,20 +58,22 @@ const listing = () => {
     }
     fetchUserData();
   }, []);
-  console.log(listingItem);
+  console.log(listingItem); //has value but unable to call listingItem.itemTitle as listingItem will become undefined?
 
-  try {
-    const jsonData = JSON.parse(listingItem);
-    console.log(jsonData["category"]);
+  return (
+    <View>
+        <RegularText>hello</RegularText>
+    </View>
+  );
+}
 
-  } catch (error) {
-    console.log(error.message);
-  }
+const listing = () => {
+  const params = useLocalSearchParams();
 
   return (
     <SafeAreaContainer>
       <View>
-        <RegularText typography="H1">ok</RegularText>
+        <ItemInformation />
       </View>
     </SafeAreaContainer>
   );

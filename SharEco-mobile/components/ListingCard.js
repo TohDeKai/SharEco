@@ -43,7 +43,7 @@ export default function ListingCard({item}) {
   }; 
 
   return (
-    <Pressable onPressOut={toMyListing}>
+    <Pressable onPress={toMyListing}>
       <View style={style.card}>
         <Image
           resizeMode="contain"
