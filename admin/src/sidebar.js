@@ -21,7 +21,7 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
 import NoteAltOutlinedIcon from "@mui/icons-material/NoteAltOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
-
+import { Typography } from "@mui/material";
 const Sidebar = () => {
   const navigate = useNavigate();
   const signOut = useSignOut();
@@ -89,17 +89,19 @@ const Sidebar = () => {
         anchor="left"
       >
         <Toolbar />
-        <Box paddingLeft={"8%"} paddingRight={"8%"}>
+        <Box sx={{ pl: 3, pr: 3 }}>
           <img
             src={require("./images/logos/logo light bg cropped.png")}
             width={175}
             height={43.75}
             style={{ marginBottom: "10%" }}
           />
-          <subtitle1>Welcome back</subtitle1>
-          <h3 style={{ marginTop: "0%", textTransform: "capitalize" }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Welcome back,
+          </Typography>
+          <Typography sx={{ mb: 3 }} variant="h5" gutterBottom>
             {auth().username}
-          </h3>
+          </Typography>
         </Box>
 
         <Divider />
@@ -119,12 +121,7 @@ const Sidebar = () => {
           color="primary"
           onClick={handleLogout}
           size="medium"
-          style={{
-            marginLeft: "10%",
-            marginRight: "10%",
-            marginTop: "auto",
-            marginBottom: "20%",
-          }}
+          sx={{ ml: 3, mr: 3, mt: "auto", mb: 6 }}
         >
           Log out
         </Button>
