@@ -2,7 +2,8 @@ import React from "react";
 import Sidebar from "./sidebar";
 import { styles } from "./styles";
 import { ThemeProvider } from "@mui/material/styles";
-const Home = () => {
+
+const Business = () => {
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
       <div style={{ display: "flex" }}>
@@ -15,4 +16,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Business;
