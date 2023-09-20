@@ -39,7 +39,7 @@ const Sidebar = () => {
   const customListItems = [
     {
       text: "Dashboard",
-      path: "/dashboard",
+      path: "/",
       icon: <SpaceDashboardOutlinedIcon />,
     },
     {
