@@ -359,6 +359,28 @@ const createListing = () => {
                 >
                   List Item
                 </RoundedButton>
+                <SelectList setSelected={setSelected} data={data}  />
+                <MultipleSelectList 
+                  setSelected={(val) => setSelectedList(val)} 
+                  data={data} 
+                  save="value"
+                  label="Categories"
+                  boxStyles={{marginTop:25}}
+                />
+                <View style={{marginTop:50}}>
+                  <Text>Selected Value : </Text>
+                  <Text style={{marginTop:10,color:'gray'}}>{selected}</Text>
+                </View>
+                <View style={{marginTop:50}}>
+                  <Text>Selected Categories : </Text>
+                  {
+                    selectedList.map((item) => {
+                      return(
+                        <Text key={item} style={{marginTop:10,color:'gray'}}>{item}</Text>
+                      )
+                    })
+                  }
+                </View>
               </View>
             )}
           </Formik>
