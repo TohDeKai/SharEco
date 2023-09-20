@@ -9,7 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./admin
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -24,6 +26,7 @@ jobs:
 
       - name: Get pnpm store directory
         id: pnpm-cache
+        working-directory: ./admin
         run: |
           echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
 
@@ -36,7 +39,9 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install deps (with cache)
+        working-directory: ./admin
         run: pnpm install
 
       - name: Run CI suite
+        working-directory: ./admin
         run: pnpm run ci
