@@ -13,7 +13,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 
-function Copyright(props) {
+function Copyright(props: any) {
   return (
     <Typography
       variant="body2"
@@ -38,7 +38,7 @@ const defaultTheme = createTheme();
 export default function SignUp() {
   const navigate = useNavigate();
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
 
     const username = event.currentTarget.username.value;

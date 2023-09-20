@@ -91,14 +91,14 @@ const Sidebar = () => {
         <Toolbar />
         <Box paddingLeft={"8%"} paddingRight={"8%"}>
           <img
-            src={require("./images/logos/logo light bg cropped.png")}
+            src={"/images/logos/logo light bg cropped.png"}
             width={175}
             height={43.75}
             style={{ marginBottom: "10%" }}
           />
-          <subtitle1>Welcome back</subtitle1>
+          <title>Welcome back</title>
           <h3 style={{ marginTop: "0%", textTransform: "capitalize" }}>
-            {auth().username}
+            {auth()?.username}
           </h3>
         </Box>
 

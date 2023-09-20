@@ -4,6 +4,7 @@ import Sidebar from "./sidebar";
 import { styles } from "./styles";
 import { ThemeProvider } from "@mui/material/styles";
 import { Box } from "@mui/material";
+
 const Home = () => {
   return (
     <ThemeProvider theme={styles.shareCoTheme}>

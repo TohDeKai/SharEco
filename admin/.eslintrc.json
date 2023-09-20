@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "plugins": ["react", "react-hooks"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "env": {
+    "browser": true,
+    "es2020": true
+  },
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "warn",
+    // to enforce using type for object type definitions, can be type or interface
+    "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+    "react/react-in-jsx-scope": "off",
+    // allow the use of 'any' type
+    "@typescript-eslint/no-explicit-any": "off"
+  }
+}
