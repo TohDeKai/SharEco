@@ -12,6 +12,13 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
 
+const { uploadFile, getFileStream } = require("./s3");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+const fs = require("fs");
+const util = require("util");
+const unlinkFile = util.promisify(fs.unlink);
+
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
 
@@ -578,3 +585,24 @@ app.post("/api/v1/admin/signIn", auth.AdminSignIn);
 app.post("/api/v1/admin/signUp", auth.AdminSignUp);
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
+
+// S3 functionalities for hosting of images
+// Upload new image
+app.post("/images", upload.single("image"), async (req, res) => {
+  const file = req.file;
+  console.log(file);
+
+  const result = await uploadFile(file);
+  await unlinkFile(file.path);
+  console.log(result);
+
+  res.send({ imagePath: `/images/${result.Key}` });
+});
+
+// Get image from S3
+app.get("images/:key", (req, res) => {
+  const key = req.params.key;
+  const readStream = getFileStream(key);
+
+  readStream.pipe(res);
+});
