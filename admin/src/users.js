@@ -170,6 +170,7 @@ const Users = () => {
 
           {/* Search Bar */}
           <TextField
+            sx={{ mb: 2 }}
             id="input-with-icon-textfield"
             size="small"
             placeholder="Search"
