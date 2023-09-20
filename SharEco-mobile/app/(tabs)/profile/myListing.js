@@ -19,7 +19,7 @@ import { Rating } from "react-native-stock-star-rating";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
-import Listing from "../../../components/ListingCard";
+import Header from "../../../components/Header";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
@@ -41,6 +41,9 @@ const ItemInformation = () => {
   const [user, setUser] = useState("");
   const params = useLocalSearchParams();
   const { itemId } = params;
+  const handleBack = () => {
+    router.back();
+  };
 
   useEffect(() => {
     async function fetchUserData() {
@@ -79,8 +82,11 @@ const ItemInformation = () => {
   } = listingItem;
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={style.container}>
+    <ScrollView showsVerticalScrollIndicator={false}>
       <View style={style.imgContainer}>
+        <View style={style.header}>
+          <Header action="back" onPress={handleBack} />
+        </View>
         <Image
           resizeMode="contain"
           source={{
@@ -158,10 +164,8 @@ const ItemInformation = () => {
 };
 
 const listing = () => {
-  const params = useLocalSearchParams();
-
   return (
-    <View>
+    <View style={style.container}>
       <ItemInformation />
     </View>
   );
@@ -172,6 +176,9 @@ export default listing;
 const windowWidth = Dimensions.get("window").width;
 
 const style = StyleSheet.create({
+  header: {
+    top: 30,
+  },
   container: {
     backgroundColor: white,
   },
