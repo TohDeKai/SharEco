@@ -25,8 +25,6 @@ import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black } = colours;
-import DropdownList from "../../../components/inputs/DropdownList";
-import MultipleDropdownList from "../../../components/inputs/MultipleDropdownList";
 import { useAuth } from "../../../context/auth";
 import {SelectList, MultipleSelectList }from 'react-native-dropdown-select-list'
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -50,16 +48,6 @@ const createListing = () => {
   const [lockers, setLockers] = useState([]);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
-  const [selected, setSelected] = React.useState("");
-  const [selectedList, setSelectedList] = React.useState([]);
-  
-  const data = [
-    {key:'Canada', value:'Canada'},
-    {key:'England', value:'England'},
-    {key:'Pakistan', value:'Pakistan'},
-    {key:'India', value:'India'},
-    {key:'NewZealand', value:'NewZealand'},
-  ]
 
   useEffect(() => {
     async function fetchUserData() {
@@ -75,17 +63,11 @@ const createListing = () => {
     fetchUserData();
   }, []);
 
-  const categories = ["Mobiles","Appliances","Cameras","Computers","Winterwear","Fashion","Sporting Equipment"];
+  const categories = ["Audio","Car Accessories","Computer & Tech","Health & Personal Care",
+  "Hobbies & Craft","Home & Living","Luxury", "Mens Fashion", "Womens Fashion", 
+  "Mobile Phone & Gadgets","Photography & Videography", "Sports Equipment", "Vehicles"];
 
-  const locations = [
-    { key: "1", value: "Hougang" },
-    { key: "2", value: "Punggol" },
-    { key: "3", value: "Serangoon" },
-    { key: "4", value: "Orchard" },
-    { key: "5", value: "Woodlands" },
-    { key: "6", value: "Yishun" },
-    { key: "7", value: "Clementi" },
-  ];
+  const locations = ["Hougang","Punggol","Serangoon","Orchard","Woodlands","Yishun","Clementi"];
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -138,12 +120,12 @@ const createListing = () => {
         rentalRateDaily: values.rentalRateDay,
         depositFee: values.depositFee,
         images: images,
-        category: values.category,
-        collectionLocations:values.lockers,
+        category: category,
+        collectionLocations: lockers,
         otherLocation:values.meetupLocation,
       };
       const response = await axios.post(
-        `http://${BASE_URL}:4000/api/v1/items`,
+        `http://172.20.10.3:4000/api/v1/items`,
         itemData
       );
 
@@ -151,11 +133,12 @@ const createListing = () => {
 
       if (response.status === 201) {
         console.log("Item created successfully");
-        router.push("/profile");
-        console.log(values.category);
+        console.log(lockers);
+        console.log(category);
         setImages([null,null,null,null,null]);
         setCategory("");
         setLockers([]);
+        router.push("/profile");
       } else {
         //shouldnt come here
         console.log("Item creation unsuccessful");
@@ -177,23 +160,19 @@ const createListing = () => {
           <Formik
             initialValues={{
               title: "",
-              category: "",
               originalPrice: 0.0,
               depositFee: 0.0,
               rentalRateHour: 0.0,
               rentalRateDay: 0.0,
               description: "",
               meetupLocation: "",
-              lockers: [],
             }}
             onSubmit={(values, actions) => {
               if (
                 values.title == "" ||
-                values.category == "" ||
                 values.originalPrice == 0.0 ||
                 values.depositFee == 0.0 ||
                 values.description == "" ||
-                values.lockers == [] ||
                 //if both per hour and per day rental not specified
                 (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) //||
                 //if both picklocker or meetup location not specified
@@ -235,19 +214,22 @@ const createListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Category
                 </RegularText>
-                <Field name="category">
-                  {({ field }) => (
-                    <DropdownList
-                      setSelected={(val) =>
-                        field.onChange({
-                          target: { name: field.name, value: val },
-                        })
-                      }
-                      data={categories}
-                      save="value"
-                    />
-                  )}
-                </Field>
+                <SelectList
+                  setSelected={setCategory}
+                  data={categories}
+                  boxStyles={{
+                    marginTop: 16,
+                    backgroundColor: inputbackground,
+                    padding: 13,
+                    paddingRight: 28,
+                    borderRadius: 9,
+                    fontSize: 14,
+                    width: "100%",
+                    color: black,
+                    borderColor: inputbackground,
+                    borderWidth: 2,
+                  }}
+                />
 
                 <RegularText typography="H3" style={styles.headerText}>
                   Description
@@ -303,7 +285,7 @@ const createListing = () => {
                 </View>
                 <View style={styles.perDayContainer}>
                   <RegularText typography="H3" style={styles.perDayText}>
-                    Daily Rental Rate
+                    Daily Rental Rate (9am-9am)
                   </RegularText>
                   <StyledTextInput
                     value={values.rentalRateDay}
@@ -317,18 +299,25 @@ const createListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Collection & return location
                 </RegularText>
-                <Field name="lockers">
-                  {({ field }) => (
-                    <MultipleDropdownList
-                      setSelected={(val) =>
-                        field.onChange({
-                          target: { name: field.name, value: val },
-                        })
-                      }
-                      data={locations}
-                    />
-                  )}
-                </Field>
+                <MultipleSelectList
+                  setSelected={(val) => setLockers(val)}
+                  data={locations}
+                  save="value"
+                  label="Locker locations"
+                  boxStyles={{
+                    marginTop: 16,
+                    backgroundColor: inputbackground,
+                    padding: 13,
+                    paddingRight: 28,
+                    borderRadius: 9,
+                    fontSize: 14,
+                    width: "100%",
+                    color: black,
+                    borderColor: inputbackground,
+                    borderWidth: 2,
+                  }}
+                />
+
                 <RegularText typography="B2" style={styles.headerText}>
                   Other meet up location
                 </RegularText>
@@ -372,41 +361,6 @@ const createListing = () => {
                 </RoundedButton>
               </View>
             )}
-            <View style={{paddingHorizontal:15,marginTop:15}}>
-
-
-<SelectList setSelected={setSelected} data={data}  />
-
-
-<MultipleSelectList 
-  setSelected={(val) => setSelectedList(val)} 
-  data={data} 
-  save="value"
-  label="Categories"
-  boxStyles={{marginTop:25}}
-/>
-
-
-
-<View style={{marginTop:50}}>
-  <Text>Selected Value : </Text>
-  <Text style={{marginTop:10,color:'gray'}}>{selected}</Text>
-</View>
-
-
-<View style={{marginTop:50}}>
-  <Text>Selected Categories : </Text>
-  {
-    selectedList.map((item) => {
-      return(
-        <Text key={item} style={{marginTop:10,color:'gray'}}>{item}</Text>
-      )
-    })
-  }
-  
-</View>
-
-</View>
           </Formik>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -451,6 +405,6 @@ const styles = StyleSheet.create({
   },
   perDayInputBox:{
     justifyContent:"flex-end",
-    width: viewportWidthInPixels(20),
+    width: viewportWidthInPixels(40),
   }
 });
