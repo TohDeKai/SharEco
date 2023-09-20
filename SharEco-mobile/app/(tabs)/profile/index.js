@@ -21,6 +21,7 @@ import UserAvatar from "../../../components/UserAvatar";
 import Listing from "../../../components/ListingCard";
 import axios from "axios";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -103,7 +104,7 @@ const ProfileHeader = () => {
         </RegularText>
       </View>
       <View style={styles.avatarContainer}>
-        <UserAvatar size="big" source={require("../../../assets/icon.png")} />
+        <UserAvatar size="big" source={{uri:user.userPhotoUrl}} />
       </View>
       <View style={styles.ratingsContainer}>
         <RegularText typography="B1">0.0</RegularText>
@@ -167,7 +168,7 @@ const Content = ({ navigation, activeTab }) => {
           const userId = userData.userId;
           try {
             const response = await axios.get(
-              `http://172.20.10.2:4000/api/v1/items/${userId}`
+              `http://${BASE_URL}:4000/api/v1/items/${userId}`
             );
             console.log(response.status);
             if (response.status === 200) {
