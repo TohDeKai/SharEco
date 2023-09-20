@@ -588,7 +588,7 @@ app.post("/api/v1/user/signUp", userAuth.UserSignUp);
 
 // S3 functionalities for hosting of images
 // Upload new image
-app.post("/images", upload.single("image"), async (req, res) => {
+app.post("/images/:userId", upload.single("image"), async (req, res) => {
   const file = req.file;
   console.log(file);
 
@@ -596,12 +596,17 @@ app.post("/images", upload.single("image"), async (req, res) => {
   await unlinkFile(file.path);
   console.log(result);
 
+  // update photourl in userdb to result.key
+  const userId = req.params.userId;
+  try {
+  } catch (error) {}
+
   res.send({ imagePath: `/images/${result.Key}` });
 });
 
 // Get image from S3
 app.get("images/:key", (req, res) => {
-  const key = req.params.key;
+  const key = req.params.key; // store this key value in userdb
   const readStream = getFileStream(key);
 
   readStream.pipe(res);
