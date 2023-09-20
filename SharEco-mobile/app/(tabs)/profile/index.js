@@ -96,7 +96,7 @@ const ProfileHeader = () => {
         </RegularText>
       </View>
       <View style={styles.avatarContainer}>
-        <UserAvatar size="big" source={require("../../../assets/icon.png")} />
+        <UserAvatar size="big" source={{uri: user.userPhotoUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}}/>
       </View>
       <View style={styles.ratingsContainer}>
         <RegularText typography="Subtitle">4.5</RegularText>

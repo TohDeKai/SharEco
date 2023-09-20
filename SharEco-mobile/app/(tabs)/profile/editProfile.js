@@ -59,14 +59,7 @@ const editProfile = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   //need to initialise image as the user's actual profilepic url
-  const [image, setImage] = useState(null);
-  let profilePic = "";
-
-  if (image == null) {
-    profilePic = require("../../../assets/icon.png");
-  } else {
-    profilePic = { uri: image };
-  }
+  const [image, setImage] = useState(user.userPhotoUrl);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -94,7 +87,7 @@ const editProfile = () => {
       password: user.password,
       email: user.email,
       contactNumber: user.contactNumber,
-      userPhotoUrl: user.userPhotoUrl, // toChange
+      userPhotoUrl: image, 
       isBanned: user.isBanned,
       likedItem: user.likedItem,
       wishList: user.wishList,
@@ -137,7 +130,7 @@ const editProfile = () => {
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.avatarContainer}>
-            <UserAvatar size="big" source={profilePic} />
+            <UserAvatar size="big" source={{uri:image || user.userPhotoUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}} />
             <Pressable
               onPress={handleOpenGallery}
               style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
