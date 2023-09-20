@@ -167,7 +167,7 @@ const Content = ({ navigation, activeTab }) => {
           const userId = userData.userId;
           try {
             const response = await axios.get(
-              `http://172.20.10.8:4000/api/v1/items/${userId}`
+              `http://172.20.10.2:4000/api/v1/items/${userId}`
             );
             console.log(response.status);
             if (response.status === 200) {

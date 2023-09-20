@@ -34,13 +34,13 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const ItemInformation = () => {
-    const [listingItem, setListingItem] = useState();
+    const [listingItem, setListingItem] = useState({});
 
   useEffect(() => {
     async function fetchUserData() {
       try {
         const response = await axios.get(
-          `http://172.20.10.8:4000/api/v1/items/itemId/11`
+          `http://172.20.10.2:4000/api/v1/items/itemId/11`
         );
         console.log("get");
         console.log(response.status);
@@ -62,7 +62,7 @@ const ItemInformation = () => {
 
   return (
     <View>
-        <RegularText>hello</RegularText>
+        <RegularText>{listingItem.itemDescription}</RegularText>
     </View>
   );
 }
