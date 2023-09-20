@@ -165,7 +165,7 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
       req.body.likedItem,
       req.body.wishList,
       req.body.displayName,
-      req.body.aboutMe,
+      req.body.aboutMe
     );
 
     if (user) {
@@ -237,11 +237,12 @@ app.post("/api/v1/userSignUp", async (req, res) => {
   }
 });
 
+// compare password
 app.get("/api/v1/users/:username/:password", async (req, res) => {
   const { username, password } = req.params;
 
   try {
-    const result = await admindb.getUserByUsername(username);
+    const result = await userdb.getUserByUsername(username);
 
     if (bcrypt.compareSync(password, result.password)) {
       res.status(201).json({
@@ -259,6 +260,42 @@ app.get("/api/v1/users/:username/:password", async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
+  }
+});
+
+// update password
+app.put("/api/v1/users/username/changePassword/:username", async (req, res) => {
+  const hashedPassword = bcrypt.hashSync(req.body.password, saltRounds);
+  try {
+    const user = await userdb.updateUser(
+      req.params.username,
+      req.body.username,
+      hashedPassword,
+      req.body.email,
+      req.body.contactNumber,
+      req.body.userPhotoUrl,
+      req.body.isBanned,
+      req.body.likedItem,
+      req.body.wishList,
+      req.body.displayName,
+      req.body.aboutMe
+    );
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
   }
 });
 
@@ -432,7 +469,7 @@ app.post("/api/v1/items", async (req, res) => {
 });
 
 //Update item
-app.put("/api/v1/items/itemId/:itemId", async (req, res) => { 
+app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
   try {
     const item = await listingdb.updateItem(
       req.params.itemId,
@@ -472,7 +509,7 @@ app.put("/api/v1/items/:itemId", async (req, res) => {
   try {
     const item = await listingdb.disableItem(
       req.params.itemId,
-      req.body.disabled,
+      req.body.disabled
     );
 
     if (item) {
