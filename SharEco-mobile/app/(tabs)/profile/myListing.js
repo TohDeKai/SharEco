@@ -22,6 +22,8 @@ import UserAvatar from "../../../components/UserAvatar";
 import Header from "../../../components/Header";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
+import Carousel, { Pagination } from "react-native-snap-carousel";
+import CarouselItem from "../../../components/CarouselItem";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -87,13 +89,9 @@ const ItemInformation = () => {
         <View style={style.header}>
           <Header action="back" onPress={handleBack} />
         </View>
-        <Image
-          resizeMode="contain"
-          source={{
-            uri: images,
-          }}
-          style={style.image}
-        />
+        <View style={{ marginTop: -31 }}>
+          <CustomSlider data={images} />
+        </View>
       </View>
 
       <View style={style.textContainer}>
@@ -150,7 +148,7 @@ const ItemInformation = () => {
           </View>
         </View>
 
-        <View style={style.location}>
+        <View>
           <RegularText typography="H3" style={style.topic}>
             Collection & Return Locations
           </RegularText>
@@ -161,6 +159,40 @@ const ItemInformation = () => {
       </View>
     </ScrollView>
   );
+};
+
+const { width } = Dimensions.get("window");
+
+const CustomSlider = ({ data }) => {
+  const settings = {
+    sliderWidth: width,
+    sliderHeight: width,
+    itemWidth: width,
+    data: data,
+    renderItem: CarouselItem,
+    hasParallaxImages: true,
+    onSnapToItem: (index) => setSlideIndex(index),
+  };
+  const [slideIndex, setSlideIndex] = useState(0);
+  return (
+    <View>
+      <Carousel {...settings} />
+      <CustomPaging data={data} activeSlide={slideIndex} />
+    </View>
+  );
+};
+
+const CustomPaging = ({ data, activeSlide }) => {
+  const settings = {
+    dotsLength: data ? data.length : 0,
+    activeDotIndex: activeSlide,
+    containerStyle: style.dotContainer,
+    dotStyle: style.dotStyle,
+    inactiveDotStyle: style.inactiveDotStyle,
+    inactiveDotOpacity: 0.4,
+    inactiveDotScale: 0.6,
+  };
+  return <Pagination {...settings} />;
 };
 
 const listing = () => {
@@ -178,6 +210,7 @@ const windowWidth = Dimensions.get("window").width;
 const style = StyleSheet.create({
   header: {
     top: 30,
+    zIndex: 100,
   },
   container: {
     backgroundColor: white,
@@ -185,7 +218,6 @@ const style = StyleSheet.create({
   imgContainer: {
     width: windowWidth,
     aspectRatio: 1,
-    backgroundColor: primary,
   },
   image: {
     flex: 1,
@@ -246,5 +278,16 @@ const style = StyleSheet.create({
     alignItems: "center",
     paddingTop: 2,
   },
-  location: {},
+  dotContainer: {
+    marginTop: -50,
+  },
+  dotStyle: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "black",
+  },
+  inactiveDotStyle: {
+    backgroundColor: "rgb(255,230,230)",
+  },
 });
