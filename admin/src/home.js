@@ -21,6 +21,8 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import axios from "axios";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 
 const Home = () => {
   const [open, setOpen] = React.useState(false);
@@ -31,6 +33,41 @@ const Home = () => {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const navigate = useNavigate();
+
+  const registerAdmin = async (event) => {
+    setOpen(false);
+
+    event.preventDefault();
+
+    const username = event.currentTarget.username.value;
+    const password = event.currentTarget.password.value;
+    const cfmPassword = event.currentTarget.cfmPassword.value;
+
+    if (password == cfmPassword) {
+      try {
+        const response = await axios.post(
+          "http://localhost:4000/api/v1/admin/signUp",
+          {
+            username,
+            password,
+          }
+        );
+
+        if (response.status === 200) {
+          console.log("Registered new admin successfully");
+        } else {
+          console.log("Registration failed");
+        }
+      } catch (error) {
+        // Handle network errors or server issues
+        console.error("Error during signup:", error);
+      }
+    } else {
+      console.log("Password does not match!");
+    }
   };
 
   return (
@@ -64,34 +101,53 @@ const Home = () => {
                 You are now creating a new account that will be used to access
                 this admin web portal.
               </DialogContentText>
-
-              <TextField
-                sx={{ mt: 2 }}
-                autoFocus
-                margin="dense"
-                id="username"
-                label="Username"
-                type="username"
-                fullWidth
-                variant="outlined"
-              />
-              <TextField
-                sx={{ mb: 1 }}
-                autoFocus
-                margin="dense"
-                id="password"
-                label="Password"
-                type="password"
-                fullWidth
-                variant="outlined"
-              />
+              <Box
+                component="form"
+                id="adminCreation"
+                onSubmit={registerAdmin}
+                noValidate
+                sx={{ mt: 1 }}
+              >
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="username"
+                  label="Username"
+                  name="username"
+                  autoComplete="username"
+                  autoFocus
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="cfmPassword"
+                  label="Re-type Password"
+                  type="password"
+                  id="cfmPassword"
+                />
+                <DialogActions sx={{ mb: 1 }}>
+                  <Button onClick={handleClose}>Cancel</Button>
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    form="adminCreation"
+                  >
+                    Register New Account
+                  </Button>
+                </DialogActions>
+              </Box>
             </DialogContent>
-            <DialogActions sx={{ mb: 1 }}>
-              <Button onClick={handleClose}>Cancel</Button>
-              <Button variant="contained" onClick={handleClose}>
-                Register New Account
-              </Button>
-            </DialogActions>
           </Dialog>
         </Box>
       </div>
