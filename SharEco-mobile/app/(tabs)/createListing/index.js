@@ -26,7 +26,11 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black } = colours;
 import { useAuth } from "../../../context/auth";
-import {SelectList, MultipleSelectList }from 'react-native-dropdown-select-list'
+import {
+  SelectList,
+  MultipleSelectList,
+} from "react-native-dropdown-select-list";
+import TermsAndConditions from "../../../components/TermsAndConditions";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportWidthInPixels = (percentage) => {
@@ -48,6 +52,7 @@ const createListing = () => {
   const [lockers, setLockers] = useState([]);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -63,11 +68,31 @@ const createListing = () => {
     fetchUserData();
   }, []);
 
-  const categories = ["Audio","Car Accessories","Computer & Tech","Health & Personal Care",
-  "Hobbies & Craft","Home & Living","Luxury", "Mens Fashion", "Womens Fashion", 
-  "Mobile Phone & Gadgets","Photography & Videography", "Sports Equipment", "Vehicles"];
+  const categories = [
+    "Audio",
+    "Car Accessories",
+    "Computer & Tech",
+    "Health & Personal Care",
+    "Hobbies & Craft",
+    "Home & Living",
+    "Luxury",
+    "Mens Fashion",
+    "Womens Fashion",
+    "Mobile Phone & Gadgets",
+    "Photography & Videography",
+    "Sports Equipment",
+    "Vehicles",
+  ];
 
-  const locations = ["Hougang","Punggol","Serangoon","Orchard","Woodlands","Yishun","Clementi"];
+  const locations = [
+    "Hougang",
+    "Punggol",
+    "Serangoon",
+    "Orchard",
+    "Woodlands",
+    "Yishun",
+    "Clementi",
+  ];
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -109,7 +134,15 @@ const createListing = () => {
     router.back();
   };
 
-  const handleCreateListing = async (values) =>{
+  const handleShowTerms = () => {
+    setShowTerms(true);
+  };
+
+  const onClose = () => {
+    setShowTerms(false);
+  };
+
+  const handleCreateListing = async (values) => {
     try {
       const itemData = {
         userId: user.userId,
@@ -122,7 +155,7 @@ const createListing = () => {
         images: images,
         category: category,
         collectionLocations: lockers,
-        otherLocation:values.meetupLocation,
+        otherLocation: values.meetupLocation,
       };
       const response = await axios.post(
         `http://172.20.10.3:4000/api/v1/items`,
@@ -135,7 +168,7 @@ const createListing = () => {
         console.log("Item created successfully");
         console.log(lockers);
         console.log(category);
-        setImages([null,null,null,null,null]);
+        setImages([null, null, null, null, null]);
         setCategory("");
         setLockers([]);
         router.push("/profile");
@@ -150,7 +183,7 @@ const createListing = () => {
         console.log("Error during item creation: ", error.message);
       }
     }
-  }
+  };
 
   return (
     <SafeAreaContainer>
@@ -335,7 +368,7 @@ const createListing = () => {
                   style={{ alignSelf: "center", marginTop: 10 }}
                 >
                   By proceeding, you are agreeing to our{" "}
-                  <Link href="/termsAndConditionsModal">
+                  {/* <TouchableOpacity onPress={router.push}>
                     <Text
                       style={{
                         color: primary,
@@ -344,7 +377,27 @@ const createListing = () => {
                     >
                       terms & conditions
                     </Text>
-                  </Link>
+                  </TouchableOpacity> */}
+                  <View>
+                  <Pressable
+                    onPress={handleShowTerms}
+                    style={({ pressed }) => ({
+                      opacity: pressed ? 0.5 : 1,
+                    })}
+                  >
+                    
+                    <Text
+                      style={{
+                        color: primary,
+                        textDecorationLine: "underline",
+                      }}
+                    >
+                      terms & conditions
+                    </Text>
+                  </Pressable>
+                  {showTerms && <TermsAndConditions />}
+                  </View>
+                  
                 </RegularText>
                 <MessageBox
                   style={{ marginTop: 10 }}
@@ -359,28 +412,6 @@ const createListing = () => {
                 >
                   List Item
                 </RoundedButton>
-                <SelectList setSelected={setSelected} data={data}  />
-                <MultipleSelectList 
-                  setSelected={(val) => setSelectedList(val)} 
-                  data={data} 
-                  save="value"
-                  label="Categories"
-                  boxStyles={{marginTop:25}}
-                />
-                <View style={{marginTop:50}}>
-                  <Text>Selected Value : </Text>
-                  <Text style={{marginTop:10,color:'gray'}}>{selected}</Text>
-                </View>
-                <View style={{marginTop:50}}>
-                  <Text>Selected Categories : </Text>
-                  {
-                    selectedList.map((item) => {
-                      return(
-                        <Text key={item} style={{marginTop:10,color:'gray'}}>{item}</Text>
-                      )
-                    })
-                  }
-                </View>
               </View>
             )}
           </Formik>
@@ -414,19 +445,19 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   perDayContainer: {
-    flexDirection:"row",
+    flexDirection: "row",
     alignItems: "center",
     display: "flex",
     justifyContent: "space-between",
     position: "relative",
     width: viewportWidthInPixels(85),
   },
-  perDayText:{
+  perDayText: {
     position: "relative",
-    width: "fit-content%"
+    width: "fit-content%",
   },
-  perDayInputBox:{
-    justifyContent:"flex-end",
-    width: viewportWidthInPixels(40),
-  }
+  perDayInputBox: {
+    justifyContent: "flex-end",
+    width: viewportWidthInPixels(23),
+  },
 });
