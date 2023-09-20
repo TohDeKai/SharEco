@@ -28,7 +28,6 @@ const Users = () => {
           component="main"
           sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
         >
-          <Toolbar />
           <h1>Users</h1>
 
           {/* Search Bar */}
