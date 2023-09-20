@@ -436,6 +436,7 @@ app.post("/api/v1/items", async (req, res) => {
     images,
     category,
     collectionLocations,
+    otherLocation,
   } = req.body;
 
   try {
@@ -449,7 +450,8 @@ app.post("/api/v1/items", async (req, res) => {
       depositFee,
       images,
       category,
-      collectionLocations
+      collectionLocations,
+      otherLocation
     );
 
     // Send the newly created user as the response
@@ -479,7 +481,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
       req.body.depositFee,
       req.body.images,
       req.body.category,
-      req.body.collectionLocations
+      req.body.collectionLocations,
     );
 
     if (item) {

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Dimensions,
   Pressable,
+  FlatList,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
@@ -17,6 +18,8 @@ import { Rating } from "react-native-stock-star-rating";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
+import Listing from "../../../components/ListingCard";
+import axios from "axios";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 
 const viewportHeightInPixels = (percentage) => {
@@ -85,13 +88,17 @@ const ProfileHeader = () => {
         </Pressable>
       </View>
       <View style={styles.headerWhite}>
-        <RegularText typography="H3" style={{ marginTop: 60 }}>
+        <RegularText typography="H2" style={{ marginTop: 40 }}>
           {user.displayName}
         </RegularText>
-        <RegularText typography="Subtitle" style={{ marginTop: 5 }}>
+        <RegularText
+          typography="Subtitle"
+          style={{ marginTop: 5 }}
+          color={secondary}
+        >
           @{user.username}
         </RegularText>
-        <RegularText typography="Subtitle" style={{ marginTop: 5 }}>
+        <RegularText typography="B2" style={{ marginTop: 8 }}>
           {user.aboutMe}
         </RegularText>
       </View>
@@ -99,9 +106,9 @@ const ProfileHeader = () => {
         <UserAvatar size="big" source={require("../../../assets/icon.png")} />
       </View>
       <View style={styles.ratingsContainer}>
-        <RegularText typography="Subtitle">4.5</RegularText>
-        <Rating stars={5} size={19} color={yellow} />
-        <RegularText typography="Subtitle">(23)</RegularText>
+        <RegularText typography="B1">0.0</RegularText>
+        <Rating stars={0} size={20} color={yellow} />
+        <RegularText typography="B1">(0)</RegularText>
       </View>
     </View>
   );
@@ -111,7 +118,7 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   return (
     <View
       style={
-        styles.cstickyHeader ? styles.stickyTabContainer : styles.tabContainer
+        styles.stickyHeader ? styles.stickyTabContainer : styles.tabContainer
       }
     >
       <Pressable
@@ -148,8 +155,62 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   );
 };
 
-const profile = () => {
-  const { signOut } = useAuth();
+const Content = ({ navigation, activeTab }) => {
+  const [userItems, setUserItems] = useState();
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          const userId = userData.userId;
+          try {
+            const response = await axios.get(
+              `http://172.20.10.2:4000/api/v1/items/${userId}`
+            );
+            console.log(response.status);
+            if (response.status === 200) {
+              const items = response.data.data.items;
+              const sortByNewest = items.reverse();
+              setUserItems(sortByNewest);
+            } else {
+              //Shouldn't come here
+              console.log("Failed to retrieve user's items");
+            }
+          } catch (error) {
+            console.log("Error");
+          }
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, []);
+
+  const ListingCard = ({ item }) => {
+    console.log("ListingCard");
+    return <Listing item={item} />;
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      {activeTab == "Listings" && (
+        <FlatList
+          data={userItems}
+          numColumns={2}
+          scrollsToTop={false}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => <ListingCard item={item} />}
+        />
+      )}
+    </View>
+  );
+};
+
+//Main
+const profile = ({navigation}) => {
   const [activeTab, setActiveTab] = useState("Listings");
 
   const handleTabPress = (tabName) => {
@@ -159,16 +220,17 @@ const profile = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={styles.header}>
-        <ProfileHeader />
-        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-      </View>
-      <ScrollView style={{ flex: 1 }}>
-        <View style={styles.contentContainer}>
-          <Text>profile</Text>
-          <Text onPress={() => signOut()}>Sign Out</Text>
+      <View style={{ flex: 0.85}}>
+        <View style={styles.header}>
+          <ProfileHeader />
+          <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         </View>
-      </ScrollView>
+      </View>
+      <View style={{ flex: 1 }}>
+        <View style={styles.contentContainer}>
+          <Content activeTab={activeTab} />
+        </View>
+      </View>
     </View>
   );
 };
@@ -180,9 +242,10 @@ const styles = StyleSheet.create({
     flex: 1,
     height: viewportHeightInPixels(40),
     zIndex: 1,
+    flexDirection: "column",
   },
   headerGreen: {
-    flex: 0.5,
+    flex: 1,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
@@ -190,7 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: secondary,
   },
   headerWhite: {
-    flex: 0.5,
+    flex: 1,
     paddingHorizontal: 25,
     backgroundColor: white,
   },
@@ -199,7 +262,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: "absolute",
-    top: viewportHeightInPixels(40 / 2) - 51,
+    top: viewportHeightInPixels(16) - 51,
     left: 25,
   },
   ratingsContainer: {
@@ -207,8 +270,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     justifyContent: "center",
     alignItems: "center",
-    top: viewportHeightInPixels(40 / 2) + 5,
+    top: viewportHeightInPixels(19) + 5,
     right: 25,
+    paddingTop: 5,
   },
   tabContainer: {
     flexDirection: "row",
@@ -227,9 +291,9 @@ const styles = StyleSheet.create({
     borderBottomColor: primary,
   },
   contentContainer: {
-    minHeight: viewportHeightInPixels(60) - 36,
-    width: viewportWidthInPixels(100),
+    flex: 1,
     backgroundColor: white,
-    padding: 23,
+    paddingHorizontal: viewportWidthInPixels(7),
+    justifyContent: "space-evenly",
   },
 });
