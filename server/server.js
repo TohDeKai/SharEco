@@ -12,6 +12,13 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
 
+const { uploadFile, getFileStream } = require("./s3");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+const fs = require("fs");
+const util = require("util");
+const unlinkFile = util.promisify(fs.unlink);
+
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
 
@@ -156,6 +163,7 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
   try {
     const user = await userdb.updateUser(
       req.params.username,
+      req.body.username,
       req.body.password,
       req.body.email,
       req.body.contactNumber,
@@ -163,7 +171,8 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
       req.body.isBanned,
       req.body.likedItem,
       req.body.wishList,
-      req.body.displayName
+      req.body.displayName,
+      req.body.aboutMe
     );
 
     if (user) {
@@ -235,11 +244,12 @@ app.post("/api/v1/userSignUp", async (req, res) => {
   }
 });
 
+// compare password
 app.get("/api/v1/users/:username/:password", async (req, res) => {
   const { username, password } = req.params;
 
   try {
-    const result = await admindb.getUserByUsername(username);
+    const result = await userdb.getUserByUsername(username);
 
     if (bcrypt.compareSync(password, result.password)) {
       res.status(201).json({
@@ -257,6 +267,42 @@ app.get("/api/v1/users/:username/:password", async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
+  }
+});
+
+// update password
+app.put("/api/v1/users/username/changePassword/:username", async (req, res) => {
+  const hashedPassword = bcrypt.hashSync(req.body.password, saltRounds);
+  try {
+    const user = await userdb.updateUser(
+      req.params.username,
+      req.body.username,
+      hashedPassword,
+      req.body.email,
+      req.body.contactNumber,
+      req.body.userPhotoUrl,
+      req.body.isBanned,
+      req.body.likedItem,
+      req.body.wishList,
+      req.body.displayName,
+      req.body.aboutMe
+    );
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
   }
 });
 
@@ -397,6 +443,7 @@ app.post("/api/v1/items", async (req, res) => {
     images,
     category,
     collectionLocations,
+    otherLocation,
   } = req.body;
 
   try {
@@ -410,7 +457,8 @@ app.post("/api/v1/items", async (req, res) => {
       depositFee,
       images,
       category,
-      collectionLocations
+      collectionLocations,
+      otherLocation
     );
 
     // Send the newly created user as the response
@@ -428,7 +476,7 @@ app.post("/api/v1/items", async (req, res) => {
 });
 
 //Update item
-app.put("/api/v1/items/itemId/:itemId", async (req, res) => { 
+app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
   try {
     const item = await listingdb.updateItem(
       req.params.itemId,
@@ -467,7 +515,7 @@ app.put("/api/v1/items/:itemId", async (req, res) => {
   try {
     const item = await listingdb.disableItem(
       req.params.itemId,
-      req.body.disabled,
+      req.body.disabled
     );
 
     if (item) {
@@ -539,3 +587,29 @@ app.post("/api/v1/admin/signIn", auth.AdminSignIn);
 app.post("/api/v1/admin/signUp", auth.AdminSignUp);
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
+
+// S3 functionalities for hosting of images
+// Upload new image
+app.post("/images/:userId", upload.single("image"), async (req, res) => {
+  const file = req.file;
+  console.log(file);
+
+  const result = await uploadFile(file);
+  await unlinkFile(file.path);
+  console.log(result);
+
+  // update photourl in userdb to result.key
+  const userId = req.params.userId;
+  try {
+  } catch (error) {}
+
+  res.send({ imagePath: `/images/${result.Key}` });
+});
+
+// Get image from S3
+app.get("images/:key", (req, res) => {
+  const key = req.params.key; // store this key value in userdb
+  const readStream = getFileStream(key);
+
+  readStream.pipe(res);
+});
