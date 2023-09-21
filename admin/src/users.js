@@ -52,7 +52,7 @@ const columns = [
 
 const Users = ({ username }) => {
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [selectedUsername, setSelectedUsername] = React.useState("");
   const [userData, setUserData] = useState([]);
 
