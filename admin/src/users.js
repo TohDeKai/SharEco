@@ -23,9 +23,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import axios from "axios";
 
 const columns = [
-  { id: "userid", label: "User ID", minWidth: 170 },
+  { id: "userId", label: "User ID", minWidth: 170 },
   { id: "username", label: "Username", minWidth: 100 },
   {
     id: "email",
@@ -38,110 +39,15 @@ const columns = [
     minWidth: 170,
   },
   {
-    id: "userPhotoURL",
-    label: "Avatar",
-    minWidth: 170,
-  },
-  {
-    id: "banned",
+    id: "isBanned",
     label: "Banned",
     minWidth: 170,
   },
 ];
 
-function createData(
-  userid,
-  username,
-  email,
-  contactNumber,
-  userPhotoURL,
-  banned
-) {
-  return { userid, username, email, contactNumber, userPhotoURL, banned };
-}
-
-const rows = [
-  createData(
-    "1",
-    "User1",
-    "Email1@email.com",
-    "82134564",
-    "inserturlhere.com/imgurl1",
-    "False"
-  ),
-  createData(
-    "2",
-    "User2",
-    "Email2@email.com",
-    "82134565",
-    "inserturlhere.com/imgurl2",
-    "True"
-  ),
-  createData(
-    "3",
-    "User3",
-    "Email3@email.com",
-    "82134566",
-    "inserturlhere.com/imgurl3",
-    "False"
-  ),
-  createData(
-    "4",
-    "User4",
-    "Email4@email.com",
-    "82134567",
-    "inserturlhere.com/imgurl4",
-    "True"
-  ),
-  createData(
-    "5",
-    "User5",
-    "Email5@email.com",
-    "82134568",
-    "inserturlhere.com/imgurl5",
-    "False"
-  ),
-  createData(
-    "6",
-    "User6",
-    "Email6@email.com",
-    "82134569",
-    "inserturlhere.com/imgurl6",
-    "True"
-  ),
-  createData(
-    "7",
-    "User7",
-    "Email7@email.com",
-    "82134570",
-    "inserturlhere.com/imgurl7",
-    "False"
-  ),
-  createData(
-    "8",
-    "User8",
-    "Email8@email.com",
-    "82134571",
-    "inserturlhere.com/imgurl8",
-    "True"
-  ),
-  createData(
-    "9",
-    "User9",
-    "Email9@email.com",
-    "82134572",
-    "inserturlhere.com/imgurl9",
-    "False"
-  ),
-  createData(
-    "10",
-    "User10",
-    "Email10@email.com",
-    "82134573",
-    "inserturlhere.com/imgurl10",
-    "True"
-  ),
-];
+const response = await axios.get("http://localhost:4000/api/v1/users");
+const rows = response["data"]["data"]["user"];
+console.log(rows);
 
 const Users = () => {
   const [page, setPage] = React.useState(0);
@@ -155,6 +61,7 @@ const Users = () => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
       <div style={{ display: "flex" }}>
@@ -216,6 +123,11 @@ const Users = () => {
                               <TableCell key={column.id} align={column.align}>
                                 {column.format && typeof value === "number"
                                   ? column.format(value)
+                                  : value}
+                                {column.id === "isBanned"
+                                  ? value
+                                    ? "Yes"
+                                    : "No"
                                   : value}
                               </TableCell>
                             );
