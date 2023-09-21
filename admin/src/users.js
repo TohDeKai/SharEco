@@ -24,6 +24,11 @@ import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import axios from "axios";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 
 const columns = [
   { id: "userId", label: "User ID", minWidth: 170 },
@@ -55,6 +60,17 @@ const Users = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
+  };
+
+  // To handle dialog
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
   };
 
   return (
@@ -126,9 +142,19 @@ const Users = () => {
                           })}
                           <TableCell>
                             {row.isBanned ? (
-                              <Button variant="outlined">Unban User</Button>
+                              <Button
+                                variant="outlined"
+                                onClick={handleClickOpen}
+                              >
+                                Unban User
+                              </Button>
                             ) : (
-                              <Button variant="contained">Ban User</Button>
+                              <Button
+                                variant="contained"
+                                onClick={handleClickOpen}
+                              >
+                                Ban User
+                              </Button>
                             )}
                           </TableCell>
                         </TableRow>
@@ -148,6 +174,30 @@ const Users = () => {
             />
           </Paper>
         </Box>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"You are banning a user"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Once user has been banned, they will no longer be able to access
+              their account and ShareEco's services
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleClose} autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </ThemeProvider>
   );
