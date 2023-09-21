@@ -378,7 +378,7 @@ const createListing = () => {
                 />
                 <RegularText
                   typography="Subtitle"
-                  style={{ alignSelf: "center", marginTop: 10 }}
+                  style={{ alignSelf: "center", marginTop: 10}}
                 >
                   By proceeding, you are agreeing to our{" "}
                   <View>
@@ -386,12 +386,14 @@ const createListing = () => {
                       onPress={handleShowTerms}
                       style={({ pressed }) => ({
                         opacity: pressed ? 0.5 : 1,
+                        alignSelf:"center"
                       })}
                     >
                       <Text
                         style={{
                           color: primary,
                           textDecorationLine: "underline",
+                          textAlign:"center",
                         }}
                       >
                         terms & conditions
@@ -409,6 +411,7 @@ const createListing = () => {
                   typography={"B1"}
                   color={white}
                   onPress={handleSubmit}
+                  style={{marginBottom: viewportHeightInPixels(3)}}
                 >
                   List Item
                 </RoundedButton>
