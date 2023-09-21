@@ -136,13 +136,11 @@ const Home = () => {
                   type="password"
                   id="cfmPassword"
                 />
-                <DialogActions sx={{ mb: 1 }}>
-                  <Button onClick={handleClose}>Cancel</Button>
-                  <Button
-                    variant="contained"
-                    type="submit"
-                    form="adminCreation"
-                  >
+                <DialogActions>
+                  <Button onClick={handleClose} color="error">
+                    Cancel
+                  </Button>
+                  <Button type="submit" form="adminCreation">
                     Register New Account
                   </Button>
                 </DialogActions>
