@@ -51,7 +51,7 @@ const createListing = () => {
   const [lockers, setLockers] = useState([]);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
-
+  console.log(`http://${BASE_URL}:4000/api/v1/items`);
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -151,6 +151,7 @@ const createListing = () => {
         collectionLocations: lockers,
         otherLocation: values.meetupLocation,
       };
+      
       const response = await axios.post(
         `http://${BASE_URL}:4000/api/v1/items`,
         itemData
@@ -162,10 +163,11 @@ const createListing = () => {
         console.log("Item created successfully");
         console.log(lockers);
         console.log(category);
+        router.push("profile");
         setImages([null, null, null, null, null]);
         setCategory("");
         setLockers([]);
-        router.push("/profile");
+        
       } else {
         //shouldnt come here
         console.log("Item creation unsuccessful");

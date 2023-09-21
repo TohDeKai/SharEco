@@ -259,9 +259,8 @@ const { width, height } = Dimensions.get("window");
 
 const styles = {
   container: {
-    marginTop: 20,
-    marginLeft: 10,
-    marginRight: 10,
+    flex: 1,
+    backgroundColor: white,
   },
   title: {
     fontSize: 22,
