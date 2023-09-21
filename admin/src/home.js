@@ -25,20 +25,20 @@ import axios from "axios";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 
 const Home = () => {
-  const [open, setOpen] = React.useState(false);
+  const [openAdminDialog, setOpenAdminDialog] = React.useState(false);
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleAdminClickOpen = () => {
+    setOpenAdminDialog(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleAdminClose = () => {
+    setOpenAdminDialog(false);
   };
 
   const navigate = useNavigate();
 
   const registerAdmin = async (event) => {
-    setOpen(false);
+    setOpenAdminDialog(false);
 
     event.preventDefault();
 
@@ -87,14 +87,14 @@ const Home = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={handleClickOpen}
+            onClick={handleAdminClickOpen}
             size="medium"
           >
             Create New Admin
           </Button>
 
           {/* Create New Admin Dialog */}
-          <Dialog open={open} onClose={handleClose}>
+          <Dialog open={openAdminDialog} onClose={handleAdminClose}>
             <DialogTitle>Creating new admin account</DialogTitle>
             <DialogContent>
               <DialogContentText>
@@ -137,7 +137,7 @@ const Home = () => {
                   id="cfmPassword"
                 />
                 <DialogActions>
-                  <Button onClick={handleClose} color="error">
+                  <Button onClick={handleAdminClose} color="error">
                     Cancel
                   </Button>
                   <Button type="submit" form="adminCreation">
