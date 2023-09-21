@@ -70,6 +70,11 @@ export default function SignIn() {
         console.log("Wrong password");
         setMessage("Invalid password");
         setIsSuccessMessage(false);
+      } else if (error.response && error.response.status === 403) {
+        // User is banned
+        console.log("User is banned");
+        setMessage("User is banned");
+        setIsSuccessMessage(false);
       } else {
         console.error("Error during login:", error);
         setMessage("Error: " + error);

@@ -21,6 +21,7 @@ const getBusinessVerifications = async () => {
   }
 };
 
+
 // Get business verification based on business verification ID
 const getBusinessVerificationById = async (businessVerificationId) => {
   try {
@@ -29,6 +30,17 @@ const getBusinessVerificationById = async (businessVerificationId) => {
       [businessVerificationId]
     );
     return result.rows[0]; // Assuming there's only one matching record
+
+//get business verification by businessVerificationId
+const getBusinessVerificationByBusinessVerificationId = async (businessVerificationId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."businessVerification" 
+      WHERE "businessVerificationId" = $1`,
+      [businessVerificationId]
+    );
+    return result.rows[0];
+
   } catch (err) {
     throw err;
   }
@@ -96,6 +108,7 @@ const deleteBusinessVerification = async (businessVerificationId) => {
 module.exports = {
   getBusinessVerifications,
   getBusinessVerificationById,
+  getBusinessVerificationByBusinessVerificationId,
   createBusinessVerification,
   updateBusinessVerification,
   deleteBusinessVerification,
