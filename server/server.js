@@ -728,9 +728,44 @@ app.put(
   }
 );
 
+// Approve business verification request based on business verification Id
+app.put(
+  "/api/v1/businessVerifications/approve/businessVerificationId",
+  async (req, res) => {
+    try {
+      var businessVerification = await businessdb.getBusinessVerificationById(
+        req.body.businessVerificationId
+      );
+      businessVerification = await businessdb.updateBusinessVerification(
+        businessVerification.businessVerificationId,
+        businessVerification.UEN,
+        businessVerification.documents,
+        req.body.approved,
+        businessVerification.originalUserId
+      );
+
+      if (businessVerification) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            businessVerification: businessVerification,
+          },
+        });
+      } else {
+        // Handle the case where the business verification is not found
+        res.status(404).json({ error: "Business Verification not found" });
+      }
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
 // Delete business verification request
 app.delete(
-  "/api/v1/businessVerifications/businessVerificationId/:businessVerificationId",
+  "/api/v1/businessVerifications/businessVerificationId",
   async (req, res) => {
     const businessVerificationId = req.params.businessVerificationId;
     try {
