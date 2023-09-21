@@ -49,9 +49,10 @@ const response = await axios.get("http://localhost:4000/api/v1/users");
 const rows = response["data"]["data"]["user"];
 console.log(rows);
 
-const Users = () => {
+const Users = ({ username }) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [selectedUsername, setSelectedUsername] = React.useState("");
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -66,11 +67,13 @@ const Users = () => {
   const [openBan, setBanOpen] = React.useState(false);
   const [openUnban, setUnbanOpen] = React.useState(false);
 
-  const handleClickOpen = () => {
+  const handleClickOpen = (username) => {
+    setSelectedUsername(username);
     setBanOpen(true);
   };
 
   const handleUnbanClickOpen = () => {
+    setSelectedUsername(username);
     setUnbanOpen(true);
   };
 
@@ -78,6 +81,8 @@ const Users = () => {
     setBanOpen(false);
     setUnbanOpen(false);
   };
+
+  const handleBan = () => {};
 
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
@@ -157,7 +162,7 @@ const Users = () => {
                             ) : (
                               <Button
                                 variant="contained"
-                                onClick={handleClickOpen}
+                                onClick={() => handleClickOpen(row.username)}
                               >
                                 Ban User
                               </Button>
@@ -189,7 +194,7 @@ const Users = () => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            {"You are banning a user"}
+            {`You are banning user: ${selectedUsername}`}
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
@@ -215,7 +220,7 @@ const Users = () => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            {"You are unbanning a user"}
+            {`You are unbanning user: ${selectedUsername}`}
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
