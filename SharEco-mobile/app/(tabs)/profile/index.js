@@ -21,6 +21,7 @@ import UserAvatar from "../../../components/UserAvatar";
 import Listing from "../../../components/ListingCard";
 import axios from "axios";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -35,21 +36,39 @@ const viewportWidthInPixels = (percentage) => {
 const ProfileHeader = () => {
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+  const [business, setBusiness] = useState({});
 
   useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const userData = await getUserData();
-        if (userData) {
-          setUser(userData);
+		async function fetchUserData() {
+			try {
+				const userData = await getUserData();
+				if (userData) {
+					setUser(userData);
         }
-      } catch (error) {
+			} catch (error) {
+				console.log(error.message);
+			}
+		}
+		fetchUserData();
+	}, [user]);
+
+  useEffect(() => {
+    async function fetchBusinessVerification() {
+      try {
+        const businessVerificationResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/businessVerifications/businessVerificationId/${user.businessVerificationId}`
+        );
+        if (businessVerificationResponse.status === 200) {
+          const businessVerificationData = businessVerificationResponse.data.data.businessVerification;
+          setBusiness(businessVerificationData);
+        }
+      } catch(error) {
         console.log(error.message);
       }
     }
-    fetchUserData();
-  }, [user]);
-
+    fetchBusinessVerification();
+  }, [user.businessVerificationId]);
+  
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
   };
@@ -104,11 +123,19 @@ const ProfileHeader = () => {
       </View>
       <View style={styles.avatarContainer}>
         <UserAvatar size="big" source={{uri: user.userPhotoUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}}/>
+        {business.approved && 
+        <View style={styles.businessBadge}>
+          <RegularText typography="B3" color={white}>
+            BIZ
+          </RegularText>
+        </View>
+        }
       </View>
       <View style={styles.ratingsContainer}>
         <RegularText typography="B1">0.0</RegularText>
         <Rating stars={0} size={20} color={yellow} />
         <RegularText typography="B1">(0)</RegularText>
+        
       </View>
     </View>
   );
@@ -167,7 +194,7 @@ const Content = ({ navigation, activeTab }) => {
           const userId = userData.userId;
           try {
             const response = await axios.get(
-              `http://172.20.10.2:4000/api/v1/items/${userId}`
+              `http://${BASE_URL}:4000/api/v1/items/${userId}`
             );
             console.log(response.status);
             if (response.status === 200) {
@@ -264,6 +291,17 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: viewportHeightInPixels(16) - 51,
     left: 25,
+  },
+  businessBadge: {
+    width: 35,
+    height: 18,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: secondary,
+    position: "relative",
+    alignSelf: "flex-end",
+    bottom: 18,
   },
   ratingsContainer: {
     flexDirection: "row",
