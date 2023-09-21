@@ -134,7 +134,7 @@ const ItemInformation = () => {
           </RegularText>
           <View style={style.seller}>
             <View style={style.avatarContainer}>
-              <UserAvatar size="small" source={{ uri: user.userPhotoUrl }} />
+              <UserAvatar size="medium" source={{ uri: user.userPhotoUrl }} />
             </View>
             <View style={style.profile}>
               <RegularText typography="H3">{user.displayName}</RegularText>
