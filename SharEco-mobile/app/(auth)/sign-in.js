@@ -1,10 +1,4 @@
-import {
-  Text,
-  View,
-  Image,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { Text, View, Image, StyleSheet, Dimensions } from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import axios from "axios";
@@ -69,6 +63,11 @@ export default function SignIn() {
         // Wrong password
         console.log("Wrong password");
         setMessage("Invalid password");
+        setIsSuccessMessage(false);
+      } else if (error.response && error.response.status === 403) {
+        // User is banned
+        console.log("User is banned");
+        setMessage("User is banned");
         setIsSuccessMessage(false);
       } else {
         console.error("Error during login:", error);
