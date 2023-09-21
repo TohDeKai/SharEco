@@ -30,7 +30,6 @@ import {
   SelectList,
   MultipleSelectList,
 } from "react-native-dropdown-select-list";
-import TermsAndConditions from "../../../components/TermsAndConditions";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportWidthInPixels = (percentage) => {
@@ -52,7 +51,6 @@ const createListing = () => {
   const [lockers, setLockers] = useState([]);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
-  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -135,11 +133,7 @@ const createListing = () => {
   };
 
   const handleShowTerms = () => {
-    setShowTerms(true);
-  };
-
-  const onClose = () => {
-    setShowTerms(false);
+    router.push("createListing/TermsAndConditions");
   };
 
   const handleCreateListing = async (values) => {
@@ -158,7 +152,7 @@ const createListing = () => {
         otherLocation: values.meetupLocation,
       };
       const response = await axios.post(
-        `http://172.20.10.3:4000/api/v1/items`,
+        `http://${BASE_URL}:4000/api/v1/items`,
         itemData
       );
 
@@ -367,17 +361,7 @@ const createListing = () => {
                   typography="Subtitle"
                   style={{ alignSelf: "center", marginTop: 10 }}
                 >
-                  By proceeding, you are agreeing to our{" "}
-                  {/* <TouchableOpacity onPress={router.push}>
-                    <Text
-                      style={{
-                        color: primary,
-                        textDecorationLine: "underline",
-                      }}
-                    >
-                      terms & conditions
-                    </Text>
-                  </TouchableOpacity> */}
+                  By proceeding, you are agreeing to our {" "}
                   <View>
                   <Pressable
                     onPress={handleShowTerms}
@@ -395,7 +379,6 @@ const createListing = () => {
                       terms & conditions
                     </Text>
                   </Pressable>
-                  {showTerms && <TermsAndConditions />}
                   </View>
                   
                 </RegularText>

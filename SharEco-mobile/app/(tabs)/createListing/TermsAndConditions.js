@@ -5,17 +5,25 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
+  Pressable,
   Button,
   Modal,
 } from "react-native";
 
-import SafeAreaContainer from "./containers/SafeAreaContainer";
-import RegularText from "./text/RegularText";
-import RoundedButton from "./buttons/RoundedButton";
-import Header from "./Header";
+import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
+import RegularText from "../../../components/text/RegularText";
+import RoundedButton from "../../../components/buttons/RoundedButton";
+import Header from "../../../components/Header";
 import { router } from "expo-router";
+import { colours } from "../../../components/ColourPalette";
+const { white } = colours;
 
-const TermsAndConditions = (...props) => {
+const viewportHeightInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").height;
+  return (percentage / 100) * screenWidth;
+};
+
+const TermsAndConditions = () => {
   const isCloseToBottom = ({
     layoutMeasurement,
     contentOffset,
@@ -28,29 +36,17 @@ const TermsAndConditions = (...props) => {
     );
   };
 
-  return (
-    <Modal
-      visible={props.showTerms}
-      animationType="slide" // Specify your desired animation type
-      transparent={false}
-    >
-    <SafeAreaContainer>
+  const handleClose = () => {
+    router.back();
+  };
 
+  return (
+    <SafeAreaContainer>
       <View style={styles.container}>
         <RegularText typography="H1" style={styles.title}>
           Terms and conditions
         </RegularText>
-        <ScrollView
-          style={styles.tcContainer}
-          scrollEventThrottle={100}
-          onScroll={({ nativeEvent }) => {
-            if (isCloseToBottom(nativeEvent)) {
-              this.setState({
-                accepted: true,
-              });
-            }
-          }}
-        >
+        <ScrollView style={styles.tcContainer} scrollEventThrottle={100}>
           <RegularText typography="B2" style={styles.tcP}>
             Please read these Terms and Conditions ("Terms") carefully before
             using SharEco, a Peer-to-Peer Sharing Rental Platform operated by
@@ -249,12 +245,14 @@ const TermsAndConditions = (...props) => {
             and agreed to these Terms and Conditions.
           </RegularText>
         </ScrollView>
-        <TouchableOpacity onPress={props.onClose}>
-            <Button title="Close Terms and Conditions" />
-          </TouchableOpacity>
+        <View style={{marginTop:viewportHeightInPixels(-3)}}>
+        <RoundedButton typography="B1" color={white} onPress={handleClose}>
+          Close Terms and Conditions
+        </RoundedButton>
+        </View>
+        
       </View>
     </SafeAreaContainer>
-    </Modal>
   );
 };
 const { width, height } = Dimensions.get("window");
@@ -291,8 +289,6 @@ const styles = {
   },
 
   button: {
-    backgroundColor: "#136AC7",
-    borderRadius: 5,
     padding: 10,
   },
 
