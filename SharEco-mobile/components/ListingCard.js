@@ -39,7 +39,7 @@ export default function ListingCard({item}) {
   } = item;
 
   const toMyListing = () => {
-    router.push({ pathname:"profile/myListing", params: {id: 11} })
+    router.push({ pathname:"profile/myListing", params: {itemId: itemId} })
   }; 
 
   return (
