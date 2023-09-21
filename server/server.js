@@ -217,6 +217,32 @@ app.delete("/api/v1/users/:userId", async (req, res) => {
   }
 });
 
+// Adding business verification to a user based on user ID
+app.put("/api/v1/users/businessVerification/:userId", async (req, res) => {
+  try {
+    const user = await userdb.addVerificationToUser(
+      req.params.userId,
+      req.body.businessVerificationId
+    );
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Create a new User upon Signing Up
 app.post("/api/v1/userSignUp", async (req, res) => {
   const { username, password, email, contactNumber, displayName, isBanned } =
@@ -588,7 +614,6 @@ app.post("/api/v1/admin/signIn", auth.AdminSignIn);
 app.post("/api/v1/admin/signUp", auth.AdminSignUp);
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
-
 
 // Business Verification functionalites
 
