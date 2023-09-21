@@ -333,6 +333,42 @@ app.put("/api/v1/users/username/changePassword/:username", async (req, res) => {
   }
 });
 
+// ban and unban user based on username
+app.put("/api/v1/users/ban/username", async (req, res) => {
+  try {
+    var user = await userdb.getUserByUsername(req.body.username);
+    user = await userdb.updateUser(
+      user.username,
+      user.username,
+      user.password,
+      user.email,
+      user.contactNumber,
+      user.userPhotoUrl,
+      req.body.isBanned,
+      user.likedItem,
+      user.wishList,
+      user.displayName,
+      user.aboutMe
+    );
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Admin CRUD operations
 app.get("/api/v1/admins", async (req, res) => {
   try {

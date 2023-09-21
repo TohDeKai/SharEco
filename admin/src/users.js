@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Sidebar from "./sidebar";
 import { styles } from "./styles";
@@ -13,17 +13,22 @@ import {
   Input,
   InputAdornment,
   FilledInput,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
 } from "@mui/material";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
 import axios from "axios";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 
 const columns = [
   { id: "userId", label: "User ID", minWidth: 170 },
@@ -38,15 +43,32 @@ const columns = [
     label: "Contact Number",
     minWidth: 170,
   },
+  {
+    id: "isBanned",
+    label: "Banned",
+    minWidth: 100,
+  },
 ];
 
-const response = await axios.get("http://localhost:4000/api/v1/users");
-const rows = response["data"]["data"]["user"];
-console.log(rows);
-
-const Users = () => {
+const Users = ({ username }) => {
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(20);
+  const [selectedUsername, setSelectedUsername] = React.useState("");
+  const [userData, setUserData] = useState([]);
+
+  useEffect(() => {
+    // Fetch user data when the component mounts
+    async function fetchData() {
+      try {
+        const response = await axios.get("http://localhost:4000/api/v1/users");
+        const users = response.data.data.user;
+        setUserData(users);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+    fetchData();
+  }, []);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -55,6 +77,81 @@ const Users = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
+  };
+
+  // To handle dialog
+  const [openBan, setBanOpen] = React.useState(false);
+  const [openUnban, setUnbanOpen] = React.useState(false);
+
+  const handleClickOpen = (username) => {
+    setSelectedUsername(username);
+    setBanOpen(true);
+  };
+
+  const handleUnbanClickOpen = (username) => {
+    setSelectedUsername(username);
+    setUnbanOpen(true);
+  };
+
+  const handleClose = () => {
+    setBanOpen(false);
+    setUnbanOpen(false);
+  };
+
+  const handleBan = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/users/ban/username`,
+        {
+          username: selectedUsername,
+          isBanned: true,
+        }
+      );
+      if (response.status === 200) {
+        // Update the user data after banning
+        const updatedUserData = userData.map((user) => {
+          if (user.username === selectedUsername) {
+            user.isBanned = true;
+          }
+          return user;
+        });
+        setUserData(updatedUserData);
+        console.log("Banned user successfully");
+      } else {
+        console.log("Ban failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error banning user:", error);
+    }
+  };
+
+  const handleUnban = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/users/ban/username`,
+        {
+          username: selectedUsername,
+          isBanned: false, // Set isBanned to false for unban
+        }
+      );
+      if (response.status === 200) {
+        // Update the user data after unbanning
+        const updatedUserData = userData.map((user) => {
+          if (user.username === selectedUsername) {
+            user.isBanned = false;
+          }
+          return user;
+        });
+        setUserData(updatedUserData);
+        console.log("Unbanned user successfully");
+      } else {
+        console.log("Unban failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error unbanning user:", error);
+    }
   };
 
   return (
@@ -70,21 +167,6 @@ const Users = () => {
         >
           <h1>Users</h1>
 
-          {/* Search Bar */}
-          <TextField
-            sx={{ mb: 2 }}
-            id="input-with-icon-textfield"
-            size="small"
-            placeholder="Search"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchOutlinedIcon />
-                </InputAdornment>
-              ),
-            }}
-            variant="outlined"
-          />
           <Paper sx={{ width: "100%", overflow: "hidden" }}>
             <TableContainer sx={{ maxHeight: 440 }}>
               <Table stickyHeader aria-label="sticky table">
@@ -102,7 +184,7 @@ const Users = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows
+                  {userData
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
                       return (
@@ -126,9 +208,21 @@ const Users = () => {
                           })}
                           <TableCell>
                             {row.isBanned ? (
-                              <Button variant="outlined">Unban User</Button>
+                              <Button
+                                variant="outlined"
+                                onClick={() =>
+                                  handleUnbanClickOpen(row.username)
+                                }
+                              >
+                                Unban User
+                              </Button>
                             ) : (
-                              <Button variant="contained">Ban User</Button>
+                              <Button
+                                variant="contained"
+                                onClick={() => handleClickOpen(row.username)}
+                              >
+                                Ban User
+                              </Button>
                             )}
                           </TableCell>
                         </TableRow>
@@ -140,7 +234,7 @@ const Users = () => {
             <TablePagination
               rowsPerPageOptions={[10, 25, 100]}
               component="div"
-              count={rows.length}
+              count={userData.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -148,6 +242,58 @@ const Users = () => {
             />
           </Paper>
         </Box>
+
+        {/* Dialog for Ban User */}
+        <Dialog
+          open={openBan}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {`You are banning user: ${selectedUsername}`}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Once the user has been banned, they will no longer be able to
+              access their account and ShareEco's services.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleBan} autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog for Unban User */}
+        <Dialog
+          open={openUnban}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {`You are unbanning user: ${selectedUsername}`}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              The user has previously been banned. After they are unbanned, they
+              will be able to access their account and ShareEco's services.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleUnban} autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </ThemeProvider>
   );
