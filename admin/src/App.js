@@ -5,6 +5,10 @@ import Home from "./home";
 import Users from "./users";
 import { AuthProvider, RequireAuth } from "react-auth-kit";
 import SignUp from "./signup";
+import Rental from "./rental";
+import Business from "./business";
+import Listing from "./listings";
+import Transaction from "./transactions";
 
 export default function App() {
   return (
@@ -28,11 +32,48 @@ export default function App() {
               </RequireAuth>
             }
           ></Route>
+
+          <Route
+            path="rental"
+            element={
+              <RequireAuth loginPath="signin">
+                <Rental />
+              </RequireAuth>
+            }
+          ></Route>
+
           <Route
             path="users"
             element={
               <RequireAuth loginPath="../signin">
                 <Users />
+              </RequireAuth>
+            }
+          ></Route>
+
+          <Route
+            path="businesses"
+            element={
+              <RequireAuth loginPath="signin">
+                <Business />
+              </RequireAuth>
+            }
+          ></Route>
+
+          <Route
+            path="listings"
+            element={
+              <RequireAuth loginPath="signin">
+                <Listing />
+              </RequireAuth>
+            }
+          ></Route>
+
+          <Route
+            path="transactions"
+            element={
+              <RequireAuth loginPath="signin">
+                <Transaction />
               </RequireAuth>
             }
           ></Route>
