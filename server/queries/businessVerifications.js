@@ -21,7 +21,6 @@ const getBusinessVerifications = async () => {
   }
 };
 
-
 // Get business verification based on business verification ID
 const getBusinessVerificationById = async (businessVerificationId) => {
   try {
@@ -30,9 +29,14 @@ const getBusinessVerificationById = async (businessVerificationId) => {
       [businessVerificationId]
     );
     return result.rows[0]; // Assuming there's only one matching record
-
+  } catch (err) {
+    throw err;
+  }
+};
 //get business verification by businessVerificationId
-const getBusinessVerificationByBusinessVerificationId = async (businessVerificationId) => {
+const getBusinessVerificationByBusinessVerificationId = async (
+  businessVerificationId
+) => {
   try {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."businessVerification" 
@@ -40,7 +44,6 @@ const getBusinessVerificationByBusinessVerificationId = async (businessVerificat
       [businessVerificationId]
     );
     return result.rows[0];
-
   } catch (err) {
     throw err;
   }
