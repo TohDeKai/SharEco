@@ -119,7 +119,99 @@ const Home = () => {
     setOpenAdminDialog(false);
   };
 
-  const navigate = useNavigate();
+  // To handle dialog
+  const [openApproveVerification, setOpenApproveVerification] =
+    React.useState(false);
+  const [openRemoveVerification, setOpenRemoveVerification] =
+    React.useState(false);
+  const [selectedBusinessVerificationId, setSelectedBusinessVerificationId] =
+    React.useState("");
+  const [userData, setUserData] = useState([]);
+
+  const handleApproveRequestClickOpen = (businessVerificationId) => {
+    setSelectedBusinessVerificationId(businessVerificationId);
+    setOpenApproveVerification(true);
+  };
+
+  const handleRemoveClickOpen = (businessVerificationId) => {
+    setSelectedBusinessVerificationId(businessVerificationId);
+    setOpenRemoveVerification(true);
+  };
+
+  const handleClose = () => {
+    setOpenApproveVerification(false);
+    setOpenRemoveVerification(false);
+  };
+
+  const handleRemove = async () => {
+    try {
+      console.log(selectedBusinessVerificationId);
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/businessVerifications/approve/businessVerificationId`,
+        {
+          businessVerificationId: selectedBusinessVerificationId,
+          approved: false,
+        }
+      );
+      console.log(response);
+      if (response.status === 200) {
+        // Update the business verification after approve
+        const updatedBusinessVerificationData = businessVerificationData.map(
+          (businessVerification) => {
+            if (
+              businessVerification.businessVerificationId ===
+              selectedBusinessVerificationId
+            ) {
+              businessVerification.approved = false;
+            }
+            return businessVerification;
+          }
+        );
+        setUserData(updatedBusinessVerificationData);
+        console.log("Removed verification successfully");
+      } else {
+        console.log("Removal failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error removing verification:", error);
+    }
+  };
+
+  const handleApprove = async () => {
+    try {
+      console.log(selectedBusinessVerificationId);
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/businessVerifications/approve/businessVerificationId`,
+        {
+          businessVerificationId: selectedBusinessVerificationId,
+          approved: true,
+        }
+      );
+      console.log(response);
+      if (response.status === 200) {
+        // Update the business verification after approve
+        const updatedBusinessVerificationData = businessVerificationData.map(
+          (businessVerification) => {
+            if (
+              businessVerification.businessVerificationId ===
+              selectedBusinessVerificationId
+            ) {
+              businessVerification.approved = true;
+            }
+            return businessVerification;
+          }
+        );
+        setUserData(updatedBusinessVerificationData);
+        console.log("Approve verification successfully");
+      } else {
+        console.log("Approval failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error approving verification:", error);
+    }
+  };
 
   const registerAdmin = async (event) => {
     setOpenAdminDialog(false);
@@ -249,11 +341,25 @@ const Home = () => {
                           })}
                           <TableCell>
                             {row.approved ? (
-                              <Button variant="outlined">
+                              <Button
+                                variant="outlined"
+                                onClick={() =>
+                                  handleRemoveClickOpen(
+                                    row.businessVerificationId
+                                  )
+                                }
+                              >
                                 Remove Verification
                               </Button>
                             ) : (
-                              <Button variant="contained">
+                              <Button
+                                variant="contained"
+                                onClick={() =>
+                                  handleApproveRequestClickOpen(
+                                    row.businessVerificationId
+                                  )
+                                }
+                              >
                                 Approve Request
                               </Button>
                             )}
@@ -328,6 +434,59 @@ const Home = () => {
                 </DialogActions>
               </Box>
             </DialogContent>
+          </Dialog>
+
+          {/* Dialog for Approve Verification */}
+          <Dialog
+            open={openApproveVerification}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {`You are approving business verification ID: ${selectedBusinessVerificationId}`}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Once user has been successfully verified as a business, they
+                will have a verification badge and be able advertise
+                successfully.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} color="error">
+                Cancel
+              </Button>
+              <Button onClick={handleApprove} autoFocus>
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Dialog for Remove Verification */}
+          <Dialog
+            open={openRemoveVerification}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {`You are removing business verification ID: ${selectedBusinessVerificationId}`}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                This user has already been verified. You are removing their
+                business verification status.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} color="error">
+                Cancel
+              </Button>
+              <Button onClick={handleRemove} autoFocus>
+                Confirm
+              </Button>
+            </DialogActions>
           </Dialog>
         </Box>
       </div>

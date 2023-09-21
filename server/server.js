@@ -730,7 +730,7 @@ app.put(
 
 // Approve business verification request based on business verification Id
 app.put(
-  "/api/v1/businessVerifications/businessVerificationId",
+  "/api/v1/businessVerifications/approve/businessVerificationId",
   async (req, res) => {
     try {
       var businessVerification = await businessdb.getBusinessVerificationById(
