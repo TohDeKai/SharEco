@@ -334,9 +334,9 @@ app.put("/api/v1/users/username/changePassword/:username", async (req, res) => {
 });
 
 // ban and unban user based on username
-app.put("/api/v1/users/ban/username/:username", async (req, res) => {
+app.put("/api/v1/users/ban/username", async (req, res) => {
   try {
-    var user = await userdb.getUserByUsername(req.params.username);
+    var user = await userdb.getUserByUsername(req.body.username);
     user = await userdb.updateUser(
       user.username,
       user.username,
