@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Sidebar from "./sidebar";
 import { styles } from "./styles";
@@ -38,11 +38,6 @@ const columns = [
   {
     id: "originalUserId",
     label: "User ID",
-    minWidth: 170,
-  },
-  {
-    id: "originalUsername",
-    label: "Username",
     minWidth: 170,
   },
   {
@@ -95,6 +90,23 @@ const rows = [
   createData("24", "UEN1234590", "24", "User24", "False"),
   createData("25", "UEN1234591", "25", "User25", "True"),
 ];
+
+// Define a function to fetch the originalUsername based on originalUserId
+async function fetchOriginalUser(originalUserId) {
+  try {
+    const response = await axios.get(
+      `http://localhost:4000/api/v1/users/${originalUserId}`
+    );
+    const userData = response.data.data.user;
+    return userData;
+  } catch (error) {
+    console.error(
+      `Error fetching originalUsername for userId ${originalUserId}:`,
+      error
+    );
+    return ""; // Return an empty string in case of an error
+  }
+}
 
 const Home = () => {
   const [openAdminDialog, setOpenAdminDialog] = React.useState(false);
@@ -154,6 +166,24 @@ const Home = () => {
     setPage(0);
   };
 
+  const [businessVerificationData, setBusinessVerificationData] = useState([]);
+
+  useEffect(() => {
+    // Fetch user data when the component mounts
+    async function fetchData() {
+      try {
+        const response = await axios.get(
+          "http://localhost:4000/api/v1/businessVerifications"
+        );
+        const businessVerifications = response.data.data.businessVerifications;
+        setBusinessVerificationData(businessVerifications);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+    fetchData();
+  }, []);
+
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
       <div style={{ display: "flex" }}>
@@ -195,7 +225,7 @@ const Home = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows
+                  {businessVerificationData
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
                       return (
@@ -209,12 +239,25 @@ const Home = () => {
                             const value = row[column.id];
                             return (
                               <TableCell key={column.id} align={column.align}>
-                                {column.format && typeof value === "number"
-                                  ? column.format(value)
+                                {column.id === "approved"
+                                  ? value
+                                    ? "Yes"
+                                    : "No"
                                   : value}
                               </TableCell>
                             );
                           })}
+                          <TableCell>
+                            {row.approved ? (
+                              <Button variant="outlined">
+                                Remove Verification
+                              </Button>
+                            ) : (
+                              <Button variant="contained">
+                                Approve Request
+                              </Button>
+                            )}
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -224,7 +267,7 @@ const Home = () => {
             <TablePagination
               rowsPerPageOptions={[10, 25, 100]}
               component="div"
-              count={rows.length}
+              count={businessVerificationData.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
