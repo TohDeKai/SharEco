@@ -21,6 +21,20 @@ const getBusinessVerifications = async () => {
   }
 };
 
+//get business verification by businessVerificationId
+const getBusinessVerificationByBusinessVerificationId = async (businessVerificationId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."businessVerification" 
+      WHERE "businessVerificationId" = $1`,
+      [businessVerificationId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 // Create new business verification
 const createBusinessVerification = async (
   UEN,
@@ -82,6 +96,7 @@ const deleteBusinessVerification = async (businessVerificationId) => {
 
 module.exports = {
   getBusinessVerifications,
+  getBusinessVerificationByBusinessVerificationId,
   createBusinessVerification,
   updateBusinessVerification,
   deleteBusinessVerification,
