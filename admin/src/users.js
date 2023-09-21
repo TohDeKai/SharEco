@@ -167,21 +167,6 @@ const Users = ({ username }) => {
         >
           <h1>Users</h1>
 
-          {/* Search Bar */}
-          <TextField
-            sx={{ mb: 2 }}
-            id="input-with-icon-textfield"
-            size="small"
-            placeholder="Search"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchOutlinedIcon />
-                </InputAdornment>
-              ),
-            }}
-            variant="outlined"
-          />
           <Paper sx={{ width: "100%", overflow: "hidden" }}>
             <TableContainer sx={{ maxHeight: 440 }}>
               <Table stickyHeader aria-label="sticky table">
