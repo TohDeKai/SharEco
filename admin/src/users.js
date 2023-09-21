@@ -38,11 +38,6 @@ const columns = [
     label: "Contact Number",
     minWidth: 170,
   },
-  {
-    id: "isBanned",
-    label: "Banned",
-    minWidth: 170,
-  },
 ];
 
 const response = await axios.get("http://localhost:4000/api/v1/users");
@@ -129,6 +124,13 @@ const Users = () => {
                               </TableCell>
                             );
                           })}
+                          <TableCell>
+                            {row.isBanned ? (
+                              <Button variant="outlined">Unban User</Button>
+                            ) : (
+                              <Button variant="contained">Ban User</Button>
+                            )}
+                          </TableCell>
                         </TableRow>
                       );
                     })}
