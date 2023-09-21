@@ -129,6 +129,9 @@ const createListing = () => {
   ));
 
   const handleBack = () => {
+    setImages([null, null, null, null, null]);
+    setCategory("");
+    setLockers([]);
     router.back();
   };
 
@@ -151,7 +154,7 @@ const createListing = () => {
         collectionLocations: lockers,
         otherLocation: values.meetupLocation,
       };
-      
+
       const response = await axios.post(
         `http://${BASE_URL}:4000/api/v1/items`,
         itemData
@@ -167,7 +170,6 @@ const createListing = () => {
         setImages([null, null, null, null, null]);
         setCategory("");
         setLockers([]);
-        
       } else {
         //shouldnt come here
         console.log("Item creation unsuccessful");
@@ -200,12 +202,13 @@ const createListing = () => {
               if (
                 values.title == "" ||
                 values.originalPrice == 0.0 ||
-                values.depositFee == 0.0 ||
+                //values.depositFee == 0.0 ||
                 values.description == "" ||
+                category == "" ||
                 //if both per hour and per day rental not specified
-                (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) //||
+                (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) ||
                 //if both picklocker or meetup location not specified
-                //(values.picklocker == "" && values.meetupLocation == "")
+                (lockers.length == 0 && values.meetupLocation == "")
               ) {
                 setMessage("Please fill in all fields");
                 setIsSuccessMessage(false);
@@ -246,6 +249,8 @@ const createListing = () => {
                 <SelectList
                   setSelected={setCategory}
                   data={categories}
+                  placeholder="Select Category"
+                  defaultOption={""}
                   boxStyles={{
                     marginTop: 16,
                     backgroundColor: inputbackground,
@@ -287,9 +292,14 @@ const createListing = () => {
                   />
                 </View>
                 <View style={styles.perDayContainer}>
-                  <RegularText typography="H3" style={styles.headerText}>
-                    Deposit Fee
-                  </RegularText>
+                  <View>
+                    <RegularText typography="H3" style={styles.headerText}>
+                      Deposit Fee
+                    </RegularText>
+                    <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
+                      (Optional)
+                    </RegularText>
+                  </View>
                   <StyledTextInput
                     placeholder="0.00"
                     value={values.depositFee}
@@ -313,9 +323,14 @@ const createListing = () => {
                   />
                 </View>
                 <View style={styles.perDayContainer}>
-                  <RegularText typography="H3" style={styles.perDayText}>
-                    Daily Rental Rate (9am-9am)
-                  </RegularText>
+                  <View>
+                    <RegularText typography="H3" style={styles.perDayText}>
+                      Daily Rental Rate
+                    </RegularText>
+                    <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
+                      (9am-9am)
+                    </RegularText>
+                  </View>
                   <StyledTextInput
                     value={values.rentalRateDay}
                     onChangeText={handleChange("rentalRateDay")}
@@ -331,8 +346,10 @@ const createListing = () => {
                 <MultipleSelectList
                   setSelected={(val) => setLockers(val)}
                   data={locations}
+                  placeholder="Select Locations"
                   save="value"
                   label="Locker locations"
+                  defaultOption={[]}
                   boxStyles={{
                     marginTop: 16,
                     backgroundColor: inputbackground,
@@ -363,26 +380,24 @@ const createListing = () => {
                   typography="Subtitle"
                   style={{ alignSelf: "center", marginTop: 10 }}
                 >
-                  By proceeding, you are agreeing to our {" "}
+                  By proceeding, you are agreeing to our{" "}
                   <View>
-                  <Pressable
-                    onPress={handleShowTerms}
-                    style={({ pressed }) => ({
-                      opacity: pressed ? 0.5 : 1,
-                    })}
-                  >
-                    
-                    <Text
-                      style={{
-                        color: primary,
-                        textDecorationLine: "underline",
-                      }}
+                    <Pressable
+                      onPress={handleShowTerms}
+                      style={({ pressed }) => ({
+                        opacity: pressed ? 0.5 : 1,
+                      })}
                     >
-                      terms & conditions
-                    </Text>
-                  </Pressable>
+                      <Text
+                        style={{
+                          color: primary,
+                          textDecorationLine: "underline",
+                        }}
+                      >
+                        terms & conditions
+                      </Text>
+                    </Pressable>
                   </View>
-                  
                 </RegularText>
                 <MessageBox
                   style={{ marginTop: 10 }}

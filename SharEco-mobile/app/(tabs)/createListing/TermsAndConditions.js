@@ -234,7 +234,7 @@ const TermsAndConditions = () => {
             without regard to its conflict of law principles.
           </RegularText>
           <RegularText typography="H3" style={styles.tcP}>
-            12. Governing Law
+          13. Contact Us
           </RegularText>
           <RegularText typography="B2" style={styles.tcL}>
             {"\u2022"} If you have any questions or concerns about these Terms
@@ -261,6 +261,8 @@ const styles = {
   container: {
     flex: 1,
     backgroundColor: white,
+    width:"85%",
+    alignSelf: "center"
   },
   title: {
     fontSize: 22,
