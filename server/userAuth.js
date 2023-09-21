@@ -37,12 +37,19 @@ const UserSignIn = async (req, res) => {
         },
         process.env.JWT_SECRET
       );
-
-      res.status(200).json({
-        status: "success",
-        message: "Logged in successfully",
-        token: jwtToken,
-      });
+      //if user is banned, cannot log in
+      if (!user.isBanned) {
+        res.status(200).json({
+          status: "success",
+          message: "Logged in successfully",
+          token: jwtToken,
+        });
+      } else {
+        res.status(403).json({
+          status: "error",
+          message: "User is banned",
+        });
+      }
     } else {
       // If the passwords don't match, send a 400 response
       res.status(400).json({
