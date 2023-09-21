@@ -71,15 +71,19 @@ const editProfile = () => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
+      // add image uri to s3, update user photoURL to the key of s3 that links to this image
     }
   };
+
   const handleBack = () => {
     router.back();
   };
+
   const handleOpenGallery = () => {
     console.log("Opening gallery");
     pickImage();
   };
+
   const handleSave = async (details) => {
     const username = user.username;
     const newDetails = {

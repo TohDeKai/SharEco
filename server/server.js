@@ -5,12 +5,20 @@ const morgan = require("morgan");
 const userdb = require("./queries/user");
 const admindb = require("./queries/admin");
 const listingdb = require("./queries/listing");
+const businessdb = require("./queries/businessVerifications");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
+
+const { uploadFile, getFileStream } = require("./s3");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+const fs = require("fs");
+const util = require("util");
+const unlinkFile = util.promisify(fs.unlink);
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
@@ -190,6 +198,32 @@ app.delete("/api/v1/users/:userId", async (req, res) => {
   const userId = req.params.userId;
   try {
     const user = await userdb.deleteUser(userId);
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Adding business verification to a user based on user ID
+app.put("/api/v1/users/businessVerification/:userId", async (req, res) => {
+  try {
+    const user = await userdb.addVerificationToUser(
+      req.params.userId,
+      req.body.businessVerificationId
+    );
 
     if (user) {
       res.status(200).json({
@@ -436,6 +470,7 @@ app.post("/api/v1/items", async (req, res) => {
     images,
     category,
     collectionLocations,
+    otherLocation,
   } = req.body;
 
   try {
@@ -449,7 +484,8 @@ app.post("/api/v1/items", async (req, res) => {
       depositFee,
       images,
       category,
-      collectionLocations
+      collectionLocations,
+      otherLocation
     );
 
     // Send the newly created user as the response
@@ -578,3 +614,135 @@ app.post("/api/v1/admin/signIn", auth.AdminSignIn);
 app.post("/api/v1/admin/signUp", auth.AdminSignUp);
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
+
+// Business Verification functionalites
+
+// Get all business verifications
+app.get("/api/v1/businessVerifications", async (req, res) => {
+  try {
+    const businessVerifications = await businessdb.getBusinessVerifications();
+    res.status(200).json({
+      status: "success",
+      data: {
+        businessVerifications: businessVerifications,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Creating new business verification request
+app.post("/api/v1/businessVerifications", async (req, res) => {
+  const { UEN, documents, approved, originalUserId } = req.body;
+
+  try {
+    const businessVerifications = await businessdb.createBusinessVerification(
+      UEN,
+      documents,
+      approved,
+      originalUserId
+    );
+
+    // Send the newly created business verification as the response
+    res.status(201).json({
+      status: "success",
+      data: {
+        businessVerifications: businessVerifications,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Updating business verification request
+app.put(
+  "/api/v1/businessVerifications/businessVerificationId/:businessVerificationId",
+  async (req, res) => {
+    try {
+      const businessVerification = await businessdb.updateBusinessVerification(
+        req.params.businessVerificationId,
+        req.body.UEN,
+        req.body.documents,
+        req.body.approved,
+        req.body.originalUserId
+      );
+
+      if (businessVerification) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            businessVerification: businessVerification,
+          },
+        });
+      } else {
+        // Handle the case where the business verification is not found
+        res.status(404).json({ error: "Business Verification not found" });
+      }
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
+// Delete business verification request
+app.delete(
+  "/api/v1/businessVerifications/businessVerificationId/:businessVerificationId",
+  async (req, res) => {
+    const businessVerificationId = req.params.businessVerificationId;
+    try {
+      const businessVerification = await businessdb.deleteBusinessVerification(
+        businessVerificationId
+      );
+
+      if (businessVerification) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            businessVerification: businessVerification,
+          },
+        });
+      } else {
+        // Handle the case where the businessVerification is not found
+        res.status(404).json({ error: "Business Verification not found" });
+      }
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
+// S3 functionalities for hosting of images
+// Upload new image
+app.post("/images/:userId", upload.single("image"), async (req, res) => {
+  const file = req.file;
+  console.log(file);
+
+  const result = await uploadFile(file);
+  await unlinkFile(file.path);
+  console.log(result);
+
+  // update photourl in userdb to result.key
+  const userId = req.params.userId;
+  try {
+  } catch (error) {}
+
+  res.send({ imagePath: `/images/${result.Key}` });
+});
+
+// Get image from S3
+app.get("images/:key", (req, res) => {
+  const key = req.params.key; // store this key value in userdb
+  const readStream = getFileStream(key);
+
+  readStream.pipe(res);
+});

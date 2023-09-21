@@ -74,7 +74,18 @@ const createUser = async (
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."user" 
         (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName", "aboutMe") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning *`,
-      [username, password, email, contactNumber, "", false, [], [], displayName, ""]
+      [
+        username,
+        password,
+        email,
+        contactNumber,
+        "",
+        false,
+        [],
+        [],
+        displayName,
+        "",
+      ]
     );
     return result.rows[0];
   } catch (error) {
@@ -158,6 +169,33 @@ const deleteUser = async (userId) => {
   }
 };
 
+// Add business verification request to user
+// User will set its businessVerificationId to that and BusinessVerification will set its originalUserId to that
+// Returns user
+const addVerificationToUser = async (userId, businessVerificationId) => {
+  try {
+    await pool.query(
+      `UPDATE "sharEco-schema"."businessVerification" 
+    SET "originalUserId" = $1
+    WHERE "businessVerificationId" = $2
+    RETURNING *`,
+      [userId, businessVerificationId]
+    );
+
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."user" 
+    SET "businessVerificationId" = $1
+    WHERE "userId" = $2
+    RETURNING *`,
+      [businessVerificationId, userId]
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   getUsers,
   getUserById,
@@ -167,4 +205,5 @@ module.exports = {
   deleteUser,
   updateAccountUser,
   getUserByUsername,
+  addVerificationToUser,
 };
