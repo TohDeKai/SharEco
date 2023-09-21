@@ -63,14 +63,20 @@ const Users = () => {
   };
 
   // To handle dialog
-  const [open, setOpen] = React.useState(false);
+  const [openBan, setBanOpen] = React.useState(false);
+  const [openUnban, setUnbanOpen] = React.useState(false);
 
   const handleClickOpen = () => {
-    setOpen(true);
+    setBanOpen(true);
+  };
+
+  const handleUnbanClickOpen = () => {
+    setUnbanOpen(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setBanOpen(false);
+    setUnbanOpen(false);
   };
 
   return (
@@ -144,7 +150,7 @@ const Users = () => {
                             {row.isBanned ? (
                               <Button
                                 variant="outlined"
-                                onClick={handleClickOpen}
+                                onClick={handleUnbanClickOpen}
                               >
                                 Unban User
                               </Button>
@@ -174,8 +180,10 @@ const Users = () => {
             />
           </Paper>
         </Box>
+
+        {/* Dialog for Ban User */}
         <Dialog
-          open={open}
+          open={openBan}
           onClose={handleClose}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
@@ -187,6 +195,32 @@ const Users = () => {
             <DialogContentText id="alert-dialog-description">
               Once user has been banned, they will no longer be able to access
               their account and ShareEco's services
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleClose} autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog for Unban User */}
+        <Dialog
+          open={openUnban}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"You are unbanning a user"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              User has previously been banned. After they are unbanned, they
+              will be able to access their account and ShareEco's services
             </DialogContentText>
           </DialogContent>
           <DialogActions>
