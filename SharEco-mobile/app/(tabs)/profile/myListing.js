@@ -24,6 +24,7 @@ import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import CarouselItem from "../../../components/CarouselItem";
+import ListingNav from "../../../styles/listingNav";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -197,9 +198,11 @@ const CustomPaging = ({ data, activeSlide }) => {
 
 const listing = () => {
   return (
-    <View style={style.container}>
-      <ItemInformation />
-    </View>
+    <ListingNav>
+      <View style={style.container}>
+        <ItemInformation />
+      </View>
+    </ListingNav>
   );
 };
 
