@@ -466,6 +466,6 @@ const styles = StyleSheet.create({
   },
   perDayInputBox: {
     justifyContent: "flex-end",
-    width: viewportWidthInPixels(23),
+    width: viewportWidthInPixels(35),
   },
 });

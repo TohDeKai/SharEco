@@ -479,7 +479,7 @@ console.log(listingItem);
                   <View style={styles.nav}>
                     <View style={styles.buttonContainer}>
                       <SecondaryButton typography={"H3"} color={primary} onPress={handleDelist}>
-                        Delist Listing
+                        Delete Listing
                       </SecondaryButton>
                     </View>
                     <View style={styles.buttonContainer}>
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
   },
   perDayInputBox: {
     justifyContent: "flex-end",
-    width: viewportWidthInPixels(23),
+    width: viewportWidthInPixels(35),
   },
   nav: {
     bottom: 0,

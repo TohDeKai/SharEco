@@ -88,17 +88,27 @@ const ItemInformation = () => {
     userId,
   } = listingItem;
 
+  console.log(collectionLocations);
+  const formattedLocations = collectionLocations
+    ? collectionLocations.join(", ")
+    : collectionLocations;
+  console.log(formattedLocations);
+
+  // const collectionLocationValues = Object.values(collectionLocations);
+
   return (
     <View>
-
-      <ScrollView showsVerticalScrollIndicator={false} style={{marginBottom:50}}>
-      <View style={style.imgContainer}>
-        <View style={style.header}>
-          <Header action="back" onPress={handleBack} />
-        </View>
-        <View style={{ marginTop: -31 }}>
-          <CustomSlider data={images} />
-
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ marginBottom: 50 }}
+      >
+        <View style={style.imgContainer}>
+          <View style={style.header}>
+            <Header action="back" onPress={handleBack} />
+          </View>
+          <View style={{ marginTop: -31 }}>
+            <CustomSlider data={images} />
+          </View>
         </View>
 
         <View style={style.textContainer}>
