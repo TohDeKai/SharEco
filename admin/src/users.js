@@ -43,11 +43,6 @@ const columns = [
     label: "Contact Number",
     minWidth: 170,
   },
-  {
-    id: "isBanned",
-    label: "Banned",
-    minWidth: 100,
-  },
 ];
 
 const Users = ({ username }) => {
@@ -198,11 +193,7 @@ const Users = ({ username }) => {
                             const value = row[column.id];
                             return (
                               <TableCell key={column.id} align={column.align}>
-                                {column.id === "isBanned"
-                                  ? value
-                                    ? "Yes"
-                                    : "No"
-                                  : value}
+                                {value}
                               </TableCell>
                             );
                           })}
