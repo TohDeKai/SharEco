@@ -20,6 +20,14 @@ const UserSignIn = async (req, res) => {
       });
     }
 
+    if (user.isBanned) {
+      // If the user is banned, send a 403 response
+      return res.status(403).json({
+        status: "error",
+        message: "User is banned",
+      });
+    }
+
     if (bcrypt.compareSync(password, user.password)) {
       // If the passwords match, send a success response
       const jwtToken = jwt.sign(
