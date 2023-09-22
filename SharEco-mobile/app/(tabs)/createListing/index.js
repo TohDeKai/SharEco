@@ -166,10 +166,10 @@ const createListing = () => {
         console.log("Item created successfully");
         console.log(lockers);
         console.log(category);
-        router.push("profile");
         setImages([null, null, null, null, null]);
         setCategory("");
         setLockers([]);
+        router.push("profile");
       } else {
         //shouldnt come here
         console.log("Item creation unsuccessful");
