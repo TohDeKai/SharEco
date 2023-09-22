@@ -5,9 +5,10 @@ import {
   KeyboardAvoidingView,
   StyleSheet,
   Pressable,
+  Dimensions,
 } from "react-native";
 import React, { useState, useEffect } from "react";
-import { Formik } from "formik";
+import { Formik, Field } from "formik";
 import { router, Link } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -24,9 +25,22 @@ import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black } = colours;
-import DropdownList from "../../../components/inputs/DropdownList";
-import MultipleDropdownList from "../../../components/inputs/MultipleDropdownList";
 import { useAuth } from "../../../context/auth";
+import {
+  SelectList,
+  MultipleSelectList,
+} from "react-native-dropdown-select-list";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+const viewportWidthInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").width;
+  return (percentage / 100) * screenWidth;
+};
+
+const viewportHeightInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").height;
+  return (percentage / 100) * screenWidth;
+};
 
 const createListing = () => {
   const [message, setMessage] = useState("");
@@ -37,7 +51,7 @@ const createListing = () => {
   const [lockers, setLockers] = useState([]);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
-
+  console.log(`http://${BASE_URL}:4000/api/v1/items`);
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -52,16 +66,30 @@ const createListing = () => {
     fetchUserData();
   }, []);
 
-  const categories = ["Mobiles","Appliances","Cameras","Computers","Winterwear","Fashion","Sporting Equipment"];
+  const categories = [
+    "Audio",
+    "Car Accessories",
+    "Computer & Tech",
+    "Health & Personal Care",
+    "Hobbies & Craft",
+    "Home & Living",
+    "Luxury",
+    "Mens Fashion",
+    "Womens Fashion",
+    "Mobile Phone & Gadgets",
+    "Photography & Videography",
+    "Sports Equipment",
+    "Vehicles",
+  ];
 
   const locations = [
-    { key: "1", value: "Hougang" },
-    { key: "2", value: "Punggol" },
-    { key: "3", value: "Serangoon" },
-    { key: "4", value: "Orchard" },
-    { key: "5", value: "Woodlands" },
-    { key: "6", value: "Yishun" },
-    { key: "7", value: "Clementi" },
+    "Hougang",
+    "Punggol",
+    "Serangoon",
+    "Orchard",
+    "Woodlands",
+    "Yishun",
+    "Clementi",
   ];
 
   const handleOpenGallery = (imageNumber) => {
@@ -101,10 +129,17 @@ const createListing = () => {
   ));
 
   const handleBack = () => {
+    setImages([null, null, null, null, null]);
+    setCategory("");
+    setLockers([]);
     router.back();
   };
 
-  const handleCreateListing = async (values, images, category, lockers) =>{
+  const handleShowTerms = () => {
+    router.push("createListing/TermsAndConditions");
+  };
+
+  const handleCreateListing = async (values) => {
     try {
       const itemData = {
         userId: user.userId,
@@ -116,11 +151,12 @@ const createListing = () => {
         depositFee: values.depositFee,
         images: images,
         category: category,
-        collectionLocations:lockers,
-        otherLocation:values.meetupLocation,
+        collectionLocations: lockers,
+        otherLocation: values.meetupLocation,
       };
+
       const response = await axios.post(
-        "http://172.20.10.8:4000/api/v1/items",
+        `http://${BASE_URL}:4000/api/v1/items`,
         itemData
       );
 
@@ -128,8 +164,10 @@ const createListing = () => {
 
       if (response.status === 201) {
         console.log("Item created successfully");
-        router.push("/profile");
-        setImages([null,null,null,null,null]);
+        console.log(lockers);
+        console.log(category);
+        router.push("profile");
+        setImages([null, null, null, null, null]);
         setCategory("");
         setLockers([]);
       } else {
@@ -143,7 +181,7 @@ const createListing = () => {
         console.log("Error during item creation: ", error.message);
       }
     }
-  }
+  };
 
   return (
     <SafeAreaContainer>
@@ -153,7 +191,6 @@ const createListing = () => {
           <Formik
             initialValues={{
               title: "",
-              category: "",
               originalPrice: 0.0,
               depositFee: 0.0,
               rentalRateHour: 0.0,
@@ -164,19 +201,19 @@ const createListing = () => {
             onSubmit={(values, actions) => {
               if (
                 values.title == "" ||
-                //values.category == "" ||
                 values.originalPrice == 0.0 ||
-                values.depositFee == 0.0 ||
+                //values.depositFee == 0.0 ||
                 values.description == "" ||
+                category == "" ||
                 //if both per hour and per day rental not specified
-                (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) //||
+                (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) ||
                 //if both picklocker or meetup location not specified
-                //(values.picklocker == "" && values.meetupLocation == "")
+                (lockers.length == 0 && values.meetupLocation == "")
               ) {
                 setMessage("Please fill in all fields");
                 setIsSuccessMessage(false);
               } else {
-                handleCreateListing(values, images, category, lockers);
+                handleCreateListing(values);
                 actions.resetForm();
               }
             }}
@@ -209,10 +246,23 @@ const createListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Category
                 </RegularText>
-                <DropdownList
-                  setSelected={(val) => setCategory(val)}
+                <SelectList
+                  setSelected={setCategory}
                   data={categories}
-                  save="value"
+                  placeholder="Select Category"
+                  defaultOption={""}
+                  boxStyles={{
+                    marginTop: 16,
+                    backgroundColor: inputbackground,
+                    padding: 13,
+                    paddingRight: 28,
+                    borderRadius: 9,
+                    fontSize: 14,
+                    width: "100%",
+                    color: black,
+                    borderColor: inputbackground,
+                    borderWidth: 2,
+                  }}
                 />
 
                 <RegularText typography="H3" style={styles.headerText}>
@@ -222,10 +272,10 @@ const createListing = () => {
                   placeholder="Include details helpful to borrowers"
                   value={values.description}
                   onChangeText={handleChange("description")}
-                  maxLength={300}
+                  maxLength={500}
                   multiline={true}
                   scrollEnabled={false}
-                  height={120}
+                  minHeight={120}
                 />
 
                 <View style={styles.perDayContainer}>
@@ -242,9 +292,14 @@ const createListing = () => {
                   />
                 </View>
                 <View style={styles.perDayContainer}>
-                  <RegularText typography="H3" style={styles.headerText}>
-                    Deposit Fee
-                  </RegularText>
+                  <View>
+                    <RegularText typography="H3" style={styles.headerText}>
+                      Deposit Fee
+                    </RegularText>
+                    <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
+                      (Optional)
+                    </RegularText>
+                  </View>
                   <StyledTextInput
                     placeholder="0.00"
                     value={values.depositFee}
@@ -268,9 +323,14 @@ const createListing = () => {
                   />
                 </View>
                 <View style={styles.perDayContainer}>
-                  <RegularText typography="H3" style={styles.perDayText}>
-                    Daily Rental Rate
-                  </RegularText>
+                  <View>
+                    <RegularText typography="H3" style={styles.perDayText}>
+                      Daily Rental Rate
+                    </RegularText>
+                    <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
+                      (9am-9am)
+                    </RegularText>
+                  </View>
                   <StyledTextInput
                     value={values.rentalRateDay}
                     onChangeText={handleChange("rentalRateDay")}
@@ -283,38 +343,69 @@ const createListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Collection & return location
                 </RegularText>
-                <MultipleDropdownList
-                  data={locations}
+                <MultipleSelectList
                   setSelected={(val) => setLockers(val)}
+                  data={locations}
+                  placeholder="Select Locations"
+                  save="value"
+                  label="Locker locations"
+                  defaultOption={[]}
+                  boxStyles={{
+                    marginTop: 16,
+                    backgroundColor: inputbackground,
+                    padding: 13,
+                    paddingRight: 28,
+                    borderRadius: 9,
+                    fontSize: 14,
+                    width: "100%",
+                    color: black,
+                    borderColor: inputbackground,
+                    borderWidth: 2,
+                  }}
                 />
+
                 <RegularText typography="B2" style={styles.headerText}>
-                  Other meet up location
+                  Other meet up location/Location details
                 </RegularText>
                 <StyledTextInput
                   placeholder="Add details of your meet up location (optional)"
                   value={values.meetupLocation}
                   onChangeText={handleChange("meetupLocation")}
-                  maxLength={200}
+                  maxLength={300}
                   multiline={true}
                   scrollEnabled={false}
-                  height={80}
+                  minHeight={80}
                 />
                 <RegularText
                   typography="Subtitle"
-                  style={{ alignSelf: "center", marginTop: 10 }}
+                  style={{ alignSelf: "center", marginTop: 20 }}
                 >
-                  By proceeding, you are agreeing to our{" "}
-                  <Link href="/termsAndConditionsModal">
-                    <Text
+                  By proceeding, you are agreeing to our
+                </RegularText>
+                <View
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Pressable
+                    onPress={handleShowTerms}
+                    style={({ pressed }) => ({
+                      opacity: pressed ? 0.5 : 1,
+                      alignSelf: "center",
+                    })}
+                  >
+                    <RegularText typography="Subtitle"
                       style={{
                         color: primary,
                         textDecorationLine: "underline",
+                        textAlign: "center",
                       }}
                     >
                       terms & conditions
-                    </Text>
-                  </Link>
-                </RegularText>
+                    </RegularText>
+                  </Pressable>
+                </View>
                 <MessageBox
                   style={{ marginTop: 10 }}
                   success={isSuccessMessage}
@@ -325,6 +416,7 @@ const createListing = () => {
                   typography={"B1"}
                   color={white}
                   onPress={handleSubmit}
+                  style={{ marginBottom: viewportHeightInPixels(3) }}
                 >
                   List Item
                 </RoundedButton>
@@ -361,19 +453,19 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   perDayContainer: {
-    flexDirection:"row",
+    flexDirection: "row",
     alignItems: "center",
     display: "flex",
     justifyContent: "space-between",
     position: "relative",
-    width: 364,
+    width: viewportWidthInPixels(85),
   },
-  perDayText:{
+  perDayText: {
     position: "relative",
-    width: "fit-content%"
+    width: "fit-content%",
   },
-  perDayInputBox:{
-    justifyContent:"flex-end",
-    width: 134,
-  }
+  perDayInputBox: {
+    justifyContent: "flex-end",
+    width: viewportWidthInPixels(23),
+  },
 });

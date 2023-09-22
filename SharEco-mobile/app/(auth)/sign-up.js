@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Dimensions,
+  Pressable,
 } from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
@@ -36,6 +37,10 @@ export default function SignIn() {
 
   const handleContinue = () => {
     setStep("your-profile");
+  };
+
+  const handleShowTerms = () => {
+    router.push("TermsAndConditions");
   };
 
   const handleSignup = async (credentials) => {
@@ -155,6 +160,36 @@ export default function SignIn() {
                   value={values.displayName}
                   onChangeText={handleChange("displayName")}
                 />
+                <RegularText
+                  typography="Subtitle"
+                  style={{ alignSelf: "center", marginTop: 20 }}
+                >
+                  By proceeding, you are agreeing to our
+                </RegularText>
+                <View
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Pressable
+                    onPress={handleShowTerms}
+                    style={({ pressed }) => ({
+                      opacity: pressed ? 0.5 : 1,
+                      alignSelf: "center",
+                    })}
+                  >
+                    <RegularText typography="Subtitle"
+                      style={{
+                        color: primary,
+                        textDecorationLine: "underline",
+                        textAlign: "center",
+                      }}
+                    >
+                      terms & conditions
+                    </RegularText>
+                  </Pressable>
+                </View>
                 <MessageBox
                   style={{ marginTop: 10 }}
                   success={isSuccessMessage}
