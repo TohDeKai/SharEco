@@ -188,7 +188,7 @@ const ItemInformation = () => {
               Collection & Return Locations
             </RegularText>
             <RegularText typography="B2" style={style.content}>
-              {collectionLocations}
+              {formattedLocations}
             </RegularText>
           </View>
         </View>
