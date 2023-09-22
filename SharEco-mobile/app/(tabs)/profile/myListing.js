@@ -90,14 +90,15 @@ const ItemInformation = () => {
 
   return (
     <View>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={style.imgContainer}>
-          <View style={style.header}>
-            <Header action="back" onPress={handleBack} />
-          </View>
-          <View style={{ marginTop: -31 }}>
-            <CustomSlider data={images} />
-          </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} style={{marginBottom:50}}>
+      <View style={style.imgContainer}>
+        <View style={style.header}>
+          <Header action="back" onPress={handleBack} />
+        </View>
+        <View style={{ marginTop: -31 }}>
+          <CustomSlider data={images} />
+
         </View>
 
         <View style={style.textContainer}>
