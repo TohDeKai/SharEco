@@ -40,18 +40,18 @@ const ProfileHeader = () => {
   const [business, setBusiness] = useState({});
 
   useEffect(() => {
-		async function fetchUserData() {
-			try {
-				const userData = await getUserData();
-				if (userData) {
-					setUser(userData);
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
         }
-			} catch (error) {
-				console.log(error.message);
-			}
-		}
-		fetchUserData();
-	}, [user]);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, [user]);
 
   useEffect(() => {
     async function fetchBusinessVerification() {
@@ -60,16 +60,17 @@ const ProfileHeader = () => {
           `http://${BASE_URL}:4000/api/v1/businessVerifications/businessVerificationId/${user.businessVerificationId}`
         );
         if (businessVerificationResponse.status === 200) {
-          const businessVerificationData = businessVerificationResponse.data.data.businessVerification;
+          const businessVerificationData =
+            businessVerificationResponse.data.data.businessVerification;
           setBusiness(businessVerificationData);
         }
-      } catch(error) {
+      } catch (error) {
         console.log(error.message);
       }
     }
     fetchBusinessVerification();
   }, [user.businessVerificationId]);
-  
+
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
   };
@@ -123,20 +124,26 @@ const ProfileHeader = () => {
         </RegularText>
       </View>
       <View style={styles.avatarContainer}>
-        <UserAvatar size="big" source={{uri: user.userPhotoUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}}/>
-        {business.approved && 
-        <View style={styles.businessBadge}>
-          <RegularText typography="B3" color={white}>
-            BIZ
-          </RegularText>
-        </View>
-        }
+        <UserAvatar
+          size="big"
+          source={{
+            uri:
+              user.userPhotoUrl ||
+              "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+          }}
+        />
+        {business.approved && (
+          <View style={styles.businessBadge}>
+            <RegularText typography="B3" color={white}>
+              BIZ
+            </RegularText>
+          </View>
+        )}
       </View>
       <View style={styles.ratingsContainer}>
         <RegularText typography="B1">0.0</RegularText>
         <Rating stars={0} size={20} color={yellow} />
         <RegularText typography="B1">(0)</RegularText>
-        
       </View>
     </View>
   );
@@ -190,7 +197,7 @@ const Content = ({ navigation, activeTab }) => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-  
+
     try {
       const userData = await getUserData();
       if (userData) {
@@ -217,11 +224,11 @@ const Content = ({ navigation, activeTab }) => {
       // Handle the getUserData error appropriately
       console.log(error.message);
     }
-  
+
     // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
   };
-  
+
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -259,6 +266,40 @@ const Content = ({ navigation, activeTab }) => {
 
   return (
     <View style={{ flex: 1 }}>
+      {activeTab == "Listings" && (userItems ? userItems.length : 0) === 0 && (
+        <View style={{ marginTop: 160 }}>
+          <RegularText
+            typography="B2"
+            style={{ marginBottom: 5, textAlign: "center" }}
+          >
+            You have no listings yet,
+          </RegularText>
+          <RegularText typography="H3" style={{ textAlign: "center" }}>
+            list an item now!
+          </RegularText>
+        </View>
+      )}
+      {activeTab == "Reviews" && (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Ionicons
+            name="construct"
+            color={primary}
+            size={30}
+            style={{ marginBottom: 20, alignItems: "center" }}
+          />
+          <RegularText
+            typography="B2"
+            style={{ marginBottom: 5, textAlign: "center" }}
+          >
+            We are still working on this,
+          </RegularText>
+          <RegularText typography="H3" style={{ textAlign: "center" }}>
+            hang on tight!
+          </RegularText>
+        </View>
+      )}
       {activeTab == "Listings" && (
         <FlatList
           data={userItems}
@@ -267,10 +308,7 @@ const Content = ({ navigation, activeTab }) => {
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <ListingCard item={item} />}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
         />
       )}
@@ -279,7 +317,7 @@ const Content = ({ navigation, activeTab }) => {
 };
 
 //Main
-const profile = ({navigation}) => {
+const profile = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState("Listings");
 
   const handleTabPress = (tabName) => {
@@ -289,7 +327,7 @@ const profile = ({navigation}) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={{ flex: 0.85}}>
+      <View style={{ flex: 0.85 }}>
         <View style={styles.header}>
           <ProfileHeader />
           <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
@@ -375,5 +413,12 @@ const styles = StyleSheet.create({
     backgroundColor: white,
     paddingHorizontal: viewportWidthInPixels(7),
     justifyContent: "space-evenly",
+  },
+  emptyText: {
+    display: "flex",
+    flex: 1,
+    justifyContent: "center",
+    width: "100%",
+    marginTop: "20%",
   },
 });
