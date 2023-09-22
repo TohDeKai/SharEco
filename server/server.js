@@ -551,7 +551,8 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
       req.body.depositFee,
       req.body.images,
       req.body.category,
-      req.body.collectionLocations
+      req.body.collectionLocations,
+      req.body.otherLocation,
     );
 
     if (item) {

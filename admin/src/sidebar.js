@@ -89,11 +89,11 @@ const Sidebar = () => {
         anchor="left"
       >
         <Toolbar />
-        <Box sx={{ pl: 3, pr: 3 }}>
+        <Box sx={{ pl: 2, pr: 3 }}>
           <img
             src={require("./images/logos/logo light bg cropped.png")}
-            width={175}
-            height={43.75}
+            width={177.5}
+            height={45}
             style={{ marginBottom: "10%" }}
           />
           <Typography variant="subtitle2" gutterBottom>

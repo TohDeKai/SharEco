@@ -6,6 +6,7 @@ import {
   Dimensions,
   Pressable,
   FlatList,
+  RefreshControl,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
@@ -184,8 +185,43 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
 
 const Content = ({ navigation, activeTab }) => {
   const [userItems, setUserItems] = useState();
+  const [refreshing, setRefreshing] = useState(false);
   const { getUserData } = useAuth();
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+  
+    try {
+      const userData = await getUserData();
+      if (userData) {
+        const userId = userData.userId;
+        try {
+          const response = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/items/${userId}`
+          );
+          console.log(response.status);
+          if (response.status === 200) {
+            const items = response.data.data.items;
+            const sortByNewest = items.reverse();
+            setUserItems(sortByNewest);
+          } else {
+            // Handle the error condition appropriately
+            console.log("Failed to retrieve user's items");
+          }
+        } catch (error) {
+          // Handle the axios request error appropriately
+          console.log("Error:", error);
+        }
+      }
+    } catch (error) {
+      // Handle the getUserData error appropriately
+      console.log(error.message);
+    }
+  
+    // After all the data fetching and updating, set refreshing to false
+    setRefreshing(false);
+  };
+  
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -230,6 +266,12 @@ const Content = ({ navigation, activeTab }) => {
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <ListingCard item={item} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+            />
+          }
         />
       )}
     </View>
