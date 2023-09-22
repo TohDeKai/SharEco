@@ -22,7 +22,10 @@ import Header from "../../../components/Header";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import Carousel, { Pagination } from "react-native-snap-carousel";
-import { DisabledButton, SecondaryButton } from "../../../components/buttons/RegularButton";
+import {
+  DisabledButton,
+  SecondaryButton,
+} from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -99,16 +102,28 @@ const ItemInformation = () => {
           <RegularText typography="H1">{itemTitle}</RegularText>
         </View>
 
-        <View style={style.rates}>
-          <View style={style.pricing}>
-            <RegularText typography="H2">{rentalRateHourly}</RegularText>
-            <RegularText typography="Subtitle">/ hour</RegularText>
+        {(rentalRateHourly != "$0.00" && (
+          <View style={style.rates}>
+            <View style={style.pricing}>
+              <RegularText typography="H2">{rentalRateHourly}</RegularText>
+              <RegularText typography="Subtitle">/ hour</RegularText>
+            </View>
+            {rentalRateHourly != "0.00" && (
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/ day</RegularText>
+              </View>
+            )}
           </View>
-          <View style={style.pricing}>
-            <RegularText typography="H2">{rentalRateDaily}</RegularText>
-            <RegularText typography="Subtitle">/ day</RegularText>
-          </View>
-        </View>
+        )) ||
+          (rentalRateDaily != "$0.00" && (
+            <View style={style.rates}>
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/ day</RegularText>
+              </View>
+            </View>
+          ))}
 
         <View>
           <RegularText typography="H3" style={style.topic}>

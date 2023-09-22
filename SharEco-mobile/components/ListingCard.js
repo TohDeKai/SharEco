@@ -27,7 +27,7 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-export default function ListingCard({item}) {
+export default function ListingCard({ item }) {
   const {
     itemId,
     itemTitle,
@@ -39,8 +39,8 @@ export default function ListingCard({item}) {
   } = item;
 
   const toMyListing = () => {
-    router.push({ pathname:"profile/myListing", params: {itemId: itemId} })
-  }; 
+    router.push({ pathname: "profile/myListing", params: { itemId: itemId } });
+  };
 
   return (
     <Pressable onPress={toMyListing}>
@@ -65,23 +65,52 @@ export default function ListingCard({item}) {
         </View>
 
         <View style={style.rates}>
-          <View style={style.pricing}>
-            <RegularText typography="H4" color={secondary}>
-              {rentalRateHourly}
-            </RegularText>
-            <RegularText typography="B3" color={secondary}>
-              / hour
-            </RegularText>
-          </View>
-
-          <View style={style.pricing}>
-            <RegularText typography="H4" color={secondary}>
-              {rentalRateDaily}
-            </RegularText>
-            <RegularText typography="B3" color={secondary}>
-              / day
-            </RegularText>
-          </View>
+          <RegularText>
+            {(rentalRateHourly != "$0.00" && (
+              <View>
+                <View style={style.pricing}>
+                  <RegularText typography="H4" color={secondary}>
+                    {rentalRateHourly}
+                  </RegularText>
+                  <RegularText
+                    typography="B3"
+                    color={secondary}
+                    style={{ paddingLeft: 5 }}
+                  >
+                    / hour
+                  </RegularText>
+                </View>
+                {rentalRateDaily != "$0.00" && (
+                  <View style={style.pricing}>
+                    <RegularText typography="H4" color={secondary}>
+                      {rentalRateDaily}
+                    </RegularText>
+                    <RegularText
+                      typography="B3"
+                      color={secondary}
+                      style={{ paddingLeft: 5 }}
+                    >
+                      / day
+                    </RegularText>
+                  </View>
+                )}
+              </View>
+            )) ||
+              (rentalRateHourly == "$0.00" && (
+                <View style={style.pricing}>
+                  <RegularText typography="H4" color={secondary}>
+                    {rentalRateDaily}
+                  </RegularText>
+                  <RegularText
+                    typography="B3"
+                    color={secondary}
+                    style={{ paddingLeft: 5 }}
+                  >
+                    / day
+                  </RegularText>
+                </View>
+              ))}
+          </RegularText>
         </View>
       </View>
     </Pressable>
@@ -104,6 +133,7 @@ const style = StyleSheet.create({
   },
   rates: {
     paddingVertical: 5,
+    top: 0,
   },
   pricing: {
     display: "flex",
