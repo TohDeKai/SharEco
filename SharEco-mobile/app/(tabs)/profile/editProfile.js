@@ -91,7 +91,7 @@ const editProfile = () => {
       password: user.password,
       email: user.email,
       contactNumber: user.contactNumber,
-      userPhotoUrl: image, 
+      userPhotoUrl: image || user.userPhotoUrl, // Use the new value if provided, otherwise keep the original value
       isBanned: user.isBanned,
       likedItem: user.likedItem,
       wishList: user.wishList,
