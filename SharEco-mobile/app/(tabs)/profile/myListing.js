@@ -29,7 +29,6 @@ import {
 import CarouselItem from "../../../components/CarouselItem";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-//const[listingItemId, setListingItemId] = useState();
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -47,7 +46,6 @@ const ItemInformation = () => {
   const [user, setUser] = useState("");
   const params = useLocalSearchParams();
   const { itemId } = params;
-  //setListingItemId({itemId});
   const handleBack = () => {
     router.back();
   };
@@ -89,85 +87,92 @@ const ItemInformation = () => {
   } = listingItem;
 
   return (
-    <View>
-      <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 50 }}>
-        <View style={style.imgContainer}>
-          <View style={style.header}>
-            <Header action="back" onPress={handleBack} />
-          </View>
-          <View style={{ marginTop: -31 }}>
-            <CustomSlider data={images} />
-          </View>
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <View style={style.imgContainer}>
+        <View style={style.header}>
+          <Header action="back" onPress={handleBack} />
+        </View>
+        <View style={{ marginTop: -31 }}>
+          <CustomSlider data={images} />
+        </View>
+      </View>
+
+      <View style={style.textContainer}>
+        <View style={style.title}>
+          <RegularText typography="H1">{itemTitle}</RegularText>
         </View>
 
-        <View style={style.textContainer}>
-          <View style={style.title}>
-            <RegularText typography="H1">{itemTitle}</RegularText>
-          </View>
-
+        {(rentalRateHourly != "$0.00" && (
           <View style={style.rates}>
             <View style={style.pricing}>
               <RegularText typography="H2">{rentalRateHourly}</RegularText>
               <RegularText typography="Subtitle">/ hour</RegularText>
             </View>
-            <View style={style.pricing}>
-              <RegularText typography="H2">{rentalRateDaily}</RegularText>
-              <RegularText typography="Subtitle">/ day</RegularText>
-            </View>
-          </View>
-
-          <View>
-            <RegularText typography="H3" style={style.topic}>
-              Retail Price
-            </RegularText>
-            <RegularText typography="B2" style={style.content}>
-              {itemOriginalPrice}
-            </RegularText>
-          </View>
-
-          <View>
-            <RegularText typography="H3" style={style.topic}>
-              Description
-            </RegularText>
-            <RegularText typography="B2" style={style.content}>
-              {itemDescription}
-            </RegularText>
-          </View>
-
-          <View>
-            <RegularText typography="H3" style={style.topic}>
-              Meet the owner
-            </RegularText>
-            <View style={style.seller}>
-              <View style={style.avatarContainer}>
-                <UserAvatar size="medium" source={{ uri: user.userPhotoUrl }} />
+            {rentalRateHourly != "0.00" && (
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/ day</RegularText>
               </View>
-              <View style={style.profile}>
-                <RegularText typography="H3">{user.displayName}</RegularText>
-                <RegularText typography="Subtitle">
-                  @{user.username}
-                </RegularText>
-                <View style={style.ratingsContainer}>
-                  <RegularText typography="Subtitle">0.0</RegularText>
-                  <Rating stars={0} size={18} color={yellow} />
-                  <RegularText typography="Subtitle">(0)</RegularText>
-                </View>
+            )}
+          </View>
+        )) ||
+          (rentalRateDaily != "$0.00" && (
+            <View style={style.rates}>
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/ day</RegularText>
               </View>
             </View>
-          </View>
+          ))}
 
-          <View>
-            <RegularText typography="H3" style={style.topic}>
-              Collection & Return Locations
-            </RegularText>
-            <RegularText typography="B2" style={style.content}>
-              {collectionLocations}
-            </RegularText>
+        <View>
+          <RegularText typography="H3" style={style.topic}>
+            Retail Price
+          </RegularText>
+          <RegularText typography="B2" style={style.content}>
+            {itemOriginalPrice}
+          </RegularText>
+        </View>
+
+        <View>
+          <RegularText typography="H3" style={style.topic}>
+            Description
+          </RegularText>
+          <RegularText typography="B2" style={style.content}>
+            {itemDescription}
+          </RegularText>
+        </View>
+
+        <View>
+          <RegularText typography="H3" style={style.topic}>
+            Meet the owner
+          </RegularText>
+          <View style={style.seller}>
+            <View style={style.avatarContainer}>
+              <UserAvatar size="medium" source={{ uri: user.userPhotoUrl }} />
+            </View>
+            <View style={style.profile}>
+              <RegularText typography="H3">{user.displayName}</RegularText>
+              <RegularText typography="Subtitle">@{user.username}</RegularText>
+              <View style={style.ratingsContainer}>
+                <RegularText typography="Subtitle">0.0</RegularText>
+                <Rating stars={0} size={18} color={yellow} />
+                <RegularText typography="Subtitle">(0)</RegularText>
+              </View>
+            </View>
           </View>
         </View>
-      </ScrollView>
-      <ListingNav data={itemId} />
-    </View>
+
+        <View>
+          <RegularText typography="H3" style={style.topic}>
+            Collection & Return Locations
+          </RegularText>
+          <RegularText typography="B2" style={style.content}>
+            {collectionLocations}
+          </RegularText>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -206,19 +211,12 @@ const CustomPaging = ({ data, activeSlide }) => {
   return <Pagination {...settings} />;
 };
 
-const ListingNav = ({ data }) => {
-  const toEditListing = () => {
-    router.push({ pathname: "profile/editListing", params: { itemId: data } });
-  };
+const ListingNav = () => {
   return (
     <View>
       <View style={style.nav}>
         <View style={style.buttonContainer}>
-          <SecondaryButton
-            typography={"H3"}
-            color={primary}
-            onPress={toEditListing}
-          >
+          <SecondaryButton typography={"H3"} color={primary}>
             Edit Listing
           </SecondaryButton>
         </View>
@@ -238,6 +236,7 @@ const listing = () => {
       <View style={style.container}>
         <ItemInformation />
       </View>
+      <ListingNav />
     </View>
   );
 };
@@ -253,6 +252,7 @@ const style = StyleSheet.create({
   },
   container: {
     backgroundColor: white,
+    marginBottom: 50,
   },
   imgContainer: {
     width: windowWidth,
