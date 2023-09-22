@@ -21,6 +21,19 @@ const getBusinessVerifications = async () => {
   }
 };
 
+// Get business verification based on business verification ID
+const getBusinessVerificationById = async (businessVerificationId) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM "sharEco-schema"."businessVerification" WHERE "businessVerificationId" = $1',
+      [businessVerificationId]
+    );
+    return result.rows[0]; // Assuming there's only one matching record
+  } catch (err) {
+    throw err;
+  }
+};
+
 // Create new business verification
 const createBusinessVerification = async (
   UEN,

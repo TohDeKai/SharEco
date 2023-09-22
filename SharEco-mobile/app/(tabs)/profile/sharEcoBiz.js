@@ -117,12 +117,13 @@ const sharEcoBiz = () => {
   };
 
   const handleSave = async (values) => {
+    const userId = user.userId;
     const bizVeriData = {
       UEN: values.uen,
       documents: selectedFiles,
       // by default approved is false
       approved: false,
-      originalUserId: user.userId,
+      originalUserId: userId,
     };
 
     try {
@@ -138,6 +139,20 @@ const sharEcoBiz = () => {
       } else {
         console.log("Unable to submit business verification request");
       }
+
+      const bizVeriId = response.data.businessVerificationId;
+
+      const linkResponse = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/users/businessVerification/${userId}`,
+        { bizVeriId }
+      );
+
+      if (linkResponse.status === 200) {
+        console.log("Business verification request linked to the user successfully");
+      } else {
+        console.log("Unable to link business verification request to the user");
+      }
+
     } catch (error) {
        console.log(error.message);
     }
