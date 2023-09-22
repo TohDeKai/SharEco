@@ -14,7 +14,6 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { router } from "expo-router";
 
 //components
-import { Ionicons } from "@expo/vector-icons";
 import { Rating } from "react-native-stock-star-rating";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
@@ -23,8 +22,8 @@ import Header from "../../../components/Header";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import Carousel, { Pagination } from "react-native-snap-carousel";
+import { DisabledButton, SecondaryButton } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-import ListingNav from "../../../styles/listingNav";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -165,11 +164,12 @@ const ItemInformation = () => {
 const { width } = Dimensions.get("window");
 
 const CustomSlider = ({ data }) => {
+  const filteredData = data ? data.filter((item) => item !== null) : null;
   const settings = {
     sliderWidth: width,
     sliderHeight: width,
     itemWidth: width,
-    data: data,
+    data: filteredData,
     renderItem: CarouselItem,
     hasParallaxImages: true,
     onSnapToItem: (index) => setSlideIndex(index),
@@ -178,14 +178,14 @@ const CustomSlider = ({ data }) => {
   return (
     <View>
       <Carousel {...settings} />
-      <CustomPaging data={data} activeSlide={slideIndex} />
+      <CustomPaging data={filteredData} activeSlide={slideIndex} />
     </View>
   );
 };
 
 const CustomPaging = ({ data, activeSlide }) => {
   const settings = {
-    dotsLength: data ? data.length : 0,
+    dotsLength: data ? data.filter((item) => item !== null).length : 0,
     activeDotIndex: activeSlide,
     containerStyle: style.dotContainer,
     dotStyle: style.dotStyle,
@@ -196,13 +196,33 @@ const CustomPaging = ({ data, activeSlide }) => {
   return <Pagination {...settings} />;
 };
 
+const ListingNav = () => {
+  return (
+    <View>
+      <View style={style.nav}>
+        <View style={style.buttonContainer}>
+          <SecondaryButton typography={"H3"} color={primary}>
+            Edit Listing
+          </SecondaryButton>
+        </View>
+        <View style={style.buttonContainer}>
+          <DisabledButton typography={"H3"} color={white}>
+            Manage Rentals
+          </DisabledButton>
+        </View>
+      </View>
+    </View>
+  );
+};
+
 const listing = () => {
   return (
-    <ListingNav>
+    <View>
       <View style={style.container}>
         <ItemInformation />
       </View>
-    </ListingNav>
+      <ListingNav />
+    </View>
   );
 };
 
@@ -217,6 +237,7 @@ const style = StyleSheet.create({
   },
   container: {
     backgroundColor: white,
+    marginBottom: 50,
   },
   imgContainer: {
     width: windowWidth,
@@ -292,5 +313,23 @@ const style = StyleSheet.create({
   },
   inactiveDotStyle: {
     backgroundColor: "rgb(255,230,230)",
+  },
+  nav: {
+    bottom: 0,
+    width: "100%",
+    position: "absolute",
+    height: 70,
+    justifyContent: "center",
+    backgroundColor: white,
+    flex: 1,
+    flexDirection: "row",
+    borderTopColor: inputbackground,
+    borderTopWidth: 1,
+    paddingHorizontal: 5,
+  },
+  buttonContainer: {
+    flex: 0.5,
+    paddingHorizontal: 5,
+    justifyContent: "center",
   },
 });
