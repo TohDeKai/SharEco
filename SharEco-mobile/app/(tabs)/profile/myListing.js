@@ -90,7 +90,7 @@ const ItemInformation = () => {
 
   return (
     <View>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{marginBottom:50}}>
       <View style={style.imgContainer}>
         <View style={style.header}>
           <Header action="back" onPress={handleBack} />

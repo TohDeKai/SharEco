@@ -22,6 +22,7 @@ import Header from "../../../components/Header";
 import {
   SecondaryButton,
   DisabledButton,
+  PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import MessageBox from "../../../components/text/MessageBox";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
@@ -156,6 +157,34 @@ console.log(listingItem);
     // setLockers([]);
     router.back();
   };
+
+  const handleDelist = async () => {
+    try{
+      const itemData = {
+        itemId: itemId,
+        disabled: listingItem.disabled
+      }
+      const response = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/items/${itemId}`,
+        itemData
+      );
+      if (response.status === 200) {
+        console.log("Item deleted successfully");
+        console.log(lockers);
+        console.log(category);
+        router.replace("profile");
+      } else {
+        //shouldnt come here
+        console.log("Item deletion unsuccessful");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 500) {
+        console.log("Internal server error");
+      } else {
+        console.log("Error during item deletion: ", error.message);
+      }
+    }
+  }
 
   const handleEditListing = async (values) => {
     try {
@@ -303,7 +332,6 @@ console.log(listingItem);
                 <RegularText typography="H3" style={styles.headerText}>
                   Category
                 </RegularText>
-                <StyledTextInput defaultValue={listingItem.category}/>
                 <SelectList
                   setSelected={setCategory}
                   data={categories}
@@ -450,18 +478,18 @@ console.log(listingItem);
                 <View>
                   <View style={styles.nav}>
                     <View style={styles.buttonContainer}>
-                      <SecondaryButton
-                        typography={"H3"}
-                        color={primary}
-                        onPress={handleSubmit}
-                      >
-                        Save Edit
+                      <SecondaryButton typography={"H3"} color={primary} onPress={handleDelist}>
+                        Delist Listing
                       </SecondaryButton>
                     </View>
                     <View style={styles.buttonContainer}>
-                      <DisabledButton typography={"H3"} color={white}>
-                        Delist Listing
-                      </DisabledButton>
+                      <PrimaryButton
+                        typography={"H3"}
+                        color={white}
+                        onPress={handleSubmit}
+                      >
+                        Save Edit
+                      </PrimaryButton>
                     </View>
                   </View>
                 </View>
