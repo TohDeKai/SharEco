@@ -672,7 +672,7 @@ app.get("/api/v1/businessVerifications", async (req, res) => {
 
 app.get("/api/v1/businessVerifications/businessVerificationId/:businessVerificationId", async (req, res) => {
   try {
-    const businessVerification = await businessdb.getBusinessVerificationByBusinessVerificationId(req.params.businessVerificationId);
+    const businessVerification = await businessdb.getBusinessVerificationById(req.params.businessVerificationId);
     if (businessVerification) {
       res.status(200).json({
         status: "success",

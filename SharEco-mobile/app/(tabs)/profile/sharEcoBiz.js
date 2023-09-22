@@ -21,7 +21,7 @@ import StyledTextInput from '../../../components/inputs/LoginTextInputs';
 import RegularText from '../../../components/text/RegularText';
 import MessageBox from "../../../components/text/MessageBox";
 import { colours } from "../../../components/ColourPalette";
-const { placeholder, white, primary } = colours;
+const { placeholder, white } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const MAX_FILES = 5;
 
@@ -131,7 +131,7 @@ const sharEcoBiz = () => {
         `http://${BASE_URL}:4000/api/v1/businessVerifications`, bizVeriData
       );
 
-      console.log(response.data);
+      console.log("RESPONSE:",response.data);
 
       if (response.status === 201) {
         console.log("Business verification request submitted successfully");
@@ -140,11 +140,11 @@ const sharEcoBiz = () => {
         console.log("Unable to submit business verification request");
       }
 
-      const bizVeriId = response.data.businessVerificationId;
+      const bizVeriId = response.data.data.businessVerifications.businessVerificationId;
 
       const linkResponse = await axios.put(
         `http://${BASE_URL}:4000/api/v1/users/businessVerification/${userId}`,
-        { bizVeriId }
+        { businessVerificationId: bizVeriId }
       );
 
       if (linkResponse.status === 200) {

@@ -96,9 +96,7 @@ const deleteBusinessVerification = async (businessVerificationId) => {
 module.exports = {
   getBusinessVerifications,
   getBusinessVerificationById,
-  getBusinessVerificationByBusinessVerificationId,
   createBusinessVerification,
   updateBusinessVerification,
   deleteBusinessVerification,
-  getBusinessVerificationByID,
 };
