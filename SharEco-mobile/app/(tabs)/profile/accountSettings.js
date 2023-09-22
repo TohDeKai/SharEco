@@ -61,7 +61,7 @@ const accountSettings = () => {
           iconProvider={Ionicons}
           iconName="briefcase-outline"
           text="SharEco Biz"
-          onPress={() => handleSettingsPress("sharEcoBiz")}
+          onPress={() => handleSettingsPress("sharEcoBizOverview")}
         />
         <View style={styles.subheadingContainer}>
           <RegularText typography="H3">Help & Support</RegularText>
