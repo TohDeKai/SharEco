@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Formik, Field } from "formik";
-import { router, Link } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,7 +19,10 @@ import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import ImagePickerContainer from "../../../components/containers/ImagePickerContainer";
 import Header from "../../../components/Header";
-import RoundedButton from "../../../components/buttons/RoundedButton";
+import {
+  SecondaryButton,
+  DisabledButton,
+} from "../../../components/buttons/RegularButton";
 import MessageBox from "../../../components/text/MessageBox";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import RegularText from "../../../components/text/RegularText";
@@ -30,6 +33,7 @@ import {
   SelectList,
   MultipleSelectList,
 } from "react-native-dropdown-select-list";
+import listing from "./myListing";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportWidthInPixels = (percentage) => {
@@ -45,21 +49,22 @@ const viewportHeightInPixels = (percentage) => {
 const editListing = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
-
-  const [images, setImages] = useState([null, null, null, null, null]);
-  const [category, setCategory] = useState("");
-  const [lockers, setLockers] = useState([]);
-  const [item, setItem] = useState("");
-  const { getUserData } = useAuth();
-
   const params = useLocalSearchParams();
   const { itemId } = params;
 
+  const [listingItem, setListingItem] = useState({});
+  const { getUserData } = useAuth();
+  const [user, setUser] = useState("");
+
+  const [images, setImages] = useState(listingItem.images || [null, null, null, null, null]);
+  const [category, setCategory] = useState(listingItem.category);
+  const [lockers, setLockers] = useState([]);
+
   useEffect(() => {
-    async function fetchItemData() {
+    async function fetchUserData() {
       try {
-        const itemData = await getItemData();
-        setItem(itemData);
+        const userData = await getUserData();
+        setUser(userData);
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
         );
@@ -76,8 +81,10 @@ const editListing = () => {
         console.log(error.message);
       }
     }
-    fetchItemData();
+    fetchUserData();
   }, []);
+
+  console.log(listingItem.itemTitle + " " + listingItem.itemDescription);
 
   const categories = [
     "Audio",
@@ -142,30 +149,27 @@ const editListing = () => {
   ));
 
   const handleBack = () => {
-    setImages([null, null, null, null, null]);
-    setCategory("");
-    setLockers([]);
+    // setImages([null, null, null, null, null]);
+    // setCategory("");
+    // setLockers([]);
     router.back();
   };
 
-  const handleShowTerms = () => {
-    router.push("createListing/TermsAndConditions");
-  };
-
-  const handleCreateListing = async (values) => {
+  const handleEditListing = async (values) => {
     try {
       const itemData = {
-        userId: item.userId,
-        itemTitle: item.title,
-        itemDescription: item.description,
-        itemOriginalPrice: item.originalPrice,
-        rentalRateHourly: item.rentalRateHour,
-        rentalRateDaily: item.rentalRateDay,
-        depositFee: item.depositFee,
-        images: item.images,
-        category: item.category,
-        collectionLocations: item.lockers,
-        otherLocation: item.meetupLocation,
+        userId: listingItem.userId,
+        itemTitle: values.title || listingItem.listingTitle,
+        itemDescription: values.description || listingItem.itemDescription,
+        itemOriginalPrice:
+          values.originalPrice || listingItem.itemOriginalPrice,
+        rentalRateHourly: values.rentalRateHour || listingItem.rentalRateHourly,
+        rentalRateDaily: values.rentalRateDay || listingItem.rentalRateDaily,
+        depositFee: values.depositFee || listingItem.depositFee,
+        images: images || listingItem.images,
+        category: category || listingItem.category,
+        collectionLocations: lockers || listingItem.collectionLocations,
+        otherLocation: values.meetupLocation || listingItem.otherLocation,
       };
 
       const response = await axios.put(
@@ -175,17 +179,14 @@ const editListing = () => {
 
       console.log(response.data);
 
-      if (response.status === 201) {
-        console.log("Item created successfully");
+      if (response.status === 200) {
+        console.log("Item edited successfully");
         console.log(lockers);
         console.log(category);
         router.push("profile");
-        setImages([null, null, null, null, null]);
-        setCategory("");
-        setLockers([]);
       } else {
         //shouldnt come here
-        console.log("Item creation unsuccessful");
+        console.log("Item editing unsuccessful");
       }
     } catch (error) {
       if (error.response && error.response.status === 500) {
@@ -198,24 +199,23 @@ const editListing = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title="List an Item" action="close" onPress={handleBack} />
+      <Header title="Edit an Item" action="close" onPress={handleBack} />
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
             initialValues={{
-              title: "",
-              originalPrice: 0.0,
-              depositFee: 0.0,
-              rentalRateHour: 0.0,
-              rentalRateDay: 0.0,
-              description: "",
-              meetupLocation: "",
+              title: listingItem.itemTitle,
+              originalPrice: listingItem.itemOriginalPrice,
+              depositFee: listingItem.depositFee,
+              rentalRateHour: listingItem.rentalRateHourly,
+              rentalRateDay: listingItem.rentalRateDaily,
+              description: listingItem.itemDescription,
+              meetupLocation: listingItem.otherLocation,
             }}
             onSubmit={(values, actions) => {
               if (
                 values.title == "" ||
                 values.originalPrice == 0.0 ||
-                //values.depositFee == 0.0 ||
                 values.description == "" ||
                 category == "" ||
                 //if both per hour and per day rental not specified
@@ -226,8 +226,8 @@ const editListing = () => {
                 setMessage("Please fill in all fields");
                 setIsSuccessMessage(false);
               } else {
-                handleCreateListing(values);
-                actions.resetForm();
+                handleEditListing(values);
+                // actions.resetForm();
               }
             }}
           >
@@ -237,7 +237,8 @@ const editListing = () => {
                   Listing Title
                 </RegularText>
                 <StyledTextInput
-                  placeholder="Name your listing"
+                  placeholder={listingItem.itemTitle}
+                  defaultValue={listingItem.itemTitle}
                   value={values.title}
                   onChangeText={handleChange("title")}
                 />
@@ -282,13 +283,14 @@ const editListing = () => {
                   Description
                 </RegularText>
                 <StyledTextInput
-                  placeholder="Include details helpful to borrowers"
+                  placeholder={listingItem.itemDescription}
+                  defaultValue={listingItem.itemDescription}
                   value={values.description}
                   onChangeText={handleChange("description")}
-                  maxLength={300}
+                  maxLength={500}
                   multiline={true}
                   scrollEnabled={false}
-                  height={120}
+                  minHeight={120}
                 />
 
                 <View style={styles.perDayContainer}>
@@ -296,7 +298,8 @@ const editListing = () => {
                     Item Original Price
                   </RegularText>
                   <StyledTextInput
-                    placeholder="0.00"
+                    placeholder={listingItem.itemOriginalPrice}
+                    defaultValue={listingItem.itemOriginalPrice}
                     value={values.originalPrice}
                     onChangeText={handleChange("originalPrice")}
                     style={styles.perDayInputBox}
@@ -314,7 +317,8 @@ const editListing = () => {
                     </RegularText>
                   </View>
                   <StyledTextInput
-                    placeholder="0.00"
+                    placeholder={listingItem.depositFee}
+                    defaultValue={listingItem.depositFee}
                     value={values.depositFee}
                     onChangeText={handleChange("depositFee")}
                     style={styles.perDayInputBox}
@@ -330,7 +334,8 @@ const editListing = () => {
                   <StyledTextInput
                     value={values.rentalRateHour}
                     onChangeText={handleChange("rentalRateHour")}
-                    placeholder="0.00"
+                    placeholder={listingItem.rentalRateHourly}
+                    defaultValue={listingItem.rentalRateHourly}
                     keyboardType="decimal-pad"
                     style={styles.perDayInputBox}
                   />
@@ -347,7 +352,8 @@ const editListing = () => {
                   <StyledTextInput
                     value={values.rentalRateDay}
                     onChangeText={handleChange("rentalRateDay")}
-                    placeholder="0.00"
+                    placeholder={listingItem.rentalRateDaily}
+                    defaultValue={listingItem.rentalRateDaily}
                     keyboardType="decimal-pad"
                     style={styles.perDayInputBox}
                   />
@@ -381,53 +387,48 @@ const editListing = () => {
                   Other meet up location
                 </RegularText>
                 <StyledTextInput
-                  placeholder="Add details of your meet up location (optional)"
+                  placeholder={listingItem.otherLocation}
+                  defaultValue={listingItem.otherLocation}
                   value={values.meetupLocation}
                   onChangeText={handleChange("meetupLocation")}
-                  maxLength={200}
+                  maxLength={300}
                   multiline={true}
                   scrollEnabled={false}
-                  height={80}
+                  minHeight={80}
                 />
-                <RegularText
-                  typography="Subtitle"
-                  style={{ alignSelf: "center", marginTop: 10 }}
-                >
-                  By proceeding, you are agreeing to our{" "}
-                  <View>
-                    <Pressable
-                      onPress={handleShowTerms}
-                      style={({ pressed }) => ({
-                        opacity: pressed ? 0.5 : 1,
-                        alignSelf: "center",
-                      })}
-                    >
-                      <Text
-                        style={{
-                          color: primary,
-                          textDecorationLine: "underline",
-                          textAlign: "center",
-                        }}
-                      >
-                        terms & conditions
-                      </Text>
-                    </Pressable>
-                  </View>
-                </RegularText>
+
                 <MessageBox
                   style={{ marginTop: 10 }}
                   success={isSuccessMessage}
                 >
                   {message || " "}
                 </MessageBox>
-                <RoundedButton
+                <View>
+                  <View style={styles.nav}>
+                    <View style={styles.buttonContainer}>
+                      <SecondaryButton
+                        typography={"H3"}
+                        color={primary}
+                        onPress={handleSubmit}
+                      >
+                        Save Edit
+                      </SecondaryButton>
+                    </View>
+                    <View style={styles.buttonContainer}>
+                      <DisabledButton typography={"H3"} color={white}>
+                        Delist Listing
+                      </DisabledButton>
+                    </View>
+                  </View>
+                </View>
+                {/* <RoundedButton
                   typography={"B1"}
                   color={white}
                   onPress={handleSubmit}
                   style={{ marginBottom: viewportHeightInPixels(3) }}
                 >
                   List Item
-                </RoundedButton>
+                </RoundedButton> */}
               </View>
             )}
           </Formik>
@@ -475,5 +476,23 @@ const styles = StyleSheet.create({
   perDayInputBox: {
     justifyContent: "flex-end",
     width: viewportWidthInPixels(23),
+  },
+  nav: {
+    bottom: 0,
+    width: "100%",
+    position: "absolute",
+    height: 70,
+    justifyContent: "center",
+    backgroundColor: white,
+    flex: 1,
+    flexDirection: "row",
+    borderTopColor: inputbackground,
+    borderTopWidth: 1,
+    paddingHorizontal: 5,
+  },
+  buttonContainer: {
+    flex: 0.5,
+    paddingHorizontal: 5,
+    justifyContent: "center",
   },
 });
