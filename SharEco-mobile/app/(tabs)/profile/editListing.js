@@ -56,10 +56,10 @@ const editListing = () => {
   const { getUserData } = useAuth();
   const [user, setUser] = useState("");
 
-  const [images, setImages] = useState(listingItem.images || [null, null, null, null, null]);
+  const [images, setImages] = useState([]);
   const [category, setCategory] = useState(listingItem.category);
   const [lockers, setLockers] = useState([]);
-
+console.log(listingItem);
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -73,6 +73,8 @@ const editListing = () => {
         if (response.status === 200) {
           const item = response.data.data.item;
           setListingItem(item);
+          setImages(item.images);
+          setLockers(item.collectionLocations);
         } else {
           // Shouldn't come here
           console.log("Failed to retrieve items");
@@ -212,7 +214,48 @@ const editListing = () => {
               description: listingItem.itemDescription,
               meetupLocation: listingItem.otherLocation,
             }}
+            
             onSubmit={(values, actions) => {
+                //checks for changed fields
+              const changedFields = {};
+              if (values.title !== listingItem.itemTitle) {
+                changedFields.title = values.title;
+              }
+              if (values.description !== listingItem.itemDescription) {
+                changedFields.description = values.description;
+              }
+              if (values.originalPrice !== listingItem.itemOriginalPrice) {
+                changedFields.originalPrice = values.originalPrice;
+              }
+              if (values.rentalRateDay !== listingItem.rentalRateDaily) {
+                changedFields.rentalRateDay = values.rentalRateDay;
+              }
+              if (values.rentalRateHour !== listingItem.rentalRateHourly) {
+                changedFields.rentalRateHour = values.rentalRateHour;
+              }
+              if (values.meetupLocation !== listingItem.otherLocation) {
+                changedFields.meetupLocation = values.meetupLocation;
+              }
+
+              if (values.title == undefined || values.title == null) {
+                changedFields.title = listingItem.itemTitle;
+              }
+              if (values.description == undefined) {
+                changedFields.description = listingItem.description;
+              }
+              if (values.originalPrice == undefined) {
+                changedFields.originalPrice = listingItem.originalPrice;
+              }
+              if (values.rentalRateDay == undefined) {
+                changedFields.rentalRateDay = listingItem.rentalRateDaily;
+              }
+              if (values.rentalRateHour == undefined) {
+                changedFields.rentalRateHour = listingItem.rentalRateHourly;
+              }
+              if (values.meetupLocation == undefined) {
+                changedFields.meetupLocation = listingItem.otherLocation;
+              }
+
               if (
                 values.title == "" ||
                 values.originalPrice == 0.0 ||
@@ -226,7 +269,7 @@ const editListing = () => {
                 setMessage("Please fill in all fields");
                 setIsSuccessMessage(false);
               } else {
-                handleEditListing(values);
+                handleEditListing(changedFields);
                 // actions.resetForm();
               }
             }}
@@ -260,11 +303,12 @@ const editListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Category
                 </RegularText>
+                <StyledTextInput defaultValue={listingItem.category}/>
                 <SelectList
                   setSelected={setCategory}
                   data={categories}
-                  placeholder="Select Category"
-                  defaultOption={""}
+                  placeholder={listingItem.category}
+                  defaultOption={listingItem.category}
                   boxStyles={{
                     marginTop: 16,
                     backgroundColor: inputbackground,
@@ -365,10 +409,10 @@ const editListing = () => {
                 <MultipleSelectList
                   setSelected={(val) => setLockers(val)}
                   data={locations}
-                  placeholder="Select Locations"
                   save="value"
                   label="Locker locations"
-                  defaultOption={[]}
+                  placeholder={listingItem.collectionLocations}
+                  defaultOption={listingItem.collectionLocations}
                   boxStyles={{
                     marginTop: 16,
                     backgroundColor: inputbackground,
