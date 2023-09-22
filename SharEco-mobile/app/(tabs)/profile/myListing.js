@@ -111,7 +111,7 @@ const ItemInformation = () => {
               <RegularText typography="H2">{rentalRateHourly}</RegularText>
               <RegularText typography="Subtitle">/ hour</RegularText>
             </View>
-            {rentalRateHourly != "0.00" && (
+            {rentalRateDaily != "0.00" && (
               <View style={style.pricing}>
                 <RegularText typography="H2">{rentalRateDaily}</RegularText>
                 <RegularText typography="Subtitle">/ day</RegularText>
@@ -126,7 +126,7 @@ const ItemInformation = () => {
                 <RegularText typography="Subtitle">/ day</RegularText>
               </View>
             </View>
-          ))}
+          ))} 
 
         <View>
           <RegularText typography="H3" style={style.topic}>
