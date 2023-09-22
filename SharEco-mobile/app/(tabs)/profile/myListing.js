@@ -29,6 +29,7 @@ import {
 import CarouselItem from "../../../components/CarouselItem";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+//const[listingItemId, setListingItemId] = useState();
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -46,6 +47,7 @@ const ItemInformation = () => {
   const [user, setUser] = useState("");
   const params = useLocalSearchParams();
   const { itemId } = params;
+  //setListingItemId({itemId});
   const handleBack = () => {
     router.back();
   };
@@ -87,7 +89,8 @@ const ItemInformation = () => {
   } = listingItem;
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <View>
+      <ScrollView showsVerticalScrollIndicator={false}>
       <View style={style.imgContainer}>
         <View style={style.header}>
           <Header action="back" onPress={handleBack} />
@@ -173,6 +176,8 @@ const ItemInformation = () => {
         </View>
       </View>
     </ScrollView>
+      <ListingNav data={itemId} />
+    </View>
   );
 };
 
@@ -211,12 +216,19 @@ const CustomPaging = ({ data, activeSlide }) => {
   return <Pagination {...settings} />;
 };
 
-const ListingNav = () => {
+const ListingNav = ({ data }) => {
+  const toEditListing = () => {
+    router.push({ pathname: "profile/editListing", params: { itemId: data } });
+  };
   return (
     <View>
       <View style={style.nav}>
         <View style={style.buttonContainer}>
-          <SecondaryButton typography={"H3"} color={primary}>
+          <SecondaryButton
+            typography={"H3"}
+            color={primary}
+            onPress={toEditListing}
+          >
             Edit Listing
           </SecondaryButton>
         </View>
@@ -236,7 +248,6 @@ const listing = () => {
       <View style={style.container}>
         <ItemInformation />
       </View>
-      <ListingNav />
     </View>
   );
 };
@@ -252,7 +263,6 @@ const style = StyleSheet.create({
   },
   container: {
     backgroundColor: white,
-    marginBottom: 50,
   },
   imgContainer: {
     width: windowWidth,
