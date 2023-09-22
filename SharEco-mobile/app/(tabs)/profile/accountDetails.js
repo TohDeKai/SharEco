@@ -19,6 +19,8 @@ import MessageBox from "../../../components/text/MessageBox";
 import { colours } from "../../../components/ColourPalette";
 const { black, white, primary } = colours;
 
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
   return (percentage / 100) * screenHeight;
@@ -32,6 +34,7 @@ const viewportWidthInPixels = (percentage) => {
 const accountDetails = () => {
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+  const { signIn } = useAuth();
 
   useEffect(() => {
     async function fetchUserData() {
@@ -57,22 +60,41 @@ const accountDetails = () => {
   const handleSave = async (details) => {
     const username = user.username;
     const newDetails = {
-      email: details.email,
-      contactNumber: details.phoneNumber,
+      username: user.username,
+      password: user.password,
+      email: details.email || user.email, // Use the new value if provided, otherwise keep the original value
+      contactNumber: details.phoneNumber || user.contactNumber, // Use the new value if provided, otherwise keep the original value
+      userPhotoUrl: user.userPhotoUrl,
+      isBanned: user.isBanned,
+      likedItem: user.likedItem,
+      wishList: user.wishList,
+      displayName: user.displayName,
+      aboutMe: user.aboutMe,
     };
 
     try {
       const response = await axios.put(
-        `http://192.168.2.90:4000/api/v1/users/username/${username}`,
+        `http://${BASE_URL}:4000/api/v1/users/username/${username}`,
         newDetails
       );
 
       console.log(response.data);
 
       if (response.status === 200) {
-        router.back();
-      } else {
-        console.log("Unable to update Account Details");
+        //update user
+        const userDataResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/users/username/${username}`
+        );
+        if (userDataResponse.status === 200) {
+          // Successfully retrieved user data, useAuth to update this user
+          const userData = userDataResponse.data.data.user;
+          console.log("User object: ", userData);
+          signIn(userData); // Update the user object in the state
+          router.back();
+        } else {
+          //shouldnt come here
+          console.log("Failed to retrieve user data");
+        }
       }
     } catch (error) {
       console.log(error.message);
@@ -84,18 +106,38 @@ const accountDetails = () => {
       <Header title="Account Details" action="close" onPress={handleBack} />
       <Formik
         initialValues={{
-          email: "",
-          phoneNumber: "",
+          email: user.email,
+          phoneNumber: user.phoneNumber,
         }}
         onSubmit={(values, { setSubmitting }) => {
-          if (values.email == "" || values.phoneNumber == "") {
-            setMessage("Please fill in all fields");
-            setIsSuccessMessage(false);
-          } else if (values.phoneNumber.length != 8) {
+          const changedFields = {};
+          if (values.email !== user.email) {
+            changedFields.email = values.email;
+          }
+          if (values.phoneNumber !== user.phoneNumber) {
+            changedFields.phoneNumber = values.phoneNumber;
+          }
+
+          // Check if phoneNumber is defined and has a length property
+          if (typeof values.phoneNumber !== 'undefined' && values.phoneNumber.length !== 8) {
             setMessage("Phone number must be 8 digits long");
             setIsSuccessMessage(false);
+            return;
+          }
+
+          //this doesnt seem to actually get called but doesnt really affect functionality
+          if (Object.keys(changedFields).length === 0) {
+            setMessage("No fields have changed");
+            setIsSuccessMessage(false);
+            return;
+          }
+
+          //checks for empty fields
+          if (values.email === "" || (typeof values.phoneNumber !== 'undefined' && values.phoneNumber === "")) {
+            setMessage("Please fill in all fields");
+            setIsSuccessMessage(false);
           } else {
-            handleSave(values, setSubmitting);
+            handleSave(changedFields, setSubmitting);
           }
         }}
       >
@@ -106,6 +148,7 @@ const accountDetails = () => {
                 label="Email"
                 placeholder={user.email}
                 keyboardType="email-address"
+                defaultValue={user.email}
                 value={values.email}
                 onChangeText={handleChange("email")}
               />
@@ -114,6 +157,7 @@ const accountDetails = () => {
                 placeholder={user.contactNumber}
                 keyboardType="number-pad"
                 returnKeyType="done"
+                defaultValue={user.contactNumber}
                 value={values.phoneNumber}
                 onChangeText={handleChange("phoneNumber")}
               />

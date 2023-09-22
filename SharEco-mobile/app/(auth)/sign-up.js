@@ -1,8 +1,6 @@
 import {
   Text,
   View,
-  Image,
-  TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   ScrollView,
@@ -11,7 +9,6 @@ import {
 import React, { useState } from "react";
 import { Formik } from "formik";
 import { Link, router } from "expo-router";
-import SignupProgressBar from "../../components/SignupProgressBar";
 import { useAuth } from "../../context/auth";
 import SafeAreaContainer from "../../components/containers/SafeAreaContainer";
 import Header from "../../components/Header";
@@ -24,6 +21,7 @@ import RegularText from "../../components/text/RegularText";
 import { colours } from "../../components/ColourPalette";
 import axios from "axios";
 const { primary, white, inputbackground } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportHeightInPixels = (percentage) => {
   const screenWidth = Dimensions.get("window").height;
@@ -47,10 +45,6 @@ export default function SignIn() {
         " and password: " +
         credentials.password
     );
-
-    //TO REPLACE THIS WITH AXIOS API CALL to signup
-    //signIn(credentials.email, credentials.password);
-
     try {
       const userData = {
         username: credentials.username,
@@ -58,16 +52,27 @@ export default function SignIn() {
         email: credentials.email,
         contactNumber: credentials.phoneNumber,
         displayName: credentials.displayName,
-        isBanned: false,
       };
       const response = await axios.post(
-        "http://192.168.2.90:4000/api/v1/userSignUp",
+        `http://${BASE_URL}:4000/api/v1/user/signUp`,
         userData
       );
+
       console.log(response.data);
-      router.push("/sign-in");
+
+      if (response.status === 200) {
+        console.log("User successfully signed up");
+        router.push("/sign-in");
+      } else {
+        //shouldnt come here
+        console.log("User sign up unsuccessful");
+      }
     } catch (error) {
-      console.log(error.message);
+      if (error.response && error.response.status === 500) {
+        console.log("Internal server error");
+      } else {
+        console.log("Error during sign up: ", error.message);
+      }
     }
   };
 
