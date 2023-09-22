@@ -169,7 +169,7 @@ const createListing = () => {
         setImages([null, null, null, null, null]);
         setCategory("");
         setLockers([]);
-        router.push("profile");
+        router.replace("profile");
       } else {
         //shouldnt come here
         console.log("Item creation unsuccessful");

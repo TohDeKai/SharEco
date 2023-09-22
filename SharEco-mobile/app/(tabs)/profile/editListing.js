@@ -183,7 +183,7 @@ const editListing = () => {
         console.log("Item edited successfully");
         console.log(lockers);
         console.log(category);
-        router.push("profile");
+        router.replace("profile");
       } else {
         //shouldnt come here
         console.log("Item editing unsuccessful");
