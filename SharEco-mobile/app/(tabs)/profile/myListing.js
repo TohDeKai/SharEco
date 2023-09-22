@@ -88,6 +88,14 @@ const ItemInformation = () => {
     userId,
   } = listingItem;
 
+  console.log(collectionLocations);
+  const formattedLocations = collectionLocations
+    ? collectionLocations.join(", ")
+    : collectionLocations;
+  console.log(formattedLocations);
+
+  // const collectionLocationValues = Object.values(collectionLocations);
+
   return (
     <View>
       <ScrollView
@@ -180,7 +188,7 @@ const ItemInformation = () => {
               Collection & Return Locations
             </RegularText>
             <RegularText typography="B2" style={style.content}>
-              {collectionLocations}
+              {formattedLocations}
             </RegularText>
           </View>
         </View>
