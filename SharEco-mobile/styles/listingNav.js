@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import RegularText from "../components/text/RegularText";
 import { colours } from "../components/ColourPalette";
 import {
-    DisabledButton,
+  DisabledButton,
   PrimaryButton,
   SecondaryButton,
 } from "../components/buttons/RegularButton";
@@ -26,12 +26,22 @@ const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ListingNav = ({ children }) => {
+  console.log();
+
+  const toEditListing = () => {
+    router.push({
+      pathname: "profile/editListing",
+      params: { itemId: children.itemId },
+    });
+    console.log("pressable to edit listing");
+  };
+
   return (
     <View>
       <View>{children}</View>
       <View style={style.nav}>
         <View style={style.buttonContainer}>
-          <SecondaryButton typography={"H3"} color={primary}>
+          <SecondaryButton typography={"H3"} color={primary} onPress={toEditListing}>
             Edit Listing
           </SecondaryButton>
         </View>
@@ -65,5 +75,5 @@ const style = StyleSheet.create({
     flex: 0.5,
     paddingHorizontal: 5,
     justifyContent: "center",
-  },   
+  },
 });

@@ -42,28 +42,41 @@ const viewportHeightInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-const createListing = () => {
+const editListing = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 
   const [images, setImages] = useState([null, null, null, null, null]);
   const [category, setCategory] = useState("");
   const [lockers, setLockers] = useState([]);
-  const [user, setUser] = useState("");
+  const [item, setItem] = useState("");
   const { getUserData } = useAuth();
-  console.log(`http://${BASE_URL}:4000/api/v1/items`);
+
+  const params = useLocalSearchParams();
+  const { itemId } = params;
+
   useEffect(() => {
-    async function fetchUserData() {
+    async function fetchItemData() {
       try {
-        const userData = await getUserData();
-        if (userData) {
-          setUser(userData);
+        const itemData = await getItemData();
+        setItem(itemData);
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+        );
+        console.log("get");
+        console.log(response.status);
+        if (response.status === 200) {
+          const item = response.data.data.item;
+          setListingItem(item);
+        } else {
+          // Shouldn't come here
+          console.log("Failed to retrieve items");
         }
       } catch (error) {
         console.log(error.message);
       }
     }
-    fetchUserData();
+    fetchItemData();
   }, []);
 
   const categories = [
@@ -142,21 +155,21 @@ const createListing = () => {
   const handleCreateListing = async (values) => {
     try {
       const itemData = {
-        userId: user.userId,
-        itemTitle: values.title,
-        itemDescription: values.description,
-        itemOriginalPrice: values.originalPrice,
-        rentalRateHourly: values.rentalRateHour,
-        rentalRateDaily: values.rentalRateDay,
-        depositFee: values.depositFee,
-        images: images,
-        category: category,
-        collectionLocations: lockers,
-        otherLocation: values.meetupLocation,
+        userId: item.userId,
+        itemTitle: item.title,
+        itemDescription: item.description,
+        itemOriginalPrice: item.originalPrice,
+        rentalRateHourly: item.rentalRateHour,
+        rentalRateDaily: item.rentalRateDay,
+        depositFee: item.depositFee,
+        images: item.images,
+        category: item.category,
+        collectionLocations: item.lockers,
+        otherLocation: item.meetupLocation,
       };
 
-      const response = await axios.post(
-        `http://${BASE_URL}:4000/api/v1/items`,
+      const response = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`,
         itemData
       );
 
@@ -272,10 +285,10 @@ const createListing = () => {
                   placeholder="Include details helpful to borrowers"
                   value={values.description}
                   onChangeText={handleChange("description")}
-                  maxLength={500}
+                  maxLength={300}
                   multiline={true}
                   scrollEnabled={false}
-                  minHeight={120}
+                  height={120}
                 />
 
                 <View style={styles.perDayContainer}>
@@ -365,47 +378,42 @@ const createListing = () => {
                 />
 
                 <RegularText typography="B2" style={styles.headerText}>
-                  Other meet up location/Location details
+                  Other meet up location
                 </RegularText>
                 <StyledTextInput
                   placeholder="Add details of your meet up location (optional)"
                   value={values.meetupLocation}
                   onChangeText={handleChange("meetupLocation")}
-                  maxLength={300}
+                  maxLength={200}
                   multiline={true}
                   scrollEnabled={false}
-                  minHeight={80}
+                  height={80}
                 />
                 <RegularText
                   typography="Subtitle"
-                  style={{ alignSelf: "center", marginTop: 20 }}
+                  style={{ alignSelf: "center", marginTop: 10 }}
                 >
-                  By proceeding, you are agreeing to our
-                </RegularText>
-                <View
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Pressable
-                    onPress={handleShowTerms}
-                    style={({ pressed }) => ({
-                      opacity: pressed ? 0.5 : 1,
-                      alignSelf: "center",
-                    })}
-                  >
-                    <RegularText typography="Subtitle"
-                      style={{
-                        color: primary,
-                        textDecorationLine: "underline",
-                        textAlign: "center",
-                      }}
+                  By proceeding, you are agreeing to our{" "}
+                  <View>
+                    <Pressable
+                      onPress={handleShowTerms}
+                      style={({ pressed }) => ({
+                        opacity: pressed ? 0.5 : 1,
+                        alignSelf: "center",
+                      })}
                     >
-                      terms & conditions
-                    </RegularText>
-                  </Pressable>
-                </View>
+                      <Text
+                        style={{
+                          color: primary,
+                          textDecorationLine: "underline",
+                          textAlign: "center",
+                        }}
+                      >
+                        terms & conditions
+                      </Text>
+                    </Pressable>
+                  </View>
+                </RegularText>
                 <MessageBox
                   style={{ marginTop: 10 }}
                   success={isSuccessMessage}
@@ -429,7 +437,7 @@ const createListing = () => {
   );
 };
 
-export default createListing;
+export default editListing;
 
 const styles = StyleSheet.create({
   container: {
