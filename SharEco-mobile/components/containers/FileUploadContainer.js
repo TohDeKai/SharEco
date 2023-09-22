@@ -3,6 +3,7 @@ import { View, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 import { colours } from '../ColourPalette';
 import RegularText from '../text/RegularText';
+
 const { primary, inputbackground, black } = colours;
 
 const formatFileSize = (sizeInBytes) => {

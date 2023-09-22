@@ -4,7 +4,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Dimensions,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import { useAuth } from "../../../context/auth";
 import { router } from "expo-router";

@@ -1,10 +1,4 @@
-import {
-  Text,
-  View,
-  Image,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { Text, View, Image, StyleSheet, Dimensions } from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import axios from "axios";

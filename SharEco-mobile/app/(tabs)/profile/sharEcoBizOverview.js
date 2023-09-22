@@ -103,7 +103,7 @@ const sharEcoBizOverview = () => {
             </RegularText>
           ))}
         </View>
-        
+
         {isNull && (
           <RoundedButton 
             style={styles.button}
