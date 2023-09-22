@@ -22,6 +22,8 @@ import RegularText from '../../../components/text/RegularText';
 import MessageBox from "../../../components/text/MessageBox";
 import { colours } from "../../../components/ColourPalette";
 const { placeholder, white, primary } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+const MAX_FILES = 5;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -33,6 +35,7 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
+// to include edit and cancel biz veri req
 const sharEcoBiz = () => {
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
@@ -62,25 +65,51 @@ const sharEcoBiz = () => {
         multiple: true,
       });
 
-      setSelectedFiles((prevFiles) => [...prevFiles, result]);
+      if (result.type !== 'cancel') {
+        const selectedDocuments = result.assets;
+
+        if (selectedDocuments !== null) {
+          const totalSelectedFiles = selectedFiles.length;
+
+          const newTotalSelectedFiles = totalSelectedFiles + selectedDocuments.length;
+
+          if (newTotalSelectedFiles > MAX_FILES) {
+            setMessage("You've selected more files than the maximum allowed files.");
+            setIsSuccessMessage(false);
+            return;
+          }
+          else {
+            // Clear the message if picker is used again
+            setMessage("");
+            setIsSuccessMessage(false);
+          }
+
+          selectedDocuments.forEach((document, index) => {
+            console.log(
+              `Document ${index + 1}:`,
+              document.uri, // URI of the selected document
+              document.type, // MIME type of the document
+              document.name, // Name of the document
+              document.size // Size of the document in bytes
+            );
+          });
+          setSelectedFiles((prevFiles) => [...prevFiles, ...selectedDocuments]);
+        } 
+      }
+      else if (result.type === 'cancel') {
+        // user cancelled document picker
+        console.log("User cancelled picker");
+      }
     }
     catch (error) {
-      // handle expo-document-picker cancel
-      // below is react native doc picker
-      // if (DocumentPicker.isCancel(error))
-      // {
-      //   console.log("File selection cancelled by user");
-      // }
-      // else {
-        console.log(error);
-      // }
+      console.error('Error picking documents:', error);
     }
   }
 
   const handleRemoveFile = (index) =>  {
     const updatedFiles = [...selectedFiles];
     updatedFiles.splice(index, 1);
-    selectedFiles(updatedFiles);
+    setSelectedFiles(updatedFiles);
   }
 
   const handleBack = () => {
@@ -88,32 +117,30 @@ const sharEcoBiz = () => {
   };
 
   const handleSave = async (values) => {
-    const username = user.username;
     const bizVeriData = {
-      userId:user.userId,
-      bizName: values.name,
-      bizEmail: values.email,
-      bizPhoneNo: values.phoneNumber,
-      bizUen: values.uen,
-      files: selectedFiles,
+      UEN: values.uen,
+      documents: selectedFiles,
+      // by default approved is false
+      approved: false,
+      originalUserId: user.userId,
     };
 
-    // try {
-    //   const response = await axios.put(
-    //     `API_ENDPOINT`, bizVeriData
-    //   );
+    try {
+      const response = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/businessVerifications`, bizVeriData
+      );
 
-    //   console.log(response.data);
+      console.log(response.data);
 
-    //   if (response.status === 200) {
-    //     console.log("Business verification request submitted successfully");
-    //     router.back();
-    //   } else {
-    //     console.log("Unable to submit business verification request");
-    //   }
-    // } catch (error) {
-    //    console.log(error.message);
-    // }
+      if (response.status === 201) {
+        console.log("Business verification request submitted successfully");
+        router.back();
+      } else {
+        console.log("Unable to submit business verification request");
+      }
+    } catch (error) {
+       console.log(error.message);
+    }
   };
 
   return (
@@ -121,25 +148,22 @@ const sharEcoBiz = () => {
       <Header title="SharEco Biz" action="close" onPress={handleBack} />
       <Formik
         initialValues={{
-          name: "",
-          email: "",
-          phoneNumber: "",
           uen: "",
         }}
         onSubmit={(values, actions) => {
-          if (values.email == "" || values.phoneNumber == "" || values.uen == "" || values.name == "") {
-            setMessage("Please fill in all fields");
+          if (values.uen == "") {
+            setMessage("Please fill in your UEN.");
             setIsSuccessMessage(false);
-          } else if (values.phoneNumber.length != 8) {
-            setMessage("Phone number must be 8 digits long");
+          } else if (values.uen.length != 9 && values.uen.length != 10) {
+            setMessage("UEN must be 9 or 10 digits long.");
             setIsSuccessMessage(false);
-          } else if (values.uen.length != 9 || values.uen.length != 10) {
-            setMessage("UEN must be 9 or 10 digits long");
+          } else if (selectedFiles.length === 0) {
+            setMessage("Please upload at least 1 file.");
             setIsSuccessMessage(false);
-          }
-          else {
+          } else {
             handleSave(values);
             actions.resetForm();
+            setSelectedFiles([]);
           }
         }}
       >
@@ -147,7 +171,7 @@ const sharEcoBiz = () => {
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <KeyboardAvoidingView style={styles.content}>
               <View style={{ width: "100%" }}>
-                <RegularText typography="H3" style={styles.headerText}>Business Name</RegularText>
+                {/* <RegularText typography="H3" style={styles.headerText}>Business Name</RegularText>
                 <StyledTextInput
                   placeholder={"Enter your business name"}
                   returnKeyType="next"
@@ -169,7 +193,7 @@ const sharEcoBiz = () => {
                   returnKeyType="next"
                   value={values.phoneNumber}
                   onChangeText={handleChange("phoneNumber")}
-                />
+                /> */}
                 <RegularText typography="H3" style={styles.headerText}>UEN</RegularText>
                 <StyledTextInput
                   placeholder={"Enter your UEN"}
@@ -189,10 +213,10 @@ const sharEcoBiz = () => {
                   files={selectedFiles}
                   onAddFile={handleAddFile}
                   onRemoveFile={handleRemoveFile}
-                  maxFiles={5}
+                  maxFiles={MAX_FILES}
                 />
                 
-                <MessageBox style={{ marginTop: 70 }} success={isSuccessMessage}>
+                <MessageBox style={{marginTop: 35, marginBottom: 20}} success={isSuccessMessage}>
                   {message || " "}
                 </MessageBox>
               </View>
@@ -223,7 +247,7 @@ const styles = StyleSheet.create({
     top: 20,
   },
   bizButton: {
-    bottom: 57,
+    bottom: 40,
   },
   headerText: {
     marginTop: 20,

@@ -609,6 +609,24 @@ app.get("/api/v1/businessVerifications", async (req, res) => {
   }
 });
 
+// Get business verification by ID
+app.get("/api/v1/businessVerifications/businessVerificationId/:businessVerificationId", async (req, res) => {
+  try {
+    console.log("Getting business verification with businessVerificationId: " + req.params.businessVerificationId);
+    const user = await businessdb.getBusinessVerificationByID(req.params.businessVerificationId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        businessVerification: businessVerification,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Creating new business verification request
 app.post("/api/v1/businessVerifications", async (req, res) => {
   const { UEN, documents, approved, originalUserId } = req.body;
