@@ -16,14 +16,9 @@ const ConfirmationModal = ({ isVisible, onClose, onConfirm }) => {
               color={black}
               style={styles.modalStyle}
             >
-              Are you sure you want to submit? This action cannot be reversed.
+              Are you sure you want to delete? This action cannot be reversed.
             </RegularText>
             <View style={styles.nav}>
-              <View style={styles.buttonContainer}>
-                <PrimaryButton typography="H3" color={white} onPress={onClose}>
-                  Cancel
-                </PrimaryButton>
-              </View>
               <View style={styles.buttonContainer}>
                 <SecondaryButton
                   typography="H3"
@@ -32,7 +27,13 @@ const ConfirmationModal = ({ isVisible, onClose, onConfirm }) => {
                 >
                   Confirm
                 </SecondaryButton>
+                </View>
+                <View style={styles.buttonContainer}>
+                <PrimaryButton typography="H3" color={white} onPress={onClose}>
+                  Cancel
+                </PrimaryButton>
               </View>
+              
             </View>
           </View>
         </View>
@@ -67,16 +68,17 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   nav: {
-    top:"40%",
-    backgroundColor: white,
-    flex: 1,
+    height:70,
+    borderColor: white,
     flexDirection: "row",
     borderTopWidth: 1,
     paddingHorizontal: 5,
+
   },
   buttonContainer: {
     flex: 0.5,
     paddingHorizontal: 5,
+    paddingVertical:0,
     justifyContent: "center",
   },
 });

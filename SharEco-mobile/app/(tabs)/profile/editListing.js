@@ -473,6 +473,7 @@ const editListing = () => {
                   multiline={true}
                   scrollEnabled={false}
                   minHeight={80}
+                  style={{marginBottom:50}}
                 />
 
                 <MessageBox
