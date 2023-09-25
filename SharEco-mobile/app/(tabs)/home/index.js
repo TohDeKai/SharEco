@@ -1,16 +1,53 @@
-import { View, Text, StyleSheet, Pressable, FlatList, RefreshControl } from "react-native";
+import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions } from "react-native";
 import React, { useState, useEffect } from "react";
-import { Link, router } from "expo-router";
+import { Link, router, Drawer } from "expo-router";
 import { useAuth } from "../../../context/auth";
 import { Ionicons } from "@expo/vector-icons";
 
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
-import { colours } from "../../../components/ColourPalette";
 import RegularText from "../../../components/text/RegularText";
 import SearchBarHeader from "../../../components/SearchBarHeader";
 import ListingCard from "../../../components/ListingCard";
-const { white, primary, inputbackground, dark } = colours;
+import Carousel, { Pagination } from "react-native-snap-carousel";
+import CarouselItem from "../../../components/CarouselItem";
+import { colours } from "../../../components/ColourPalette";
+const { white, primary, inputbackground, dark, black } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+const { width } = Dimensions.get("window");
+
+const CustomSlider = ({ data }) => {
+  const filteredData = data ? data.filter((item) => item !== null) : null;
+  const settings = {
+    sliderWidth: width,
+    sliderHeight: width,
+    itemWidth: width,
+    data: filteredData,
+    renderItem: CarouselItem,
+    hasParallaxImages: true,
+    onSnapToItem: (index) => setSlideIndex(index),
+  };
+  const [slideIndex, setSlideIndex] = useState(0);
+  return (
+    <View>
+      <Carousel {...settings} />
+      <CustomPaging data={filteredData} activeSlide={slideIndex} />
+    </View>
+  );
+};
+
+const CustomPaging = ({ data, activeSlide }) => {
+  const settings = {
+    dotsLength: data ? data.filter((item) => item !== null).length : 0,
+    activeDotIndex: activeSlide,
+    containerStyle: styles.dotContainer,
+    dotStyle: styles.dotStyle,
+    inactiveDotStyle: styles.inactiveDotStyle,
+    inactiveDotOpacity: 0.4,
+    inactiveDotScale: 0.6,
+  };
+  return <Pagination {...settings} />;
+};
 
 const Tabs = ({ activeTab, handleTabPress }) => {
   return (
@@ -184,6 +221,12 @@ const Content = ({ navigation, activeTab }) => {
 
 const home = () => {
   const [activeTab, setActiveTab] = useState("All");
+  const [advertisements, setAdvertisements] = useState({});
+
+  //suppresses nested scrollview error
+  useEffect(() => {
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']); 
+  }, [])
 
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
@@ -193,16 +236,22 @@ const home = () => {
   return (
     <SafeAreaContainer>
       <SearchBarHeader
-        onPressChat={() => {router.push("chats")}}
-        onPressWishlist={() => {router.push("wishlist")}}
+        onPressChat={() => {router.push("home/chats")}}
+        onPressWishlist={() => {router.push("home/wishlist")}}
         onPressMenu={() => {console.log("opening menu drawer")}}
       />
-      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-      <View style={{ flex: 1 }}>
+      <View style={{flex:1}}>
+        <View style={styles.advertisementAndWalletContainer}>
+          <View style={styles.advertisementCarousell}>
+            <CustomSlider data={["https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU","https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png"]} />
+          </View>
+        </View>
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
           <Content activeTab={activeTab} />
         </View>
       </View>
+      
     </SafeAreaContainer>
   );
 };
@@ -226,10 +275,42 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomColor: primary,
   },
-  contentContainer: {
+  advertisementAndWalletContainer: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    gap: 10,
+  },
+  advertisementCarousell: {
+    flex: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    borderWidth: 1,
+    borderColor: black,
+  },
+  contentContainer: {
+    flex: 4,
     backgroundColor: white,
     paddingHorizontal: '7%',
     justifyContent: "space-evenly",
+  },
+  dotContainer: {
+    marginTop: -50,
+  },
+  dotStyle: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "black",
+  },
+  inactiveDotStyle: {
+    backgroundColor: "rgb(255,230,230)",
+  },
+  image: {
+    flex: 1,
+    width: undefined,
+    height: undefined,
   },
 })
