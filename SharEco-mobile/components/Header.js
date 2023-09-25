@@ -24,14 +24,14 @@ const Header = (props) => {
   }
   return (
     <View style={styles.headerContainer}>
-    <Pressable 
-          onPress={props.onPress}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.5 : 1,
-            ...styles.backButton 
-  })}>  
-      <Ionicons name={icon} size={28} color={black}/>
-    </Pressable>
+      <Pressable 
+            onPress={props.onPress}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+              ...styles.backButton 
+    })}>  
+        <Ionicons name={icon} size={28} color={black}/>
+      </Pressable>
       <RegularText typography="H2" style={styles.header}>{props.title}</RegularText>
     </View>
   );
