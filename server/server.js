@@ -12,13 +12,14 @@ const app = express();
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
+const axios = require("axios");
 
-const { uploadFile, getFileStream } = require("./s3");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
-const fs = require("fs");
-const util = require("util");
-const unlinkFile = util.promisify(fs.unlink);
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// S3 BASE URL for GET & PUT request
+const { AWS_GETFILE_URL, AWS_PUTFILE_URL } = require("./s3");
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
@@ -552,7 +553,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
       req.body.images,
       req.body.category,
       req.body.collectionLocations,
-      req.body.otherLocation,
+      req.body.otherLocation
     );
 
     if (item) {
@@ -671,26 +672,32 @@ app.get("/api/v1/businessVerifications", async (req, res) => {
   }
 });
 
-app.get("/api/v1/businessVerifications/businessVerificationId/:businessVerificationId", async (req, res) => {
-  try {
-    const businessVerification = await businessdb.getBusinessVerificationByBusinessVerificationId(req.params.businessVerificationId);
-    if (businessVerification) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          businessVerification: businessVerification,
-        },
-      });
-    } else {
-      // Handle the case where the business verification is not found
-      res.status(404).json({ error: "Business verification not found" });
+app.get(
+  "/api/v1/businessVerifications/businessVerificationId/:businessVerificationId",
+  async (req, res) => {
+    try {
+      const businessVerification =
+        await businessdb.getBusinessVerificationByBusinessVerificationId(
+          req.params.businessVerificationId
+        );
+      if (businessVerification) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            businessVerification: businessVerification,
+          },
+        });
+      } else {
+        // Handle the case where the business verification is not found
+        res.status(404).json({ error: "Business verification not found" });
+      }
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
     }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
   }
-})
+);
 
 // Creating new business verification request
 app.post("/api/v1/businessVerifications", async (req, res) => {
@@ -816,26 +823,58 @@ app.delete(
 
 // S3 functionalities for hosting of images
 // Upload new image
-app.post("/images/:userId", upload.single("image"), async (req, res) => {
-  const file = req.file;
-  console.log(file);
+app.put(
+  "/api/s3-proxy/uploadfile/:bucket/:filename",
+  upload.single("file"),
+  async (req, res) => {
+    const file = req.file;
+    console.log(file);
 
-  const result = await uploadFile(file);
-  await unlinkFile(file.path);
-  console.log(result);
+    const { bucket, filename } = req.params;
 
-  // update photourl in userdb to result.key
-  const userId = req.params.userId;
+    try {
+      const s3url = `${AWS_PUTFILE_URL}/${filename}`;
+      const s3Response = await axios.put(proxyEndpointUrl, file.buffer, {
+        headers: {
+          "Content-Type": "application/octet-stream",
+        },
+        params: {
+          filename: filename,
+        },
+      });
+
+      if (s3Response.status === 200) {
+        // The file was successfully uploaded to S3 via the proxy
+        res.status(200).json({ message: "File uploaded successfully" });
+      } else {
+        res.status(s3Response.status).json({ error: "Upload failed" });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    res.send({ imagePath: `/images/${result.Key}` });
+  }
+);
+
+// Get image from S3 -> TBC
+app.get("/api/s3-proxy/getfile/shareco-bucket/testing1", async (req, res) => {
   try {
-  } catch (error) {}
+    const { filename } = req.params;
+    const s3url = `${AWS_GETFILE_URL}/testing1`;
 
-  res.send({ imagePath: `/images/${result.Key}` });
-});
-
-// Get image from S3
-app.get("images/:key", (req, res) => {
-  const key = req.params.key; // store this key value in userdb
-  const readStream = getFileStream(key);
-
-  readStream.pipe(res);
+    const s3Response = await axios.get(s3url);
+    console.log(s3Response.data);
+    if (s3Response.status === 200) {
+      // const contentType = "image/jpeg";
+      // res.setHeader("Content-Type", contentType);
+      res.send(s3Response.data);
+    } else if (s3Response.status !== 200) {
+      console.log("Unable to download file from S3");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
