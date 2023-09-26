@@ -239,7 +239,9 @@ const categoryBrowsing = () => {
         onPressMenu={() => {
           console.log("opening menu drawer");
           router.push("home/categoryMenu");
-          }}
+        }}
+        isHome={false}
+        category={category}
       />
       <View style={styles.heading}>
         <RegularText typography="H1">{category}</RegularText>

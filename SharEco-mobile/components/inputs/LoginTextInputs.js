@@ -23,8 +23,8 @@ const InputField = styled.TextInput`
 
 const RightIcon = styled.TouchableOpacity`
     position: absolute;
-    top: 30px;
-    right: 15px;
+    top: 28px;
+    right: 13px;
     z-index: 1;
 `;
 

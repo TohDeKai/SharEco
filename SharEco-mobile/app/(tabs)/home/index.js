@@ -281,7 +281,8 @@ const home = () => {
         onPressMenu={() => {
           console.log("opening menu drawer");
           router.push("home/categoryMenu");
-          }}
+        }}
+        isHome={true}
       />
       <View style={{flex:1}}>
         <View style={styles.advertisementAndWalletContainer}>
