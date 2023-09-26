@@ -42,6 +42,10 @@ export default function ListingCard({ item }) {
     router.push({ pathname: "profile/myListing", params: { itemId: itemId } });
   };
 
+  const toIndivListing = () => {
+    router.push({pathname: "home/indivListing", params: { itemId: 137 }});
+  }
+
   return (
     <Pressable onPress={toMyListing}>
       <View style={style.card}>
