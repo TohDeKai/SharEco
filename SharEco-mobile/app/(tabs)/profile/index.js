@@ -128,7 +128,7 @@ const ProfileHeader = () => {
           size="big"
           source={{
             uri:
-              user.userPhotoUrl ||
+              `https://sb4uyd0y4k.execute-api.ap-southeast-1.amazonaws.com/v1/shareco-bucket/${user.userPhotoUrl}` ||
               "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
           }}
         />

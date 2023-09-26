@@ -134,7 +134,15 @@ const editProfile = () => {
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.avatarContainer}>
-            <UserAvatar size="big" source={{uri:image || user.userPhotoUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}} />
+            <UserAvatar
+              size="big"
+              source={{
+                uri:
+                  image ||
+                  `https://sb4uyd0y4k.execute-api.ap-southeast-1.amazonaws.com/v1/shareco-bucket/${user.userPhotoUrl}` ||
+                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+              }}
+            />
             <Pressable
               onPress={handleOpenGallery}
               style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
@@ -190,15 +198,15 @@ const editProfile = () => {
                 setIsSuccessMessage(false);
               } else {
                 handleSave(changedFields, setSubmitting);
-              } 	
-            }}	
+              }
+            }}
           >
             {({ handleChange, handleBlur, handleSubmit, values }) => (
               <View style={{ width: "85%" }}>
                 <LabelledTextInput
                   label="Name"
                   placeholder={user.displayName}
-                  defaultValue={user.displayName} 
+                  defaultValue={user.displayName}
                   value={values.name}
                   onChangeText={handleChange("name")}
                 />
