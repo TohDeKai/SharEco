@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions } from "react-native";
+import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions, Modal } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Link, router, Drawer } from "expo-router";
 import { useAuth } from "../../../context/auth";
@@ -238,7 +238,10 @@ const home = () => {
       <SearchBarHeader
         onPressChat={() => {router.push("home/chats")}}
         onPressWishlist={() => {router.push("home/wishlist")}}
-        onPressMenu={() => {console.log("opening menu drawer")}}
+        onPressMenu={() => {
+          console.log("opening menu drawer");
+          router.push("home/categoryMenu");
+          }}
       />
       <View style={{flex:1}}>
         <View style={styles.advertisementAndWalletContainer}>
