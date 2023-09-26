@@ -261,6 +261,11 @@ const Content = ({ navigation, activeTab }) => {
     fetchUserData();
   }, []);
 
+  const ListingCard = ({ item }) => {
+    console.log("ListingCard");
+    return <Listing item={item} mine={true}/>;
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {activeTab == "Listings" && (userItems ? userItems.length : 0) === 0 && (
