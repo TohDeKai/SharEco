@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link, router, Drawer } from "expo-router";
 import { useAuth } from "../../../context/auth";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";
@@ -104,13 +105,40 @@ const Tabs = ({ activeTab, handleTabPress }) => {
 const Content = ({ navigation, activeTab }) => {
   const [items, setItems] = useState();
   const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, [user]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
+
     try {
-      //TO DO: Get all item listings
-    } catch (error) {
+      const userData = await getUserData();
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+      );
+      if (response.status === 200) {
+        const allListings = response.data.data.items;
+        setItems(allListings);
+      } else {
+        //Shouldn't come here
+        console.log("Failed to retrieve all listings");
+      }
+
+    } catch(error) {
       console.log(error.message);
     }
     // After all the data fetching and updating, set refreshing to false
@@ -120,14 +148,25 @@ const Content = ({ navigation, activeTab }) => {
   useEffect(() => {
     async function fetchAllListings() {
       //TO DO: get all item listings
+      try {
+        const userData = await getUserData();
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+        );
+        if (response.status === 200) {
+          const allListings = response.data.data.items;
+          setItems(allListings);
+        } else {
+          //Shouldn't come here
+          console.log("Failed to retrieve all listings");
+        }
+
+      } catch(error) {
+        console.log(error.message);
+      }
     }
     fetchAllListings();
   }, []);
-
-  const ListingCard = ({ item }) => {
-    console.log("ListingCard");
-    return <Listing item={item} />;
-  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -181,7 +220,8 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} />}
+          renderItem={({ item }) => 
+            <ListingCard item={item} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
