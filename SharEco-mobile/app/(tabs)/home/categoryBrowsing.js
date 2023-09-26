@@ -64,7 +64,7 @@ const Tabs = ({ activeTab, handleTabPress }) => {
   );
 };
 
-const Content = ({ navigation, activeTab }) => {
+const Content = ({ navigation, activeTab, category }) => {
   const [items, setItems] = useState();
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
@@ -90,7 +90,7 @@ const Content = ({ navigation, activeTab }) => {
     try {
       const userData = await getUserData();
         const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}`
       );
       if (response.status === 200) {
         const allListings = response.data.data.items;
@@ -113,7 +113,7 @@ const Content = ({ navigation, activeTab }) => {
       try {
         const userData = await getUserData();
         const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}`
         );
         if (response.status === 200) {
           const allListings = response.data.data.items;
@@ -248,7 +248,7 @@ const categoryBrowsing = () => {
       </View>
       <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
       <View style={styles.contentContainer}>
-          <Content activeTab={activeTab} />
+          <Content activeTab={activeTab} category={category}/>
       </View>
     </SafeAreaContainer>
   )

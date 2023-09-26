@@ -172,6 +172,20 @@ const getOtherUserItems= async (userId) => {
   }
 }
 
+//Get all items listed by other users by category
+const getOtherUserItemsByCategory= async (userId, category) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."item" 
+          WHERE "userId" != $1 AND "category" = $2 AND "disabled" != true`,
+          [userId, category]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   createItem,
   updateItem,
@@ -180,4 +194,5 @@ module.exports = {
   getItemsByUserId,
   getAllItems,
   getOtherUserItems,
+  getOtherUserItemsByCategory,
 };
