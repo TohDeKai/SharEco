@@ -1,6 +1,6 @@
-import { View, Text, SafeAreaView, Modal, StyleSheet } from 'react-native';
+import { View, Text, SafeAreaView, Modal, StyleSheet, ScrollView } from 'react-native';
 import React from 'react';
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from 'expo-router';
 
 import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
@@ -23,38 +23,86 @@ const categoryMenu = () => {
   return (
     <SafeAreaContainer>
       <Header title="Browse Categories" action="close" onPress={handleBack}/>
-      <View style={styles.content}>
+      <ScrollView style={styles.content}>
         <SettingsItem
             iconProvider={Ionicons}
-            iconName="person-outline"
-            text="Category 1"
-            onPress={() => handleCategoryPress("Category 1")}
+            iconName="headset-outline"
+            text="Audio"
+            onPress={() => handleCategoryPress("Audio")}
+        />
+        <SettingsItem
+            iconProvider={MaterialCommunityIcons}
+            iconName="steering"
+            text="Car Accessories"
+            onPress={() => handleCategoryPress("Car Accessories")}
         />
         <SettingsItem
             iconProvider={Ionicons}
-            iconName="person-outline"
-            text="Category 2"
-            onPress={() => handleCategoryPress("Category 2")}
+            iconName="ios-desktop-sharp"
+            text="Computer & Tech"
+            onPress={() => handleCategoryPress("Computer & Tech")}
         />
         <SettingsItem
             iconProvider={Ionicons}
-            iconName="person-outline"
-            text="Category 3"
-            onPress={() => handleCategoryPress("Category 3")}
+            iconName="medkit-outline"
+            text="Health & Personal Care"
+            onPress={() => handleCategoryPress("Health & Personal Care")}
         />
         <SettingsItem
             iconProvider={Ionicons}
-            iconName="person-outline"
-            text="Category 4"
-            onPress={() => handleCategoryPress("Category 4")}
+            iconName="color-palette-outline"
+            text="Hobbies & Crafts"
+            onPress={() => handleCategoryPress("Hobbies & Crafts")}
         />
         <SettingsItem
             iconProvider={Ionicons}
-            iconName="person-outline"
-            text="Category 5"
-            onPress={() => handleCategoryPress("Category 5")}
+            iconName="home-outline"
+            text="Home & Living"
+            onPress={() => handleCategoryPress("Home & Living")}
         />
-      </View>
+        <SettingsItem
+            iconProvider={Ionicons}
+            iconName="watch-outline"
+            text="Luxury"
+            onPress={() => handleCategoryPress("Luxury")}
+        />
+        <SettingsItem
+            iconProvider={Ionicons}
+            iconName="man-outline"
+            text="Men's Fashion"
+            onPress={() => handleCategoryPress("Men's Fashion")}
+        />
+        <SettingsItem
+            iconProvider={Ionicons}
+            iconName="phone-portrait-outline"
+            text="Mobile Phone & Gadgets"
+            onPress={() => handleCategoryPress("Mobile Phone & Gadgets")}
+        />
+        <SettingsItem
+            iconProvider={Ionicons}
+            iconName="camera-outline"
+            text="Photography & Videography"
+            onPress={() => handleCategoryPress("Photography & Videography")}
+        />
+        <SettingsItem
+            iconProvider={Ionicons}
+            iconName="basketball-outline"
+            text="Sports Equipment"
+            onPress={() => handleCategoryPress("Sports Equipment")}
+        />
+        <SettingsItem
+            iconProvider={Ionicons}
+            iconName="car-sport-outline"
+            text="Vehicles"
+            onPress={() => handleCategoryPress("Vehicles")}
+        />
+        <SettingsItem
+            iconProvider={Ionicons}
+            iconName="woman-outline"
+            text="Women's Fashion"
+            onPress={() => handleCategoryPress("Women's Fashion")}
+        />
+      </ScrollView>
     </SafeAreaContainer>
   )
 }
@@ -66,6 +114,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: "center",
     width: '85%',
-    top: 40,
+    paddingVertical: 40,
   },
 });
