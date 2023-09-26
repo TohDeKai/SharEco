@@ -151,7 +151,7 @@ const getAllItems= async () => {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."item" `,
     );
-    return result.rows[0];
+    return result.rows;
   } catch (err) {
     throw err;
   }
