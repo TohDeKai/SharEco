@@ -221,7 +221,11 @@ const Content = ({ navigation, activeTab }) => {
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => 
+<<<<<<< HEAD
             <ListingCard item={item} />}
+=======
+            <ListingCard item={item} mine={false} />}
+>>>>>>> b642394cf0b764ddd9cde85a8c43ec21ea5333fe
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
