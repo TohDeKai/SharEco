@@ -14,9 +14,8 @@ const handleBack = () => {
   router.back();
 };
 
-const handleCategoryPress = (route) => {
-  router.push(`home/categoryBrowsing`); 
-  //need figure how to pass params of route (contains string of category selected)
+const handleCategoryPress = (category) => {
+  router.push({ pathname: "home/categoryBrowsing", params: { category: category } });
 };
 
 const categoryMenu = () => {
