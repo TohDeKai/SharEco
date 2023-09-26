@@ -34,7 +34,7 @@ import {
   SelectList,
   MultipleSelectList,
 } from "react-native-dropdown-select-list";
-import ConfirmationModal from "../../../components/ConfirmationModal";
+import listing from "./myListing";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportWidthInPixels = (percentage) => {
@@ -52,7 +52,7 @@ const editListing = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const params = useLocalSearchParams();
   const { itemId } = params;
-  const [showModal, setShowModal] = useState(false);
+
   const [listingItem, setListingItem] = useState({});
   const { getUserData } = useAuth();
   const [user, setUser] = useState("");
@@ -60,7 +60,7 @@ const editListing = () => {
   const [images, setImages] = useState([]);
   const [category, setCategory] = useState(listingItem.category);
   const [lockers, setLockers] = useState([]);
-  console.log(listingItem);
+console.log(listingItem);
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -158,19 +158,12 @@ const editListing = () => {
     router.back();
   };
 
-  const handleShowModal = () => {
-    setShowModal(true);
-  };
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
   const handleDelist = async () => {
-    try {
+    try{
       const itemData = {
         itemId: itemId,
-        disabled: listingItem.disabled,
-      };
+        disabled: listingItem.disabled
+      }
       const response = await axios.put(
         `http://${BASE_URL}:4000/api/v1/items/${itemId}`,
         itemData
@@ -191,7 +184,7 @@ const editListing = () => {
         console.log("Error during item deletion: ", error.message);
       }
     }
-  };
+  }
 
   const handleEditListing = async (values) => {
     try {
@@ -250,8 +243,9 @@ const editListing = () => {
               description: listingItem.itemDescription,
               meetupLocation: listingItem.otherLocation,
             }}
+            
             onSubmit={(values, actions) => {
-              //checks for changed fields
+                //checks for changed fields
               const changedFields = {};
               if (values.title !== listingItem.itemTitle) {
                 changedFields.title = values.title;
@@ -473,7 +467,6 @@ const editListing = () => {
                   multiline={true}
                   scrollEnabled={false}
                   minHeight={80}
-                  style={{marginBottom:50}}
                 />
 
                 <MessageBox
@@ -485,11 +478,7 @@ const editListing = () => {
                 <View>
                   <View style={styles.nav}>
                     <View style={styles.buttonContainer}>
-                      <SecondaryButton
-                        typography={"H3"}
-                        color={primary}
-                        onPress={handleShowModal}
-                      >
+                      <SecondaryButton typography={"H3"} color={primary} onPress={handleDelist}>
                         Delete Listing
                       </SecondaryButton>
                     </View>
@@ -503,11 +492,6 @@ const editListing = () => {
                       </PrimaryButton>
                     </View>
                   </View>
-                  <ConfirmationModal
-                        isVisible={showModal}
-                        onConfirm={handleDelist}
-                        onClose={handleCloseModal}
-                      />
                 </View>
                 {/* <RoundedButton
                   typography={"B1"}

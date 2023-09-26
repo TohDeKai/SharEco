@@ -5,7 +5,6 @@ const morgan = require("morgan");
 const userdb = require("./queries/user");
 const admindb = require("./queries/admin");
 const listingdb = require("./queries/listing");
-const rentaldb = require("./queries/rental");
 const businessdb = require("./queries/businessVerifications");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
@@ -553,7 +552,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
       req.body.images,
       req.body.category,
       req.body.collectionLocations,
-      req.body.otherLocation
+      req.body.otherLocation,
     );
 
     if (item) {
@@ -647,50 +646,6 @@ app.get("/api/v1/items/:userId", async (req, res) => {
   }
 });
 
-//Get all items
-app.get("/api/v1/items", async (req, res) => {
-  try {
-    const items = await listingdb.getAllItems();
-
-    if (items) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          items: items,
-        },
-      });
-    } else {
-      // Handle the case where no items are found
-      res.status(404).json({ error: "No Items Found" });
-    }
-  } catch (error) {
-    console.log(error.message);
-  }
-});
-
-//Get other people's items
-app.get("/api/v1/items/not/:userId", async (req, res) => {
-  const userId = req.params.userId;
-
-  try {
-    const items = await listingdb.getOtherUserItems(userId);
-
-    if (items) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          items: items,
-        },
-      });
-    } else {
-      // Handle the case where no items are found
-      res.status(404).json({ error: "No Items Found" });
-    }
-  } catch (error) {
-    console.log(error.message);
-  }
-})
-
 // Auth functionalities
 app.post("/api/v1/admin/signIn", auth.AdminSignIn);
 app.post("/api/v1/admin/signUp", auth.AdminSignUp);
@@ -716,32 +671,26 @@ app.get("/api/v1/businessVerifications", async (req, res) => {
   }
 });
 
-app.get(
-  "/api/v1/businessVerifications/businessVerificationId/:businessVerificationId",
-  async (req, res) => {
-    try {
-      const businessVerification =
-        await businessdb.getBusinessVerificationByBusinessVerificationId(
-          req.params.businessVerificationId
-        );
-      if (businessVerification) {
-        res.status(200).json({
-          status: "success",
-          data: {
-            businessVerification: businessVerification,
-          },
-        });
-      } else {
-        // Handle the case where the business verification is not found
-        res.status(404).json({ error: "Business verification not found" });
-      }
-    } catch (err) {
-      // Handle the error here if needed
-      console.log(err);
-      res.status(500).json({ error: "Database error" });
+app.get("/api/v1/businessVerifications/businessVerificationId/:businessVerificationId", async (req, res) => {
+  try {
+    const businessVerification = await businessdb.getBusinessVerificationByBusinessVerificationId(req.params.businessVerificationId);
+    if (businessVerification) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          businessVerification: businessVerification,
+        },
+      });
+    } else {
+      // Handle the case where the business verification is not found
+      res.status(404).json({ error: "Business verification not found" });
     }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
   }
-);
+})
 
 // Creating new business verification request
 app.post("/api/v1/businessVerifications", async (req, res) => {
@@ -889,232 +838,4 @@ app.get("images/:key", (req, res) => {
   const readStream = getFileStream(key);
 
   readStream.pipe(res);
-});
-
-//RENTAL REQUEST FUNCTIONALITIES
-//Create a new rental request
-app.post("/api/v1/rental", async (req, res) => {
-  const {
-    startDate,
-    endDate,
-    collectionLocation,
-    additionalRequest,
-    depositFee,
-    rentalFee,
-    itemId,
-    borrowerId,
-    lenderId,
-  } = req.body;
-
-  try {
-    const rental = await rentaldb.createRentalRequest(
-      startDate,
-      endDate,
-      collectionLocation,
-      additionalRequest,
-      depositFee,
-      rentalFee,
-      itemId,
-      borrowerId,
-      lenderId
-    );
-
-    // Send the newly created business verification as the response
-    res.status(201).json({
-      status: "success",
-      data: {
-        rental: rental,
-      },
-    });
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-// Edit Rental request
-app.put("/api/v1/rental/rentalId/:rentalId", async (req, res) => {
-  try {
-    const rental = await rentaldb.editRentalRequest(
-      req.params.rentalId,
-      req.body.startDate,
-      req.body.endDate,
-      req.body.collectionLocation,
-      req.body.additionalRequest,
-      req.body.additionalCharges,
-      req.body.depositFee,
-      req.body.rentalFee
-    );
-
-    if (rental) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-// Delete rental request
-app.delete("/api/v1/rental/:rentalId", async (req, res) => {
-  const rentalId = req.params.rentalId;
-  try {
-    const rental = await rentaldb.deleteRentalRequest(rentalId);
-
-    if (rental) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-// Get all rental requests
-app.get("/api/v1/rentals", async (req, res) => {
-  try {
-    const rentals = await rentaldb.getAllRentals();
-    res.status(200).json({
-      status: "success",
-      data: {
-        rentals: rentals,
-      },
-    });
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-// Get Rental by Rental Id
-app.get("/api/v1/rentals/rentalId/:rentalId", async (req, res) => {
-  try {
-    const rental = await rentaldb.getRentalByRentalId(req.params.rentalId);
-    if (rental) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-// Get Rental by Lender Id
-app.get("/api/v1/rentals/lenderId/:lenderId", async (req, res) => {
-  try {
-    const rental = await rentaldb.getRentalsByLenderId(req.params.lenderId);
-    if (rental.length != 0) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-// Get Rental by Borrower Id
-app.get("/api/v1/rentals/borrowerId/:borrowerId", async (req, res) => {
-  try {
-    const rental = await rentaldb.getRentalsByBorrowerId(req.params.borrowerId);
-    if (rental.length != 0) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-// Get Rental by Item Id
-app.get("/api/v1/rentals/itemId/:itemId", async (req, res) => {
-  try {
-    const rental = await rentaldb.getRentalsByItemId(req.params.itemId);
-    if (rental.length != 0) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-//Update rental status
-app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
-  try {
-    const rental = await rentaldb.updateRentalStatus(
-      req.body.status,
-      req.params.rentalId,
-    );
-    if (rental) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
 });

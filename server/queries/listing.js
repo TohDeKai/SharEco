@@ -145,39 +145,10 @@ const getItemsByUserId = async (userId) => {
   }
 };
 
-//Get All Items
-const getAllItems= async () => {
-  try {
-    const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."item" 
-          WHERE "disabled" != true`,
-    );
-    return result.rows;
-  } catch (err) {
-    throw err;
-  }
-};
-
-//Get all items listed by other users
-const getOtherUserItems= async (userId) => {
-  try {
-    const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."item" 
-          WHERE "userId" != $1 AND "disabled" != true`,
-          [userId]
-    );
-    return result.rows;
-  } catch (err) {
-    throw err;
-  }
-}
-
 module.exports = {
   createItem,
   updateItem,
   disableItem,
   getItemByItemId,
   getItemsByUserId,
-  getAllItems,
-  getOtherUserItems,
 };
