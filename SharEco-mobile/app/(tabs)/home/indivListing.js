@@ -7,6 +7,7 @@ import {
   Pressable,
   FlatList,
   Image,
+  RefreshControl,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
@@ -45,10 +46,44 @@ const viewportWidthInPixels = (percentage) => {
 const ItemInformation = () => {
   const [listingItem, setListingItem] = useState({});
   const [user, setUser] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
   const { itemId } = params;
   const handleBack = () => {
     router.back();
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+        const itemResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+        );
+  
+        if (itemResponse.status === 200) {
+          const item = itemResponse.data.data.item;
+          setListingItem(item);
+  
+          // Now that listingItem is set, fetch user data
+          const userResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
+          );
+  
+          if (userResponse.status === 200) {
+            const user = userResponse.data.data.user;
+            setUser(user);
+          } else {
+            console.log("Failed to retrieve user");
+          }
+        } else {
+          console.log("Failed to retrieve item");
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -81,9 +116,9 @@ const ItemInformation = () => {
       }
     }
   
-    fetchData(); // Call the fetchData function
+    fetchData(); 
   
-  }, [itemId, BASE_URL]); // Add dependencies to the array if needed
+  }, [itemId, BASE_URL]);
   
 
   const {
@@ -108,6 +143,12 @@ const ItemInformation = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ marginBottom: 50 }}
+        refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+            />
+          }
       >
         <View style={style.imgContainer}>
           <View style={style.header}>

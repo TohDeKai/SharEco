@@ -7,6 +7,7 @@ import {
   Pressable,
   FlatList,
   Image,
+  RefreshControl,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
@@ -45,11 +46,37 @@ const ItemInformation = () => {
   const [listingItem, setListingItem] = useState({});
   const { getUserData } = useAuth();
   const [user, setUser] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
   const { itemId } = params;
   //setListingItemId({itemId});
   const handleBack = () => {
     router.back();
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      const userData = await getUserData();
+      setUser(userData);
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+      );
+      console.log("get");
+      console.log(response.status);
+      if (response.status === 200) {
+        const item = response.data.data.item;
+        setListingItem(item);
+      } else {
+        // Shouldn't come here
+        console.log("Failed to retrieve items");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -88,19 +115,18 @@ const ItemInformation = () => {
     userId,
   } = listingItem;
 
-  console.log(collectionLocations);
   const formattedLocations = collectionLocations
     ? collectionLocations.join(", ")
     : collectionLocations;
-  console.log(formattedLocations);
-
-  // const collectionLocationValues = Object.values(collectionLocations);
 
   return (
     <View>
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ marginBottom: 50 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
         <View style={style.imgContainer}>
           <View style={style.header}>
