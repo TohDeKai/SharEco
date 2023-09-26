@@ -27,7 +27,7 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-export default function ListingCard({ item }) {
+export default function ListingCard({ item, mine }) {
   const {
     itemId,
     itemTitle,
@@ -43,11 +43,11 @@ export default function ListingCard({ item }) {
   };
 
   const toIndivListing = () => {
-    router.push({pathname: "home/indivListing", params: { itemId: 137 }});
+    router.push({pathname: "home/indivListing", params: { itemId: itemId }});
   }
 
   return (
-    <Pressable onPress={toMyListing}>
+    <Pressable onPress={mine ? toMyListing : toIndivListing}>
       <View style={style.card}>
         <Image
           resizeMode="contain"
