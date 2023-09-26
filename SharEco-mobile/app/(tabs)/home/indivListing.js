@@ -25,6 +25,7 @@ import SafeAreaContainer from "../../../components/containers/SafeAreaContainer"
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import {
   DisabledButton,
+  PrimaryButton,
   SecondaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
@@ -44,12 +45,10 @@ const viewportWidthInPixels = (percentage) => {
 
 const ItemInformation = () => {
   const [listingItem, setListingItem] = useState({});
-  const { getUserData } = useAuth();
   const [user, setUser] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
   const { itemId } = params;
-  //setListingItemId({itemId});
   const handleBack = () => {
     router.back();
   };
@@ -58,50 +57,69 @@ const ItemInformation = () => {
     setRefreshing(true);
 
     try {
-      const userData = await getUserData();
-      setUser(userData);
-      const response = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
-      );
-      console.log("get");
-      console.log(response.status);
-      if (response.status === 200) {
-        const item = response.data.data.item;
-        setListingItem(item);
-      } else {
-        // Shouldn't come here
-        console.log("Failed to retrieve items");
+        const itemResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+        );
+  
+        if (itemResponse.status === 200) {
+          const item = itemResponse.data.data.item;
+          setListingItem(item);
+  
+          // Now that listingItem is set, fetch user data
+          const userResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
+          );
+  
+          if (userResponse.status === 200) {
+            const user = userResponse.data.data.user;
+            setUser(user);
+          } else {
+            console.log("Failed to retrieve user");
+          }
+        } else {
+          console.log("Failed to retrieve item");
+        }
+      } catch (error) {
+        console.error(error.message);
       }
-    } catch (error) {
-      console.log(error.message);
-    }
 
     setRefreshing(false);
   };
 
   useEffect(() => {
-    async function fetchUserData() {
+    async function fetchData() {
       try {
-        const userData = await getUserData();
-        setUser(userData);
-        const response = await axios.get(
+        const itemResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
         );
-        console.log("get");
-        console.log(response.status);
-        if (response.status === 200) {
-          const item = response.data.data.item;
+  
+        if (itemResponse.status === 200) {
+          const item = itemResponse.data.data.item;
           setListingItem(item);
+  
+          // Now that listingItem is set, fetch user data
+          const userResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
+          );
+  
+          if (userResponse.status === 200) {
+            const user = userResponse.data.data.user;
+            setUser(user);
+          } else {
+            console.log("Failed to retrieve user");
+          }
         } else {
-          // Shouldn't come here
-          console.log("Failed to retrieve items");
+          console.log("Failed to retrieve item");
         }
       } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
       }
     }
-    fetchUserData();
-  }, []);
+  
+    fetchData(); 
+  
+  }, [itemId, BASE_URL]);
+  
 
   const {
     itemTitle,
@@ -113,6 +131,7 @@ const ItemInformation = () => {
     collectionLocations,
     usersLikedCount,
     userId,
+    depositFee,
   } = listingItem;
 
   const formattedLocations = collectionLocations
@@ -125,8 +144,11 @@ const ItemInformation = () => {
         showsVerticalScrollIndicator={false}
         style={{ marginBottom: 50 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+            />
+          }
       >
         <View style={style.imgContainer}>
           <View style={style.header}>
@@ -175,6 +197,15 @@ const ItemInformation = () => {
             </RegularText>
             <RegularText typography="B2" style={style.content}>
               {itemOriginalPrice}
+            </RegularText>
+          </View>
+
+          <View>
+            <RegularText typography="H3" style={style.topic}>
+              Deposit Fee
+            </RegularText>
+            <RegularText typography="B2" style={style.content}>
+              {depositFee}
             </RegularText>
           </View>
 
@@ -260,25 +291,25 @@ const CustomPaging = ({ data, activeSlide }) => {
 };
 
 const ListingNav = ({ data }) => {
-  const toEditListing = () => {
-    router.push({ pathname: "profile/editListing", params: { itemId: data } });
+  const toRentalRequest = () => {
+    router.push({ pathname: "/", params: { itemId: data } }); //to update path name
   };
   return (
     <View>
       <View style={style.nav}>
         <View style={style.buttonContainer}>
-          <SecondaryButton
-            typography={"H3"}
-            color={primary}
-            onPress={toEditListing}
-          >
-            Edit Listing
-          </SecondaryButton>
+          <DisabledButton typography={"H3"} color={white}>
+            Chat
+          </DisabledButton>
         </View>
         <View style={style.buttonContainer}>
-          <DisabledButton typography={"H3"} color={white}>
-            Manage Rentals
-          </DisabledButton>
+          <PrimaryButton
+            typography={"H3"}
+            color={white}
+            onPress={toRentalRequest}
+          >
+            Rent Now
+          </PrimaryButton>
         </View>
       </View>
     </View>
