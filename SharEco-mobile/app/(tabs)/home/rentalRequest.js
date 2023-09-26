@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Formik, Field } from "formik";
-import { router, Link } from "expo-router";
+import { router, Link, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -46,13 +46,15 @@ const createRentals = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const [listingItem, setListingItem] = useState({});
+  const params = useLocalSearchParams();
+  const { itemId } = params;
   const { getUserData } = useAuth();
 
   useEffect(() => {
     async function fetchListingData() {
       try {
         const itemResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/itemId/137`
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
         );
         if (itemResponse.status === 200) {
           const item = itemResponse.data.data.item;
