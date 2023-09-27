@@ -11,7 +11,13 @@ const { black } = colours;
 
 const SearchBarHeader = (props) => {
   handleSearch = (values) => {
-    router.push({ pathname: "home/browseByKeywords", params: { keywords: values.keywords } });
+    //handles search for home and browseByKeywords.js
+    if (props.isHome) {
+      router.push({ pathname: "home/browseByKeywords", params: { keywords: values.keywords } });
+    } else if (!props.isHome) {
+      //handles search for browseByCategory and browseByCategoryByKeywords
+      router.push({ pathname: "home/browseByCategoryByKeywords", params: { keywords: values.keywords, category: props.category}})
+    }
   }
 
   return (
@@ -21,11 +27,11 @@ const SearchBarHeader = (props) => {
         if (values.keywords != "") {
           handleSearch(values);
 
-          //only resets if its the index page. else in browse by keywords it shoudnt reset
-          if (!props.goBack) {
+          //only resets if its the index page, or the browseByCategory page. else in browse by keywords it shoudnt reset
+          if (props.reset) {
             actions.resetForm();
           }
-        }
+       }
       }}
     >
       {({ handleChange, handleBlur, handleSubmit, values }) => (

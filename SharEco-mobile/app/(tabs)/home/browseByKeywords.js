@@ -143,28 +143,6 @@ const Content = ({ navigation, activeTab, keywords }) => {
     setRefreshing(false);
   };
 
-
-  // const handleRefresh2 = async () => {
-  //   setRefreshing(true);
-  //   try {
-  //     const userData = await getUserData();
-  //       const response = await axios.get(
-  //         `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
-  //     );
-  //     if (response.status === 200) {
-  //       const allListings = response.data.data.items;
-  //       setItems(allListings);
-  //     } else {
-  //       //Shouldn't come here
-  //       console.log("Failed to retrieve all listings");
-  //     }
-  //   } catch(error) {
-  //     console.log(error.message);
-  //   }
-  //   // After all the data fetching and updating, set refreshing to false
-  //   setRefreshing(false);
-  // };
-
   useEffect(() => {
     async function fetchAllListingsByKeywords() {
       try {
@@ -306,17 +284,13 @@ const browseByKeywords = () => {
         keywords={keywords}
         isHome={true}
         goBack={true}
+        reset={false}
       />
       <View style={{flex:1}}>
-        {/* <View style={styles.advertisementAndWalletContainer}>
-          <View style={styles.advertisementCarousell}>
-            <CustomSlider data={["https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU","https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png"]} />
-          </View>
-        </View> */}
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
           <Content activeTab={activeTab} keywords={keywords}/>
-          <RegularText>{keywords}</RegularText>
+          <RegularText>{keywords} browseByKeywords.js</RegularText>
         </View>
       </View>
       

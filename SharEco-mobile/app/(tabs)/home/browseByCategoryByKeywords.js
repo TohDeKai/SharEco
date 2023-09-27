@@ -1,16 +1,54 @@
-import { View, Text, SafeAreaView, StyleSheet, FlatList, RefreshControl, Dimensions, Pressable } from 'react-native';
-import React, { useEffect, useState} from 'react';
-import { useLocalSearchParams, router } from 'expo-router';
+import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions, Modal } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Link, router, Drawer, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../../context/auth";
+import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
-import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
-import RegularText from '../../../components/text/RegularText';
-import SearchBarHeader from '../../../components/SearchBarHeader';
-import ListingCard from '../../../components/ListingCard';
+import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
+import RegularText from "../../../components/text/RegularText";
+import SearchBarHeader from "../../../components/SearchBarHeader";
+import ListingCard from "../../../components/ListingCard";
+import Carousel, { Pagination } from "react-native-snap-carousel";
+import CarouselItem from "../../../components/CarouselItem";
 import { colours } from "../../../components/ColourPalette";
-const { white, primary, inputbackground, dark } = colours;
+const { white, primary, inputbackground, dark, black } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+const { width } = Dimensions.get("window");
+
+const CustomSlider = ({ data }) => {
+  const filteredData = data ? data.filter((item) => item !== null) : null;
+  const settings = {
+    sliderWidth: width,
+    sliderHeight: width,
+    itemWidth: width,
+    data: filteredData,
+    renderItem: CarouselItem,
+    hasParallaxImages: true,
+    onSnapToItem: (index) => setSlideIndex(index),
+  };
+  const [slideIndex, setSlideIndex] = useState(0);
+  return (
+    <View>
+      <Carousel {...settings} />
+      <CustomPaging data={filteredData} activeSlide={slideIndex} />
+    </View>
+  );
+};
+
+const CustomPaging = ({ data, activeSlide }) => {
+  const settings = {
+    dotsLength: data ? data.filter((item) => item !== null).length : 0,
+    activeDotIndex: activeSlide,
+    containerStyle: styles.dotContainer,
+    dotStyle: styles.dotStyle,
+    inactiveDotStyle: styles.inactiveDotStyle,
+    inactiveDotOpacity: 0.4,
+    inactiveDotScale: 0.6,
+  };
+  return <Pagination {...settings} />;
+};
 
 const Tabs = ({ activeTab, handleTabPress }) => {
   return (
@@ -64,7 +102,7 @@ const Tabs = ({ activeTab, handleTabPress }) => {
   );
 };
 
-const Content = ({ navigation, activeTab, category }) => {
+const Content = ({ navigation, activeTab, keywords, category }) => {
   const [items, setItems] = useState();
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
@@ -86,21 +124,19 @@ const Content = ({ navigation, activeTab, category }) => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-
     try {
       const userData = await getUserData();
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}`
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}/keywords?keywords=${encodeURIComponent(keywords)}`
       );
       if (response.status === 200) {
         const allListings = response.data.data.items;
         setItems(allListings);
       } else {
-        //Shouldn't come here
-        console.log("Failed to retrieve all listings");
+        // Shouldn't come here
+        console.log("Failed to retrieve listings by keywords");
       }
-
-    } catch(error) {
+    } catch (error) {
       console.log(error.message);
     }
     // After all the data fetching and updating, set refreshing to false
@@ -108,12 +144,11 @@ const Content = ({ navigation, activeTab, category }) => {
   };
 
   useEffect(() => {
-    async function fetchAllListings() {
-      //TO DO: get all item listings
+    async function fetchAllListingsByKeywords() {
       try {
         const userData = await getUserData();
         const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}`
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}/keywords?keywords=${encodeURIComponent(keywords)}`
         );
         if (response.status === 200) {
           const allListings = response.data.data.items;
@@ -127,8 +162,8 @@ const Content = ({ navigation, activeTab, category }) => {
         console.log(error.message);
       }
     }
-    fetchAllListings();
-  }, []);
+    fetchAllListingsByKeywords();
+  }, [keywords]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -221,10 +256,16 @@ const Content = ({ navigation, activeTab, category }) => {
   );
 };
 
-const categoryBrowsing = () => {
+const browseByCategoryByKeywords = () => {
   const [activeTab, setActiveTab] = useState("All");
+  const [advertisements, setAdvertisements] = useState({});
   const params = useLocalSearchParams();
-  const { category } = params;
+  const { keywords, category } = params;
+
+  //suppresses nested scrollview error
+  useEffect(() => {
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']); 
+  }, [])
 
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
@@ -236,34 +277,36 @@ const categoryBrowsing = () => {
       <SearchBarHeader
         onPressChat={() => {router.push("home/chats")}}
         onPressWishlist={() => {router.push("home/wishlist")}}
-        onPressMenu={() => {
-          console.log("opening menu drawer");
-          router.push("home/categoryMenu");
+        onPressBack={() => {
+          console.log("going to category");
+          router.back();
+          //router.replace({ pathname: "home/browseByCategory", params: { category: category}})
         }}
+        keywords={keywords}
         isHome={false}
+        goBack={true}
+        reset={false}
         category={category}
       />
-      <View style={styles.heading}>
-        <RegularText typography="H1">{category}</RegularText>
+      <View style={{flex:1}}>
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+        <View style={styles.contentContainer}>
+          <Content activeTab={activeTab} keywords={keywords} category={category}/>
+          <RegularText>{keywords} browseByCategoryByKeywords.js</RegularText>
+        </View>
       </View>
-      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-      <View style={styles.contentContainer}>
-          <Content activeTab={activeTab} category={category}/>
-      </View>
+      
     </SafeAreaContainer>
-  )
-}
+  );
+};
 
-export default categoryBrowsing;
+export default browseByCategoryByKeywords;
 
 const styles = StyleSheet.create({
-  heading: {
-    marginVertical: 20,
-    paddingHorizontal: '7%',
-  },
   tabContainer: {
     flexDirection: "row",
     width: '100%',
+    paddingTop: 20,
   },
   tab: {
     flex: 1,

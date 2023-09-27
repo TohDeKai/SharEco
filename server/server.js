@@ -739,6 +739,31 @@ app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
   }
 })
 
+//Get other people's items by category by keywords
+app.get("/api/v1/items/not/:userId/category/:category/keywords", async (req, res) => {
+  const userId = req.params.userId;
+  const category = req.params.category;
+  const keywords = req.query.keywords.split(/[ +]/);
+
+  try {
+    const items = await listingdb.getOtherUserItemsByCategoryByKeywords(userId, category, keywords);
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+})
+
 // Auth functionalities
 app.post("/api/v1/admin/signIn", auth.AdminSignIn);
 app.post("/api/v1/admin/signUp", auth.AdminSignUp);
