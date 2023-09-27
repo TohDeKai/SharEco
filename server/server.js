@@ -494,6 +494,23 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
   }
 });
 
+// Get all items
+app.get("/api/v1/items", async (req, res) => {
+  try {
+    const items = await listingdb.getItems();
+    res.status(200).json({
+      status: "success",
+      data: {
+        item: items,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Create item
 app.post("/api/v1/items", async (req, res) => {
   const {
@@ -576,7 +593,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
 
 //Delete item
 //Disabling item
-app.put("/api/v1/items/:itemId", async (req, res) => {
+app.put("/api/v1/items/disable/itemId/:itemId", async (req, res) => {
   try {
     const item = await listingdb.disableItem(
       req.params.itemId,
