@@ -672,7 +672,7 @@ app.post("/api/v1/admin/signIn", async (req, res) => {
     const token = await auth.AdminSignIn(username, password);
 
     // Send the newly created user as the response
-    res.status(201).json({
+    res.status(200).json({
       status: "success",
       data: {
         token: token,
@@ -698,7 +698,7 @@ app.post("/api/v1/admin/signUp", async (req, res) => {
     const admin = await auth.AdminSignUp(username, password);
 
     // Send the newly created user as the response
-    res.status(201).json({
+    res.status(200).json({
       status: "success",
       data: {
         admin: admin,
