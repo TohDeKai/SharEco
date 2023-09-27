@@ -24,8 +24,9 @@ import MessageBox from "../../../components/text/MessageBox";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
-const { white, primary, inputbackground, black } = colours;
+const { white, primary, inputbackground, black, dark } = colours;
 import { useAuth } from "../../../context/auth";
+import Calendar from "../../../components/DatePicker";
 import {
   SelectList,
   MultipleSelectList,
@@ -40,6 +41,47 @@ const viewportWidthInPixels = (percentage) => {
 const viewportHeightInPixels = (percentage) => {
   const screenWidth = Dimensions.get("window").height;
   return (percentage / 100) * screenWidth;
+};
+
+const Tabs = ({ activeTab, handleTabPress }) => {
+  return (
+    <View
+      style={
+        styles.stickyHeader ? styles.stickyTabContainer : styles.tabContainer
+      }
+    >
+      <Pressable
+        onPress={() => handleTabPress("Hourly")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.tab,
+          activeTab === "Hourly" && styles.activeTab,
+        ]}
+      >
+        <RegularText
+          typography="B2"
+          color={activeTab === "Hourly" ? white : dark}
+        >
+          Hourly Rental
+        </RegularText>
+      </Pressable>
+      <Pressable
+        onPress={() => handleTabPress("Daily")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.tab,
+          activeTab === "Daily" && styles.activeTab,
+        ]}
+      >
+        <RegularText
+          typography="B2"
+          color={activeTab === "Daily" ? white : dark}
+        >
+          Daily Rental
+        </RegularText>
+      </Pressable>
+    </View>
+  );
 };
 
 const createRentals = () => {
@@ -89,6 +131,13 @@ const createRentals = () => {
 
   const handleShowTerms = () => {
     router.push("createListing/TermsAndConditions");
+  };
+
+  const [activeTab, setActiveTab] = useState("Hourly");
+
+  const handleTabPress = (tabName) => {
+    setActiveTab(tabName);
+    console.log("Active tab: " + tabName);
   };
 
   // const handleCreateListing = async (values) => {
@@ -183,6 +232,9 @@ const createRentals = () => {
           </Text>
         </View>
       </View>
+      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+      <Calendar />
+
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {/* <Formik
@@ -455,6 +507,22 @@ const styles = StyleSheet.create({
   overflowEllipsis: {
     overflow: "hidden",
     maxWidth: viewportWidthInPixels(70),
+  },
+  tabContainer: {
+    flexDirection: "row",
+    width: viewportWidthInPixels(100),
+  },
+  tab: {
+    flex: 1,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: white,
+    borderBottomWidth: 1,
+    borderBottomColor: inputbackground,
+  },
+  activeTab: {
+    backgroundColor: dark,
   },
   container: {
     flex: 1,
