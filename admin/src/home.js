@@ -81,6 +81,24 @@ const Home = () => {
     setErrorSnackbarOpen(false);
   };
 
+  // State for business verification Snackbar
+  const [successBusinessVeriSnackbarOpen, setSuccessBusinessVeriSnackbarOpen] =
+    useState(false);
+
+  const handleSuccessBusinessVeriSnackbarClose = () => {
+    setSuccessBusinessVeriSnackbarOpen(false);
+  };
+
+  // State for verification removal Snackbar
+  const [
+    successApprovalRemovalSnackbarOpen,
+    setSuccessApprovalRemovalSnackbarOpen,
+  ] = useState(false);
+
+  const handleSuccessApprovalRemovalSnackbarClose = () => {
+    setSuccessApprovalRemovalSnackbarOpen(false);
+  };
+
   const [openAdminDialog, setOpenAdminDialog] = React.useState(false);
 
   const handleAdminClickOpen = () => {
@@ -127,6 +145,7 @@ const Home = () => {
       );
       console.log(response);
       if (response.status === 200) {
+        setSuccessApprovalRemovalSnackbarOpen(true);
         // Update the business verification after approve
         const updatedBusinessVerificationData = businessVerificationData.map(
           (businessVerification) => {
@@ -162,6 +181,7 @@ const Home = () => {
       );
       console.log(response);
       if (response.status === 200) {
+        setSuccessBusinessVeriSnackbarOpen(true);
         // Update the business verification after approve
         const updatedBusinessVerificationData = businessVerificationData.map(
           (businessVerification) => {
@@ -495,6 +515,34 @@ const Home = () => {
           >
             <Alert severity="success" onClose={handleSuccessSnackbarClose}>
               Admin created successfully!
+            </Alert>
+          </Snackbar>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={successBusinessVeriSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSuccessBusinessVeriSnackbarClose}
+          >
+            <Alert
+              severity="success"
+              onClose={handleSuccessBusinessVeriSnackbarClose}
+            >
+              Business successfully verified!
+            </Alert>
+          </Snackbar>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={successApprovalRemovalSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSuccessApprovalRemovalSnackbarClose}
+          >
+            <Alert
+              severity="success"
+              onClose={handleSuccessApprovalRemovalSnackbarClose}
+            >
+              Verification successfully removed!
             </Alert>
           </Snackbar>
 
