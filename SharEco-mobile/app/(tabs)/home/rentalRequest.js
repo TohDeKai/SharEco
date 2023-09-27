@@ -10,10 +10,14 @@ import {
 import React, { useState, useEffect } from "react";
 import { Formik, Field } from "formik";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { router, Link } from "expo-router";
 =======
 import { router, Link, useLocalSearchParams } from "expo-router";
 >>>>>>> b642394cf0b764ddd9cde85a8c43ec21ea5333fe
+=======
+import { router, Link, useLocalSearchParams } from "expo-router";
+>>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -51,10 +55,15 @@ const createRentals = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const [listingItem, setListingItem] = useState({});
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   const params = useLocalSearchParams();
   const { itemId } = params;
 >>>>>>> b642394cf0b764ddd9cde85a8c43ec21ea5333fe
+=======
+  const params = useLocalSearchParams();
+  const { itemId } = params;
+>>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
   const { getUserData } = useAuth();
 
   useEffect(() => {
@@ -62,10 +71,14 @@ const createRentals = () => {
       try {
         const itemResponse = await axios.get(
 <<<<<<< HEAD
+<<<<<<< HEAD
           `http://${BASE_URL}:4000/api/v1/items/itemId/137`
 =======
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
 >>>>>>> b642394cf0b764ddd9cde85a8c43ec21ea5333fe
+=======
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+>>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
         );
         if (itemResponse.status === 200) {
           const item = itemResponse.data.data.item;

@@ -122,8 +122,6 @@ const Content = ({ navigation, activeTab }) => {
     fetchUserData();
   }, [user]);
 
-<<<<<<< HEAD
-=======
   const handleSearchByKeywords = async (keywords) => {
     setRefreshing(true);
   
@@ -148,7 +146,6 @@ const Content = ({ navigation, activeTab }) => {
   };
 
 
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
   const handleRefresh = async () => {
     setRefreshing(true);
 
@@ -248,15 +245,7 @@ const Content = ({ navigation, activeTab }) => {
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => 
-<<<<<<< HEAD
-<<<<<<< HEAD
-            <ListingCard item={item} />}
-=======
             <ListingCard item={item} mine={false} />}
->>>>>>> b642394cf0b764ddd9cde85a8c43ec21ea5333fe
-=======
-            <ListingCard item={item} mine={false} />}
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -294,13 +283,8 @@ const Content = ({ navigation, activeTab }) => {
   );
 };
 
-const home = () => {
+const browseByKeywords = () => {
   const [activeTab, setActiveTab] = useState("All");
-<<<<<<< HEAD
-=======
-  const [keyword, setKeyword] = useState(''); 
-  const [inputValue, setInputValue] = useState('');
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
   const [advertisements, setAdvertisements] = useState({});
 
   //suppresses nested scrollview error
@@ -313,13 +297,6 @@ const home = () => {
     console.log("Active tab: " + tabName);
   };
 
-<<<<<<< HEAD
-=======
-  const toBrowseByKeywords = () => {
-    router.push({ pathname: "home/browseByKeywords", params: { keyword} });
-  };
-
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
   return (
     <SafeAreaContainer>
       <SearchBarHeader
@@ -328,13 +305,8 @@ const home = () => {
         onPressMenu={() => {
           console.log("opening menu drawer");
           router.push("home/categoryMenu");
-<<<<<<< HEAD
-          }}
-=======
         }}
         isHome={true}
-        onPress={toBrowseByKeywords}
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
       />
       <View style={{flex:1}}>
         <View style={styles.advertisementAndWalletContainer}>
@@ -352,7 +324,7 @@ const home = () => {
   );
 };
 
-export default home;
+export default browseByKeywords;
 
 const styles = StyleSheet.create({
   tabContainer: {
