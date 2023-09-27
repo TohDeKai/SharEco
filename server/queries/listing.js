@@ -101,14 +101,14 @@ const updateItem = async (
 };
 
 // Delete item
-const disableItem = async (itemId) => {
+const disableItem = async (itemId, disabled) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."item" 
-       SET "disabled" = true
-       WHERE "itemId" = $1
+       SET "disabled" = $1
+       WHERE "itemId" = $2
         RETURNING *`,
-      [itemId]
+      [disabled, itemId]
     );
     return result.rows[0];
   } catch (err) {
