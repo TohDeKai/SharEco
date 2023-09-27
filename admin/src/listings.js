@@ -50,21 +50,22 @@ const columns = [
   },
 ];
 
-const Listing = ({ username }) => {
+const Listing = ({}) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
-  const [selectedUsername, setSelectedUsername] = React.useState("");
-  const [userData, setUserData] = useState([]);
+  const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
+  const [selectedItemId, setSelectedItemId] = React.useState("");
+  const [itemData, setItemData] = useState([]);
 
   useEffect(() => {
-    // Fetch user data when the component mounts
+    // Fetch item data when the component mounts
     async function fetchData() {
       try {
         const response = await axios.get("http://localhost:4000/api/v1/items");
-        const users = response.data.data.item;
-        setUserData(users);
+        const items = response.data.data.item;
+        setItemData(items);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error fetching item data:", error);
       }
     }
     fetchData();
@@ -80,76 +81,77 @@ const Listing = ({ username }) => {
   };
 
   // To handle dialog
-  const [openBan, setBanOpen] = React.useState(false);
-  const [openUnban, setUnbanOpen] = React.useState(false);
+  const [openDisable, setDisableOpen] = React.useState(false);
+  const [openEnable, setEnableOpen] = React.useState(false);
 
-  const handleClickOpen = (username) => {
-    setSelectedUsername(username);
-    setBanOpen(true);
+  const handleClickOpen = (title, itemId) => {
+    setSelectedItemTitle(title);
+    setSelectedItemId(itemId);
+    setDisableOpen(true);
   };
 
-  const handleUnbanClickOpen = (username) => {
-    setSelectedUsername(username);
-    setUnbanOpen(true);
+  const handleEnableClickOpen = (title, itemId) => {
+    setSelectedItemTitle(title);
+    setSelectedItemId(itemId);
+    setEnableOpen(true);
   };
 
   const handleClose = () => {
-    setBanOpen(false);
-    setUnbanOpen(false);
+    setDisableOpen(false);
+    setEnableOpen(false);
   };
 
-  const handleBan = async () => {
+  const handleDisable = async () => {
     try {
       const response = await axios.put(
-        `http://localhost:4000/api/v1/items/disable/itemId/${selectedUsername}`,
+        `http://localhost:4000/api/v1/items/disable/itemId/${selectedItemId}`,
         {
-          isBanned: true,
+          disabled: true,
         }
       );
       if (response.status === 200) {
-        // Update the user data after banning
-        const updatedUserData = userData.map((user) => {
-          if (user.username === selectedUsername) {
-            user.isBanned = true;
+        // Update the item data after disabling
+        const updatedItemData = itemData.map((item) => {
+          if (item.itemTitle === selectedItemTitle) {
+            item.disabled = true;
           }
-          return user;
+          return item;
         });
-        setUserData(updatedUserData);
-        console.log("Banned user successfully");
+        setItemData(updatedItemData);
+        console.log("Disabled item successfully");
       } else {
-        console.log("Ban failed");
+        console.log("Disable failed");
       }
       handleClose();
     } catch (error) {
-      console.error("Error banning user:", error);
+      console.error("Error disabling item:", error);
     }
   };
 
-  const handleUnban = async () => {
+  const handleEnable = async () => {
     try {
       const response = await axios.put(
-        `http://localhost:4000/api/v1/users/ban/username`,
+        `http://localhost:4000/api/v1/items/disable/itemId/${selectedItemId}`,
         {
-          username: selectedUsername,
-          isBanned: false, // Set isBanned to false for unban
+          disabled: false,
         }
       );
       if (response.status === 200) {
-        // Update the user data after unbanning
-        const updatedUserData = userData.map((user) => {
-          if (user.username === selectedUsername) {
-            user.isBanned = false;
+        // Update the item data after enabling
+        const updatedItemData = itemData.map((item) => {
+          if (item.itemTitle === selectedItemTitle) {
+            item.disabled = false;
           }
-          return user;
+          return item;
         });
-        setUserData(updatedUserData);
-        console.log("Unbanned user successfully");
+        setItemData(updatedItemData);
+        console.log("Enabled item successfully");
       } else {
-        console.log("Unban failed");
+        console.log("Enabled failed");
       }
       handleClose();
     } catch (error) {
-      console.error("Error unbanning user:", error);
+      console.error("Error enabling item:", error);
     }
   };
 
@@ -164,7 +166,7 @@ const Listing = ({ username }) => {
           component="main"
           sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
         >
-          <h1>Users</h1>
+          <h1>Listings</h1>
 
           <Paper sx={{ width: "100%", overflow: "hidden" }}>
             <TableContainer sx={{ maxHeight: 440 }}>
@@ -183,7 +185,7 @@ const Listing = ({ username }) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {userData
+                  {itemData
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
                       return (
@@ -202,21 +204,26 @@ const Listing = ({ username }) => {
                             );
                           })}
                           <TableCell>
-                            {row.isBanned ? (
+                            {row.disabled ? (
                               <Button
                                 variant="outlined"
                                 onClick={() =>
-                                  handleUnbanClickOpen(row.username)
+                                  handleEnableClickOpen(
+                                    row.itemTitle,
+                                    row.itemId
+                                  )
                                 }
                               >
-                                Unban User
+                                Enable Item
                               </Button>
                             ) : (
                               <Button
                                 variant="contained"
-                                onClick={() => handleClickOpen(row.username)}
+                                onClick={() =>
+                                  handleClickOpen(row.itemTitle, row.itemId)
+                                }
                               >
-                                Ban User
+                                Disable Item
                               </Button>
                             )}
                           </TableCell>
@@ -229,7 +236,7 @@ const Listing = ({ username }) => {
             <TablePagination
               rowsPerPageOptions={[10, 25, 100]}
               component="div"
-              count={userData.length}
+              count={itemData.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -238,53 +245,53 @@ const Listing = ({ username }) => {
           </Paper>
         </Box>
 
-        {/* Dialog for Ban User */}
+        {/* Dialog for Disable Item */}
         <Dialog
-          open={openBan}
+          open={openDisable}
           onClose={handleClose}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            {`You are banning user: ${selectedUsername}`}
+            {`You are disabling item: ${selectedItemTitle}`}
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Once the user has been banned, they will no longer be able to
-              access their account and ShareEco's services.
+              Once item has been disabled, it will no longer be shown on the
+              listings page.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="error">
               Cancel
             </Button>
-            <Button onClick={handleBan} autoFocus>
+            <Button onClick={handleDisable} autoFocus>
               Confirm
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Dialog for Unban User */}
+        {/* Dialog for Enable Item */}
         <Dialog
-          open={openUnban}
+          open={openEnable}
           onClose={handleClose}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            {`You are unbanning user: ${selectedUsername}`}
+            {`You are enabling item: ${selectedItemTitle}`}
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              The user has previously been banned. After they are unbanned, they
-              will be able to access their account and ShareEco's services.
+              The item has previously been disabled. After it has been enabled,
+              it will be shown on the listings page and discoverable again.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="error">
               Cancel
             </Button>
-            <Button onClick={handleUnban} autoFocus>
+            <Button onClick={handleEnable} autoFocus>
               Confirm
             </Button>
           </DialogActions>
