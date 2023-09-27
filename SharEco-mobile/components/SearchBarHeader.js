@@ -26,15 +26,6 @@ const SearchBarHeader = (props) => {
               opacity: pressed ? 0.5 : 1,
               ...styles.icon 
     })}>  
-<<<<<<< HEAD
-        <Ionicons name={"menu-outline"} size={28} color={black}/>
-      </Pressable>
-
-      <StyledTextInput
-        placeholder="Search SharEco"
-        style={styles.searchBar}
-        isSearchBar={true}
-=======
         <Ionicons name={props.isHome ? "menu-outline" : "close-outline"} size={28} color={black}/>
       </Pressable>
 
@@ -43,7 +34,6 @@ const SearchBarHeader = (props) => {
         style={styles.searchBar}
         isSearchBar={true}
         onPress={props.onPress}
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
       />
 
       <Pressable 

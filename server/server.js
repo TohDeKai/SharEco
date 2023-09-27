@@ -508,6 +508,7 @@ app.post("/api/v1/items", async (req, res) => {
     category,
     collectionLocations,
     otherLocation,
+    isBusiness,
   } = req.body;
 
   try {
@@ -522,7 +523,8 @@ app.post("/api/v1/items", async (req, res) => {
       images,
       category,
       collectionLocations,
-      otherLocation
+      otherLocation,
+      isBusiness
     );
 
     // Send the newly created user as the response

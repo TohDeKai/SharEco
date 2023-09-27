@@ -130,9 +130,7 @@ const style = StyleSheet.create({
     paddingRight: viewportWidthInPixels(5),
   },
   overflowEllipsis: {
-    whiteSpace: "nowrap",
     overflow: "hidden",
-    textOverflow: "ellipsis",
     maxWidth: viewportWidthInPixels(40),
   },
   rates: {

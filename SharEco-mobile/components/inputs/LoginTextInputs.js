@@ -1,9 +1,5 @@
 import React, {useState} from 'react';
-<<<<<<< HEAD
-import { View, Text } from 'react-native';
-=======
 import { View, Text, Pressable } from 'react-native';
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
 import { Feather } from '@expo/vector-icons';
 import { Ionicons } from "@expo/vector-icons";
 
@@ -27,13 +23,8 @@ const InputField = styled.TextInput`
 
 const RightIcon = styled.TouchableOpacity`
     position: absolute;
-<<<<<<< HEAD
-    top: 30px;
-    right: 15px;
-=======
     top: 28px;
     right: 13px;
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
     z-index: 1;
 `;
 
@@ -68,14 +59,10 @@ const StyledTextInput = ({icon, label, isPassword, isSearchBar, ...props}) => {
         </RightIcon>}
         {isSearchBar && 
             <RightIcon>
-<<<<<<< HEAD
-                <Ionicons name="search-outline" size={20} color = {placeholder}/>
-=======
                 <Pressable
                     onPress={props.onPress}>
                 <Ionicons name="search-outline" size={20} color = {placeholder}/>
                 </Pressable>
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
             </RightIcon> 
         }
     </View>)

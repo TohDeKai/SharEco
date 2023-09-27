@@ -1,60 +1,3 @@
-<<<<<<< HEAD
-import { View, Text, SafeAreaView } from 'react-native';
-import React from 'react';
-import { Ionicons } from "@expo/vector-icons";
-
-import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
-import RegularText from '../../../components/text/RegularText';
-import { colours } from "../../../components/ColourPalette";
-const { white, primary } = colours;
-
-const categoryBrowsing = () => {
-  return (
-    <SafeAreaContainer>
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: white,
-          marginHorizontal: "10%",
-        }}
-      >
-        <Ionicons
-          name="construct"
-          color={primary}
-          size={30}
-          style={{ marginBottom: 20 }}
-        />
-
-        <RegularText
-          typography="H1"
-          style={{
-            textAlign: "center",
-          }}
-        >
-          We are still working
-        </RegularText>
-        <RegularText
-          typography="H1"
-          style={{
-            textAlign: "center",
-            marginBottom: 20,
-          }}
-        >
-          on this feature
-        </RegularText>
-
-        <RegularText
-          typography="B2"
-          color=""
-          style={{
-            textAlign: "center",
-          }}
-        >
-          Stay tuned for updates on this feature!
-        </RegularText>
-=======
 import { View, Text, SafeAreaView, StyleSheet, FlatList, RefreshControl, Dimensions, Pressable } from 'react-native';
 import React, { useEffect, useState} from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -306,15 +249,11 @@ const categoryBrowsing = () => {
       <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
       <View style={styles.contentContainer}>
           <Content activeTab={activeTab} category={category}/>
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
       </View>
     </SafeAreaContainer>
   )
 }
 
-<<<<<<< HEAD
-export default categoryBrowsing;
-=======
 export default categoryBrowsing;
 
 const styles = StyleSheet.create({
@@ -345,4 +284,3 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
   },
 })
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7

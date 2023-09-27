@@ -292,15 +292,9 @@ const CustomPaging = ({ data, activeSlide }) => {
 
 const ListingNav = ({ data }) => {
   const toRentalRequest = () => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    router.push({ pathname: "profile/rentalRequest", params: { itemId: data } }); //to update path name
-=======
+
+
     router.push({ pathname: "home/rentalRequest", params: { itemId: data } }); //to update path name
->>>>>>> b642394cf0b764ddd9cde85a8c43ec21ea5333fe
-=======
-    router.push({ pathname: "home/rentalRequest", params: { itemId: data } }); //to update path name
->>>>>>> 2741d6e8bdfdecc04a37b3f72cc131c1c55611e7
   };
   return (
     <View>
