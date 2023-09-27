@@ -38,6 +38,8 @@ export default function SignIn() {
         }
       );
 
+      console.log("response:", response);
+
       if (response.status === 200) {
         // Successful login
         signIn({
@@ -50,16 +52,33 @@ export default function SignIn() {
         console.log("Logged in successfully");
         navigate("../");
         // You can redirect the user or perform any other actions here
+      } else if (response.status === 400) {
+        console.log("Login failed");
+        setSnackbarMessage("Invalid password. Please try again!");
+        setSnackbarOpen(true);
+      } else if (response.status === 404) {
+        console.log("Login failed");
+        setSnackbarMessage("Invalid username. Please try again!");
+        setSnackbarOpen(true);
+      } else {
+        console.log("Login failed");
+        setSnackbarMessage("Error. Please try again!");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      if (error.response.status === 400) {
+        console.log("Login failed");
+        setSnackbarMessage("Invalid password. Please try again!");
+        setSnackbarOpen(true);
+      } else if (error.response.status === 404) {
+        console.log("Login failed");
+        setSnackbarMessage("Invalid username. Please try again!");
+        setSnackbarOpen(true);
       } else {
         console.log("Login failed");
         setSnackbarMessage("Invalid credentials. Please try again!");
         setSnackbarOpen(true);
       }
-    } catch (error) {
-      // Handle network errors or server issues
-      console.error("Error during login:", error);
-      setSnackbarMessage("Invalid credentials. Please try again!");
-      setSnackbarOpen(true);
     }
   };
   return (
