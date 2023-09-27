@@ -1,6 +1,10 @@
 import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions, Modal } from "react-native";
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
 import { Link, router, Drawer } from "expo-router";
+=======
+import { Link, router, Drawer, useLocalSearchParams } from "expo-router";
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
 import { useAuth } from "../../../context/auth";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
@@ -102,7 +106,11 @@ const Tabs = ({ activeTab, handleTabPress }) => {
   );
 };
 
+<<<<<<< HEAD
 const Content = ({ navigation, activeTab }) => {
+=======
+const Content = ({ navigation, activeTab, keywords }) => {
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
   const [items, setItems] = useState();
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
@@ -122,9 +130,14 @@ const Content = ({ navigation, activeTab }) => {
     fetchUserData();
   }, [user]);
 
+<<<<<<< HEAD
   const handleSearchByKeywords = async (keywords) => {
     setRefreshing(true);
   
+=======
+  const handleRefresh = async () => {
+    setRefreshing(true);
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
     try {
       const userData = await getUserData();
       const response = await axios.get(
@@ -140,6 +153,7 @@ const Content = ({ navigation, activeTab }) => {
     } catch (error) {
       console.log(error.message);
     }
+<<<<<<< HEAD
   
     // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
@@ -165,17 +179,27 @@ const Content = ({ navigation, activeTab }) => {
     } catch(error) {
       console.log(error.message);
     }
+=======
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
     // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
   };
 
   useEffect(() => {
+<<<<<<< HEAD
     async function fetchAllListings() {
       //TO DO: get all item listings
       try {
         const userData = await getUserData();
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+=======
+    async function fetchAllListingsByKeywords() {
+      try {
+        const userData = await getUserData();
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/keywords?keywords=${encodeURIComponent(keywords)}`
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
         );
         if (response.status === 200) {
           const allListings = response.data.data.items;
@@ -189,8 +213,13 @@ const Content = ({ navigation, activeTab }) => {
         console.log(error.message);
       }
     }
+<<<<<<< HEAD
     fetchAllListings();
   }, []);
+=======
+    fetchAllListingsByKeywords();
+  }, [keywords]);
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
 
   return (
     <View style={{ flex: 1 }}>
@@ -286,6 +315,11 @@ const Content = ({ navigation, activeTab }) => {
 const browseByKeywords = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [advertisements, setAdvertisements] = useState({});
+<<<<<<< HEAD
+=======
+  const params = useLocalSearchParams();
+  const { keywords } = params;
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
 
   //suppresses nested scrollview error
   useEffect(() => {
@@ -302,6 +336,7 @@ const browseByKeywords = () => {
       <SearchBarHeader
         onPressChat={() => {router.push("home/chats")}}
         onPressWishlist={() => {router.push("home/wishlist")}}
+<<<<<<< HEAD
         onPressMenu={() => {
           console.log("opening menu drawer");
           router.push("home/categoryMenu");
@@ -317,6 +352,22 @@ const browseByKeywords = () => {
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
           <Content activeTab={activeTab} />
+=======
+        onPressBack={() => {
+          console.log("going back");
+          router.push("home");
+        }}
+        keywords={keywords}
+        isHome={true}
+        goBack={true}
+        reset={false}
+      />
+      <View style={{flex:1}}>
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+        <View style={styles.contentContainer}>
+          <Content activeTab={activeTab} keywords={keywords}/>
+          <RegularText>{keywords} browseByKeywords.js</RegularText>
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
         </View>
       </View>
       
@@ -330,6 +381,10 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
     width: '100%',
+<<<<<<< HEAD
+=======
+    paddingTop: 20,
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
   },
   tab: {
     flex: 1,
@@ -343,6 +398,7 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomColor: primary,
   },
+<<<<<<< HEAD
   advertisementAndWalletContainer: {
     flex: 1,
     alignItems: 'center',
@@ -358,12 +414,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: black,
   },
+=======
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
   contentContainer: {
     flex: 4,
     backgroundColor: white,
     paddingHorizontal: '7%',
     justifyContent: "space-evenly",
   },
+<<<<<<< HEAD
   dotContainer: {
     marginTop: -50,
   },
@@ -381,4 +440,6 @@ const styles = StyleSheet.create({
     width: undefined,
     height: undefined,
   },
+=======
+>>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
 })

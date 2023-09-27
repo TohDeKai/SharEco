@@ -46,7 +46,6 @@ const createRentals = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const [listingItem, setListingItem] = useState({});
-
   const params = useLocalSearchParams();
   const { itemId } = params;
   const { getUserData } = useAuth();
