@@ -31,17 +31,22 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
 const columns = [
-  { id: "userId", label: "User ID", minWidth: 170 },
-  { id: "username", label: "Username", minWidth: 100 },
+  { id: "itemId", label: "Item ID", minWidth: 20 },
+  { id: "itemTitle", label: "Item Title", minWidth: 100 },
   {
-    id: "email",
-    label: "Email",
-    minWidth: 170,
+    id: "userId",
+    label: "User ID",
+    minWidth: 20,
   },
   {
-    id: "contactNumber",
-    label: "Contact Number",
-    minWidth: 170,
+    id: "userId",
+    label: "Username",
+    minWidth: 20,
+  },
+  {
+    id: "category",
+    label: "Category",
+    minWidth: 20,
   },
 ];
 
@@ -55,8 +60,8 @@ const Listing = ({ username }) => {
     // Fetch user data when the component mounts
     async function fetchData() {
       try {
-        const response = await axios.get("http://localhost:4000/api/v1/users");
-        const users = response.data.data.user;
+        const response = await axios.get("http://localhost:4000/api/v1/items");
+        const users = response.data.data.item;
         setUserData(users);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -96,9 +101,8 @@ const Listing = ({ username }) => {
   const handleBan = async () => {
     try {
       const response = await axios.put(
-        `http://localhost:4000/api/v1/users/ban/username`,
+        `http://localhost:4000/api/v1/items/disable/itemId/${selectedUsername}`,
         {
-          username: selectedUsername,
           isBanned: true,
         }
       );
