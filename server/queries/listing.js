@@ -145,10 +145,21 @@ const getItemsByUserId = async (userId) => {
   }
 };
 
+// Get all items
+const getItems = async () => {
+  try {
+    const result = await pool.query(`SELECT * FROM "sharEco-schema"."item" `);
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createItem,
   updateItem,
   disableItem,
   getItemByItemId,
   getItemsByUserId,
+  getItems,
 };
