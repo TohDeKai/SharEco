@@ -39,11 +39,6 @@ const columns = [
     minWidth: 20,
   },
   {
-    id: "userId",
-    label: "Username",
-    minWidth: 20,
-  },
-  {
     id: "category",
     label: "Category",
     minWidth: 20,
