@@ -31,6 +31,8 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const columns = [
   { id: "businessVerificationId", label: "Biz Verification ID", minWidth: 170 },
@@ -65,6 +67,20 @@ async function fetchOriginalUser(originalUserId) {
 }
 
 const Home = () => {
+  // State for success Snackbar
+  const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
+
+  const handleSuccessSnackbarClose = () => {
+    setSuccessSnackbarOpen(false);
+  };
+
+  // State for error Snackbar
+  const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
+
+  const handleErrorSnackbarClose = () => {
+    setErrorSnackbarOpen(false);
+  };
+
   const [openAdminDialog, setOpenAdminDialog] = React.useState(false);
 
   const handleAdminClickOpen = () => {
@@ -190,11 +206,14 @@ const Home = () => {
 
         if (response.status === 200) {
           console.log("Registered new admin successfully");
+          setSuccessSnackbarOpen(true);
         } else {
+          setErrorSnackbarOpen(true);
           console.log("Registration failed");
         }
       } catch (error) {
         // Handle network errors or server issues
+        setErrorSnackbarOpen(true);
         console.error("Error during signup:", error);
       }
     } else {
@@ -467,6 +486,28 @@ const Home = () => {
               </Button>
             </DialogActions>
           </Dialog>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={successSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSuccessSnackbarClose}
+          >
+            <Alert severity="success" onClose={handleSuccessSnackbarClose}>
+              Admin created successfully!
+            </Alert>
+          </Snackbar>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={errorSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleErrorSnackbarClose}
+          >
+            <Alert severity="error" onClose={handleErrorSnackbarClose}>
+              Admin unable to be created. Username already in use
+            </Alert>
+          </Snackbar>
         </Box>
       </div>
     </ThemeProvider>
