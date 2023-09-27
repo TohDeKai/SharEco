@@ -593,7 +593,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
 
 //Delete item
 //Disabling item
-app.put("/api/v1/items/:itemId", async (req, res) => {
+app.put("/api/v1/items/disable/itemId/:itemId", async (req, res) => {
   try {
     const item = await listingdb.disableItem(
       req.params.itemId,
