@@ -33,6 +33,7 @@ const SearchBarHeader = (props) => {
         placeholder={props.isHome ? "Search SharEco" : `${props.category}`}
         style={styles.searchBar}
         isSearchBar={true}
+        onPress={props.onPress}
       />
 
       <Pressable 

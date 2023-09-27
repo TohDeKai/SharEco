@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Ionicons } from "@expo/vector-icons";
 
@@ -50,7 +50,7 @@ const StyledTextInput = ({icon, label, isPassword, isSearchBar, ...props}) => {
             style={{ backgroundColor: inputBackgroundColor, ...props?.style}}
             onBlur={customOnBlur}
             onFocus={customOnFocus}
-            secureTextEntry={isPassword && hidePassword} 
+            secureTextEntry={isPassword && hidePassword}
         />
         {isPassword && <RightIcon onPress={() => {
             setHidePassword(!hidePassword); 
@@ -59,7 +59,10 @@ const StyledTextInput = ({icon, label, isPassword, isSearchBar, ...props}) => {
         </RightIcon>}
         {isSearchBar && 
             <RightIcon>
+                <Pressable
+                    onPress={props.onPress}>
                 <Ionicons name="search-outline" size={20} color = {placeholder}/>
+                </Pressable>
             </RightIcon> 
         }
     </View>)

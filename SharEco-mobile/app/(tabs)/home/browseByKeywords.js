@@ -283,10 +283,8 @@ const Content = ({ navigation, activeTab }) => {
   );
 };
 
-const home = () => {
+const browseByKeywords = () => {
   const [activeTab, setActiveTab] = useState("All");
-  const [keyword, setKeyword] = useState(''); 
-  const [inputValue, setInputValue] = useState('');
   const [advertisements, setAdvertisements] = useState({});
 
   //suppresses nested scrollview error
@@ -299,10 +297,6 @@ const home = () => {
     console.log("Active tab: " + tabName);
   };
 
-  const toBrowseByKeywords = () => {
-    router.push({ pathname: "home/browseByKeywords", params: { keyword} });
-  };
-
   return (
     <SafeAreaContainer>
       <SearchBarHeader
@@ -313,7 +307,6 @@ const home = () => {
           router.push("home/categoryMenu");
         }}
         isHome={true}
-        onPress={toBrowseByKeywords}
       />
       <View style={{flex:1}}>
         <View style={styles.advertisementAndWalletContainer}>
@@ -331,7 +324,7 @@ const home = () => {
   );
 };
 
-export default home;
+export default browseByKeywords;
 
 const styles = StyleSheet.create({
   tabContainer: {

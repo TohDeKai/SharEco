@@ -691,6 +691,30 @@ app.get("/api/v1/items/not/:userId", async (req, res) => {
   }
 })
 
+//Get other people's items by keywords
+app.get("/api/v1/items/not/:userId/keywords", async (req, res) => {
+  const userId = req.params.userId;
+  const keywords = req.query.keywords.split(/[ +]/);
+
+  try {
+    const items = await listingdb.getOtherUserItemsByKeywords(userId, keywords);
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+})
+
 //Get other people's items by category
 app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
   const userId = req.params.userId;

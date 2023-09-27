@@ -172,6 +172,29 @@ const getOtherUserItems= async (userId) => {
   }
 }
 
+//Full text search for other user's items
+const getOtherUserItemsByKeywords = async (userId, keywords) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM "sharEco-schema"."item"
+      WHERE
+        "userId" != $1
+        AND "disabled" != true
+        AND "document_with_weights" @@ to_tsquery('english', $2)
+      ORDER BY ts_rank("document_with_weights", to_tsquery('english', $2)) DESC;
+      `,
+      [userId, keywords]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+
+
 //Get all items listed by other users by category
 const getOtherUserItemsByCategory= async (userId, category) => {
   try {
@@ -195,4 +218,5 @@ module.exports = {
   getAllItems,
   getOtherUserItems,
   getOtherUserItemsByCategory,
+  getOtherUserItemsByKeywords,
 };
