@@ -1,6 +1,6 @@
 import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions, Modal } from "react-native";
 import React, { useState, useEffect } from "react";
-import { Link, router, Drawer } from "expo-router";
+import { Link, router, Drawer, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../../context/auth";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
@@ -102,7 +102,7 @@ const Tabs = ({ activeTab, handleTabPress }) => {
   );
 };
 
-const Content = ({ navigation, activeTab }) => {
+const Content = ({ navigation, activeTab, keywords }) => {
   const [items, setItems] = useState();
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
@@ -122,9 +122,8 @@ const Content = ({ navigation, activeTab }) => {
     fetchUserData();
   }, [user]);
 
-  const handleSearchByKeywords = async (keywords) => {
+  const handleRefresh = async () => {
     setRefreshing(true);
-  
     try {
       const userData = await getUserData();
       const response = await axios.get(
@@ -140,42 +139,38 @@ const Content = ({ navigation, activeTab }) => {
     } catch (error) {
       console.log(error.message);
     }
-  
     // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
   };
 
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-
-    try {
-      const userData = await getUserData();
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
-      );
-      if (response.status === 200) {
-        const allListings = response.data.data.items;
-        setItems(allListings);
-      } else {
-        //Shouldn't come here
-        console.log("Failed to retrieve all listings");
-      }
-
-    } catch(error) {
-      console.log(error.message);
-    }
-    // After all the data fetching and updating, set refreshing to false
-    setRefreshing(false);
-  };
+  // const handleRefresh2 = async () => {
+  //   setRefreshing(true);
+  //   try {
+  //     const userData = await getUserData();
+  //       const response = await axios.get(
+  //         `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+  //     );
+  //     if (response.status === 200) {
+  //       const allListings = response.data.data.items;
+  //       setItems(allListings);
+  //     } else {
+  //       //Shouldn't come here
+  //       console.log("Failed to retrieve all listings");
+  //     }
+  //   } catch(error) {
+  //     console.log(error.message);
+  //   }
+  //   // After all the data fetching and updating, set refreshing to false
+  //   setRefreshing(false);
+  // };
 
   useEffect(() => {
-    async function fetchAllListings() {
-      //TO DO: get all item listings
+    async function fetchAllListingsByKeywords() {
       try {
         const userData = await getUserData();
         const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/keywords?keywords=${encodeURIComponent(keywords)}`
         );
         if (response.status === 200) {
           const allListings = response.data.data.items;
@@ -189,8 +184,8 @@ const Content = ({ navigation, activeTab }) => {
         console.log(error.message);
       }
     }
-    fetchAllListings();
-  }, []);
+    fetchAllListingsByKeywords();
+  }, [keywords]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -286,6 +281,8 @@ const Content = ({ navigation, activeTab }) => {
 const browseByKeywords = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [advertisements, setAdvertisements] = useState({});
+  const params = useLocalSearchParams();
+  const { keywords } = params;
 
   //suppresses nested scrollview error
   useEffect(() => {
@@ -302,21 +299,24 @@ const browseByKeywords = () => {
       <SearchBarHeader
         onPressChat={() => {router.push("home/chats")}}
         onPressWishlist={() => {router.push("home/wishlist")}}
-        onPressMenu={() => {
-          console.log("opening menu drawer");
-          router.push("home/categoryMenu");
+        onPressBack={() => {
+          console.log("going back");
+          router.push("home");
         }}
+        keywords={keywords}
         isHome={true}
+        goBack={true}
       />
       <View style={{flex:1}}>
-        <View style={styles.advertisementAndWalletContainer}>
+        {/* <View style={styles.advertisementAndWalletContainer}>
           <View style={styles.advertisementCarousell}>
             <CustomSlider data={["https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU","https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png"]} />
           </View>
-        </View>
+        </View> */}
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
-          <Content activeTab={activeTab} />
+          <Content activeTab={activeTab} keywords={keywords}/>
+          <RegularText>{keywords}</RegularText>
         </View>
       </View>
       
@@ -330,6 +330,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
     width: '100%',
+    paddingTop: 20,
   },
   tab: {
     flex: 1,
@@ -343,42 +344,10 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomColor: primary,
   },
-  advertisementAndWalletContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    gap: 10,
-  },
-  advertisementCarousell: {
-    flex: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    borderWidth: 1,
-    borderColor: black,
-  },
   contentContainer: {
     flex: 4,
     backgroundColor: white,
     paddingHorizontal: '7%',
     justifyContent: "space-evenly",
-  },
-  dotContainer: {
-    marginTop: -50,
-  },
-  dotStyle: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "black",
-  },
-  inactiveDotStyle: {
-    backgroundColor: "rgb(255,230,230)",
-  },
-  image: {
-    flex: 1,
-    width: undefined,
-    height: undefined,
   },
 })
