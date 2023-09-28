@@ -27,7 +27,7 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-export default function ListingCard({ item }) {
+export default function ListingCard({ item, mine }) {
   const {
     itemId,
     itemTitle,
@@ -42,8 +42,12 @@ export default function ListingCard({ item }) {
     router.push({ pathname: "profile/myListing", params: { itemId: itemId } });
   };
 
+  const toIndivListing = () => {
+    router.push({pathname: "home/indivListing", params: { itemId: itemId }});
+  }
+
   return (
-    <Pressable onPress={toMyListing}>
+    <Pressable onPress={mine ? toMyListing : toIndivListing}>
       <View style={style.card}>
         <Image
           resizeMode="contain"
@@ -126,9 +130,7 @@ const style = StyleSheet.create({
     paddingRight: viewportWidthInPixels(5),
   },
   overflowEllipsis: {
-    whiteSpace: "nowrap",
     overflow: "hidden",
-    textOverflow: "ellipsis",
     maxWidth: viewportWidthInPixels(40),
   },
   rates: {
