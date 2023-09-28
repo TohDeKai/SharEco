@@ -227,6 +227,11 @@ const getOtherUserItemsByCategoryByKeywords = async (userId, category, keywords 
       `,
       [userId, category, keywords]
     );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
 
 
 module.exports = {
