@@ -51,7 +51,8 @@ const createListing = () => {
   const [lockers, setLockers] = useState([]);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
-  console.log(`http://${BASE_URL}:4000/api/v1/items`);
+  const [isBusiness, setIsBusiness] = useState(false);
+
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -65,6 +66,25 @@ const createListing = () => {
     }
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    async function fetchBusinessVerification() {
+      try {
+        const businessVerificationResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/businessVerifications/businessVerificationId/${user.businessVerificationId}`
+        );
+        if (businessVerificationResponse.status === 200) {
+          const businessVerificationData =
+            businessVerificationResponse.data.data.businessVerification;
+            console.log("Business approved:" + businessVerificationData.approved);
+          setIsBusiness(businessVerificationData.approved);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchBusinessVerification();
+  }, [user.businessVerificationId]);
 
   const categories = [
     "Audio",
@@ -153,6 +173,7 @@ const createListing = () => {
         category: category,
         collectionLocations: lockers,
         otherLocation: values.meetupLocation,
+        isBusiness: isBusiness,
       };
 
       const response = await axios.post(
