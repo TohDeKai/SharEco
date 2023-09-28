@@ -255,7 +255,7 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
+          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
