@@ -1013,6 +1013,25 @@ app.get("/api/s3-proxy/getfile/shareco-bucket/testing1", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
+
+// Get image from S3 -> TBC
+app.get("/api/s3-proxy/getfile/shareco-bucket/testing1", async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const s3url = `${AWS_GETFILE_URL}/testing1`;
+
+    const s3Response = await axios.get(s3url);
+    console.log(s3Response.data);
+    if (s3Response.status === 200) {
+      // const contentType = "image/jpeg";
+      // res.setHeader("Content-Type", contentType);
+      res.send(s3Response.data);
+    } else if (s3Response.status !== 200) {
+      console.log("Unable to download file from S3");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -1241,5 +1260,6 @@ app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
     // Handle the error here if needed
     console.log(err);
     res.status(500).json({ error: "Database error" });
+ 
   }
 });
