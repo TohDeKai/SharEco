@@ -10,15 +10,8 @@ const layout = () => {
       }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="listingDetails" />
-          <Stack.Screen name="categoryMenu" 
-            options={{
-              gestureDirection: 'vertical' //not sure why horizontal-inverted isnt an option
-              }}
-          />
-          <Stack.Screen name="chats" />
-          <Stack.Screen name="wishlist" />
     </Stack>
   )
 }
 
-export default layout;
+export default layout
