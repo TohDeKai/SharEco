@@ -15,7 +15,7 @@ const handleBack = () => {
 };
 
 const handleCategoryPress = (category) => {
-  router.push({ pathname: "home/categoryBrowsing", params: { category: category } });
+  router.push({ pathname: "home/browseByCategory", params: { category: category } });
 };
 
 const categoryMenu = () => {

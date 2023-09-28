@@ -65,10 +65,12 @@ const Tabs = ({ activeTab, handleTabPress }) => {
 };
 
 const Content = ({ navigation, activeTab, category }) => {
-  const [items, setItems] = useState();
+  const [items, setItems] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+  const businessItems = [];
+  const privateItems = [];
 
   useEffect(() => {
     async function fetchUserData() {
@@ -130,6 +132,14 @@ const Content = ({ navigation, activeTab, category }) => {
     fetchAllListings();
   }, []);
 
+  for (const item of items) {
+    if (item.isBusiness) {
+      businessItems.push(item);
+    } else {
+      privateItems.push(item);
+    }
+  }
+  
   return (
     <View style={{ flex: 1 }}>
       {/* handles when there are no listings */}
@@ -147,7 +157,7 @@ const Content = ({ navigation, activeTab, category }) => {
         </View>
       )}
       {/* handles when there are no business listings */}
-      {activeTab == "Business" && (items ? items.length : 0) === 0 && (
+      {activeTab == "Business" && (businessItems ? businessItems.length : 0) === 0 && (
         <View style={{ marginTop: 160 }}>
           <RegularText
             typography="B2"
@@ -161,7 +171,7 @@ const Content = ({ navigation, activeTab, category }) => {
         </View>
       )}
       {/* handles when there are no private listings */}
-      {activeTab == "Private" && (items ? items.length : 0) === 0 && (
+      {activeTab == "Private" && (privateItems ? privateItems.length : 0) === 0 && (
         <View style={{ marginTop: 160 }}>
           <RegularText
             typography="B2"
@@ -193,7 +203,7 @@ const Content = ({ navigation, activeTab, category }) => {
       {/* renders business listings */}
       {activeTab == "Business" && (
         <FlatList
-          data={items}
+          data={businessItems}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
@@ -207,7 +217,7 @@ const Content = ({ navigation, activeTab, category }) => {
       {/* renders private listings */}
       {activeTab == "Private" && (
         <FlatList
-          data={items}
+          data={privateItems}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}

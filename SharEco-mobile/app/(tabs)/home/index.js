@@ -1,4 +1,15 @@
-import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions, Modal } from "react-native";
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  RefreshControl,
+  LogBox,
+  Dimensions,
+  Modal,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import { Link, router, Drawer } from "expo-router";
 import { useAuth } from "../../../context/auth";
@@ -103,10 +114,12 @@ const Tabs = ({ activeTab, handleTabPress }) => {
 };
 
 const Content = ({ navigation, activeTab }) => {
-  const [items, setItems] = useState();
+  const [items, setItems] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+  const businessItems = [];
+  const privateItems = [];
 
   useEffect(() => {
     async function fetchUserData() {
@@ -127,8 +140,8 @@ const Content = ({ navigation, activeTab }) => {
 
     try {
       const userData = await getUserData();
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
       );
       if (response.status === 200) {
         const allListings = response.data.data.items;
@@ -137,8 +150,7 @@ const Content = ({ navigation, activeTab }) => {
         //Shouldn't come here
         console.log("Failed to retrieve all listings");
       }
-
-    } catch(error) {
+    } catch (error) {
       console.log(error.message);
     }
     // After all the data fetching and updating, set refreshing to false
@@ -160,14 +172,21 @@ const Content = ({ navigation, activeTab }) => {
           //Shouldn't come here
           console.log("Failed to retrieve all listings");
         }
-
-      } catch(error) {
+      } catch (error) {
         console.log(error.message);
       }
     }
     fetchAllListings();
   }, []);
 
+  for (const item of items) {
+    if (item.isBusiness) {
+      businessItems.push(item);
+    } else {
+      privateItems.push(item);
+    }
+  }
+  
   return (
     <View style={{ flex: 1 }}>
       {/* handles when there are no listings */}
@@ -185,33 +204,35 @@ const Content = ({ navigation, activeTab }) => {
         </View>
       )}
       {/* handles when there are no business listings */}
-      {activeTab == "Business" && (items ? items.length : 0) === 0 && (
-        <View style={{ marginTop: 160 }}>
-          <RegularText
-            typography="B2"
-            style={{ marginBottom: 5, textAlign: "center" }}
-          >
-            There are no business listings yet
-          </RegularText>
-          <RegularText typography="H3" style={{ textAlign: "center" }}>
-            watch this space!
-          </RegularText>
-        </View>
-      )}
+      {activeTab == "Business" &&
+        (businessItems ? businessItems.length : 0) === 0 && (
+          <View style={{ marginTop: 160 }}>
+            <RegularText
+              typography="B2"
+              style={{ marginBottom: 5, textAlign: "center" }}
+            >
+              There are no business listings yet
+            </RegularText>
+            <RegularText typography="H3" style={{ textAlign: "center" }}>
+              watch this space!
+            </RegularText>
+          </View>
+        )}
       {/* handles when there are no private listings */}
-      {activeTab == "Private" && (items ? items.length : 0) === 0 && (
-        <View style={{ marginTop: 160 }}>
-          <RegularText
-            typography="B2"
-            style={{ marginBottom: 5, textAlign: "center" }}
-          >
-            There are no listings yet!
-          </RegularText>
-          <RegularText typography="H3" style={{ textAlign: "center" }}>
-            watch this space!
-          </RegularText>
-        </View>
-      )}
+      {activeTab == "Private" &&
+        (privateItems ? privateItems.length : 0) === 0 && (
+          <View style={{ marginTop: 160 }}>
+            <RegularText
+              typography="B2"
+              style={{ marginBottom: 5, textAlign: "center" }}
+            >
+              There are no listings yet!
+            </RegularText>
+            <RegularText typography="H3" style={{ textAlign: "center" }}>
+              watch this space!
+            </RegularText>
+          </View>
+        )}
 
       {/* renders all listings */}
       {activeTab == "All" && (
@@ -220,8 +241,7 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => 
-            <ListingCard item={item} mine={false} />}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -231,7 +251,7 @@ const Content = ({ navigation, activeTab }) => {
       {/* renders business listings */}
       {activeTab == "Business" && (
         <FlatList
-          data={items}
+          data={businessItems}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
@@ -245,7 +265,7 @@ const Content = ({ navigation, activeTab }) => {
       {/* renders private listings */}
       {activeTab == "Private" && (
         <FlatList
-          data={items}
+          data={privateItems}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
@@ -265,8 +285,8 @@ const home = () => {
 
   //suppresses nested scrollview error
   useEffect(() => {
-    LogBox.ignoreLogs(['VirtualizedLists should never be nested']); 
-  }, [])
+    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
+  }, []);
 
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
@@ -276,8 +296,12 @@ const home = () => {
   return (
     <SafeAreaContainer>
       <SearchBarHeader
-        onPressChat={() => {router.push("home/chats")}}
-        onPressWishlist={() => {router.push("home/wishlist")}}
+        onPressChat={() => {
+          router.push("home/chats");
+        }}
+        onPressWishlist={() => {
+          router.push("home/wishlist");
+        }}
         onPressMenu={() => {
           console.log("opening menu drawer");
           router.push("home/categoryMenu");
@@ -286,10 +310,16 @@ const home = () => {
         goBack={false}
         reset={true}
       />
-      <View style={{flex:1}}>
+      <View style={{ flex: 1 }}>
         <View style={styles.advertisementAndWalletContainer}>
           <View style={styles.advertisementCarousell}>
-            <CustomSlider data={["https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU","https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png"]} />
+            <CustomSlider
+              data={[
+                "https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU",
+                "https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png",
+              ]}
+            />
           </View>
         </View>
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
@@ -297,7 +327,6 @@ const home = () => {
           <Content activeTab={activeTab} />
         </View>
       </View>
-      
     </SafeAreaContainer>
   );
 };
@@ -307,7 +336,7 @@ export default home;
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
-    width: '100%',
+    width: "100%",
   },
   tab: {
     flex: 1,
@@ -323,23 +352,23 @@ const styles = StyleSheet.create({
   },
   advertisementAndWalletContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 10,
     gap: 10,
   },
   advertisementCarousell: {
     flex: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
     borderWidth: 1,
     borderColor: black,
   },
   contentContainer: {
     flex: 4,
     backgroundColor: white,
-    paddingHorizontal: '7%',
+    paddingHorizontal: "7%",
     justifyContent: "space-evenly",
   },
   dotContainer: {
@@ -359,4 +388,4 @@ const styles = StyleSheet.create({
     width: undefined,
     height: undefined,
   },
-})
+});

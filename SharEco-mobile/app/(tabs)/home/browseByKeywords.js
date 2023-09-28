@@ -1,10 +1,17 @@
-import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions, Modal } from "react-native";
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  RefreshControl,
+  LogBox,
+  Dimensions,
+  Modal,
+} from "react-native";
 import React, { useState, useEffect } from "react";
-<<<<<<< HEAD
-import { Link, router, Drawer } from "expo-router";
-=======
 import { Link, router, Drawer, useLocalSearchParams } from "expo-router";
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
 import { useAuth } from "../../../context/auth";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
@@ -106,15 +113,13 @@ const Tabs = ({ activeTab, handleTabPress }) => {
   );
 };
 
-<<<<<<< HEAD
-const Content = ({ navigation, activeTab }) => {
-=======
 const Content = ({ navigation, activeTab, keywords }) => {
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
-  const [items, setItems] = useState();
+  const [items, setItems] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+  const businessItems = [];
+  const privateItems = [];
 
   useEffect(() => {
     async function fetchUserData() {
@@ -130,18 +135,14 @@ const Content = ({ navigation, activeTab, keywords }) => {
     fetchUserData();
   }, [user]);
 
-<<<<<<< HEAD
-  const handleSearchByKeywords = async (keywords) => {
-    setRefreshing(true);
-  
-=======
   const handleRefresh = async () => {
     setRefreshing(true);
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
     try {
       const userData = await getUserData();
       const response = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/keywords?keywords=${encodeURIComponent(keywords)}`
+        `http://${BASE_URL}:4000/api/v1/items/not/${
+          userData.userId
+        }/keywords?keywords=${encodeURIComponent(keywords)}`
       );
       if (response.status === 200) {
         const allListings = response.data.data.items;
@@ -153,53 +154,18 @@ const Content = ({ navigation, activeTab, keywords }) => {
     } catch (error) {
       console.log(error.message);
     }
-<<<<<<< HEAD
-  
-    // After all the data fetching and updating, set refreshing to false
-    setRefreshing(false);
-  };
-
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-
-    try {
-      const userData = await getUserData();
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
-      );
-      if (response.status === 200) {
-        const allListings = response.data.data.items;
-        setItems(allListings);
-      } else {
-        //Shouldn't come here
-        console.log("Failed to retrieve all listings");
-      }
-
-    } catch(error) {
-      console.log(error.message);
-    }
-=======
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
     // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
   };
 
   useEffect(() => {
-<<<<<<< HEAD
-    async function fetchAllListings() {
-      //TO DO: get all item listings
-      try {
-        const userData = await getUserData();
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
-=======
     async function fetchAllListingsByKeywords() {
       try {
         const userData = await getUserData();
         const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/keywords?keywords=${encodeURIComponent(keywords)}`
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
+          `http://${BASE_URL}:4000/api/v1/items/not/${
+            userData.userId
+          }/keywords?keywords=${encodeURIComponent(keywords)}`
         );
         if (response.status === 200) {
           const allListings = response.data.data.items;
@@ -208,18 +174,20 @@ const Content = ({ navigation, activeTab, keywords }) => {
           //Shouldn't come here
           console.log("Failed to retrieve all listings");
         }
-
-      } catch(error) {
+      } catch (error) {
         console.log(error.message);
       }
     }
-<<<<<<< HEAD
-    fetchAllListings();
-  }, []);
-=======
     fetchAllListingsByKeywords();
   }, [keywords]);
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
+
+  for (const item of items) {
+    if (item.isBusiness) {
+      businessItems.push(item);
+    } else {
+      privateItems.push(item);
+    }
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -238,7 +206,7 @@ const Content = ({ navigation, activeTab, keywords }) => {
         </View>
       )}
       {/* handles when there are no business listings */}
-      {activeTab == "Business" && (items ? items.length : 0) === 0 && (
+      {activeTab == "Business" && (businessItems ? businessItems.length : 0) === 0 && (
         <View style={{ marginTop: 160 }}>
           <RegularText
             typography="B2"
@@ -252,7 +220,7 @@ const Content = ({ navigation, activeTab, keywords }) => {
         </View>
       )}
       {/* handles when there are no private listings */}
-      {activeTab == "Private" && (items ? items.length : 0) === 0 && (
+      {activeTab == "Private" && (privateItems ? privateItems.length : 0) === 0 && (
         <View style={{ marginTop: 160 }}>
           <RegularText
             typography="B2"
@@ -273,8 +241,7 @@ const Content = ({ navigation, activeTab, keywords }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => 
-            <ListingCard item={item} mine={false} />}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -284,7 +251,7 @@ const Content = ({ navigation, activeTab, keywords }) => {
       {/* renders business listings */}
       {activeTab == "Business" && (
         <FlatList
-          data={items}
+          data={businessItems}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
@@ -298,7 +265,7 @@ const Content = ({ navigation, activeTab, keywords }) => {
       {/* renders private listings */}
       {activeTab == "Private" && (
         <FlatList
-          data={items}
+          data={privateItems}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
@@ -315,16 +282,13 @@ const Content = ({ navigation, activeTab, keywords }) => {
 const browseByKeywords = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [advertisements, setAdvertisements] = useState({});
-<<<<<<< HEAD
-=======
   const params = useLocalSearchParams();
   const { keywords } = params;
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
 
   //suppresses nested scrollview error
   useEffect(() => {
-    LogBox.ignoreLogs(['VirtualizedLists should never be nested']); 
-  }, [])
+    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
+  }, []);
 
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
@@ -334,25 +298,12 @@ const browseByKeywords = () => {
   return (
     <SafeAreaContainer>
       <SearchBarHeader
-        onPressChat={() => {router.push("home/chats")}}
-        onPressWishlist={() => {router.push("home/wishlist")}}
-<<<<<<< HEAD
-        onPressMenu={() => {
-          console.log("opening menu drawer");
-          router.push("home/categoryMenu");
+        onPressChat={() => {
+          router.push("home/chats");
         }}
-        isHome={true}
-      />
-      <View style={{flex:1}}>
-        <View style={styles.advertisementAndWalletContainer}>
-          <View style={styles.advertisementCarousell}>
-            <CustomSlider data={["https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU","https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png"]} />
-          </View>
-        </View>
-        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-        <View style={styles.contentContainer}>
-          <Content activeTab={activeTab} />
-=======
+        onPressWishlist={() => {
+          router.push("home/wishlist");
+        }}
         onPressBack={() => {
           console.log("going back");
           router.push("home");
@@ -362,15 +313,13 @@ const browseByKeywords = () => {
         goBack={true}
         reset={false}
       />
-      <View style={{flex:1}}>
+      <View style={{ flex: 1 }}>
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
-          <Content activeTab={activeTab} keywords={keywords}/>
+          <Content activeTab={activeTab} keywords={keywords} />
           <RegularText>{keywords} browseByKeywords.js</RegularText>
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
         </View>
       </View>
-      
     </SafeAreaContainer>
   );
 };
@@ -380,11 +329,8 @@ export default browseByKeywords;
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
-    width: '100%',
-<<<<<<< HEAD
-=======
+    width: "100%",
     paddingTop: 20,
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
   },
   tab: {
     flex: 1,
@@ -398,48 +344,10 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomColor: primary,
   },
-<<<<<<< HEAD
-  advertisementAndWalletContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    gap: 10,
-  },
-  advertisementCarousell: {
-    flex: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    borderWidth: 1,
-    borderColor: black,
-  },
-=======
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
   contentContainer: {
     flex: 4,
     backgroundColor: white,
-    paddingHorizontal: '7%',
+    paddingHorizontal: "7%",
     justifyContent: "space-evenly",
   },
-<<<<<<< HEAD
-  dotContainer: {
-    marginTop: -50,
-  },
-  dotStyle: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "black",
-  },
-  inactiveDotStyle: {
-    backgroundColor: "rgb(255,230,230)",
-  },
-  image: {
-    flex: 1,
-    width: undefined,
-    height: undefined,
-  },
-=======
->>>>>>> 973eb667e060ea771983b55e543aa4e6c7517214
-})
+});
