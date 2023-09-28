@@ -147,7 +147,6 @@ const getItemsByUserId = async (userId) => {
   }
 };
 
-<<<<<<< HEAD
 //Get All Items
 const getAllItems= async () => {
   try {
@@ -228,12 +227,6 @@ const getOtherUserItemsByCategoryByKeywords = async (userId, category, keywords 
       `,
       [userId, category, keywords]
     );
-=======
-// Get all items
-const getItems = async () => {
-  try {
-    const result = await pool.query(`SELECT * FROM "sharEco-schema"."item" `);
->>>>>>> 1cee5cb4384054d43a3b04311c3cd8702c32240a
     return result.rows;
   } catch (err) {
     throw err;
@@ -246,13 +239,9 @@ module.exports = {
   disableItem,
   getItemByItemId,
   getItemsByUserId,
-<<<<<<< HEAD
   getAllItems,
   getOtherUserItems,
   getOtherUserItemsByCategory,
   getOtherUserItemsByKeywords,
   getOtherUserItemsByCategoryByKeywords,
-=======
-  getItems,
->>>>>>> 1cee5cb4384054d43a3b04311c3cd8702c32240a
 };
