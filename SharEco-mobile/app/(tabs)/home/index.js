@@ -1,63 +1,391 @@
-import { View, Text } from "react-native";
-import React from "react";
-import { Link } from "expo-router";
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  RefreshControl,
+  LogBox,
+  Dimensions,
+  Modal,
+} from "react-native";
+import React, { useState, useEffect } from "react";
+import { Link, router, Drawer } from "expo-router";
+import { useAuth } from "../../../context/auth";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
-import { colours } from "../../../components/ColourPalette";
 import RegularText from "../../../components/text/RegularText";
-const { white, primary } = colours;
+import SearchBarHeader from "../../../components/SearchBarHeader";
+import ListingCard from "../../../components/ListingCard";
+import Carousel, { Pagination } from "react-native-snap-carousel";
+import CarouselItem from "../../../components/CarouselItem";
+import { colours } from "../../../components/ColourPalette";
+const { white, primary, inputbackground, dark, black } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-const home = () => {
+const { width } = Dimensions.get("window");
+
+const CustomSlider = ({ data }) => {
+  const filteredData = data ? data.filter((item) => item !== null) : null;
+  const settings = {
+    sliderWidth: width,
+    sliderHeight: width,
+    itemWidth: width,
+    data: filteredData,
+    renderItem: CarouselItem,
+    hasParallaxImages: true,
+    onSnapToItem: (index) => setSlideIndex(index),
+  };
+  const [slideIndex, setSlideIndex] = useState(0);
   return (
-    <SafeAreaContainer>
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: white,
-          marginHorizontal: "10%",
-        }}
+    <View>
+      <Carousel {...settings} />
+      <CustomPaging data={filteredData} activeSlide={slideIndex} />
+    </View>
+  );
+};
+
+const CustomPaging = ({ data, activeSlide }) => {
+  const settings = {
+    dotsLength: data ? data.filter((item) => item !== null).length : 0,
+    activeDotIndex: activeSlide,
+    containerStyle: styles.dotContainer,
+    dotStyle: styles.dotStyle,
+    inactiveDotStyle: styles.inactiveDotStyle,
+    inactiveDotOpacity: 0.4,
+    inactiveDotScale: 0.6,
+  };
+  return <Pagination {...settings} />;
+};
+
+const Tabs = ({ activeTab, handleTabPress }) => {
+  return (
+    <View style={styles.tabContainer}>
+      <Pressable
+        onPress={() => handleTabPress("All")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.tab,
+          activeTab === "All" && styles.activeTab,
+        ]}
       >
-        <Ionicons
-          name="construct"
-          color={primary}
-          size={30}
-          style={{ marginBottom: 20 }}
-        />
-
-        <RegularText
-          typography="H1"
-          style={{
-            textAlign: "center",
-          }}
-        >
-          Browsing Feature
-        </RegularText>
-        <RegularText
-          typography="H1"
-          style={{
-            textAlign: "center",
-            marginBottom: 20,
-          }}
-        >
-          Coming Soon
-        </RegularText>
-
         <RegularText
           typography="B2"
-          color=""
-          style={{
-            textAlign: "center",
-          }}
+          color={activeTab === "All" ? primary : dark}
         >
-          We will be launching this feature on 8 October 2023, mark your
-          calendars!
+          All
         </RegularText>
+      </Pressable>
+      <Pressable
+        onPress={() => handleTabPress("Business")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.tab,
+          activeTab === "Business" && styles.activeTab,
+        ]}
+      >
+        <RegularText
+          typography="B2"
+          color={activeTab === "Business" ? primary : dark}
+        >
+          Business
+        </RegularText>
+      </Pressable>
+      <Pressable
+        onPress={() => handleTabPress("Private")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.tab,
+          activeTab === "Private" && styles.activeTab,
+        ]}
+      >
+        <RegularText
+          typography="B2"
+          color={activeTab === "Private" ? primary : dark}
+        >
+          Private
+        </RegularText>
+      </Pressable>
+    </View>
+  );
+};
+
+const Content = ({ navigation, activeTab }) => {
+  const [items, setItems] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+  const businessItems = [];
+  const privateItems = [];
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, [user]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      const userData = await getUserData();
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+      );
+      if (response.status === 200) {
+        const allListings = response.data.data.items;
+        setItems(allListings);
+      } else {
+        //Shouldn't come here
+        console.log("Failed to retrieve all listings");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+    // After all the data fetching and updating, set refreshing to false
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    async function fetchAllListings() {
+      //TO DO: get all item listings
+      try {
+        const userData = await getUserData();
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+        );
+        if (response.status === 200) {
+          const allListings = response.data.data.items;
+          setItems(allListings);
+        } else {
+          //Shouldn't come here
+          console.log("Failed to retrieve all listings");
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchAllListings();
+  }, []);
+
+  for (const item of items) {
+    if (item.isBusiness) {
+      businessItems.push(item);
+    } else {
+      privateItems.push(item);
+    }
+  }
+  
+  return (
+    <View style={{ flex: 1 }}>
+      {/* handles when there are no listings */}
+      {activeTab == "All" && (items ? items.length : 0) === 0 && (
+        <View style={{ marginTop: 160 }}>
+          <RegularText
+            typography="B2"
+            style={{ marginBottom: 5, textAlign: "center" }}
+          >
+            There are no listings yet
+          </RegularText>
+          <RegularText typography="H3" style={{ textAlign: "center" }}>
+            watch this space!
+          </RegularText>
+        </View>
+      )}
+      {/* handles when there are no business listings */}
+      {activeTab == "Business" &&
+        (businessItems ? businessItems.length : 0) === 0 && (
+          <View style={{ marginTop: 160 }}>
+            <RegularText
+              typography="B2"
+              style={{ marginBottom: 5, textAlign: "center" }}
+            >
+              There are no business listings yet
+            </RegularText>
+            <RegularText typography="H3" style={{ textAlign: "center" }}>
+              watch this space!
+            </RegularText>
+          </View>
+        )}
+      {/* handles when there are no private listings */}
+      {activeTab == "Private" &&
+        (privateItems ? privateItems.length : 0) === 0 && (
+          <View style={{ marginTop: 160 }}>
+            <RegularText
+              typography="B2"
+              style={{ marginBottom: 5, textAlign: "center" }}
+            >
+              There are no listings yet!
+            </RegularText>
+            <RegularText typography="H3" style={{ textAlign: "center" }}>
+              watch this space!
+            </RegularText>
+          </View>
+        )}
+
+      {/* renders all listings */}
+      {activeTab == "All" && (
+        <FlatList
+          data={items}
+          numColumns={2}
+          scrollsToTop={false}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        />
+      )}
+
+      {/* renders business listings */}
+      {activeTab == "Business" && (
+        <FlatList
+          data={businessItems}
+          numColumns={2}
+          scrollsToTop={false}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => <ListingCard item={item} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        />
+      )}
+
+      {/* renders private listings */}
+      {activeTab == "Private" && (
+        <FlatList
+          data={privateItems}
+          numColumns={2}
+          scrollsToTop={false}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => <ListingCard item={item} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        />
+      )}
+    </View>
+  );
+};
+
+const home = () => {
+  const [activeTab, setActiveTab] = useState("All");
+  const [advertisements, setAdvertisements] = useState({});
+
+  //suppresses nested scrollview error
+  useEffect(() => {
+    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
+  }, []);
+
+  const handleTabPress = (tabName) => {
+    setActiveTab(tabName);
+    console.log("Active tab: " + tabName);
+  };
+
+  return (
+    <SafeAreaContainer>
+      <SearchBarHeader
+        onPressChat={() => {
+          router.push("home/chats");
+        }}
+        onPressWishlist={() => {
+          router.push("home/wishlist");
+        }}
+        onPressMenu={() => {
+          console.log("opening menu drawer");
+          router.push("home/categoryMenu");
+        }}
+        isHome={true}
+        goBack={false}
+        reset={true}
+      />
+      <View style={{ flex: 1 }}>
+        <View style={styles.advertisementAndWalletContainer}>
+          <View style={styles.advertisementCarousell}>
+            <CustomSlider
+              data={[
+                "https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU",
+                "https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png",
+              ]}
+            />
+          </View>
+        </View>
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+        <View style={styles.contentContainer}>
+          <Content activeTab={activeTab} />
+        </View>
       </View>
     </SafeAreaContainer>
   );
 };
 
 export default home;
+
+const styles = StyleSheet.create({
+  tabContainer: {
+    flexDirection: "row",
+    width: "100%",
+  },
+  tab: {
+    flex: 1,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: white,
+    borderBottomWidth: 2,
+    borderBottomColor: inputbackground,
+  },
+  activeTab: {
+    borderBottomColor: primary,
+  },
+  advertisementAndWalletContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    gap: 10,
+  },
+  advertisementCarousell: {
+    flex: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    borderWidth: 1,
+    borderColor: black,
+  },
+  contentContainer: {
+    flex: 4,
+    backgroundColor: white,
+    paddingHorizontal: "7%",
+    justifyContent: "space-evenly",
+  },
+  dotContainer: {
+    marginTop: -50,
+  },
+  dotStyle: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "black",
+  },
+  inactiveDotStyle: {
+    backgroundColor: "rgb(255,230,230)",
+  },
+  image: {
+    flex: 1,
+    width: undefined,
+    height: undefined,
+  },
+});

@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const userdb = require("./queries/user");
 const admindb = require("./queries/admin");
 const listingdb = require("./queries/listing");
+const rentaldb = require("./queries/rental");
 const businessdb = require("./queries/businessVerifications");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
@@ -12,13 +13,14 @@ const app = express();
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
+const axios = require("axios");
 
-const { uploadFile, getFileStream } = require("./s3");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
-const fs = require("fs");
-const util = require("util");
-const unlinkFile = util.promisify(fs.unlink);
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// S3 BASE URL for GET & PUT request
+const { AWS_GETFILE_URL, AWS_PUTFILE_URL } = require("./s3");
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
@@ -507,6 +509,7 @@ app.post("/api/v1/items", async (req, res) => {
     category,
     collectionLocations,
     otherLocation,
+    isBusiness,
   } = req.body;
 
   try {
@@ -521,7 +524,8 @@ app.post("/api/v1/items", async (req, res) => {
       images,
       category,
       collectionLocations,
-      otherLocation
+      otherLocation,
+      isBusiness
     );
 
     // Send the newly created user as the response
@@ -645,6 +649,123 @@ app.get("/api/v1/items/:userId", async (req, res) => {
     console.log(error.message);
   }
 });
+
+//Get all items
+app.get("/api/v1/items", async (req, res) => {
+  try {
+    const items = await listingdb.getAllItems();
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+//Get other people's items
+app.get("/api/v1/items/not/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const items = await listingdb.getOtherUserItems(userId);
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+})
+
+//Get other people's items by keywords
+app.get("/api/v1/items/not/:userId/keywords", async (req, res) => {
+  const userId = req.params.userId;
+  const keywords = req.query.keywords.split(/[ +]/);
+
+  try {
+    const items = await listingdb.getOtherUserItemsByKeywords(userId, keywords);
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+})
+
+//Get other people's items by category
+app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
+  const userId = req.params.userId;
+  const category = req.params.category;
+
+  try {
+    const items = await listingdb.getOtherUserItemsByCategory(userId, category);
+
+    if (items.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+})
+
+//Get other people's items by category by keywords
+app.get("/api/v1/items/not/:userId/category/:category/keywords", async (req, res) => {
+  const userId = req.params.userId;
+  const category = req.params.category;
+  const keywords = req.query.keywords.split(/[ +]/);
+
+  try {
+    const items = await listingdb.getOtherUserItemsByCategoryByKeywords(userId, category, keywords);
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+})
 
 // Auth functionalities
 app.post("/api/v1/admin/signIn", auth.AdminSignIn);
@@ -816,26 +937,286 @@ app.delete(
 
 // S3 functionalities for hosting of images
 // Upload new image
-app.post("/images/:userId", upload.single("image"), async (req, res) => {
-  const file = req.file;
-  console.log(file);
+app.put(
+  "/api/s3-proxy/uploadfile/:bucket/:filename",
+  upload.single("file"),
+  async (req, res) => {
+    const file = req.file;
+    console.log(file);
 
-  const result = await uploadFile(file);
-  await unlinkFile(file.path);
-  console.log(result);
+    const { bucket, filename } = req.params;
 
-  // update photourl in userdb to result.key
-  const userId = req.params.userId;
+    try {
+      const s3url = `${AWS_PUTFILE_URL}/${filename}`;
+      const s3Response = await axios.put(proxyEndpointUrl, file.buffer, {
+        headers: {
+          "Content-Type": "application/octet-stream",
+        },
+        params: {
+          filename: filename,
+        },
+      });
+
+      if (s3Response.status === 200) {
+        // The file was successfully uploaded to S3 via the proxy
+        res.status(200).json({ message: "File uploaded successfully" });
+      } else {
+        res.status(s3Response.status).json({ error: "Upload failed" });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    res.send({ imagePath: `/images/${result.Key}` });
+  }
+);
+
+// Get image from S3 -> TBC
+app.get("/api/s3-proxy/getfile/shareco-bucket/testing1", async (req, res) => {
   try {
-  } catch (error) {}
+    const { filename } = req.params;
+    const s3url = `${AWS_GETFILE_URL}/testing1`;
 
-  res.send({ imagePath: `/images/${result.Key}` });
+    const s3Response = await axios.get(s3url);
+    console.log(s3Response.data);
+    if (s3Response.status === 200) {
+      // const contentType = "image/jpeg";
+      // res.setHeader("Content-Type", contentType);
+      res.send(s3Response.data);
+    } else if (s3Response.status !== 200) {
+      console.log("Unable to download file from S3");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-// Get image from S3
-app.get("images/:key", (req, res) => {
-  const key = req.params.key; // store this key value in userdb
-  const readStream = getFileStream(key);
+//RENTAL REQUEST FUNCTIONALITIES
+//Create a new rental request
+app.post("/api/v1/rental", async (req, res) => {
+  const {
+    startDate,
+    endDate,
+    collectionLocation,
+    additionalRequest,
+    depositFee,
+    rentalFee,
+    itemId,
+    borrowerId,
+    lenderId,
+  } = req.body;
 
-  readStream.pipe(res);
+  try {
+    const rental = await rentaldb.createRentalRequest(
+      startDate,
+      endDate,
+      collectionLocation,
+      additionalRequest,
+      depositFee,
+      rentalFee,
+      itemId,
+      borrowerId,
+      lenderId
+    );
+
+    // Send the newly created business verification as the response
+    res.status(201).json({
+      status: "success",
+      data: {
+        rental: rental,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Edit Rental request
+app.put("/api/v1/rental/rentalId/:rentalId", async (req, res) => {
+  try {
+    const rental = await rentaldb.editRentalRequest(
+      req.params.rentalId,
+      req.body.startDate,
+      req.body.endDate,
+      req.body.collectionLocation,
+      req.body.additionalRequest,
+      req.body.additionalCharges,
+      req.body.depositFee,
+      req.body.rentalFee
+    );
+
+    if (rental) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rental: rental,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Delete rental request
+app.delete("/api/v1/rental/:rentalId", async (req, res) => {
+  const rentalId = req.params.rentalId;
+  try {
+    const rental = await rentaldb.deleteRentalRequest(rentalId);
+
+    if (rental) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rental: rental,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get all rental requests
+app.get("/api/v1/rentals", async (req, res) => {
+  try {
+    const rentals = await rentaldb.getAllRentals();
+    res.status(200).json({
+      status: "success",
+      data: {
+        rentals: rentals,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get Rental by Rental Id
+app.get("/api/v1/rentals/rentalId/:rentalId", async (req, res) => {
+  try {
+    const rental = await rentaldb.getRentalByRentalId(req.params.rentalId);
+    if (rental) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rental: rental,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get Rental by Lender Id
+app.get("/api/v1/rentals/lenderId/:lenderId", async (req, res) => {
+  try {
+    const rental = await rentaldb.getRentalsByLenderId(req.params.lenderId);
+    if (rental.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rental: rental,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get Rental by Borrower Id
+app.get("/api/v1/rentals/borrowerId/:borrowerId", async (req, res) => {
+  try {
+    const rental = await rentaldb.getRentalsByBorrowerId(req.params.borrowerId);
+    if (rental.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rental: rental,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get Rental by Item Id
+app.get("/api/v1/rentals/itemId/:itemId", async (req, res) => {
+  try {
+    const rental = await rentaldb.getRentalsByItemId(req.params.itemId);
+    if (rental.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rental: rental,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Update rental status
+app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
+  try {
+    const rental = await rentaldb.updateRentalStatus(
+      req.body.status,
+      req.params.rentalId,
+    );
+    if (rental) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rental: rental,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
