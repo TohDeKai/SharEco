@@ -495,6 +495,23 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
   }
 });
 
+// Get all items
+app.get("/api/v1/items", async (req, res) => {
+  try {
+    const items = await listingdb.getItems();
+    res.status(200).json({
+      status: "success",
+      data: {
+        item: items,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Create item
 app.post("/api/v1/items", async (req, res) => {
   const {
@@ -556,7 +573,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
       req.body.images,
       req.body.category,
       req.body.collectionLocations,
-      req.body.otherLocation,
+      req.body.otherLocation
     );
 
     if (item) {
@@ -579,7 +596,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
 
 //Delete item
 //Disabling item
-app.put("/api/v1/items/:itemId", async (req, res) => {
+app.put("/api/v1/items/disable/itemId/:itemId", async (req, res) => {
   try {
     const item = await listingdb.disableItem(
       req.params.itemId,
@@ -792,26 +809,32 @@ app.get("/api/v1/businessVerifications", async (req, res) => {
   }
 });
 
-app.get("/api/v1/businessVerifications/businessVerificationId/:businessVerificationId", async (req, res) => {
-  try {
-    const businessVerification = await businessdb.getBusinessVerificationByBusinessVerificationId(req.params.businessVerificationId);
-    if (businessVerification) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          businessVerification: businessVerification,
-        },
-      });
-    } else {
-      // Handle the case where the business verification is not found
-      res.status(404).json({ error: "Business verification not found" });
+app.get(
+  "/api/v1/businessVerifications/businessVerificationId/:businessVerificationId",
+  async (req, res) => {
+    try {
+      const businessVerification =
+        await businessdb.getBusinessVerificationByBusinessVerificationId(
+          req.params.businessVerificationId
+        );
+      if (businessVerification) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            businessVerification: businessVerification,
+          },
+        });
+      } else {
+        // Handle the case where the business verification is not found
+        res.status(404).json({ error: "Business verification not found" });
+      }
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
     }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
   }
-})
+);
 
 // Creating new business verification request
 app.post("/api/v1/businessVerifications", async (req, res) => {
@@ -945,7 +968,6 @@ app.put(
     console.log(file);
 
     const { bucket, filename } = req.params;
-
     try {
       const s3url = `${AWS_PUTFILE_URL}/${filename}`;
       const s3Response = await axios.put(proxyEndpointUrl, file.buffer, {
