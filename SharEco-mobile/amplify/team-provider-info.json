@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-sharecomobile-dev-181529-authRole",
+      "UnauthRoleArn": "arn:aws:iam::591321521361:role/amplify-sharecomobile-dev-181529-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::591321521361:role/amplify-sharecomobile-dev-181529-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-sharecomobile-dev-181529-deployment",
+      "UnauthRoleName": "amplify-sharecomobile-dev-181529-unauthRole",
+      "StackName": "amplify-sharecomobile-dev-181529",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:591321521361:stack/amplify-sharecomobile-dev-181529/1e2a6020-5eb1-11ee-99d4-0a09cde5a16c",
+      "AmplifyAppId": "d3m7xmvobvtnrv"
+    },
+    "categories": {
+      "auth": {
+        "sharecomobilee4676b50": {}
+      },
+      "storage": {
+        "s394c6241c": {}
+      }
+    }
+  }
+}
