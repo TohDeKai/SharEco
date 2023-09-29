@@ -14,6 +14,11 @@ import * as ImagePicker from "expo-image-picker";
 import { Formik } from "formik";
 import axios from "axios";
 
+// AWS Amplify
+import { Amplify, Storage } from "aws-amplify";
+import awsconfig from "../../../src/aws-exports";
+Amplify.configure(awsconfig);
+
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";
@@ -42,6 +47,11 @@ const editProfile = () => {
   const { signIn } = useAuth();
   const { getUserData } = useAuth();
 
+  const [message, setMessage] = useState("");
+  const [isSuccessMessage, setIsSuccessMessage] = useState("false");
+  const [image, setImage] = useState(user.userPhotoUrl);
+  const [imageResult, setImageResult] = useState();
+
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -56,10 +66,39 @@ const editProfile = () => {
     fetchUserData();
   }, [user]);
 
-  const [message, setMessage] = useState("");
-  const [isSuccessMessage, setIsSuccessMessage] = useState("false");
-  //need to initialise image as the user's actual profilepic url
-  const [image, setImage] = useState(user.userPhotoUrl);
+  // upload image
+  const fetchImageUri = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return blob;
+  };
+
+  const uploadImageFile = async (file) => {
+    const img = await fetchImageUri(file.uri);
+    return Storage.put(`userId-${user.userId}.jpeg`, img, {
+      level: "public",
+      contentType: file.type,
+      progressCallback(uploadProgress) {
+        console.log(
+          "PROGRESS--",
+          uploadProgress.loaded + "/" + uploadProgress.total
+        );
+      },
+    })
+      .then((res) => {
+        Storage.get(res.key)
+          .then((result) => {
+            let awsImageUri = result.substring(0, result.indexOf("?"));
+            console.log(awsImageUri);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -71,7 +110,7 @@ const editProfile = () => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      // add image uri to s3, update user photoURL to the key of s3 that links to this image
+      setImageResult(result);
     }
   };
 
@@ -91,7 +130,7 @@ const editProfile = () => {
       password: user.password,
       email: user.email,
       contactNumber: user.contactNumber,
-      userPhotoUrl: image || user.userPhotoUrl, // Use the new value if provided, otherwise keep the original value
+      userPhotoUrl: imageResult ? "userId-" + user.userId : user.userPhotoUrl, // || image, If user has an image key, keep it. Else, update to new key that links to S3 image
       isBanned: user.isBanned,
       likedItem: user.likedItem,
       wishList: user.wishList,
@@ -100,6 +139,11 @@ const editProfile = () => {
     };
 
     try {
+      // save image to S3
+      if (imageResult) {
+        uploadImageFile(imageResult);
+      }
+
       const response = await axios.put(
         `http://${BASE_URL}:4000/api/v1/users/username/${username}`,
         newDetails
@@ -139,8 +183,7 @@ const editProfile = () => {
               source={{
                 uri:
                   image ||
-                  `https://sb4uyd0y4k.execute-api.ap-southeast-1.amazonaws.com/v1/shareco-bucket/${user.userPhotoUrl}` ||
-                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                  `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
               }}
             />
             <Pressable
