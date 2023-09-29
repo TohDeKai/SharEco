@@ -21,13 +21,14 @@ const createItem = async (
   images,
   category,
   collectionLocations,
-  otherLocation
+  otherLocation,
+  isBusiness,
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."item" 
-        ("userId", "itemTitle", "itemDescription", "itemOriginalPrice", "rentalRateHourly", "rentalRateDaily", "depositFee", images, category, "collectionLocations", "otherLocation", "usersLikedCount", impressions, "totalRentCollected") 
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) returning *`,
+        ("userId", "itemTitle", "itemDescription", "itemOriginalPrice", "rentalRateHourly", "rentalRateDaily", "depositFee", images, category, "collectionLocations", "otherLocation", "usersLikedCount", impressions, "totalRentCollected", "isBusiness") 
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) returning *`,
       [
         userId,
         itemTitle,
@@ -43,6 +44,7 @@ const createItem = async (
         0,
         0,
         0,
+        isBusiness,
       ]
     );
     return result.rows[0];
@@ -101,14 +103,14 @@ const updateItem = async (
 };
 
 // Delete item
-const disableItem = async (itemId) => {
+const disableItem = async (itemId, disabled) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."item" 
-       SET "disabled" = true
-       WHERE "itemId" = $1
+       SET "disabled" = $1
+       WHERE "itemId" = $2
         RETURNING *`,
-      [itemId]
+      [disabled, itemId]
     );
     return result.rows[0];
   } catch (err) {
@@ -145,10 +147,102 @@ const getItemsByUserId = async (userId) => {
   }
 };
 
+//Get All Items
+const getAllItems= async () => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."item" 
+          WHERE "disabled" != true`,
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+//Get all items listed by other users
+const getOtherUserItems= async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."item" 
+          WHERE "userId" != $1 AND "disabled" != true`,
+          [userId]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
+//Full text search for other user's items
+const getOtherUserItemsByKeywords = async (userId, keywords) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM "sharEco-schema"."item"
+      WHERE
+        "userId" != $1
+        AND "disabled" != true
+        AND "document_with_weights" @@ to_tsquery('english', $2)
+      ORDER BY ts_rank("document_with_weights", to_tsquery('english', $2)) DESC;
+      `,
+      [userId, keywords]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+
+
+//Get all items listed by other users by category
+const getOtherUserItemsByCategory= async (userId, category) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."item" 
+          WHERE "userId" != $1 AND "category" = $2 AND "disabled" != true`,
+          [userId, category]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
+//Full text search for other user's items by category
+const getOtherUserItemsByCategoryByKeywords = async (userId, category, keywords ) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM "sharEco-schema"."item"
+      WHERE
+        "userId" != $1
+        AND "category" = $2
+        AND "disabled" != true
+        AND "document_with_weights" @@ to_tsquery('english', $3)
+      ORDER BY ts_rank("document_with_weights", to_tsquery('english', $3)) DESC;
+      `,
+      [userId, category, keywords]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+
 module.exports = {
   createItem,
   updateItem,
   disableItem,
   getItemByItemId,
   getItemsByUserId,
+  getAllItems,
+  getOtherUserItems,
+  getOtherUserItemsByCategory,
+  getOtherUserItemsByKeywords,
+  getOtherUserItemsByCategoryByKeywords,
 };
