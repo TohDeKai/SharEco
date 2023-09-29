@@ -36,6 +36,7 @@ const viewportWidthInPixels = (percentage) => {
 
 const ProfileHeader = () => {
   const [user, setUser] = useState("");
+  const [profileUri, setProfileUri] = useState();
   const { getUserData } = useAuth();
   const [business, setBusiness] = useState({});
 
@@ -45,6 +46,9 @@ const ProfileHeader = () => {
         const userData = await getUserData();
         if (userData) {
           setUser(userData);
+          setProfileUri(
+            `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`
+          );
         }
       } catch (error) {
         console.log(error.message);
@@ -127,7 +131,7 @@ const ProfileHeader = () => {
         <UserAvatar
           size="big"
           source={{
-            uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
+            uri: profileUri,
           }}
         />
         {business.approved && (
