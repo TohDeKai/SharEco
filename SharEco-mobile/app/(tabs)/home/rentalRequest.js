@@ -233,7 +233,21 @@ const createRentals = () => {
         </View>
       </View>
       <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-      <Calendar />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.scrollContainer}
+      >
+        <View style={styles.textMargin}>
+          <RegularText typography="H3">
+            View Availabilities
+          </RegularText>
+          <RegularText typography="B2">
+            Select a date to view availabilities
+          </RegularText>
+        </View>
+        <Calendar />
+      </ScrollView>
 
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -524,14 +538,17 @@ const styles = StyleSheet.create({
   activeTab: {
     backgroundColor: dark,
   },
+  textMargin: {
+    marginTop: 25,
+    marginBottom: 15,
+  },
   container: {
     flex: 1,
     backgroundColor: white,
   },
   scrollContainer: {
-    top: 6,
-    flexGrow: 1,
-    alignItems: "center",
+    marginHorizontal: viewportWidthInPixels(5),
+    marginBottom: 20,
   },
   bottomContainer: {
     marginBottom: 20,
