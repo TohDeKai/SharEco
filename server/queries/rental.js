@@ -193,4 +193,5 @@ module.exports = {
   getRentalsByBorrowerId,
   getRentalsByItemId,
   getRentalByRentalId,
+  getAvailByRentalIdAndDate,
 };
