@@ -161,7 +161,7 @@ const editProfile = () => {
           const userData = userDataResponse.data.data.user;
           console.log("User object: ", userData);
           signIn(userData); // Update the user object in the state
-          router.back();
+          router.replace("/profile");
         } else {
           //shouldnt come here
           console.log("Failed to retrieve user data");

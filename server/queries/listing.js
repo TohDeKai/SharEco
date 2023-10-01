@@ -102,6 +102,27 @@ const updateItem = async (
   }
 };
 
+// Update images for an item
+const updateItemImages = async (itemId, images) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."item" 
+        SET images = $1
+        WHERE "itemId" = $2
+        RETURNING images`,
+      [images, itemId]
+    );
+
+    if (result.rows.length > 0) {
+      return result.rows[0].images;
+    } else {
+      return null; // Return null if the item is not found or the update fails
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 // Delete item
 const disableItem = async (itemId, disabled) => {
   try {
@@ -237,6 +258,7 @@ const getOtherUserItemsByCategoryByKeywords = async (userId, category, keywords 
 module.exports = {
   createItem,
   updateItem,
+  updateItemImages,
   disableItem,
   getItemByItemId,
   getItemsByUserId,
