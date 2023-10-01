@@ -608,6 +608,33 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
   }
 });
 
+//update item images only
+app.put("/api/v1/items/itemId/:itemId/images", async (req, res) => {
+  try {
+    const itemId = req.params.itemId;
+    const images = req.body.images; 
+
+    // Update the images associated with the item using the itemId and the new images array
+    const updatedImages = await listingdb.updateItemImages(itemId, images);
+
+    if (updatedImages) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          images: updatedImages,
+        },
+      });
+    } else {
+      // Handle the case where the item is not found or the update fails
+      res.status(404).json({ error: "Item not found or image update failed" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Delete item
 //Disabling item
 app.put("/api/v1/items/disable/itemId/:itemId", async (req, res) => {
