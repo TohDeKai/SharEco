@@ -224,7 +224,7 @@ import {
               </RegularText>
               <View style={style.seller}>
                 <View style={style.avatarContainer}>
-                  <UserAvatar size="medium" source={{ uri: user.userPhotoUrl }} />
+                  <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
                 </View>
                 <View style={style.profile}>
                   <RegularText typography="H3">{user.displayName}</RegularText>
