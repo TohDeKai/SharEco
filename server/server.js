@@ -16,7 +16,21 @@ const saltRounds = 12;
 const axios = require("axios");
 
 const multer = require("multer");
-const storage = multer.memoryStorage();
+const fs = require("fs");
+
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (req, file, cb) => {
+    const { filename } = req.params;
+    console.log(file);
+    cb(null, filename);
+  },
+});
+
 const upload = multer({ storage: storage });
 
 // S3 BASE URL for GET & PUT request
@@ -594,6 +608,33 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
   }
 });
 
+//update item images only
+app.put("/api/v1/items/itemId/:itemId/images", async (req, res) => {
+  try {
+    const itemId = req.params.itemId;
+    const images = req.body.images; 
+
+    // Update the images associated with the item using the itemId and the new images array
+    const updatedImages = await listingdb.updateItemImages(itemId, images);
+
+    if (updatedImages) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          images: updatedImages,
+        },
+      });
+    } else {
+      // Handle the case where the item is not found or the update fails
+      res.status(404).json({ error: "Item not found or image update failed" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Delete item
 //Disabling item
 app.put("/api/v1/items/disable/itemId/:itemId", async (req, res) => {
@@ -957,63 +998,6 @@ app.delete(
     }
   }
 );
-
-// S3 functionalities for hosting of images
-// Upload new image
-app.put(
-  "/api/s3-proxy/uploadfile/:bucket/:filename",
-  upload.single("file"),
-  async (req, res) => {
-    const file = req.file;
-    console.log(file);
-
-    const { bucket, filename } = req.params;
-    try {
-      const s3url = `${AWS_PUTFILE_URL}/${filename}`;
-      const s3Response = await axios.put(proxyEndpointUrl, file.buffer, {
-        headers: {
-          "Content-Type": "application/octet-stream",
-        },
-        params: {
-          filename: filename,
-        },
-      });
-
-      if (s3Response.status === 200) {
-        // The file was successfully uploaded to S3 via the proxy
-        res.status(200).json({ message: "File uploaded successfully" });
-      } else {
-        res.status(s3Response.status).json({ error: "Upload failed" });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-
-    res.send({ imagePath: `/images/${result.Key}` });
-  }
-);
-
-// Get image from S3 -> TBC
-app.get("/api/s3-proxy/getfile/shareco-bucket/testing1", async (req, res) => {
-  try {
-    const { filename } = req.params;
-    const s3url = `${AWS_GETFILE_URL}/testing1`;
-
-    const s3Response = await axios.get(s3url);
-    console.log(s3Response.data);
-    if (s3Response.status === 200) {
-      // const contentType = "image/jpeg";
-      // res.setHeader("Content-Type", contentType);
-      res.send(s3Response.data);
-    } else if (s3Response.status !== 200) {
-      console.log("Unable to download file from S3");
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 //RENTAL REQUEST FUNCTIONALITIES
 //Create a new rental request

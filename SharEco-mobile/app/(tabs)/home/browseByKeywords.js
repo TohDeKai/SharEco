@@ -255,7 +255,7 @@ import {
             numColumns={2}
             scrollsToTop={false}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => <ListingCard item={item} />}
+            renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
             }
@@ -269,7 +269,7 @@ import {
             numColumns={2}
             scrollsToTop={false}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => <ListingCard item={item} />}
+            renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
             }
