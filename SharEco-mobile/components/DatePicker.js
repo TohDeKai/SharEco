@@ -58,56 +58,40 @@ const formatTodayDate = (dateString) => {
   return `${updatedDay}/${updatedMonth}/${updatedYear}`;
 };
 
-const datePicker = ({ selected }) => {
+const datePicker = ({ itemId, activeTab }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [today, setToday] = useState("");
   const [avails, setAvails] = useState({});
-  const params = useLocalSearchParams();
-  const { itemId } = params;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const formattedDate = selectedDate.replace(/\//g, "-");
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
-        );
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const formattedDate = selectedDate.replace(/\//g, "-");
+          const response = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
+          );
 
-        if (response.status === 200) {
-          const intervals = response.data.data.intervals;
-          setAvails(intervals);
-          setToday(formatTodayDate(selectedDate));
-        } else {
-          console.log("Failed to retrieve availabilities");
+          if (response.status === 200) {
+            const intervals = response.data.data.intervals;
+            setAvails(intervals);
+            setToday(formatTodayDate(selectedDate));
+          } else {
+            console.log("Failed to retrieve availabilities");
+          }
+        } catch (error) {
+          console.error(error.message);
         }
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
+      };
 
-    if (selectedDate !== "") {
-      setAvails([]);
-      fetchData();
-    }
-  }, [selectedDate, itemId]); // Include itemId as a dependency
+      if (selectedDate !== "") {
+        setAvails([]);
+        fetchData();
+      }
+    }, [selectedDate, itemId]);
 
   const handleSelectedChange = (date) => {
     setSelectedDate(date);
   };
-
-  //   const Availability = ({ slot }) => {
-  //     const { start, end } = slot;
-  //     const formattedStartTime = formatTime(start);
-  //     const formattedEndTime = formatTime(end);
-
-  //     return (
-  //       <Text>
-  //         <RegularText typography="H3" color={white}>
-  //           {formattedStartTime} - {formattedEndTime}
-  //         </RegularText>
-  //       </Text>
-  //     );
-  //   };
 
   const Availability = ({ avails }) => {
     return (
@@ -118,7 +102,7 @@ const datePicker = ({ selected }) => {
           const formattedEndTime = formatTime(end);
 
           return (
-            <Text key={index} style={{ marginBottom: 5}}>
+            <Text key={index} style={{ marginBottom: 5 }}>
               <RegularText typography="H3" color={white}>
                 {formattedStartTime} - {formattedEndTime}
               </RegularText>
@@ -153,27 +137,29 @@ const datePicker = ({ selected }) => {
         minuteInterval={30}
         onSelectedChange={handleSelectedChange}
       />
-      <View style={style.availCard}>
-        {today !== "" && (
-          <View>
-            <Text style={style.textMargin}>
-              <RegularText typography="B1" color={white}>
-                Availabilities for {today}
-              </RegularText>
-            </Text>
+      {activeTab == "Hourly" && (
+        <View style={style.availCard}>
+          {today !== "" && (
             <View>
-              <Availability avails={avails} />
+              <Text style={style.textMargin}>
+                <RegularText typography="B1" color={white}>
+                  Availabilities for {today}
+                </RegularText>
+              </Text>
+              <View>
+                <Availability avails={avails} />
+              </View>
             </View>
-          </View>
-        )}
-        {today == "" && (
-          <View style={style.centerText}>
-            <RegularText typography="B1" color={white}>
-              Select a date to view availabilities
-            </RegularText>
-          </View>
-        )}
-      </View>
+          )}
+          {today == "" && (
+            <View style={style.centerText}>
+              <RegularText typography="B1" color={white}>
+                Select a date to view availabilities
+              </RegularText>
+            </View>
+          )}
+        </View>
+      )}
     </View>
   );
 };

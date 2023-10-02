@@ -191,6 +191,76 @@ const createRentals = () => {
     }
   };
 
+  const HourlySelection = () => {
+    return (
+      <View>
+        <View style={styles.selector}>
+          <RegularText typography="H4">Starts from</RegularText>
+          <View style={styles.dateTimePicker}>
+            <DateTimePicker
+              mode="date"
+              value={date}
+              onChange={(date) => handleStartDateChange(date)}
+              minuteInterval={30}
+            />
+            <DateTimePicker
+              mode="time"
+              value={date}
+              onChange={(date) => handleStartTimeChange(date)}
+              minuteInterval={30}
+            />
+          </View>
+        </View>
+        <View style={styles.selector}>
+          <RegularText typography="H4">Ends on</RegularText>
+          <View style={styles.dateTimePicker}>
+            <DateTimePicker
+              mode="date"
+              value={date}
+              onChange={(date) => handleEndDateChange(date)}
+              minuteInterval={30}
+            />
+            <DateTimePicker
+              mode="time"
+              value={date}
+              onChange={(date) => handleEndTimeChange(date)}
+              minuteInterval={30}
+            />
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const DailySelection = () => {
+    return (
+      <View>
+        <View style={styles.selector}>
+          <RegularText typography="H4">Starts at 9AM on</RegularText>
+          <View style={styles.dateTimePicker}>
+            <DateTimePicker
+              mode="date"
+              value={date}
+              onChange={(date) => handleStartDateChange(date)}
+              minuteInterval={30}
+            />
+          </View>
+        </View>
+        <View style={styles.selector}>
+          <RegularText typography="H4">Ends at 9AM on</RegularText>
+          <View style={styles.dateTimePicker}>
+            <DateTimePicker
+              mode="date"
+              value={date}
+              onChange={(date) => handleEndDateChange(date)}
+              minuteInterval={30}
+            />
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   // const handleCreateListing = async (values) => {
   //   try {
   //     const itemData = {
@@ -292,47 +362,15 @@ const createRentals = () => {
         <View style={styles.textMargin}>
           <RegularText typography="H3">View Availabilities</RegularText>
         </View>
-        <Calendar itemId={itemId} />
+        <Calendar itemId={itemId} activeTab={activeTab} />
 
         <View style={styles.textMarginDivider}>
           <RegularText typography="H3">Select rental period</RegularText>
         </View>
-        <View style={styles.selector}>
-          <RegularText typography="H4">Starts from</RegularText>
-          <View style={styles.dateTimePicker}>
-            <DateTimePicker
-              mode="date"
-              value={date}
-              onChange={(date) => handleStartDateChange(date)}
-              minuteInterval={30}
-            />
-            <DateTimePicker
-              mode="time"
-              value={date}
-              onChange={(date) => handleStartTimeChange(date)}
-              minuteInterval={30}
-            />
-          </View>
-        </View>
-        <View style={styles.selector}>
-          <RegularText typography="H4">Ends on</RegularText>
-          <View style={styles.dateTimePicker}>
-            <DateTimePicker
-              mode="date"
-              value={date}
-              onChange={(date) => handleEndDateChange(date)}
-              minuteInterval={30}
-            />
-            <DateTimePicker
-              mode="time"
-              value={date}
-              onChange={(date) => handleEndTimeChange(date)}
-              minuteInterval={30}
-            />
-          </View>
-        </View>
-      </ScrollView>
+        {activeTab=="Hourly" && <HourlySelection />}
+        {activeTab=="Daily" && <DailySelection />}
 
+      </ScrollView>
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {/* <Formik
