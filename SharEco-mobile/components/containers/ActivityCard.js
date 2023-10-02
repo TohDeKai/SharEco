@@ -25,13 +25,22 @@ const rentalData = {
   lenderId: 84,
 };
 
-// if start date = end date, it is hourly, otherwise, daily
 // calculate numOdays = startDate - today, if lending, otherwise, endDate - today
 // less than 24h, display in hours instead
 
 const ActivityCard = ({ rental, type }) => {
+  const startDate = new Date(rental.startDate); 
+  const endDate = new Date(rental.endDate);
+
   const isLending = type === "Lending";
-  const isHourly = true // some comparison
+
+  // check if rental is hourly
+  const isHourly = 
+    new Date(startDate).setHours(0, 0, 0, 0) === 
+    new Date(endDate).setHours(0, 0, 0, 0);
+
+  // calculate date difference in milliseconds
+  const dateDifferenceMs = endDate - startDate;
 
   const userId = isLending ? rental.borrowerId : rental.lenderId;
 
@@ -62,7 +71,7 @@ const ActivityCard = ({ rental, type }) => {
         );
         if (itemResponse.status === 200) {
           const itemData = itemResponse.data.data.item;
-          console.log(itemData);
+          console.log("item: ", itemData);
           setItem(itemData);
         }
       } catch (error) {
@@ -76,11 +85,9 @@ const ActivityCard = ({ rental, type }) => {
 
   const CardHeader = () => {
 
-    // daily countdown
-    const numOfDays = 4; // some calculation
-
-    //hourly countdown
-    const numOfHours = 5; // some calculation
+    // countdown: 00d00h
+    const countdownDay = 4;
+    const countdownHour = 1;
 
     return (
       <View style={[
@@ -111,14 +118,7 @@ const ActivityCard = ({ rental, type }) => {
               {isLending ? "lending" : "borrowing"} in{' '}
             </RegularText>
             <RegularText typography="B3">
-              {isHourly
-                ? numOfHours === 1
-                  ? `${numOfHours} hour`
-                  : `${numOfHours} hours`
-                : numOfDays === 1
-                  ? `${numOfDays} day`
-                  : `${numOfDays} days`
-              }
+              {countdownDay}d {countdownHour}h
             </RegularText>
           </View>
         )}
@@ -129,14 +129,7 @@ const ActivityCard = ({ rental, type }) => {
               return in{' '}
             </RegularText>
             <RegularText typography="B3">
-              {isHourly
-                ? numOfHours === 1
-                  ? `${numOfHours} hour`
-                  : `${numOfHours} hours`
-                : numOfDays === 1
-                  ? `${numOfDays} day`
-                  : `${numOfDays} days`
-              }
+              {countdownDay}d {countdownHour}h
             </RegularText>
           </View>
         )}
@@ -145,61 +138,72 @@ const ActivityCard = ({ rental, type }) => {
   }
 
   const CardDetails = () => {
-    // Daily
-    const startDay = "10 Sep"; // some processing
-    const endDay = "12 Sep"; // some processing
-    const dailyRentalLength = 3; // some calculation
+    // calculate daily rental details
+    const startDay = startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const endDay = endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const dailyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60 * 24));
 
-    // Hourly
-    const rentalDay = "10 Sep 2023"; // some processing
-    const startTime = "1PM"; // some processing
-    const endTime = "5PM"; // some processing
-    const hourlyRentalLength = 4; // some calculation
+    // calculate hourly rental details
+    const rentalDay = startDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    const startTime = startDate.toLocaleTimeString("en-US", {  hour: "numeric" });
+    const endTime = endDate.toLocaleTimeString("en-US", {  hour: "numeric"  });
+    const hourlyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60));
 
     return (
       <View style={styles.cardDetailsContainer}>
-        <View style={styles.rentalDetails}>
-          {/* to fix the get image and it has to be image[0] */}
-          <Image 
-            style={styles.image}
-            source={{ 
-              uri: 
-                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
-            }}
-          />
-            
-          {isHourly && (
-            <View style={styles.rentalDetailsText}>
-             {item && (
-                <RegularText typography="B2">
-                  {item.itemTitle}
+        <View style={styles.rentalDetailsWithoutLocation}>
+          <View style={styles.rentalDetails}>
+            {/* to fix the get image and it has to be image[0] */}
+            <Image 
+              style={styles.image}
+              source={{ 
+                uri: 
+                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+              }}
+            />
+              
+            {isHourly && (
+              <View style={styles.rentalDetailsText}>
+                {item && (
+                  <RegularText typography="B2">
+                    {item.itemTitle}
+                  </RegularText>
+                )}
+                <RegularText typography="Subtitle">
+                  {rentalDay}
                 </RegularText>
-             )}
-              <RegularText typography="Subtitle">
-                {rentalDay}
-              </RegularText>
-              <RegularText typography="Subtitle">
-                {startTime} - {endTime} ({hourlyRentalLength} {hourlyRentalLength == 1 ? 'Hour' : 'Hours'})
-              </RegularText>
-            </View>
-          )}
+                <RegularText typography="Subtitle">
+                  {startTime} - {endTime} ({hourlyRentalLength} {hourlyRentalLength == 1 ? 'Hour' : 'Hours'})
+                </RegularText>
+              </View>
+            )}
 
-          {!isHourly && (
-            <View style={styles.rentalDetailsText}>
-              <RegularText typography="B2">
-                {/* {item.itemTitle} */}
-                Item Title
-              </RegularText>
-              <RegularText typography="Subtitle">
-                {startDay} - {endDay} ({dailyRentalLength} {dailyRentalLength == 1 ? 'Day' : 'Days'})
-              </RegularText>
-            </View>
-          )}
+            {!isHourly && (
+              <View style={styles.rentalDetailsText}>
+                {item && (
+                  <RegularText typography="B2">
+                    {item.itemTitle}
+                  </RegularText>
+                )}
+                <RegularText typography="Subtitle">
+                  {startDay} - {endDay} ({dailyRentalLength} {dailyRentalLength == 1 ? 'Day' : 'Days'})
+                </RegularText>
+              </View>
+            )}
+          </View>
+
+          <RegularText typography="B3" style={{ textAlign: 'right' }}>
+            {rentalData.rentalFee}
+          </RegularText> 
         </View>
-
-        <RegularText typography="B3" style={{ textAlign: 'right' }}>
-          {rentalData.rentalFee}
-        </RegularText>          
+        <View style={styles.rentalLocation}>
+          <RegularText typography="B3">
+            Location:
+          </RegularText>
+          <RegularText typography="Subtitle">
+            {rental.collectionLocation}
+          </RegularText>
+        </View>   
       </View>
     )
   }
@@ -295,12 +299,13 @@ const ActivityCard = ({ rental, type }) => {
   }
 
   return (
-    <View style={styles.activityCard}>
-      {/* <CardHeader />
-      <CardDetails />
-      <CardFooter /> */}
-    </View>
-    
+    (rental.status !== "PENDING") && (
+      <View style={styles.activityCard}>
+        <CardHeader />
+        <CardDetails />
+        <CardFooter />
+      </View>
+    )
   );
 };
 
@@ -330,11 +335,13 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   cardDetailsContainer: {
+    marginTop: 10,
+    marginBottom: 15
+  },
+  rentalDetailsWithoutLocation: {
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
-    marginTop: 10,
-    marginBottom: 15
   },
   rentalDetails: {
     alignItems: "center",
@@ -351,6 +358,10 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     width: 200,
     gap: 4
+  },
+  rentalLocation: {
+    flexDirection: "row",
+    gap: 5
   },
   buttons: {
     justifyContent: "space-between",
