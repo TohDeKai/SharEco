@@ -14,6 +14,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -140,6 +141,56 @@ const createRentals = () => {
     console.log("Active tab: " + tabName);
   };
 
+  const [date, setDate] = useState(new Date());
+
+  const fillZero = (value) => {
+    return value < 10 ? `0${value}` : value;
+  };
+
+  const handleStartDateChange = (event) => {
+    const selectedTimestamp = event.nativeEvent.timestamp;
+    const selectedDate = new Date(selectedTimestamp);
+    const day = selectedDate.getDate();
+    const month = selectedDate.getMonth() + 1;
+    const year = selectedDate.getFullYear();
+    const formattedDate = `${year}-${month}-${day}`;
+    console.log("Selected Date: ", formattedDate);
+  };
+
+  const handleStartTimeChange = (event) => {
+    const selectedTimestamp = event.nativeEvent.timestamp;
+
+    if (selectedTimestamp) {
+      const selectedTime = new Date(selectedTimestamp);
+      const hours = selectedTime.getHours();
+      const minutes = selectedTime.getMinutes();
+      const formattedTime = `${fillZero(hours)}:${fillZero(minutes)}:00`;
+      console.log("Selected Time:", formattedTime);
+    }
+  };
+
+  const handleEndDateChange = (event) => {
+    const selectedTimestamp = event.nativeEvent.timestamp;
+    const selectedDate = new Date(selectedTimestamp);
+    const day = selectedDate.getDate();
+    const month = selectedDate.getMonth() + 1;
+    const year = selectedDate.getFullYear();
+    const formattedDate = `${year}-${month}-${day}`;
+    console.log("Selected Date: ", formattedDate);
+  };
+
+  const handleEndTimeChange = (event) => {
+    const selectedTimestamp = event.nativeEvent.timestamp;
+
+    if (selectedTimestamp) {
+      const selectedTime = new Date(selectedTimestamp);
+      const hours = selectedTime.getHours();
+      const minutes = selectedTime.getMinutes();
+      const formattedTime = `${fillZero(hours)}:${fillZero(minutes)}:00`;
+      console.log("Selected Time:", formattedTime);
+    }
+  };
+
   // const handleCreateListing = async (values) => {
   //   try {
   //     const itemData = {
@@ -239,11 +290,47 @@ const createRentals = () => {
         style={styles.scrollContainer}
       >
         <View style={styles.textMargin}>
-          <RegularText typography="H3">
-            View Availabilities
-          </RegularText>
+          <RegularText typography="H3">View Availabilities</RegularText>
         </View>
         <Calendar itemId={itemId} />
+
+        <View style={styles.textMarginDivider}>
+          <RegularText typography="H3">Select rental period</RegularText>
+        </View>
+        <View style={styles.selector}>
+          <RegularText typography="H4">Starts from</RegularText>
+          <View style={styles.dateTimePicker}>
+            <DateTimePicker
+              mode="date"
+              value={date}
+              onChange={(date) => handleStartDateChange(date)}
+              minuteInterval={30}
+            />
+            <DateTimePicker
+              mode="time"
+              value={date}
+              onChange={(date) => handleStartTimeChange(date)}
+              minuteInterval={30}
+            />
+          </View>
+        </View>
+        <View style={styles.selector}>
+          <RegularText typography="H4">Ends on</RegularText>
+          <View style={styles.dateTimePicker}>
+            <DateTimePicker
+              mode="date"
+              value={date}
+              onChange={(date) => handleEndDateChange(date)}
+              minuteInterval={30}
+            />
+            <DateTimePicker
+              mode="time"
+              value={date}
+              onChange={(date) => handleEndTimeChange(date)}
+              minuteInterval={30}
+            />
+          </View>
+        </View>
       </ScrollView>
 
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
@@ -492,6 +579,16 @@ const createRentals = () => {
 export default createRentals;
 
 const styles = StyleSheet.create({
+  dateTimePicker: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+  selector: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
   listingDetails: {
     height: 70,
     backgroundColor: white,
@@ -538,6 +635,13 @@ const styles = StyleSheet.create({
   textMargin: {
     marginTop: 25,
     marginBottom: 15,
+  },
+  textMarginDivider: {
+    marginTop: 25,
+    marginBottom: 10,
+    paddingBottom: 10,
+    borderBottomColor: inputbackground,
+    borderBottomWidth: 2,
   },
   container: {
     flex: 1,
