@@ -296,9 +296,9 @@ const ActivityCard = ({ rental, type }) => {
 
   return (
     <View style={styles.activityCard}>
-      {/* <CardHeader />
+      <CardHeader />
       <CardDetails />
-      <CardFooter /> */}
+      <CardFooter />
     </View>
     
   );
