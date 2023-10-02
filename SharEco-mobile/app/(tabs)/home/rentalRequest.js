@@ -242,11 +242,8 @@ const createRentals = () => {
           <RegularText typography="H3">
             View Availabilities
           </RegularText>
-          <RegularText typography="B2">
-            Select a date to view availabilities
-          </RegularText>
         </View>
-        <Calendar />
+        <Calendar itemId={itemId} />
       </ScrollView>
 
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
