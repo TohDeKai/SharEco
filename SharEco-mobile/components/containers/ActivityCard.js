@@ -29,34 +29,52 @@ const rentalData = {
 // calculate numOdays = startDate - today, if lending, otherwise, endDate - today
 // less than 24h, display in hours instead
 
-const ActivityCard = (props) => {
-  const rental = props.rental;
-  const isLending = props.type === "Lending";
-  const isHourly = props.frequency === "Hourly" // some comparison
+const ActivityCard = ({ rental, type }) => {
+  const isLending = type === "Lending";
+  const isHourly = true // some comparison
+
+  const userId = isLending ? rental.borrowerId : rental.lenderId;
+
+  const [user, setUser] = useState(null);
+  const [item, setItem] = useState(null);
 
   useEffect(() => {
-    async function fetchItemData() {
+    async function fetchUserData() {
       try {
         console.log("UserId: ", userId);
         const userResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/users/userId/${userId}`
         );
         if (userResponse.status === 200) {
-          const userData = itemResponse.data.data.item;
-          setItem(userData);
+          const userData = userResponse.data.data.user;
+          setUser(userData);
           console.log("Borrower userId: ", userData.userId);
         }
       } catch (error) {
         console.log(error.message);
       }
     }
+
+    async function fetchItemData() {
+      try {
+        const itemResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${rental.itemId}`
+        );
+        if (itemResponse.status === 200) {
+          const itemData = itemResponse.data.data.item;
+          console.log(itemData);
+          setItem(itemData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
     fetchItemData();
-  }, [])
+    fetchUserData();
+  }, [userId, rental.itemId])
 
   const CardHeader = () => {
-    const userId = isLending ? rental.borrowerId : rental.lenderId;
-
-    const [user, setUser] = useState();
 
     // daily countdown
     const numOfDays = 4; // some calculation
@@ -80,9 +98,11 @@ const ActivityCard = (props) => {
                 "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
             }}
           />
-          <RegularText typography="Subtitle">
-            {user.username}
-          </RegularText>
+          {user && (
+            <RegularText typography="Subtitle">
+              {user.username}
+            </RegularText>
+          )}
         </View>
         
         {(rental.status === "UPCOMING") && (
@@ -122,30 +142,9 @@ const ActivityCard = (props) => {
         )}
       </View>
     )
-    
   }
 
   const CardDetails = () => {
-    const [item, setItem] = useState();
-
-    useEffect(() => {
-      async function fetchItemData() {
-        try {
-          const itemResponse = await axios.get(
-            `http://${BASE_URL}:4000/api/v1/items/itemId/${rental.itemId}`
-          );
-          if (itemResponse.status === 200) {
-            const itemData = itemResponse.data.data.item;
-            console.log(itemData);
-            setItem(itemData);
-          }
-        } catch (error) {
-          console.log(error.message);
-        }
-      }
-      fetchItemData();
-    }, [rental.itemId])
-
     // Daily
     const startDay = "10 Sep"; // some processing
     const endDay = "12 Sep"; // some processing
@@ -171,9 +170,11 @@ const ActivityCard = (props) => {
             
           {isHourly && (
             <View style={styles.rentalDetailsText}>
-              <RegularText typography="B2">
-                {item.itemTitle}
-              </RegularText>
+             {item && (
+                <RegularText typography="B2">
+                  {item.itemTitle}
+                </RegularText>
+             )}
               <RegularText typography="Subtitle">
                 {rentalDay}
               </RegularText>
@@ -227,7 +228,7 @@ const ActivityCard = (props) => {
                 Cancel
               </SecondaryButton>
             </View>
-            {props.type === "Borrowing" && (
+            {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
                   Edit
@@ -253,14 +254,14 @@ const ActivityCard = (props) => {
                 Report
               </SecondaryButton>
             </View>
-            {props.type === "Lending" && (
+            {type === "Lending" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
                   Complete
                 </PrimaryButton>
               </View>
             )}
-            {props.type === "Borrowing" && (
+            {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
                   Return
@@ -295,9 +296,9 @@ const ActivityCard = (props) => {
 
   return (
     <View style={styles.activityCard}>
-      <CardHeader />
+      {/* <CardHeader />
       <CardDetails />
-      <CardFooter />
+      <CardFooter /> */}
     </View>
     
   );

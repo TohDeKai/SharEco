@@ -278,19 +278,9 @@ const Content = ({ activeTab }) => {
               style={styles.activityCardContainer}
               contentContainerStyle={{ flexGrow: 1 }}
             >
-              {rentals.map((rental) => {
-                console.log("Rental: ", rental);
+              {rentals.map((rental) => (
                 <ActivityCard key={rental.rentalId} rental={rental} type={"Lending"} />
-              })}
-
-              {/* <ActivityCard frequency={"Hourly"} status={"Upcoming"} type={"Lending"} />
-              <ActivityCard frequency={"Daily"} status={"Upcoming"} type={"Lending"} />
-              <ActivityCard frequency={"Hourly"} status={"Ongoing"} type={"Lending"} />
-              <ActivityCard frequency={"Daily"} status={"Ongoing"} type={"Lending"} />
-              <ActivityCard frequency={"Hourly"} status={"Completed"} type={"Lending"} />
-              <ActivityCard frequency={"Daily"} status={"Completed"} type={"Lending"} />
-              <ActivityCard frequency={"Hourly"} status={"Cancelled"} type={"Lending"} />
-              <ActivityCard frequency={"Daily"} status={"Cancelled"} type={"Lending"} /> */}
+              ))}
             </ScrollView>
           </View>
         </View>
