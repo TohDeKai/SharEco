@@ -344,8 +344,10 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
         //First booking starts at 12AM
         if (
           slot == unavail[0] &&
-          slot.start.toString == nextStart.toString
+          slot.start == nextStart
         ) {
+          console.log(slot.start);
+          console.log(nextStart);
           console.log("First start 12am");
           nextStart = slot.end;
           if (slot == unavail[unavail.length - 1]) {
