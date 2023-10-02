@@ -1,4 +1,11 @@
-import { View, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Dimensions,
+  RefreshControl,
+} from "react-native";
 import React, { useEffect, useState } from 'react';
 import { Ionicons } from "@expo/vector-icons";
 import axios from 'axios';
@@ -57,9 +64,13 @@ const ActivityHeader  = () => {
   );
 };
 
-const Tabs = ({ activeTab, handleTabPress }) => {
+const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   return (
-    <View style={styles.tabContainer}>
+    <View
+      style={
+        styles.tabContainer
+      }
+    >
       <Pressable
         onPress={() => handleTabPress("Lending")}
         style={({ pressed }) => [
@@ -69,7 +80,7 @@ const Tabs = ({ activeTab, handleTabPress }) => {
         ]}
       >
         <RegularText
-          typography="H4"
+          typography="B2"
           color={activeTab === "Lending" ? primary : dark}
         >
           Lending
@@ -84,7 +95,7 @@ const Tabs = ({ activeTab, handleTabPress }) => {
         ]}
       >
         <RegularText
-          typography="H4"
+          typography="B2"
           color={activeTab === "Borrowing" ? primary : dark}
         >
           Borrowing
@@ -99,7 +110,7 @@ const Tabs = ({ activeTab, handleTabPress }) => {
         ]}
       >
         <RegularText
-          typography="H4"
+          typography="B2"
           color={activeTab === "Others" ? primary : dark}
         >
           Others

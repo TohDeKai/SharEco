@@ -327,7 +327,6 @@ const home = () => {
           <Content activeTab={activeTab} />
         </View>
       </View>
-      
     </SafeAreaContainer>
   );
 };
