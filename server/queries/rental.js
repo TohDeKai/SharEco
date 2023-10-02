@@ -234,7 +234,99 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
               end: endOfDaySingapore,
             });
           }
-        } else if (bookingStart.getDate() == currentDate.getDate()) {
+        ),
+        end: new Date(currentDate.setHours(23, 59, 0, 0)).toLocaleString(
+          "en-GB",
+          {
+            timeZone: singaporeTimeZone,
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        ),
+      });
+    } else {
+      //Previous time is at the start of the day
+      let nextStart = new Date(currentDate.setHours(0, 0, 0, 0)).toLocaleString("en-GB", {
+        timeZone: singaporeTimeZone,
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      for (const slot of unavail) {
+        //First booking starts at 12AM
+        if (
+          slot == unavail[0] &&
+          slot.start.toString == nextStart.toString
+        ) {
+          console.log("First start 12am");
+          nextStart = slot.end;
+          if (slot == unavail[unavail.length - 1]) {
+            if (
+              slot.end !=
+              new Date(currentDate.setHours(23, 59, 0, 0)).toLocaleString(
+                "en-GB",
+                {
+                  timeZone: singaporeTimeZone,
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              )
+            ) {
+              //Add to end
+              intervals.push({
+                start: slot.end.toLocaleString("en-GB", {
+                  timeZone: singaporeTimeZone,
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                end: new Date(currentDate.setHours(23, 59, 0, 0)).toLocaleString(
+                  "en-GB",
+                  {
+                    timeZone: singaporeTimeZone,
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                ),
+              });
+            }
+            //Everything else
+          } 
+        } else if (slot == unavail[unavail.length - 1]) {
+          console.log("last unavailable");
+          //Add to front
+          intervals.push({
+            start: nextStart.toLocaleString("en-GB", {
+              timeZone: singaporeTimeZone,
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            end: slot.start.toLocaleString("en-GB", {
+              timeZone: singaporeTimeZone,
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          });
           if (
             bookingEnd.getDate() == currentDate.getDate() ||
             bookingEnd.getDate() == nextDay.getDate()
