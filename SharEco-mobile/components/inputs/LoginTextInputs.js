@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
-import { View, Text } from 'react-native';
-import { Feather } from '@expo/vector-icons'
+import { View, Text, Pressable } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
+
 
 import styled from 'styled-components/native';
 import { colours } from '../ColourPalette';
@@ -21,12 +23,12 @@ const InputField = styled.TextInput`
 
 const RightIcon = styled.TouchableOpacity`
     position: absolute;
-    top: 35px;
-    right: 15px;
+    top: 28px;
+    right: 13px;
     z-index: 1;
 `;
 
-const StyledTextInput = ({icon, label, isPassword, ...props}) => {
+const StyledTextInput = ({icon, label, isPassword, isSearchBar, ...props}) => {
     const [inputBackgroundColor, setInputBackgroundColor] = useState(inputbackground);
     const [hidePassword, setHidePassword] = useState(true);
 
@@ -48,14 +50,21 @@ const StyledTextInput = ({icon, label, isPassword, ...props}) => {
             style={{ backgroundColor: inputBackgroundColor, ...props?.style}}
             onBlur={customOnBlur}
             onFocus={customOnFocus}
-            secureTextEntry={isPassword && hidePassword} 
+            secureTextEntry={isPassword && hidePassword}
         />
         {isPassword && <RightIcon onPress={() => {
             setHidePassword(!hidePassword); 
         }}>
             <Feather name={hidePassword ? 'eye-off' : 'eye'} size={20} color = {placeholder} />
         </RightIcon>}
-
+        {isSearchBar && 
+            <RightIcon>
+                <Pressable
+                    onPress={props.onPress}>
+                <Ionicons name="search-outline" size={20} color = {placeholder}/>
+                </Pressable>
+            </RightIcon> 
+        }
     </View>)
 };
 

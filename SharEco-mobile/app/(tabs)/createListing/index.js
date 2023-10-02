@@ -15,6 +15,11 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
+// AWS Amplify
+import { Amplify, Storage } from "aws-amplify";
+import awsconfig from "../../../src/aws-exports";
+Amplify.configure(awsconfig);
+
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import ImagePickerContainer from "../../../components/containers/ImagePickerContainer";
@@ -47,11 +52,13 @@ const createListing = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 
   const [images, setImages] = useState([null, null, null, null, null]);
+  const [imagesResult, setImagesResult] = useState([null, null, null, null, null]);
   const [category, setCategory] = useState("");
   const [lockers, setLockers] = useState([]);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
-  console.log(`http://${BASE_URL}:4000/api/v1/items`);
+  const [isBusiness, setIsBusiness] = useState(false);
+
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -65,6 +72,25 @@ const createListing = () => {
     }
     fetchUserData();
   }, []);
+
+  // useEffect(() => {
+  //   async function fetchBusinessVerification() {
+  //     try {
+  //       const businessVerificationResponse = await axios.get(
+  //         `http://${BASE_URL}:4000/api/v1/businessVerifications/businessVerificationId/${user.businessVerificationId}`
+  //       );
+  //       if (businessVerificationResponse.status === 200) {
+  //         const businessVerificationData =
+  //           businessVerificationResponse.data.data.businessVerification;
+  //           console.log("Business approved:" + businessVerificationData.approved);
+  //         setIsBusiness(businessVerificationData.approved);
+  //       }
+  //     } catch (error) {
+  //       console.log(error.message);
+  //     }
+  //   }
+  //   fetchBusinessVerification();
+  // }, [user.businessVerificationId]);
 
   const categories = [
     "Audio",
@@ -109,6 +135,10 @@ const createListing = () => {
       const newImages = [...images];
       newImages[imageNumber - 1] = result.assets[0].uri;
       setImages(newImages);
+
+      const newImagesResult = [...imagesResult];
+      newImagesResult[imageNumber - 1] = result;
+      setImagesResult(newImagesResult);
     }
   };
 
@@ -116,6 +146,46 @@ const createListing = () => {
     const newImages = [...images];
     newImages[imageNumber - 1] = null;
     setImages(newImages);
+  };
+
+  const fetchImageUri = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return blob;
+  };
+
+  const uploadImageFiles = async (files, listingId) => {
+    const uploadPromises = files.map(async (file, index) => {
+      try {
+        const img = await fetchImageUri(file.uri);
+        const key = `listingId-${listingId}-${index + 1}.jpeg`;
+  
+        // Upload the image with the unique key
+        await Storage.put(key, img, {
+          level: "public",
+          contentType: file.type,
+          progressCallback(uploadProgress) {
+            console.log(
+              `PROGRESS (${index + 1}/${files.length}) - ${uploadProgress.loaded}/${uploadProgress.total}`
+            );
+          },
+        });
+  
+        // Retrieve the uploaded image URI
+        const result = await Storage.get(key);
+        const awsImageUri = result.substring(0, result.indexOf("?"));
+        console.log(`Uploaded image (${index + 1}): ${awsImageUri}`);
+
+        return awsImageUri;
+      } catch (error) {
+        console.log(`Error uploading image (${index + 1}):`, error);
+      }
+    });
+  
+    // Wait for all uploads to complete
+    const uploadedURIs = await Promise.all(uploadPromises);
+    console.log("All images uploaded");
+    return uploadedURIs;
   };
 
   // Render the ImagePickerContainers
@@ -130,6 +200,7 @@ const createListing = () => {
 
   const handleBack = () => {
     setImages([null, null, null, null, null]);
+    setImagesResult([null, null, null, null, null]);
     setCategory("");
     setLockers([]);
     router.back();
@@ -149,10 +220,11 @@ const createListing = () => {
         rentalRateHourly: values.rentalRateHour,
         rentalRateDaily: values.rentalRateDay,
         depositFee: values.depositFee,
-        images: images,
+        images: images, //will later be updated with the aws keys
         category: category,
         collectionLocations: lockers,
         otherLocation: values.meetupLocation,
+        isBusiness: isBusiness,
       };
 
       const response = await axios.post(
@@ -163,13 +235,29 @@ const createListing = () => {
       console.log(response.data);
 
       if (response.status === 201) {
-        console.log("Item created successfully");
-        console.log(lockers);
-        console.log(category);
-        setImages([null, null, null, null, null]);
-        setCategory("");
-        setLockers([]);
-        router.replace("profile");
+        //handle upload all images and returns the array of uris
+        const itemId = response.data.data.item.itemId;
+        const uploadedURIs = await uploadImageFiles(imagesResult, itemId);
+        
+        //update images column in db
+        const updateImagesResponse = await axios.put(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}/images`,
+          { images: uploadedURIs }
+        );
+
+        if (updateImagesResponse.status === 200) {
+          console.log("Item created successfully");
+          console.log(lockers);
+          console.log(category);
+          setImages([null, null, null, null, null]);
+          setImagesResult([null, null, null, null, null]);
+          setCategory("");
+          setLockers([]);
+          router.replace("/profile");
+        } else {
+          //shouldnt come here
+          console.log("Error updating item images");
+        }
       } else {
         //shouldnt come here
         console.log("Item creation unsuccessful");

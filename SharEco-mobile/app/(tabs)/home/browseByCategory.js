@@ -1,65 +1,16 @@
-import {
-  View,
-  ScrollView,
-  Text,
-  StyleSheet,
-  Pressable,
-  FlatList,
-  RefreshControl,
-  LogBox,
-  Dimensions,
-  Modal,
-} from "react-native";
-import React, { useState, useEffect } from "react";
-import { Link, router, Drawer } from "expo-router";
+import { View, Text, SafeAreaView, StyleSheet, FlatList, RefreshControl, Dimensions, Pressable } from 'react-native';
+import React, { useEffect, useState} from 'react';
+import { useLocalSearchParams, router } from 'expo-router';
 import { useAuth } from "../../../context/auth";
-import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
-import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
-import RegularText from "../../../components/text/RegularText";
-import SearchBarHeader from "../../../components/SearchBarHeader";
-import ListingCard from "../../../components/ListingCard";
-import Carousel, { Pagination } from "react-native-snap-carousel";
-import CarouselItem from "../../../components/CarouselItem";
+import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
+import RegularText from '../../../components/text/RegularText';
+import SearchBarHeader from '../../../components/SearchBarHeader';
+import ListingCard from '../../../components/ListingCard';
 import { colours } from "../../../components/ColourPalette";
-const { white, primary, inputbackground, dark, black } = colours;
+const { white, primary, inputbackground, dark } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
-const { width } = Dimensions.get("window");
-
-const CustomSlider = ({ data }) => {
-  const filteredData = data ? data.filter((item) => item !== null) : null;
-  const settings = {
-    sliderWidth: width,
-    sliderHeight: width,
-    itemWidth: width,
-    data: filteredData,
-    renderItem: CarouselItem,
-    hasParallaxImages: true,
-    onSnapToItem: (index) => setSlideIndex(index),
-  };
-  const [slideIndex, setSlideIndex] = useState(0);
-  return (
-    <View>
-      <Carousel {...settings} />
-      <CustomPaging data={filteredData} activeSlide={slideIndex} />
-    </View>
-  );
-};
-
-const CustomPaging = ({ data, activeSlide }) => {
-  const settings = {
-    dotsLength: data ? data.filter((item) => item !== null).length : 0,
-    activeDotIndex: activeSlide,
-    containerStyle: styles.dotContainer,
-    dotStyle: styles.dotStyle,
-    inactiveDotStyle: styles.inactiveDotStyle,
-    inactiveDotOpacity: 0.4,
-    inactiveDotScale: 0.6,
-  };
-  return <Pagination {...settings} />;
-};
 
 const Tabs = ({ activeTab, handleTabPress }) => {
   return (
@@ -113,7 +64,7 @@ const Tabs = ({ activeTab, handleTabPress }) => {
   );
 };
 
-const Content = ({ navigation, activeTab }) => {
+const Content = ({ navigation, activeTab, category }) => {
   const [items, setItems] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
@@ -140,8 +91,8 @@ const Content = ({ navigation, activeTab }) => {
 
     try {
       const userData = await getUserData();
-      const response = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}`
       );
       if (response.status === 200) {
         const allListings = response.data.data.items;
@@ -150,7 +101,8 @@ const Content = ({ navigation, activeTab }) => {
         //Shouldn't come here
         console.log("Failed to retrieve all listings");
       }
-    } catch (error) {
+
+    } catch(error) {
       console.log(error.message);
     }
     // After all the data fetching and updating, set refreshing to false
@@ -163,7 +115,7 @@ const Content = ({ navigation, activeTab }) => {
       try {
         const userData = await getUserData();
         const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}`
+          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}`
         );
         if (response.status === 200) {
           const allListings = response.data.data.items;
@@ -172,7 +124,8 @@ const Content = ({ navigation, activeTab }) => {
           //Shouldn't come here
           console.log("Failed to retrieve all listings");
         }
-      } catch (error) {
+
+      } catch(error) {
         console.log(error.message);
       }
     }
@@ -204,35 +157,33 @@ const Content = ({ navigation, activeTab }) => {
         </View>
       )}
       {/* handles when there are no business listings */}
-      {activeTab == "Business" &&
-        (businessItems ? businessItems.length : 0) === 0 && (
-          <View style={{ marginTop: 160 }}>
-            <RegularText
-              typography="B2"
-              style={{ marginBottom: 5, textAlign: "center" }}
-            >
-              There are no business listings yet
-            </RegularText>
-            <RegularText typography="H3" style={{ textAlign: "center" }}>
-              watch this space!
-            </RegularText>
-          </View>
-        )}
+      {activeTab == "Business" && (businessItems ? businessItems.length : 0) === 0 && (
+        <View style={{ marginTop: 160 }}>
+          <RegularText
+            typography="B2"
+            style={{ marginBottom: 5, textAlign: "center" }}
+          >
+            There are no business listings yet
+          </RegularText>
+          <RegularText typography="H3" style={{ textAlign: "center" }}>
+            watch this space!
+          </RegularText>
+        </View>
+      )}
       {/* handles when there are no private listings */}
-      {activeTab == "Private" &&
-        (privateItems ? privateItems.length : 0) === 0 && (
-          <View style={{ marginTop: 160 }}>
-            <RegularText
-              typography="B2"
-              style={{ marginBottom: 5, textAlign: "center" }}
-            >
-              There are no listings yet!
-            </RegularText>
-            <RegularText typography="H3" style={{ textAlign: "center" }}>
-              watch this space!
-            </RegularText>
-          </View>
-        )}
+      {activeTab == "Private" && (privateItems ? privateItems.length : 0) === 0 && (
+        <View style={{ marginTop: 160 }}>
+          <RegularText
+            typography="B2"
+            style={{ marginBottom: 5, textAlign: "center" }}
+          >
+            There are no listings yet!
+          </RegularText>
+          <RegularText typography="H3" style={{ textAlign: "center" }}>
+            watch this space!
+          </RegularText>
+        </View>
+      )}
 
       {/* renders all listings */}
       {activeTab == "All" && (
@@ -241,7 +192,8 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
+          renderItem={({ item }) => 
+            <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -255,7 +207,7 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -269,7 +221,7 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -279,14 +231,10 @@ const Content = ({ navigation, activeTab }) => {
   );
 };
 
-const home = () => {
+const browseByCategory = () => {
   const [activeTab, setActiveTab] = useState("All");
-  const [advertisements, setAdvertisements] = useState({});
-
-  //suppresses nested scrollview error
-  useEffect(() => {
-    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
-  }, []);
+  const params = useLocalSearchParams();
+  const { category } = params;
 
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
@@ -296,48 +244,38 @@ const home = () => {
   return (
     <SafeAreaContainer>
       <SearchBarHeader
-        onPressChat={() => {
-          router.push("home/chats");
+        onPressChat={() => {router.push("home/chats")}}
+        onPressWishlist={() => {router.push("home/wishlist")}}
+        onPressBack={() => {
+          console.log("going back");
+          router.replace("home");
         }}
-        onPressWishlist={() => {
-          router.push("home/wishlist");
-        }}
-        onPressMenu={() => {
-          console.log("opening menu drawer");
-          router.push("home/categoryMenu");
-        }}
-        isHome={true}
-        goBack={false}
+        isHome={false}
+        goBack={true}
         reset={true}
+        category={category}
       />
-      <View style={{ flex: 1 }}>
-        <View style={styles.advertisementAndWalletContainer}>
-          <View style={styles.advertisementCarousell}>
-            <CustomSlider
-              data={[
-                "https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU",
-                "https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png",
-              ]}
-            />
-          </View>
-        </View>
-        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-        <View style={styles.contentContainer}>
-          <Content activeTab={activeTab} />
-        </View>
+      <View style={styles.heading}>
+        <RegularText typography="H1">{category}</RegularText>
       </View>
-      
+      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+      <View style={styles.contentContainer}>
+          <Content activeTab={activeTab} category={category}/>
+      </View>
     </SafeAreaContainer>
-  );
-};
+  )
+}
 
-export default home;
+export default browseByCategory;
 
 const styles = StyleSheet.create({
+  heading: {
+    marginVertical: 20,
+    paddingHorizontal: '7%',
+  },
   tabContainer: {
     flexDirection: "row",
-    width: "100%",
+    width: '100%',
   },
   tab: {
     flex: 1,
@@ -351,42 +289,10 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomColor: primary,
   },
-  advertisementAndWalletContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 10,
-    gap: 10,
-  },
-  advertisementCarousell: {
-    flex: 3,
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    borderWidth: 1,
-    borderColor: black,
-  },
   contentContainer: {
     flex: 4,
     backgroundColor: white,
-    paddingHorizontal: "7%",
+    paddingHorizontal: '7%',
     justifyContent: "space-evenly",
   },
-  dotContainer: {
-    marginTop: -50,
-  },
-  dotStyle: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "black",
-  },
-  inactiveDotStyle: {
-    backgroundColor: "rgb(255,230,230)",
-  },
-  image: {
-    flex: 1,
-    width: undefined,
-    height: undefined,
-  },
-});
+})
