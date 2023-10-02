@@ -19,7 +19,7 @@ import { Rating } from "react-native-stock-star-rating";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
-import ListingCard from "../../../components/ListingCard";
+import Listing from "../../../components/ListingCard";
 import axios from "axios";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -260,6 +260,11 @@ const Content = ({ navigation, activeTab }) => {
     }
     fetchUserData();
   }, []);
+
+  const ListingCard = ({ item }) => {
+    console.log("ListingCard");
+    return <Listing item={item} mine={true}/>;
+  };
 
   return (
     <View style={{ flex: 1 }}>
