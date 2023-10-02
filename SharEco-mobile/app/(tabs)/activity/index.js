@@ -1,11 +1,15 @@
-import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import { View, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { Ionicons } from "@expo/vector-icons";
+import axios from 'axios';
 
 import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
-import { colours } from "../../../components/ColourPalette";
 import RegularText from '../../../components/text/RegularText';
-const { black, inputbackground, white, primary, dark } = colours;
+import ActivityCard from '../../../components/containers/ActivityCard';
+import { colours } from "../../../components/ColourPalette";
+import { useAuth } from '../../../context/auth';
+const { black, inputbackground, white, primary, dark, placeholder } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ActivityHeader  = () => {
   const toWishlist = () => {
@@ -132,7 +136,120 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
   );
 };
 
+const RentalNotifContainer = ({ handlePress }) => {
+  return (
+    <View style={styles.rentalNotifContainer}>
+      <Pressable
+        onPress={() => handlePress("newRentalRequests")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.rentalNotif
+        ]}
+      >
+        <View style={styles.rentalNotifItems}>
+          <Ionicons
+            name="earth"
+            size={30}
+            color={primary}
+          />
+          <RegularText typography="Subtitle">
+            New Rental Requests
+          </RegularText>
+        </View>
+
+        <View style={styles.rentalNotifItems}>
+          <View style={styles.badge}>
+            {/* {number > 0 && (
+              <RegularText typography="Subtitle2" color={white}>
+                {number}
+              </RegularText>
+            )} */}
+            {/* testing purpose, to delete. if number > 99, just show 99+ */}
+            <RegularText typography="Subtitle2" color={white}>
+              99+
+            </RegularText>
+          </View>
+          <Ionicons 
+            name="chevron-forward"
+            size={23}
+            color={placeholder}
+          />
+        </View>
+      </Pressable>
+
+      <Pressable 
+        onPress={() => handlePress("newRentalRequests")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.rentalNotif
+        ]}
+      >
+        <View style={styles.rentalNotifItems}>
+          <Ionicons
+            name="refresh-circle"
+            size={30}
+            color={primary}
+          />
+          <RegularText typography="Subtitle">
+            Rental Updates
+          </RegularText>
+        </View>
+
+        <View style={styles.rentalNotifItems}>
+          {/* {number > 0 && (
+            <View style={styles.badge}>
+              <RegularText typography="Subtitle2" color={white}>
+                {number}
+              </RegularText>
+            </View>
+          )} */}
+          <Ionicons 
+            name="chevron-forward"
+            size={23}
+            color={placeholder}
+          />
+        </View>
+      </Pressable>
+    </View>
+  )
+}
+
 const Content = ({ activeTab }) => {
+  const { getUserData } = useAuth();
+  const [userLendings, setUserLendings] = useState([]);
+  const [userBorrowings, setUserBorrowings] = useState([]);
+  // to delete
+  const [rentals, setRentals] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const allRentals = await fetchAllRentals();
+      if (allRentals) {
+        setRentals(allRentals);
+      }
+
+      console.log("rentals data: ", allRentals);
+    }
+    fetchData();
+  }, [])
+
+  const fetchAllRentals = async () => {
+    try {
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/rentals`
+      );
+
+      if (response.status === 200) {
+        const allRentals = response.data.data.rentals;        
+        return allRentals;
+      } else {
+        console.log("Failed to retrieve all rentals.");
+      }
+    } catch (error) {
+      console.log("fetchAllRentals error: ", error.message);
+    }
+  }
+
   const [activeLendingPill, setActiveLendingPill] = useState("Upcoming");
   const [activeBorrowingPill, setActiveBorrowingPill] = useState("Upcoming");
 
@@ -149,21 +266,33 @@ const Content = ({ activeTab }) => {
     <View>
       {activeTab == "Lending" && (
         <View>
-          <View style={styles.rentalReqNotif}>
-            <Pressable>
-
-            </Pressable>
-
-            <Pressable>
-              
-            </Pressable>
-          </View>
-
+          <RentalNotifContainer />
           <Pills 
             pillItems={lendingPill} 
             activeLendingPill={activeLendingPill} 
             handlePillPress={handlePillPress}
           />
+          <View style={{ alignItems: "center" }}>
+            <ScrollView 
+              showsVerticalScrollIndicator={false} 
+              style={styles.activityCardContainer}
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              {rentals.map((rental) => {
+                console.log("Rental: ", rental);
+                <ActivityCard key={rental.rentalId} rental={rental} type={"Lending"} />
+              })}
+
+              {/* <ActivityCard frequency={"Hourly"} status={"Upcoming"} type={"Lending"} />
+              <ActivityCard frequency={"Daily"} status={"Upcoming"} type={"Lending"} />
+              <ActivityCard frequency={"Hourly"} status={"Ongoing"} type={"Lending"} />
+              <ActivityCard frequency={"Daily"} status={"Ongoing"} type={"Lending"} />
+              <ActivityCard frequency={"Hourly"} status={"Completed"} type={"Lending"} />
+              <ActivityCard frequency={"Daily"} status={"Completed"} type={"Lending"} />
+              <ActivityCard frequency={"Hourly"} status={"Cancelled"} type={"Lending"} />
+              <ActivityCard frequency={"Daily"} status={"Cancelled"} type={"Lending"} /> */}
+            </ScrollView>
+          </View>
         </View>
       )}
 
@@ -258,7 +387,34 @@ const styles = StyleSheet.create({
     borderColor: primary,
     borderWidth: 1,
   },
-  rentalReqNotif: {
-
+  rentalNotifContainer: {
+    borderBottomColor: inputbackground,
+    borderBottomWidth: 2,
+    paddingVertical: 20,
+  },
+  rentalNotif: {
+    display: "flex",
+    paddingHorizontal: 23,
+    paddingVertical: 6,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  rentalNotifItems: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  badge: {
+    borderRadius: 50,
+    width: 23,
+    height: 23,
+    backgroundColor: primary,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  activityCardContainer: {
+    width: Dimensions.get('window').width - 46,
   }
 })

@@ -25,7 +25,7 @@ const StyledText = styled.Text`
             case 'B2':
                 return '16px';
             case 'B3': 
-                return '12px';
+                return '14px';
             case 'Subtitle':
                 return '14px';
             case 'Subtitle2':
