@@ -183,6 +183,100 @@ const getRentalByRentalId = async (rentalId) => {
   }
 };
 
+const getAvailByRentalIdAndDate = async (itemId, date) => {
+  try {
+    // Convert date string to a Date object
+    const currentDate = new Date(date);
+
+    const result = await pool.query(
+      `SELECT "startDate", "endDate" FROM "sharEco-schema"."rental"
+       WHERE "itemId" = $1
+         AND (("startDate"::date = $2 OR "endDate"::date = $2 + interval '1 day')
+         OR ("startDate" > $2 AND "endDate" > $2))`,
+      [itemId, date]
+    );
+
+    // Process the result to generate a list of available time intervals
+    const bookings = result.rows;
+    const unavail = [];
+    const singaporeTimeZone = 'Asia/Singapore';
+
+    // Process each booking to create intervals
+    for (const booking of bookings) {
+      const bookingStart = new Date(
+        new Date(booking.startDate).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        })
+      );
+      const bookingEnd = new Date(
+        new Date(booking.endDate).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        })
+      );
+      const nextDay = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+
+      if (bookingStart && bookingEnd) {
+        if (bookingStart < currentDate) {
+          if (
+            bookingEnd.getDate() == currentDate.getDate() ||
+            bookingEnd.getDate() == nextDay.getDate()
+          ) {
+            unavail.push({
+              start: currentDate.toLocaleString(),
+              end: bookingEnd.toLocaleString(),
+            });
+          } else {
+            const endOfDay = new Date(nextDay);
+            endOfDay.setHours(23, 30, 0, 0);
+            const endOfDaySingapore = endOfDay.toLocaleString('en-US', { timeZone: singaporeTimeZone });
+            unavail.push({
+              start: currentDate.toLocaleString(),
+              end: endOfDaySingapore,
+            });
+          }
+        } else if (bookingStart.getDate() == currentDate.getDate()) {
+          if (
+            bookingEnd.getDate() == currentDate.getDate() ||
+            bookingEnd.getDate() == nextDay.getDate()
+          ) {
+            unavail.push({
+              start: bookingStart.toLocaleString(), //smth is wrong here it shows 8AM instead of booking start time
+              end: bookingEnd.toLocaleString(),
+            });
+          } else {
+            const endOfDay = new Date(nextDay);
+            endOfDay.setHours(23, 30, 0, 0);
+            const endOfDaySingapore = endOfDay.toLocaleString('en-US', { timeZone: singaporeTimeZone });
+            unavail.push({
+              start: bookingStart.toLocaleString(),
+              end: endOfDaySingapore,
+            });
+          }
+        } else if (bookingStart.getDate() == nextDay.getDate()) {
+          if (bookingEnd.getDate() == nextDay.getDate()) {
+            unavail.push({
+              start: bookingStart.toLocaleString(),
+              end: bookingEnd.toLocaleString(),
+            });
+          } else {
+            const endOfDay = new Date(nextDay);
+            endOfDay.setHours(23, 30, 0, 0);
+            const endOfDaySingapore = endOfDay.toLocaleString('en-US', { timeZone: singaporeTimeZone });
+              unavail.push({
+                start: bookingStart.toLocaleString(),
+                end: endOfDaySingapore,
+              });
+          }
+        }
+      }
+    }
+
+    return unavail;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
