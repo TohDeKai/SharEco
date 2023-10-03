@@ -15,6 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import DropDownPicker from "react-native-dropdown-picker";
 
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -92,6 +93,11 @@ const createRentals = () => {
   const params = useLocalSearchParams();
   const { itemId } = params;
   const { getUserData } = useAuth();
+  const [date, setDate] = useState(new Date());
+  const [activeTab, setActiveTab] = useState("Hourly");
+  const [open, setOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     async function fetchListingData() {
@@ -102,6 +108,13 @@ const createRentals = () => {
         if (itemResponse.status === 200) {
           const item = itemResponse.data.data.item;
           setListingItem(item);
+          const formattedLocations = item
+            ? item.collectionLocations.map((location) => ({
+                label: location,
+                value: location,
+              }))
+            : [];
+          setLocations(formattedLocations);
         } else {
           console.log("Failed to retrieve item");
         }
@@ -122,6 +135,7 @@ const createRentals = () => {
     collectionLocations,
     depositFee,
   } = listingItem;
+  console.log(collectionLocations);
 
   const handleBack = () => {
     //   setImages([null, null, null, null, null]);
@@ -134,14 +148,10 @@ const createRentals = () => {
     router.push("createListing/TermsAndConditions");
   };
 
-  const [activeTab, setActiveTab] = useState("Hourly");
-
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
     console.log("Active tab: " + tabName);
   };
-
-  const [date, setDate] = useState(new Date());
 
   const fillZero = (value) => {
     return value < 10 ? `0${value}` : value;
@@ -367,9 +377,27 @@ const createRentals = () => {
         <View style={styles.textMarginDivider}>
           <RegularText typography="H3">Select rental period</RegularText>
         </View>
-        {activeTab=="Hourly" && <HourlySelection />}
-        {activeTab=="Daily" && <DailySelection />}
+        {activeTab == "Hourly" && <HourlySelection />}
+        {activeTab == "Daily" && <DailySelection />}
 
+        <Formik>
+          <View>
+            <View style={styles.textMarginDivider}>
+              <RegularText typography="H3">
+                Colletion & return location
+              </RegularText>
+            </View>
+            <DropDownPicker
+              open={open}
+              value={selectedLocation}
+              items={locations}
+              setOpen={setOpen}
+              setValue={setSelectedLocation}
+              setItems={setLocations}
+              placeholder="Select a location"
+            />
+          </View>
+        </Formik>
       </ScrollView>
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
