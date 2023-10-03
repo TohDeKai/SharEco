@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Image, Pressable } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 
+// import { AWS_GETFILE_URL } from '../../../server/s3';
 import UserAvatar from "../UserAvatar";
 import RegularText from "../text/RegularText";
 import { 
@@ -12,6 +13,7 @@ import { colours } from "../ColourPalette";
 import axios from "axios";
 const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+const AWS_GETFILE_URL = "https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/";
 
 // use dummy data / hardcode for now
 const rentalData = {
@@ -83,11 +85,34 @@ const ActivityCard = ({ rental, type }) => {
     fetchUserData();
   }, [userId, rental.itemId])
 
-  const CardHeader = () => {
+  const currentDate = new Date();
 
-    // countdown: 00d00h
-    const countdownDay = 4;
-    const countdownHour = 1;
+  const CardHeader = () => {
+    let timeDifferenceMs;
+    if (rental.status === "UPCOMING") {
+      timeDifferenceMs = startDate - currentDate;
+    } else if (rental.status === "ONGOING") {
+      timeDifferenceMs = endDate - currentDate;
+    } else {
+      timeDifferenceMs = 0;
+    }
+
+    // Calculate numOfMonths, numOfDays, and numOfHours
+    const numOfMonths = Math.floor(timeDifferenceMs / (1000 * 60 * 60 * 24 * 30));
+    const numOfDays = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+    const numOfHours = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    let countdown = "";
+    if (numOfMonths > 0) {
+      countdown += numOfMonths + "m ";
+    }
+    if (numOfDays > 0 || numOfMonths > 0) {
+      countdown += numOfDays + "d ";
+    }
+    countdown += numOfHours + "h";
+
+    // trim if any trailing whitespace
+    countdown.trim();
 
     return (
       <View style={[
@@ -97,12 +122,11 @@ const ActivityCard = ({ rental, type }) => {
           : styles.cardHeaderUsernameOnly
       ]}>
         <View style={styles.username}>
-          {/* fix this get image */}
           <UserAvatar
             size="xsmall"
             source={{ 
               uri: 
-                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+                `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`
             }}
           />
           {user && (
@@ -113,24 +137,40 @@ const ActivityCard = ({ rental, type }) => {
         </View>
         
         {(rental.status === "UPCOMING") && (
-          <View style={styles.countdown}>
-            <RegularText typography="Subtitle">
-              {isLending ? "lending" : "borrowing"} in{' '}
-            </RegularText>
-            <RegularText typography="B3">
-              {countdownDay}d {countdownHour}h
-            </RegularText>
+          <View>
+            {timeDifferenceMs > 0 ? (
+              <View style={styles.countdown}>
+                <RegularText typography="Subtitle">
+                  {isLending ? "lending" : "borrowing"} in{' '}
+                </RegularText>
+                <RegularText typography="B3">
+                  {countdown}
+                </RegularText>
+              </View>
+            ) : (
+              <RegularText typography="Subtitle">
+                {isLending ? "lending" : "borrowing"} now
+              </RegularText>
+            )}
           </View>
         )}
 
         {(rental.status === "ONGOING") && (
-          <View style={styles.countdown}>
-            <RegularText typography="Subtitle">
-              return in{' '}
-            </RegularText>
-            <RegularText typography="B3">
-              {countdownDay}d {countdownHour}h
-            </RegularText>
+          <View>
+            {timeDifferenceMs > 0 ? (
+              <View style={styles.countdown}>
+                <RegularText typography="Subtitle">
+                  return in{' '}
+                </RegularText>
+                <RegularText typography="B3">
+                  {countdown}
+                </RegularText>
+              </View>
+            ) : (
+              <RegularText typography="Subtitle">
+                return now
+              </RegularText>
+            )}
           </View>
         )}
       </View>
