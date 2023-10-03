@@ -1248,3 +1248,25 @@ app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+//Get daily rental availability by listing Id and date
+app.get("/api/v1/item/dailyAvailability/:itemId/:date", async (req, res) => {
+  try {
+    console.log("Request Parameters:", req.params);
+    const intervals = await rentaldb.getDailyAvailByRentalIdAndDate(req.params.itemId, req.params.date);
+    console.log(intervals);
+    if (intervals) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          intervals: intervals,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});

@@ -93,11 +93,8 @@ const createRentals = () => {
   const params = useLocalSearchParams();
   const { itemId } = params;
   const { getUserData } = useAuth();
-  const [startDate, setStartDate] = useState(new Date());
-  const [startTime, setStartTime] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [endTime, setEndTime] = useState(new Date());
   const [activeTab, setActiveTab] = useState("Hourly");
+  const [user, setUser] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [locations, setLocations] = useState([]);
@@ -105,24 +102,32 @@ const createRentals = () => {
   useEffect(() => {
     async function fetchListingData() {
       try {
-        const itemResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
-        );
-        if (itemResponse.status === 200) {
-          const item = itemResponse.data.data.item;
-          setListingItem(item);
-          const formattedLocations = item
-            ? item.collectionLocations.map((location) => ({
-                label: location,
-                value: location,
-              }))
-            : [];
-          setLocations(formattedLocations);
-        } else {
-          console.log("Failed to retrieve item");
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+        try {
+          const itemResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+          );
+          if (itemResponse.status === 200) {
+            const item = itemResponse.data.data.item;
+            setListingItem(item);
+            const formattedLocations = item
+              ? item.collectionLocations.map((location) => ({
+                  label: location,
+                  value: location,
+                }))
+              : [];
+            setLocations(formattedLocations);
+          } else {
+            console.log("Failed to retrieve item");
+          }
+        } catch (error) {
+          console.error(error.message);
         }
       } catch (error) {
-        console.error(error.message);
+        console.log(error.message);
       }
     }
     fetchListingData();
@@ -137,8 +142,8 @@ const createRentals = () => {
     rentalRateDaily,
     collectionLocations,
     depositFee,
+    userId,
   } = listingItem;
-  console.log(collectionLocations);
 
   const handleBack = () => {
     //   setImages([null, null, null, null, null]);
@@ -172,15 +177,46 @@ const createRentals = () => {
     return `${year}-${formattedMonth}-${formattedDay}`;
   };
 
+  const stringTime = (time) => {
+    const hours = time.getHours();
+    const minutes = time.getMinutes();
+    return `${fillZero(hours)}:${fillZero(minutes)}:00`;
+  };
+
+  const fullStartDate = () => {
+    return startDate.concat(" ", stringTime(startTime));
+  };
+
+  const fullEndDate = () => {
+    return endDate.concat(" ", stringTime(endTime));
+  };
+
+  const tomorrow = () => {
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1);
+    return nextDay;
+  };
+
+  const toNearest30Min = (timeString) => {
+    const date = new Date(timeString);
+    const minutes = date.getMinutes();
+    const roundedMinutes = Math.round(minutes / 30) * 30;
+    
+    return date.setMinutes(roundedMinutes);
+  };
+
+  const [startDate, setStartDate] = useState(stringDate(tomorrow()));
+  const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
+  const [endDate, setEndDate] = useState(stringDate(tomorrow()));
+  const [endTime, setEndTime] = useState(new Date(toNearest30Min(today)));
+
   const handleStartDateChange = (event) => {
     const selectedTimestamp = event.nativeEvent.timestamp;
     const selectedDate = new Date(selectedTimestamp);
-    const day = selectedDate.getDate();
-    const month = selectedDate.getMonth() + 1;
-    const year = selectedDate.getFullYear();
-    const formattedDate = `${year}-${month}-${day}`;
     if (stringDate(selectedDate) != stringDate(today)) {
+      const formattedDate = stringDate(selectedDate);
       console.log("Selected Date: ", formattedDate);
+      setStartDate(formattedDate);
     }
   };
 
@@ -189,13 +225,13 @@ const createRentals = () => {
 
     if (selectedTimestamp) {
       const selectedTime = new Date(selectedTimestamp);
-      const hours = selectedTime.getHours();
-      const minutes = selectedTime.getMinutes();
-      const formattedTime = `${fillZero(hours)}:${fillZero(minutes)}:00`;
+      const formattedTime = stringTime(selectedTime);
 
       // If the result is not the current time
       if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
         console.log("Selected Time: ", formattedTime);
+        setStartTime(selectedTime);
+        console.log("Full Start Date (time lag): ", fullStartDate());
       }
     }
   };
@@ -203,12 +239,11 @@ const createRentals = () => {
   const handleEndDateChange = (event) => {
     const selectedTimestamp = event.nativeEvent.timestamp;
     const selectedDate = new Date(selectedTimestamp);
-    const day = selectedDate.getDate();
-    const month = selectedDate.getMonth() + 1;
-    const year = selectedDate.getFullYear();
-    const formattedDate = `${year}-${month}-${day}`;
     if (stringDate(selectedDate) != stringDate(today)) {
+      const formattedDate = stringDate(selectedDate);
       console.log("Selected Date: ", formattedDate);
+      setEndDate(formattedDate);
+      console.log("Full End Date (time lag): ", fullEndDate());
     }
   };
 
@@ -217,19 +252,15 @@ const createRentals = () => {
 
     if (selectedTimestamp) {
       const selectedTime = new Date(selectedTimestamp);
-      const hours = selectedTime.getHours();
-      const minutes = selectedTime.getMinutes();
-      const formattedTime = `${fillZero(hours)}:${fillZero(minutes)}:00`;
-      if (stringDate(selectedTime) != stringDate(today)) {
+      const formattedTime = stringTime(selectedTime);
+
+      // If the result is not the current time
+      if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
         console.log("Selected Time: ", formattedTime);
+        setEndTime(selectedTime);
+        console.log("Full End Date (time lag): ", fullEndDate());
       }
     }
-  };
-
-  const tomorrow = () => {
-    const nextDay = new Date(today);
-    nextDay.setDate(today.getDate() + 1);
-    return nextDay;
   };
 
   const maxDate = () => {
@@ -244,8 +275,14 @@ const createRentals = () => {
     if (today.getDate() !== futureDate.getDate()) {
       futureDate.setDate(0);
     }
-    console.log(futureDate);
     return futureDate;
+  };
+
+  const chosenStart = () => {
+    if (endDate < startDate) {
+      setEndDate(startDate);
+    }
+    return new Date(startDate);
   };
 
   const HourlySelection = () => {
@@ -256,15 +293,15 @@ const createRentals = () => {
           <View style={styles.dateTimePicker}>
             <DateTimePicker
               mode="date"
-              value={startDate}
-              onChange={(startDate) => handleStartDateChange(startDate)}
+              value={new Date(startDate)}
+              onChange={(date) => handleStartDateChange(date)}
               minimumDate={tomorrow()}
               maximumDate={maxDate()}
             />
             <DateTimePicker
               mode="time"
-              value={startTime}
-              onChange={(startTime) => handleStartTimeChange(startTime)}
+              value={new Date(startTime)}
+              onChange={(date) => handleStartTimeChange(date)}
               minuteInterval={30}
             />
           </View>
@@ -274,14 +311,14 @@ const createRentals = () => {
           <View style={styles.dateTimePicker}>
             <DateTimePicker
               mode="date"
-              value={endDate}
+              value={new Date(endDate)}
               onChange={(endDate) => handleEndDateChange(endDate)}
-              minimumDate={tomorrow()}
+              minimumDate={chosenStart()}
               maximumDate={maxDate()}
             />
             <DateTimePicker
               mode="time"
-              value={endTime}
+              value={new Date(endTime)}
               onChange={(endTime) => handleEndTimeChange(endTime)}
               minuteInterval={30}
             />
@@ -299,7 +336,7 @@ const createRentals = () => {
           <View style={styles.dateTimePicker}>
             <DateTimePicker
               mode="date"
-              value={startDate}
+              value={new Date(startDate)}
               onChange={(startDate) => handleStartDateChange(startDate)}
               minimumDate={tomorrow()}
               maximumDate={maxDate()}
@@ -311,9 +348,9 @@ const createRentals = () => {
           <View style={styles.dateTimePicker}>
             <DateTimePicker
               mode="date"
-              value={endDate}
+              value={new Date(endDate)}
               onChange={(endDate) => handleEndDateChange(endDate)}
-              minimumDate={tomorrow()}
+              minimumDate={chosenStart()}
               maximumDate={maxDate()}
             />
           </View>
@@ -322,407 +359,237 @@ const createRentals = () => {
     );
   };
 
-  // const handleCreateListing = async (values) => {
-  //   try {
-  //     const itemData = {
-  //       userId: user.userId,
-  //       itemTitle: values.title,
-  //       itemDescription: values.description,
-  //       itemOriginalPrice: values.originalPrice,
-  //       rentalRateHourly: values.rentalRateHour,
-  //       rentalRateDaily: values.rentalRateDay,
-  //       depositFee: values.depositFee,
-  //       images: images,
-  //       category: category,
-  //       collectionLocations: lockers,
-  //       otherLocation: values.meetupLocation,
-  //     };
+  const rentalDurationHourly = () => {
+    const timeDifferenceInMilliseconds =
+      new Date(fullEndDate()).setMilliseconds(0) -
+      new Date(fullStartDate()).setMilliseconds(0);
+    const numberOfHours = timeDifferenceInMilliseconds / (1000 * 60 * 60);
+    return numberOfHours;
+  };
 
-  //     const response = await axios.post(
-  //       `http://${BASE_URL}:4000/api/v1/items`,
-  //       itemData
-  //     );
+  const rentalCost = () => {
+    const numberOfHours = rentalDurationHourly();
+    const rentalRate = rentalRateHourly
+      ? parseFloat(rentalRateHourly.replace("$", ""))
+      : 0;
+    const rentalCost = numberOfHours * rentalRate;
+    return rentalCost.toFixed(2);
+  };
 
-  //     console.log(response.data);
+  const totalCost = () => {
+    const deposit = depositFee ? parseFloat(depositFee.replace("$", "")) : 0;
+    const total = parseFloat(rentalCost() + deposit);
+    return total.toFixed(2);
+  };
 
-  //     if (response.status === 201) {
-  //       console.log("Item created successfully");
-  //       console.log(lockers);
-  //       console.log(category);
-  //       setImages([null, null, null, null, null]);
-  //       setCategory("");
-  //       setLockers([]);
-  //       router.replace("profile");
-  //     } else {
-  //       //shouldnt come here
-  //       console.log("Item creation unsuccessful");
-  //     }
-  //   } catch (error) {
-  //     if (error.response && error.response.status === 500) {
-  //       console.log("Internal server error");
-  //     } else {
-  //       console.log("Error during item creation: ", error.message);
-  //     }
-  //   }
-  // };
+  const handleCreateRentalRequest = async (values) => {
+    try {
+      const reqData = {
+        lenderId: userId,
+        borrowerId: user.userId,
+        itemId: itemId,
+        collectionLocation: selectedLocation,
+        depositFee: depositFee,
+        rentalFee: totalCost(),
+        startDate: fullStartDate(),
+        endDate: fullEndDate(),
+        additionalRequest: values.addComments,
+      };
+
+      const response = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/rental`,
+        reqData
+      );
+
+      console.log(response.data);
+
+      if (response.status === 201) {
+        router.replace("/home");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   return (
     <SafeAreaContainer>
-      <Header title="Rental Request" action="close" onPress={handleBack} />
-      <View style={styles.listingDetails}>
-        <Image
-          source={{ uri: images ? images[0] : null }}
-          style={styles.image}
-        />
-
-        <View>
-          <RegularText
-            typography="H4"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={styles.overflowEllipsis}
-          >
-            {itemTitle}
-          </RegularText>
-          <Text style={styles.headerRates}>
-            {rentalRateHourly !== "$0.00" && rentalRateDaily !== "$0.00" && (
-              <Text>
-                <View style={styles.rateSpacing}>
-                  <RegularText typography="B1">{rentalRateHourly}</RegularText>
-                  <RegularText typography="Subtitle">/hour</RegularText>
-                </View>
-                <View style={styles.rateSpacing}>
+      <KeyboardAvoidingView behavior="padding" style={styles.container}>
+        <Header title="Rental Request" action="close" onPress={handleBack} />
+        <View style={styles.listingDetails}>
+          <Image
+            source={{ uri: images ? images[0] : null }}
+            style={styles.image}
+          />
+          <View>
+            <RegularText
+              typography="H4"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={styles.overflowEllipsis}
+            >
+              {itemTitle}
+            </RegularText>
+            <Text style={styles.headerRates}>
+              {rentalRateHourly !== "$0.00" && rentalRateDaily !== "$0.00" && (
+                <Text>
+                  <View style={styles.rateSpacing}>
+                    <RegularText typography="B1">
+                      {rentalRateHourly}
+                    </RegularText>
+                    <RegularText typography="Subtitle">/hour</RegularText>
+                  </View>
+                  <View style={styles.rateSpacing}>
+                    <RegularText typography="B1">{rentalRateDaily}</RegularText>
+                    <RegularText typography="Subtitle">/day</RegularText>
+                  </View>
+                </Text>
+              )}
+              {rentalRateHourly == "$0.00" && (
+                <Text>
                   <RegularText typography="B1">{rentalRateDaily}</RegularText>
                   <RegularText typography="Subtitle">/day</RegularText>
-                </View>
-              </Text>
-            )}
-            {rentalRateHourly == "$0.00" && (
-              <Text>
-                <RegularText typography="B1">{rentalRateDaily}</RegularText>
-                <RegularText typography="Subtitle">/day</RegularText>
-              </Text>
-            )}
-            {rentalRateDaily == "$0.00" && (
-              <Text>
-                <RegularText typography="B1" style={styles.rateSpacing}>
-                  {rentalRateHourly}
-                </RegularText>
-                <RegularText typography="Subtitle">/hour</RegularText>
-              </Text>
-            )}
-          </Text>
-        </View>
-      </View>
-      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={styles.scrollContainer}
-      >
-        <View style={styles.textMargin}>
-          <RegularText typography="H3">View Availabilities</RegularText>
-        </View>
-        <Calendar itemId={itemId} activeTab={activeTab} />
-
-        <View style={styles.textMarginDivider}>
-          <RegularText typography="H3">Select rental period</RegularText>
-        </View>
-        {activeTab == "Hourly" && <HourlySelection />}
-        {activeTab == "Daily" && <DailySelection />}
-
-        <Formik
-          initialValues={{
-            location: selectedLocation,
-            addComments: "",
-          }}
-          onSubmit={(values, actions) => {
-            if (
-              values.location == "" ||
-              values.originalPrice == 0.0 ||
-              //values.depositFee == 0.0 ||
-              values.description == "" ||
-              category == "" ||
-              //if both per hour and per day rental not specified
-              (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) ||
-              //if both picklocker or meetup location not specified
-              (lockers.length == 0 && values.meetupLocation == "")
-            ) {
-              setMessage("Please fill in all fields");
-              setIsSuccessMessage(false);
-            } else {
-              handleCreateListing(values);
-              actions.resetForm();
-            }
-          }}
-        >
-          <View>
-            <View style={styles.textMargin}>
-              <RegularText typography="H3">
-                Colletion & return location
-              </RegularText>
-            </View>
-            <DropDownPicker
-              open={open}
-              value={selectedLocation}
-              items={locations}
-              setOpen={setOpen}
-              setValue={setSelectedLocation}
-              setItems={setLocations}
-              placeholder="Select a location"
-            />
-            <View style={styles.textMargin}>
-              <RegularText typography="H3">Additional Comments</RegularText>
-            </View>
-            {/* <StyledTextInput
-              placeholder="Please add any additional requests you have here."
-              value={values.addComments}
-              onChangeText={handleChange("description")}
-              maxLength={500}
-              multiline={true}
-              scrollEnabled={false}
-              minHeight={120}
-            /> */}
-          </View>
-        </Formik>
-      </ScrollView>
-      <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {/* <Formik
-              initialValues={{
-                title: "",
-                originalPrice: 0.0,
-                depositFee: 0.0,
-                rentalRateHour: 0.0,
-                rentalRateDay: 0.0,
-                description: "",
-                meetupLocation: "",
-              }}
-              onSubmit={(values, actions) => {
-                if (
-                  values.title == "" ||
-                  values.originalPrice == 0.0 ||
-                  //values.depositFee == 0.0 ||
-                  values.description == "" ||
-                  category == "" ||
-                  //if both per hour and per day rental not specified
-                  (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) ||
-                  //if both picklocker or meetup location not specified
-                  (lockers.length == 0 && values.meetupLocation == "")
-                ) {
-                  setMessage("Please fill in all fields");
-                  setIsSuccessMessage(false);
-                } else {
-                  handleCreateListing(values);
-                  actions.resetForm();
-                }
-              }}
-            >
-              {({ handleChange, handleBlur, handleSubmit, values }) => (
-                <View style={{ width: "85%" }}>
-                  <RegularText typography="H3" style={styles.headerText}>
-                    Listing Title
-                  </RegularText>
-                  <StyledTextInput
-                    placeholder="Name your listing"
-                    value={values.title}
-                    onChangeText={handleChange("title")}
-                  />
-  
-                  <RegularText typography="H3" style={styles.headerText}>
-                    Upload Images
-                  </RegularText>
-                  <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
-                    Up to 5 images
-                  </RegularText>
-                  <ScrollView
-                    horizontal
-                    contentContainerStyle={styles.imageCarousel}
-                    style={{ paddingVertical: 7 }}
-                  >
-                    {imageContainers}
-                  </ScrollView>
-  
-                  <RegularText typography="H3" style={styles.headerText}>
-                    Category
-                  </RegularText>
-                  <SelectList
-                    setSelected={setCategory}
-                    data={categories}
-                    placeholder="Select Category"
-                    defaultOption={""}
-                    boxStyles={{
-                      marginTop: 16,
-                      backgroundColor: inputbackground,
-                      padding: 13,
-                      paddingRight: 28,
-                      borderRadius: 9,
-                      fontSize: 14,
-                      width: "100%",
-                      color: black,
-                      borderColor: inputbackground,
-                      borderWidth: 2,
-                    }}
-                  />
-  
-                  <RegularText typography="H3" style={styles.headerText}>
-                    Description
-                  </RegularText>
-                  <StyledTextInput
-                    placeholder="Include details helpful to borrowers"
-                    value={values.description}
-                    onChangeText={handleChange("description")}
-                    maxLength={500}
-                    multiline={true}
-                    scrollEnabled={false}
-                    minHeight={120}
-                  />
-  
-                  <View style={styles.perDayContainer}>
-                    <RegularText typography="H3" style={styles.headerText}>
-                      Item Original Price
-                    </RegularText>
-                    <StyledTextInput
-                      placeholder="0.00"
-                      value={values.originalPrice}
-                      onChangeText={handleChange("originalPrice")}
-                      style={styles.perDayInputBox}
-                      scrollEnabled={false}
-                      keyboardType="decimal-pad"
-                    />
-                  </View>
-                  <View style={styles.perDayContainer}>
-                    <View>
-                      <RegularText typography="H3" style={styles.headerText}>
-                        Deposit Fee
-                      </RegularText>
-                      <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
-                        (Optional)
-                      </RegularText>
-                    </View>
-                    <StyledTextInput
-                      placeholder="0.00"
-                      value={values.depositFee}
-                      onChangeText={handleChange("depositFee")}
-                      style={styles.perDayInputBox}
-                      scrollEnabled={false}
-                      keyboardType="decimal-pad"
-                    />
-                  </View>
-  
-                  <View style={styles.perDayContainer}>
-                    <RegularText typography="H3" style={styles.perDayText}>
-                      Hourly Rental Rate
-                    </RegularText>
-                    <StyledTextInput
-                      value={values.rentalRateHour}
-                      onChangeText={handleChange("rentalRateHour")}
-                      placeholder="0.00"
-                      keyboardType="decimal-pad"
-                      style={styles.perDayInputBox}
-                    />
-                  </View>
-                  <View style={styles.perDayContainer}>
-                    <View>
-                      <RegularText typography="H3" style={styles.perDayText}>
-                        Daily Rental Rate
-                      </RegularText>
-                      <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
-                        (9am-9am)
-                      </RegularText>
-                    </View>
-                    <StyledTextInput
-                      value={values.rentalRateDay}
-                      onChangeText={handleChange("rentalRateDay")}
-                      placeholder="0.00"
-                      keyboardType="decimal-pad"
-                      style={styles.perDayInputBox}
-                    />
-                  </View>
-  
-                  <RegularText typography="H3" style={styles.headerText}>
-                    Collection & return location
-                  </RegularText>
-                  <MultipleSelectList
-                    setSelected={(val) => setLockers(val)}
-                    data={locations}
-                    placeholder="Select Locations"
-                    save="value"
-                    label="Locker locations"
-                    defaultOption={[]}
-                    boxStyles={{
-                      marginTop: 16,
-                      backgroundColor: inputbackground,
-                      padding: 13,
-                      paddingRight: 28,
-                      borderRadius: 9,
-                      fontSize: 14,
-                      width: "100%",
-                      color: black,
-                      borderColor: inputbackground,
-                      borderWidth: 2,
-                    }}
-                  />
-  
-                  <RegularText typography="B2" style={styles.headerText}>
-                    Other meet up location/Location details
-                  </RegularText>
-                  <StyledTextInput
-                    placeholder="Add details of your meet up location (optional)"
-                    value={values.meetupLocation}
-                    onChangeText={handleChange("meetupLocation")}
-                    maxLength={300}
-                    multiline={true}
-                    scrollEnabled={false}
-                    minHeight={80}
-                  />
-                  <RegularText
-                    typography="Subtitle"
-                    style={{ alignSelf: "center", marginTop: 20 }}
-                  >
-                    By proceeding, you are agreeing to our
-                  </RegularText>
-                  <View
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Pressable
-                      onPress={handleShowTerms}
-                      style={({ pressed }) => ({
-                        opacity: pressed ? 0.5 : 1,
-                        alignSelf: "center",
-                      })}
-                    >
-                      <RegularText typography="Subtitle"
-                        style={{
-                          color: primary,
-                          textDecorationLine: "underline",
-                          textAlign: "center",
-                        }}
-                      >
-                        terms & conditions
-                      </RegularText>
-                    </Pressable>
-                  </View>
-                  <MessageBox
-                    style={{ marginTop: 10 }}
-                    success={isSuccessMessage}
-                  >
-                    {message || " "}
-                  </MessageBox>
-                  <RoundedButton
-                    typography={"B1"}
-                    color={white}
-                    onPress={handleSubmit}
-                    style={{ marginBottom: viewportHeightInPixels(3) }}
-                  >
-                    List Item
-                  </RoundedButton>
-                </View>
+                </Text>
               )}
-            </Formik> */}
+              {rentalRateDaily == "$0.00" && (
+                <Text>
+                  <RegularText typography="B1" style={styles.rateSpacing}>
+                    {rentalRateHourly}
+                  </RegularText>
+                  <RegularText typography="Subtitle">/hour</RegularText>
+                </Text>
+              )}
+            </Text>
+          </View>
+        </View>
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={styles.scrollContainer}
+        >
+          <View style={styles.textMargin}>
+            <RegularText typography="H3">View Availabilities</RegularText>
+          </View>
+          <Calendar itemId={itemId} activeTab={activeTab} />
+
+          <View style={styles.textMarginDivider}>
+            <RegularText typography="H3">Select rental period</RegularText>
+          </View>
+          {activeTab == "Hourly" && <HourlySelection />}
+          {activeTab == "Daily" && <DailySelection />}
+
+          <Formik
+            initialValues={{
+              addComments: "",
+            }}
+            onSubmit={(values, actions) => {
+              if (selectedLocation == "") {
+                setMessage("Please select a location");
+                setIsSuccessMessage(false);
+              } else {
+                handleCreateRentalRequest(values);
+                actions.resetForm();
+              }
+            }}
+          >
+            {({ handleChange, handleSubmit, values }) => (
+              <View>
+                <View style={styles.textMargin}>
+                  <RegularText typography="H3">
+                    Colletion & return location
+                  </RegularText>
+                </View>
+                <DropDownPicker
+                  open={open}
+                  value={selectedLocation}
+                  items={locations}
+                  setOpen={setOpen}
+                  setValue={setSelectedLocation}
+                  setItems={setLocations}
+                  autoScroll={true}
+                  maxHeight={200}
+                  placeholder="Select a location"
+                />
+                <View style={styles.textMargin}>
+                  <RegularText typography="H3">Additional Comments</RegularText>
+                </View>
+                <StyledTextInput
+                  placeholder="Please add any additional requests you have here."
+                  value={values.addComments}
+                  onChangeText={handleChange("addComments")}
+                  maxLength={250}
+                  multiline={true}
+                  scrollEnabled={false}
+                  minHeight={100}
+                  style={{ marginTop: -10 }}
+                />
+                <View style={styles.textMargin} />
+                <View>
+                  <RegularText typography="H3">Rental Duration</RegularText>
+                  <RegularText typography="H3">
+                    {rentalDurationHourly()}
+                  </RegularText>
+                </View>
+                <View>
+                  <RegularText typography="H3">Rental Fee</RegularText>
+                  <RegularText typography="H3">${rentalCost()}</RegularText>
+                </View>
+                <View>
+                  <RegularText typography="H3">Deposit Fee</RegularText>
+                  <RegularText typography="H3">{depositFee}</RegularText>
+                </View>
+                <View>
+                  <RegularText typography="H3">TOTAL FEE</RegularText>
+                  <RegularText typography="H3">${totalCost()}</RegularText>
+                </View>
+                <RegularText
+                  typography="Subtitle"
+                  style={{ alignSelf: "center", marginTop: 20 }}
+                >
+                  By proceeding, you are agreeing to our
+                </RegularText>
+                <View
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Pressable
+                    onPress={handleShowTerms}
+                    style={({ pressed }) => ({
+                      opacity: pressed ? 0.5 : 1,
+                      alignSelf: "center",
+                    })}
+                  >
+                    <RegularText
+                      typography="Subtitle"
+                      style={{
+                        color: primary,
+                        textDecorationLine: "underline",
+                        textAlign: "center",
+                      }}
+                    >
+                      terms & conditions
+                    </RegularText>
+                  </Pressable>
+                </View>
+                <MessageBox
+                  style={{ marginTop: 10 }}
+                  success={isSuccessMessage}
+                >
+                  {message || " "}
+                </MessageBox>
+                <RoundedButton
+                  typography={"B1"}
+                  color={white}
+                  onPress={handleSubmit}
+                  style={{ marginBottom: viewportHeightInPixels(3) }}
+                >
+                  Send Request
+                </RoundedButton>
+              </View>
+            )}
+          </Formik>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaContainer>

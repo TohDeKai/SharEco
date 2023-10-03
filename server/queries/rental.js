@@ -480,6 +480,54 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
   }
 };
 
+//Get availabilities by rental ID and selected date
+const getDailyAvailByRentalIdAndDate = async(itemId, date) => {
+  try {
+    // Convert date string to a Date object
+    const selectedDate = new Date(date);
+
+    const result = await pool.query(
+      `SELECT "startDate", "endDate" FROM "sharEco-schema"."rental"
+       WHERE "itemId" = $1
+         AND (($2 BETWEEN "startDate"::date AND "endDate"::date))
+         AND (("status" = 'PENDING' OR "status" = 'UPCOMING' OR "status" = 'ONGOING'))`,
+      [itemId, date]
+    );
+
+    // Process the result to generate a list of available time intervals
+    const bookings = result.rows;
+    const unavail = [];
+    const intervals = [];
+    const singaporeTimeZone = "Asia/Singapore";
+
+    // Process each booking to create intervals
+    for (const booking of bookings) {
+      const bookingStart = new Date(
+        new Date(booking.startDate).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        })
+      );
+      const bookingEnd = new Date(
+        new Date(booking.endDate).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        })
+      );
+      let currentDate = bookingStart;
+      while(currentDate <= bookingEnd) {
+        unavail.push(new Date(currentDate).toLocaleString("en-US",
+        {timeZone: singaporeTimeZone}));
+        currentDate.setDate(currentDate.getDate() + 1).toLocaleString("en-US",
+        {timeZone: singaporeTimeZone});
+      }
+    }
+    // Calculate availabilities
+
+    return unavail;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -491,4 +539,5 @@ module.exports = {
   getRentalsByItemId,
   getRentalByRentalId,
   getAvailByRentalIdAndDate,
+  getDailyAvailByRentalIdAndDate
 };
