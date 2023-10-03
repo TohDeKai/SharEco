@@ -29,6 +29,7 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 const currentDate = new Date();
+const nextDate = new Date((new Date()).setDate(currentDate.getDate() + 1));
 
 const stringDate = (date) => {
   const year = date.getFullYear();
@@ -132,7 +133,7 @@ const datePicker = ({ itemId, activeTab }) => {
           textSecondaryColor: secondary,
         }}
         mode="calendar"
-        minimumDate={stringDate(currentDate)}
+        minimumDate={stringDate(nextDate)}
         maximumDate={maxDate(currentDate)}
         minuteInterval={30}
         onSelectedChange={handleSelectedChange}

@@ -93,7 +93,10 @@ const createRentals = () => {
   const params = useLocalSearchParams();
   const { itemId } = params;
   const { getUserData } = useAuth();
-  const [date, setDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(new Date());
+  const [startTime, setStartTime] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date());
   const [activeTab, setActiveTab] = useState("Hourly");
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -157,6 +160,18 @@ const createRentals = () => {
     return value < 10 ? `0${value}` : value;
   };
 
+  const today = new Date();
+
+  const stringDate = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // Months are zero-based
+    const day = date.getDate();
+    // Ensure that single-digit months and days have a leading zero
+    const formattedMonth = month < 10 ? `0${month}` : month;
+    const formattedDay = day < 10 ? `0${day}` : day;
+    return `${year}-${formattedMonth}-${formattedDay}`;
+  };
+
   const handleStartDateChange = (event) => {
     const selectedTimestamp = event.nativeEvent.timestamp;
     const selectedDate = new Date(selectedTimestamp);
@@ -164,7 +179,9 @@ const createRentals = () => {
     const month = selectedDate.getMonth() + 1;
     const year = selectedDate.getFullYear();
     const formattedDate = `${year}-${month}-${day}`;
-    console.log("Selected Date: ", formattedDate);
+    if (stringDate(selectedDate) != stringDate(today)) {
+      console.log("Selected Date: ", formattedDate);
+    }
   };
 
   const handleStartTimeChange = (event) => {
@@ -175,7 +192,11 @@ const createRentals = () => {
       const hours = selectedTime.getHours();
       const minutes = selectedTime.getMinutes();
       const formattedTime = `${fillZero(hours)}:${fillZero(minutes)}:00`;
-      console.log("Selected Time:", formattedTime);
+
+      // If the result is not the current time
+      if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
+        console.log("Selected Time: ", formattedTime);
+      }
     }
   };
 
@@ -186,7 +207,9 @@ const createRentals = () => {
     const month = selectedDate.getMonth() + 1;
     const year = selectedDate.getFullYear();
     const formattedDate = `${year}-${month}-${day}`;
-    console.log("Selected Date: ", formattedDate);
+    if (stringDate(selectedDate) != stringDate(today)) {
+      console.log("Selected Date: ", formattedDate);
+    }
   };
 
   const handleEndTimeChange = (event) => {
@@ -197,8 +220,32 @@ const createRentals = () => {
       const hours = selectedTime.getHours();
       const minutes = selectedTime.getMinutes();
       const formattedTime = `${fillZero(hours)}:${fillZero(minutes)}:00`;
-      console.log("Selected Time:", formattedTime);
+      if (stringDate(selectedTime) != stringDate(today)) {
+        console.log("Selected Time: ", formattedTime);
+      }
     }
+  };
+
+  const tomorrow = () => {
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1);
+    return nextDay;
+  };
+
+  const maxDate = () => {
+    const futureDate = new Date(today);
+    const inFiveMonths = futureDate.getMonth() + 5;
+    if (inFiveMonths <= 12) {
+      futureDate.setMonth(inFiveMonths);
+    } else {
+      futureDate.setMonth(inFiveMonths % 12);
+      futureDate.setFullYear(today.getFullYear() + 1);
+    }
+    if (today.getDate() !== futureDate.getDate()) {
+      futureDate.setDate(0);
+    }
+    console.log(futureDate);
+    return futureDate;
   };
 
   const HourlySelection = () => {
@@ -209,14 +256,15 @@ const createRentals = () => {
           <View style={styles.dateTimePicker}>
             <DateTimePicker
               mode="date"
-              value={date}
-              onChange={(date) => handleStartDateChange(date)}
-              minuteInterval={30}
+              value={startDate}
+              onChange={(startDate) => handleStartDateChange(startDate)}
+              minimumDate={tomorrow()}
+              maximumDate={maxDate()}
             />
             <DateTimePicker
               mode="time"
-              value={date}
-              onChange={(date) => handleStartTimeChange(date)}
+              value={startTime}
+              onChange={(startTime) => handleStartTimeChange(startTime)}
               minuteInterval={30}
             />
           </View>
@@ -226,14 +274,15 @@ const createRentals = () => {
           <View style={styles.dateTimePicker}>
             <DateTimePicker
               mode="date"
-              value={date}
-              onChange={(date) => handleEndDateChange(date)}
-              minuteInterval={30}
+              value={endDate}
+              onChange={(endDate) => handleEndDateChange(endDate)}
+              minimumDate={tomorrow()}
+              maximumDate={maxDate()}
             />
             <DateTimePicker
               mode="time"
-              value={date}
-              onChange={(date) => handleEndTimeChange(date)}
+              value={endTime}
+              onChange={(endTime) => handleEndTimeChange(endTime)}
               minuteInterval={30}
             />
           </View>
@@ -250,9 +299,10 @@ const createRentals = () => {
           <View style={styles.dateTimePicker}>
             <DateTimePicker
               mode="date"
-              value={date}
-              onChange={(date) => handleStartDateChange(date)}
-              minuteInterval={30}
+              value={startDate}
+              onChange={(startDate) => handleStartDateChange(startDate)}
+              minimumDate={tomorrow()}
+              maximumDate={maxDate()}
             />
           </View>
         </View>
@@ -261,9 +311,10 @@ const createRentals = () => {
           <View style={styles.dateTimePicker}>
             <DateTimePicker
               mode="date"
-              value={date}
-              onChange={(date) => handleEndDateChange(date)}
-              minuteInterval={30}
+              value={endDate}
+              onChange={(endDate) => handleEndDateChange(endDate)}
+              minimumDate={tomorrow()}
+              maximumDate={maxDate()}
             />
           </View>
         </View>
@@ -380,9 +431,33 @@ const createRentals = () => {
         {activeTab == "Hourly" && <HourlySelection />}
         {activeTab == "Daily" && <DailySelection />}
 
-        <Formik>
+        <Formik
+          initialValues={{
+            location: selectedLocation,
+            addComments: "",
+          }}
+          onSubmit={(values, actions) => {
+            if (
+              values.location == "" ||
+              values.originalPrice == 0.0 ||
+              //values.depositFee == 0.0 ||
+              values.description == "" ||
+              category == "" ||
+              //if both per hour and per day rental not specified
+              (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) ||
+              //if both picklocker or meetup location not specified
+              (lockers.length == 0 && values.meetupLocation == "")
+            ) {
+              setMessage("Please fill in all fields");
+              setIsSuccessMessage(false);
+            } else {
+              handleCreateListing(values);
+              actions.resetForm();
+            }
+          }}
+        >
           <View>
-            <View style={styles.textMarginDivider}>
+            <View style={styles.textMargin}>
               <RegularText typography="H3">
                 Colletion & return location
               </RegularText>
@@ -396,6 +471,18 @@ const createRentals = () => {
               setItems={setLocations}
               placeholder="Select a location"
             />
+            <View style={styles.textMargin}>
+              <RegularText typography="H3">Additional Comments</RegularText>
+            </View>
+            {/* <StyledTextInput
+              placeholder="Please add any additional requests you have here."
+              value={values.addComments}
+              onChangeText={handleChange("description")}
+              maxLength={500}
+              multiline={true}
+              scrollEnabled={false}
+              minHeight={120}
+            /> */}
           </View>
         </Formik>
       </ScrollView>
