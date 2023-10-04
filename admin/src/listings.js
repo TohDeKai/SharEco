@@ -48,9 +48,33 @@ const columns = [
 const Listing = ({}) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
-  const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
-  const [selectedItemId, setSelectedItemId] = React.useState("");
   const [itemData, setItemData] = useState([]);
+
+  const [selectedItemId, setSelectedItemId] = React.useState("");
+  const [selectedUsername, setSelectedUsername] = React.useState("");
+  const [selectedItemDescription, setSelectedItemDescription] =
+    React.useState("");
+  const [selectedRentalRateHourly, setSelectedRentalRateHourly] =
+    React.useState("");
+  const [selectedRentalRateDaily, setSelectedRentalRateDaily] =
+    React.useState("");
+  const [selectedImages, setSelectedImages] = React.useState([]);
+  const [selectedCollectionLocations, setSelectedCollectionLocations] =
+    React.useState([]);
+  const [selectedUserId, setSelectedUserId] = React.useState("");
+  const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
+  const [selectedItemOriginalPrice, setSelectedItemOriginalPrice] =
+    React.useState("");
+  const [selectedDepositFee, setSelectedDepositFee] = React.useState("");
+  const [selectedUsersLikedCount, setSelectedUsersLikedCount] =
+    React.useState(0);
+  const [selectedImpressions, setSelectedImpressions] = React.useState(0);
+  const [selectedTotalRentCollected, setSelectedTotalRentCollected] =
+    React.useState(0);
+  const [selectedDisabled, setSelectedDisabled] = React.useState(false);
+  const [selectedOtherLocation, setSelectedOtherLocation] = React.useState("");
+  const [selectedCategory, setSelectedCategory] = React.useState("");
+  const [selectedIsBusiness, setSelectedIsBusiness] = React.useState(false);
 
   useEffect(() => {
     // Fetch item data when the component mounts
@@ -79,6 +103,7 @@ const Listing = ({}) => {
   // To handle dialog
   const [openDisable, setDisableOpen] = React.useState(false);
   const [openEnable, setEnableOpen] = React.useState(false);
+  const [openDetails, setDetailsOpen] = React.useState(false);
 
   const handleClickOpen = (title, itemId) => {
     setSelectedItemTitle(title);
@@ -92,9 +117,59 @@ const Listing = ({}) => {
     setEnableOpen(true);
   };
 
+  // Enter all attributes of the listings in
+  const handleClickDetails = async (
+    itemId,
+    itemDescription,
+    rentalRateHourly,
+    rentalRateDaily,
+    images,
+    collectionLocations,
+    userId,
+    itemTitle,
+    itemOriginalPrice,
+    depositFee,
+    usersLikedCount,
+    impressions,
+    totalRentCollected,
+    disabled,
+    otherLocation,
+    category,
+    isBusiness
+  ) => {
+    setSelectedItemId(itemId);
+    setSelectedItemDescription(itemDescription);
+    setSelectedRentalRateHourly(rentalRateHourly);
+    setSelectedRentalRateDaily(rentalRateDaily);
+    setSelectedImages(images);
+    setSelectedCollectionLocations(collectionLocations);
+    setSelectedUserId(userId);
+    setSelectedItemTitle(itemTitle);
+    setSelectedItemOriginalPrice(itemOriginalPrice);
+    setSelectedDepositFee(depositFee);
+    setSelectedUsersLikedCount(usersLikedCount);
+    setSelectedImpressions(impressions);
+    setSelectedTotalRentCollected(totalRentCollected);
+    setSelectedDisabled(disabled);
+    setSelectedOtherLocation(otherLocation);
+    setSelectedCategory(category);
+    setSelectedIsBusiness(isBusiness);
+    setDetailsOpen(true);
+    try {
+      console.log(selectedUserId);
+      const response = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${selectedUserId}`
+      );
+      setSelectedUsername(response.data.data.user.username);
+    } catch (err) {
+      console.log("Error getting listing username: ", err);
+    }
+  };
+
   const handleClose = () => {
     setDisableOpen(false);
     setEnableOpen(false);
+    setDetailsOpen(false);
   };
 
   const handleDisable = async () => {
@@ -190,6 +265,27 @@ const Listing = ({}) => {
                           role="checkbox"
                           tabIndex={-1}
                           key={row.code}
+                          onClick={() =>
+                            handleClickDetails(
+                              row.itemId,
+                              row.itemDescription,
+                              row.rentalRateHourly,
+                              row.rentalRateDaily,
+                              row.images,
+                              row.collectionLocations,
+                              row.userId,
+                              row.itemTitle,
+                              row.itemOriginalPrice,
+                              row.depositFee,
+                              row.usersLikedCount,
+                              row.impressions,
+                              row.totalRentCollected,
+                              row.disabled,
+                              row.otherLocation,
+                              row.category,
+                              row.isBusiness
+                            )
+                          }
                         >
                           {columns.map((column) => {
                             const value = row[column.id];
@@ -203,21 +299,23 @@ const Listing = ({}) => {
                             {row.disabled ? (
                               <Button
                                 variant="outlined"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent click event from propagating
                                   handleEnableClickOpen(
                                     row.itemTitle,
                                     row.itemId
-                                  )
-                                }
+                                  );
+                                }}
                               >
                                 Enable Item
                               </Button>
                             ) : (
                               <Button
                                 variant="contained"
-                                onClick={() =>
-                                  handleClickOpen(row.itemTitle, row.itemId)
-                                }
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent click event from propagating
+                                  handleClickOpen(row.itemTitle, row.itemId);
+                                }}
                               >
                                 Disable Item
                               </Button>
@@ -291,6 +389,54 @@ const Listing = ({}) => {
               Confirm
             </Button>
           </DialogActions>
+        </Dialog>
+
+        {/* Popup box to show all details of each listing */}
+        <Dialog
+          open={openDetails}
+          onClose={handleClose}
+          scroll="paper"
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {`Listing ID: ${selectedItemId}`}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>{`Owner User ID: ${selectedUserId}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Owner username: ${selectedUsername}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Listing Title: ${selectedItemTitle}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Item Description: ${selectedItemDescription}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Rental Rate (Hourly): ${selectedRentalRateHourly}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Rental Rate (Daily): ${selectedRentalRateDaily}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Item Original Price: ${selectedItemOriginalPrice}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Deposit Fee: ${selectedDepositFee}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Users Liked Count: ${selectedUsersLikedCount}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Impressions: ${selectedImpressions}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Total Rent Collected: ${selectedTotalRentCollected}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Disabled: ${selectedDisabled}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Other Location: ${
+              selectedOtherLocation !== ""
+                ? selectedOtherLocation
+                : "None selected"
+            }`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Category: ${selectedCategory}`}</DialogContentText>
+            &nbsp;
+            <DialogContentText>{`Is Business: ${selectedIsBusiness}`}</DialogContentText>
+          </DialogContent>
         </Dialog>
       </div>
     </ThemeProvider>
