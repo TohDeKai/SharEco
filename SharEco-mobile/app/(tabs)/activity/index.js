@@ -227,29 +227,6 @@ const Content = ({ activeTab }) => {
     }
   };
 
-  // Cancel, Accept or Reject for Lenders
-  const handleStatus = async (action, id) => {
-    try {
-      let newStatus = "";
-      const rentalId = id;
-
-      if (action === "Cancel") {
-        newStatus = "CANCELLED";
-      } else if (action === "Reject") {
-        newStatus = "REJECTED";
-      } else if (action === "Accept") {
-        newStatus = "PENDING";
-      }
-
-      const response = await axios.patch(
-        `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
-        { status: newStatus }
-      );
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
   const [activeLendingPill, setActiveLendingPill] = useState("Upcoming");
   const [activeBorrowingPill, setActiveBorrowingPill] = useState("Upcoming");
 
