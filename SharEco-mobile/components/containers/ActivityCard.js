@@ -15,21 +15,6 @@ const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const AWS_GETFILE_URL = "https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/";
 
-// use dummy data / hardcode for now
-const rentalData = {
-  startDate: '2023-09-27 07:00:00',
-  endDate: '2023-09-27 15:00:00',
-  collectionLocation: 'Orchard Towers',
-  additionalRequest: 'lens + straps',
-  rentalFee: '$80.00',
-  itemId: 134,
-  borrowerId: 85,
-  lenderId: 84,
-};
-
-// calculate numOdays = startDate - today, if lending, otherwise, endDate - today
-// less than 24h, display in hours instead
-
 const ActivityCard = ({ rental, type }) => {
   const startDate = new Date(rental.startDate); 
   const endDate = new Date(rental.endDate);
@@ -233,7 +218,7 @@ const ActivityCard = ({ rental, type }) => {
           </View>
 
           <RegularText typography="B3" style={{ textAlign: 'right' }}>
-            {rentalData.rentalFee}
+            {rental.rentalFee}
           </RegularText> 
         </View>
         <View style={styles.rentalLocation}>

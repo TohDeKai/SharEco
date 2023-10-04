@@ -12,6 +12,7 @@
     "@expo-google-fonts/inter": "^0.2.3",
     "@expo-google-fonts/plus-jakarta-sans": "^0.2.3",
     "@react-native-async-storage/async-storage": "1.18.2",
+    "@react-native-community/netinfo": "9.3.10",
     "@react-navigation/drawer": "^6.6.3",
     "@rneui/base": "^4.0.0-rc.8",
     "@rneui/themed": "^4.0.0-rc.8",
@@ -21,7 +22,7 @@
     "blob-util": "^2.0.2",
     "deprecated-react-native-prop-types": "^4.2.1",
     "dotenv": "^16.3.1",
-    "expo": "^49.0.9",
+    "expo": "^49.0.13",
     "expo-cli": "^6.3.10",
     "expo-constants": "~14.4.2",
     "expo-document-picker": "~11.5.4",
@@ -54,8 +55,7 @@
     "react-native-web": "~0.19.6",
     "rn-fetch-blob": "^0.12.0",
     "styled-components": "^6.0.7",
-    "stylis": "^4.3.0",
-    "@react-native-community/netinfo": "9.3.10"
+    "stylis": "^4.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
