@@ -509,23 +509,6 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
   }
 });
 
-// Get all items
-app.get("/api/v1/items", async (req, res) => {
-  try {
-    const items = await listingdb.getItems();
-    res.status(200).json({
-      status: "success",
-      data: {
-        item: items,
-      },
-    });
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
 //Create item
 app.post("/api/v1/items", async (req, res) => {
   const {
@@ -612,7 +595,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
 app.put("/api/v1/items/itemId/:itemId/images", async (req, res) => {
   try {
     const itemId = req.params.itemId;
-    const images = req.body.images; 
+    const images = req.body.images;
 
     // Update the images associated with the item using the itemId and the new images array
     const updatedImages = await listingdb.updateItemImages(itemId, images);
@@ -750,7 +733,7 @@ app.get("/api/v1/items/not/:userId", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by keywords
 app.get("/api/v1/items/not/:userId/keywords", async (req, res) => {
@@ -774,7 +757,7 @@ app.get("/api/v1/items/not/:userId/keywords", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by category
 app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
@@ -798,32 +781,39 @@ app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by category by keywords
-app.get("/api/v1/items/not/:userId/category/:category/keywords", async (req, res) => {
-  const userId = req.params.userId;
-  const category = req.params.category;
-  const keywords = req.query.keywords.split(/[ +]/);
+app.get(
+  "/api/v1/items/not/:userId/category/:category/keywords",
+  async (req, res) => {
+    const userId = req.params.userId;
+    const category = req.params.category;
+    const keywords = req.query.keywords.split(/[ +]/);
 
-  try {
-    const items = await listingdb.getOtherUserItemsByCategoryByKeywords(userId, category, keywords);
+    try {
+      const items = await listingdb.getOtherUserItemsByCategoryByKeywords(
+        userId,
+        category,
+        keywords
+      );
 
-    if (items) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          items: items,
-        },
-      });
-    } else {
-      // Handle the case where no items are found
-      res.status(404).json({ error: "No Items Found" });
+      if (items) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            items: items,
+          },
+        });
+      } else {
+        // Handle the case where no items are found
+        res.status(404).json({ error: "No Items Found" });
+      }
+    } catch (error) {
+      console.log(error.message);
     }
-  } catch (error) {
-    console.log(error.message);
   }
-})
+);
 
 // Auth functionalities
 app.post("/api/v1/admin/signIn", async (req, res) => {
@@ -1251,7 +1241,7 @@ app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
   try {
     const rental = await rentaldb.updateRentalStatus(
       req.body.status,
-      req.params.rentalId,
+      req.params.rentalId
     );
     if (rental) {
       res.status(200).json({
@@ -1275,7 +1265,10 @@ app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
 app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
-    const intervals = await rentaldb.getAvailByRentalIdAndDate(req.params.itemId, req.params.date);
+    const intervals = await rentaldb.getAvailByRentalIdAndDate(
+      req.params.itemId,
+      req.params.date
+    );
     console.log(intervals);
     if (intervals) {
       res.status(200).json({

@@ -57,7 +57,8 @@ const Listing = ({}) => {
     async function fetchData() {
       try {
         const response = await axios.get("http://localhost:4000/api/v1/items");
-        const items = response.data.data.item;
+        console.log(response);
+        const items = response.data.data.items;
         setItemData(items);
       } catch (error) {
         console.error("Error fetching item data:", error);
