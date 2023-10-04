@@ -79,7 +79,7 @@ const createUser = async (
         password,
         email,
         contactNumber,
-        "",
+        null,
         false,
         [],
         [],
