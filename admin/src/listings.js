@@ -400,14 +400,14 @@ const Listing = ({}) => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            {`Listing ID: ${selectedItemId}`}
+            {`Listing Title: ${selectedItemTitle}`}
           </DialogTitle>
           <DialogContent>
+            <DialogContentText>{`Listing ID: ${selectedItemId}`}</DialogContentText>
+            &nbsp;
             <DialogContentText>{`Owner User ID: ${selectedUserId}`}</DialogContentText>
             &nbsp;
             <DialogContentText>{`Owner username: ${selectedUsername}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Listing Title: ${selectedItemTitle}`}</DialogContentText>
             &nbsp;
             <DialogContentText>{`Item Description: ${selectedItemDescription}`}</DialogContentText>
             &nbsp;
