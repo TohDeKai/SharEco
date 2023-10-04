@@ -33,6 +33,8 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import { PictureAsPdf as PdfIcon } from "@mui/icons-material";
+import { List, ListItem, ListItemText, ListItemIcon } from "@mui/material";
 
 const columns = [
   { id: "businessVerificationId", label: "Biz Verification ID", minWidth: 170 },
@@ -114,8 +116,18 @@ const Home = () => {
     React.useState(false);
   const [openRemoveVerification, setOpenRemoveVerification] =
     React.useState(false);
+  const [openDetails, setDetailsOpen] = React.useState(false);
+
+  // Handling popup
   const [selectedBusinessVerificationId, setSelectedBusinessVerificationId] =
     React.useState("");
+
+  const [selectedUEN, setSelectedUEN] = React.useState("");
+  const [selectedUserId, setSelectedUserId] = React.useState("");
+  const [selectedApproved, setSelectedApproved] = React.useState("");
+  const [selectedUsername, setSelectedUsername] = React.useState("");
+  const [selectedDocuments, setSelectedDocuments] = React.useState([]);
+
   const [userData, setUserData] = useState([]);
 
   const handleApproveRequestClickOpen = (businessVerificationId) => {
@@ -131,6 +143,30 @@ const Home = () => {
   const handleClose = () => {
     setOpenApproveVerification(false);
     setOpenRemoveVerification(false);
+    setDetailsOpen(false);
+  };
+
+  const handleClickDetails = async (
+    businessVerificationId,
+    UEN,
+    userId,
+    approved,
+    documents
+  ) => {
+    setSelectedBusinessVerificationId(businessVerificationId);
+    setSelectedUEN(UEN);
+    setSelectedUserId(userId);
+    setSelectedApproved(approved);
+    setSelectedDocuments(documents);
+    setDetailsOpen(true);
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${selectedUserId}`
+      );
+      setSelectedUsername(response.data.data.user.username);
+    } catch (error) {
+      console.log("Error getting username of business verification: ", error);
+    }
   };
 
   const handleRemove = async () => {
@@ -337,6 +373,15 @@ const Home = () => {
                           role="checkbox"
                           tabIndex={-1}
                           key={row.code}
+                          onClick={() =>
+                            handleClickDetails(
+                              row.businessVerificationId,
+                              row.UEN,
+                              row.originalUserId,
+                              row.approved,
+                              row.documents
+                            )
+                          }
                         >
                           {columns.map((column) => {
                             const value = row[column.id];
@@ -505,6 +550,41 @@ const Home = () => {
                 Confirm
               </Button>
             </DialogActions>
+          </Dialog>
+
+          {/* Popup box to show all details of each business verification */}
+          <Dialog
+            open={openDetails}
+            onClose={handleClose}
+            scroll="paper"
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {`Business Verification ID: ${selectedBusinessVerificationId}`}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText>{`Requester User ID: ${selectedUserId}`}</DialogContentText>
+              &nbsp;
+              <DialogContentText>{`Requester Username: ${selectedUsername}`}</DialogContentText>
+              &nbsp;
+              <DialogContentText>{`UEN: ${selectedUEN}`}</DialogContentText>
+              &nbsp;
+              <DialogContentText>{`Approved: ${selectedApproved}`}</DialogContentText>
+              &nbsp;
+              <List>
+                {selectedDocuments.map((pdf, index) => (
+                  <ListItem button key={index}>
+                    <ListItemIcon>
+                      <PdfIcon />
+                    </ListItemIcon>
+                    <a href={pdf} target="_blank" rel="noopener noreferrer">
+                      <ListItemText primary={`Attached File ${index + 1}`} />
+                    </a>
+                  </ListItem>
+                ))}
+              </List>
+            </DialogContent>
           </Dialog>
 
           <Snackbar
