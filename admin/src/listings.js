@@ -139,39 +139,38 @@ const Listing = ({}) => {
     category,
     isBusiness
   ) => {
-    setSelectedItemId(itemId);
-    setSelectedItemDescription(itemDescription);
-    setSelectedRentalRateHourly(rentalRateHourly);
-    setSelectedRentalRateDaily(rentalRateDaily);
-    setSelectedImages(images);
-    setSelectedCollectionLocations(collectionLocations);
-    setSelectedUserId(userId);
-    setSelectedItemTitle(itemTitle);
-    setSelectedItemOriginalPrice(itemOriginalPrice);
-    setSelectedDepositFee(depositFee);
-    setSelectedUsersLikedCount(usersLikedCount);
-    setSelectedImpressions(impressions);
-    setSelectedTotalRentCollected(totalRentCollected);
-    setSelectedDisabled(disabled);
-    setSelectedOtherLocation(otherLocation);
-    setSelectedCategory(category);
-    setSelectedIsBusiness(isBusiness);
-
     setLoading(true); // Set loading state to true
-
     try {
-      console.log(selectedUserId);
       const response = await axios.get(
-        `http://localhost:4000/api/v1/users/userId/${selectedUserId}`
+        `http://localhost:4000/api/v1/users/userId/${userId}`
       );
+      // Update the username state with the new data
       setSelectedUsername(response.data.data.user.username);
     } catch (err) {
       console.log("Error getting listing username: ", err);
     } finally {
+      setSelectedUserId(userId);
+      setSelectedItemId(itemId);
+      setSelectedItemDescription(itemDescription);
+      setSelectedRentalRateHourly(rentalRateHourly);
+      setSelectedRentalRateDaily(rentalRateDaily);
+      setSelectedImages(images);
+      setSelectedCollectionLocations(collectionLocations);
+      setSelectedItemTitle(itemTitle);
+      setSelectedItemOriginalPrice(itemOriginalPrice);
+      setSelectedDepositFee(depositFee);
+      setSelectedUsersLikedCount(usersLikedCount);
+      setSelectedImpressions(impressions);
+      setSelectedTotalRentCollected(totalRentCollected);
+      setSelectedDisabled(disabled);
+      setSelectedOtherLocation(otherLocation);
+      setSelectedCategory(category);
+      setSelectedIsBusiness(isBusiness);
       setLoading(false); // Set loading state to false when the request is complete
       setDetailsOpen(true); // Open the dialog
     }
   };
+
   const handleClose = () => {
     setDisableOpen(false);
     setEnableOpen(false);
@@ -400,7 +399,7 @@ const Listing = ({}) => {
 
         {/* Popup box to show all details of each listing */}
         <Dialog
-          open={openDetails && !loading} // Open the dialog only when `openDetails` is true and `loading` is false
+          open={!loading && openDetails} // Open the dialog only when `openDetails` is true and `loading` is false
           onClose={handleClose}
           scroll="paper"
           aria-labelledby="alert-dialog-title"
