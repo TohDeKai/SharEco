@@ -327,6 +327,11 @@ const Home = () => {
     fetchData();
   }, []);
 
+  const cellStyle = {
+    borderRight: "1px solid #e0e0e0",
+    padding: "10px",
+  };
+
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
       <div style={{ display: "flex" }}>
@@ -567,18 +572,29 @@ const Home = () => {
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
           >
-            <DialogTitle id="alert-dialog-title">
-              {`Business Verification ID: ${selectedBusinessVerificationId}`}
-            </DialogTitle>
+            <DialogTitle id="alert-dialog-title">{`Business Verification ID: ${selectedBusinessVerificationId}`}</DialogTitle>
             <DialogContent>
-              <DialogContentText>{`Requester User ID: ${selectedUserId}`}</DialogContentText>
-              &nbsp;
-              <DialogContentText>{`Requester Username: ${selectedUsername}`}</DialogContentText>
-              &nbsp;
-              <DialogContentText>{`UEN: ${selectedUEN}`}</DialogContentText>
-              &nbsp;
-              <DialogContentText>{`Approved: ${selectedApproved}`}</DialogContentText>
-              &nbsp;
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell style={cellStyle}>Requester User ID</TableCell>
+                    <TableCell>{selectedUserId}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={cellStyle}>Requester Username</TableCell>
+                    <TableCell>{selectedUsername}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={cellStyle}>UEN</TableCell>
+                    <TableCell>{selectedUEN}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={cellStyle}>Approved</TableCell>
+                    <TableCell>{selectedApproved ? "Yes" : "No"}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+
               <List>
                 {selectedDocuments.map((pdf, index) => (
                   <ListItem button key={index}>
