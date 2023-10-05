@@ -29,7 +29,7 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 const currentDate = new Date();
-const nextDate = new Date((new Date()).setDate(currentDate.getDate() + 1));
+const nextDate = new Date(new Date().setDate(currentDate.getDate() + 1));
 
 const stringDate = (date) => {
   const year = date.getFullYear();
@@ -59,36 +59,52 @@ const formatTodayDate = (dateString) => {
   return `${updatedDay}/${updatedMonth}/${updatedYear}`;
 };
 
+const convertToAMPM = (timeString) => {
+  const [hours, minutes] = timeString.split(":");
+  let ampm = "AM";
+  let formattedHours = parseInt(hours, 10);
+
+  if (formattedHours >= 12) {
+    ampm = "PM";
+    if (formattedHours > 12) {
+      formattedHours -= 12;
+    }
+  } else if (formattedHours == 0) {
+    formattedHours = 12;
+  }
+  return `${formattedHours}:${minutes} ${ampm}`;
+};
+
 const datePicker = ({ itemId, activeTab }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [today, setToday] = useState("");
   const [avails, setAvails] = useState({});
 
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const formattedDate = selectedDate.replace(/\//g, "-");
-          const response = await axios.get(
-            `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
-          );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const formattedDate = selectedDate.replace(/\//g, "-");
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
+        );
 
-          if (response.status === 200) {
-            const intervals = response.data.data.intervals;
-            setAvails(intervals);
-            setToday(formatTodayDate(selectedDate));
-          } else {
-            console.log("Failed to retrieve availabilities");
-          }
-        } catch (error) {
-          console.error(error.message);
+        if (response.status === 200) {
+          const intervals = response.data.data.intervals;
+          setAvails(intervals);
+          setToday(formatTodayDate(selectedDate));
+        } else {
+          console.log("Failed to retrieve availabilities");
         }
-      };
-
-      if (selectedDate !== "") {
-        setAvails([]);
-        fetchData();
+      } catch (error) {
+        console.error(error.message);
       }
-    }, [selectedDate, itemId]);
+    };
+
+    if (selectedDate !== "") {
+      setAvails([]);
+      fetchData();
+    }
+  }, [selectedDate, itemId]);
 
   const handleSelectedChange = (date) => {
     setSelectedDate(date);
@@ -97,19 +113,28 @@ const datePicker = ({ itemId, activeTab }) => {
   const Availability = ({ avails }) => {
     return (
       <View>
-        {avails.map((slot, index) => {
-          const { start, end } = slot;
-          const formattedStartTime = formatTime(start);
-          const formattedEndTime = formatTime(end);
+        {avails.length != 0 &&
+          avails.map((slot, index) => {
+            const { start, end } = slot;
+            const formattedStartTime = formatTime(start);
+            const formattedEndTime = formatTime(end);
 
-          return (
-            <Text key={index} style={{ marginBottom: 5 }}>
-              <RegularText typography="H3" color={white}>
-                {formattedStartTime} - {formattedEndTime}
-              </RegularText>
-            </Text>
-          );
-        })}
+            return (
+              <Text key={index} style={{ marginBottom: 5 }}>
+                <RegularText typography="H3" color={white}>
+                  {convertToAMPM(formattedStartTime)} -{" "}
+                  {convertToAMPM(formattedEndTime)}
+                </RegularText>
+              </Text>
+            );
+          })}
+        {avails.length == 0 && (
+          <View>
+            <RegularText typography="H3" color={white}>
+              There seems to be no slots...
+            </RegularText>
+          </View>
+        )}
       </View>
     );
   };

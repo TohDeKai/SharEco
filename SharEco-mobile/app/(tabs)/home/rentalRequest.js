@@ -45,55 +45,14 @@ const viewportHeightInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-const Tabs = ({ activeTab, handleTabPress }) => {
-  return (
-    <View
-      style={
-        styles.stickyHeader ? styles.stickyTabContainer : styles.tabContainer
-      }
-    >
-      <Pressable
-        onPress={() => handleTabPress("Hourly")}
-        style={({ pressed }) => [
-          { opacity: pressed ? 0.5 : 1 },
-          styles.tab,
-          activeTab === "Hourly" && styles.activeTab,
-        ]}
-      >
-        <RegularText
-          typography="B2"
-          color={activeTab === "Hourly" ? white : dark}
-        >
-          Hourly Rental
-        </RegularText>
-      </Pressable>
-      <Pressable
-        onPress={() => handleTabPress("Daily")}
-        style={({ pressed }) => [
-          { opacity: pressed ? 0.5 : 1 },
-          styles.tab,
-          activeTab === "Daily" && styles.activeTab,
-        ]}
-      >
-        <RegularText
-          typography="B2"
-          color={activeTab === "Daily" ? white : dark}
-        >
-          Daily Rental
-        </RegularText>
-      </Pressable>
-    </View>
-  );
-};
-
 const createRentals = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const [listingItem, setListingItem] = useState({});
   const params = useLocalSearchParams();
-  const { itemId } = params;
+  const { itemId, tab } = params;
+  const [activeTab, setActiveTab] = useState(tab);
   const { getUserData } = useAuth();
-  const [activeTab, setActiveTab] = useState("Hourly");
   const [user, setUser] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -285,6 +244,61 @@ const createRentals = () => {
     return new Date(startDate);
   };
 
+  const Tabs = ({ activeTab, handleTabPress }) => {
+    return (
+      <View style={styles.tabContainer}>
+        {rentalRateHourly != "$0.00" && rentalRateDaily != "$0.00" && (
+          <View style={styles.tabContainer}>
+            <Pressable
+              onPress={() => handleTabPress("Hourly")}
+              style={({ pressed }) => [
+                { opacity: pressed ? 0.5 : 1 },
+                styles.tab,
+                activeTab === "Hourly" && styles.activeTab,
+              ]}
+            >
+              <RegularText
+                typography="B2"
+                color={activeTab === "Hourly" ? white : dark}
+              >
+                Hourly Rental
+              </RegularText>
+            </Pressable>
+            <Pressable
+              onPress={() => handleTabPress("Daily")}
+              style={({ pressed }) => [
+                { opacity: pressed ? 0.5 : 1 },
+                styles.tab,
+                activeTab === "Daily" && styles.activeTab,
+              ]}
+            >
+              <RegularText
+                typography="B2"
+                color={activeTab === "Daily" ? white : dark}
+              >
+                Daily Rental
+              </RegularText>
+            </Pressable>
+          </View>
+        )}
+        {rentalRateHourly != "$0.00" && rentalRateDaily == "$0.00" && (
+          <View style={styles.onlyTab}>
+            <RegularText typography="B2" color={white}>
+              Hourly Rental Booking
+            </RegularText>
+          </View>
+        )}
+        {rentalRateHourly == "$0.00" && rentalRateDaily != "$0.00" && (
+          <View style={styles.onlyTab}>
+            <RegularText typography="B2" color={white}>
+              Daily Rental Booking
+            </RegularText>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   const HourlySelection = () => {
     return (
       <View>
@@ -359,27 +373,92 @@ const createRentals = () => {
     );
   };
 
-  const rentalDurationHourly = () => {
-    const timeDifferenceInMilliseconds =
-      new Date(fullEndDate()).setMilliseconds(0) -
-      new Date(fullStartDate()).setMilliseconds(0);
-    const numberOfHours = timeDifferenceInMilliseconds / (1000 * 60 * 60);
-    return numberOfHours;
-  };
+  const CostCalculation = (activeTab) => {
+    const rentalDuration = () => {
+      let time = 0;
+      if (activeTab == "Hourly") {
+        const timeDifferenceInMilliseconds =
+          new Date(fullEndDate()).setMilliseconds(0) -
+          new Date(fullStartDate()).setMilliseconds(0);
+        time = timeDifferenceInMilliseconds / (1000 * 60 * 60);
+      } else {
+        const timeDifferenceInMilliseconds =
+          new Date(fullEndDate()).setHours(0, 0, 0, 0) -
+          new Date(fullStartDate()).setHours(0, 0, 0, 0);
+        time = timeDifferenceInMilliseconds / (1000 * 60 * 60 * 24);
+      }
+      return time;
+    };
 
-  const rentalCost = () => {
-    const numberOfHours = rentalDurationHourly();
-    const rentalRate = rentalRateHourly
-      ? parseFloat(rentalRateHourly.replace("$", ""))
-      : 0;
-    const rentalCost = numberOfHours * rentalRate;
-    return rentalCost.toFixed(2);
-  };
+    const rentalCost = (activeTab) => {
+      let rentalRate = 0;
+      if (activeTab == "Hourly") {
+        rentalRate = rentalRateHourly
+          ? parseFloat(rentalRateHourly.replace("$", ""))
+          : 0;
+      } else {
+        rentalRate = rentalRateDaily
+          ? parseFloat(rentalRateDaily.replace("$", ""))
+          : 0;
+      }
+      const cost = rentalDuration(activeTab) * rentalRate;
+      return cost.toFixed(2);
+    };
 
-  const totalCost = () => {
-    const deposit = depositFee ? parseFloat(depositFee.replace("$", "")) : 0;
-    const total = parseFloat(rentalCost() + deposit);
-    return total.toFixed(2);
+    const totalCost = (activeTab) => {
+      const deposit = depositFee ? parseFloat(depositFee.replace("$", "")) : 0;
+      if (rentalCost(activeTab) == 0) {
+        return deposit.toFixed(2);
+      }
+      const total = parseFloat(rentalCost(activeTab) + deposit);
+      return total.toFixed(2);
+    };
+    return (
+      <View>
+          <View style={styles.pricing}>
+            <View style={styles.pricingRow}>
+              <View>
+                <RegularText typography="H3">Rental Duration</RegularText>
+              </View>
+              <View>
+                <RegularText typography="H3">
+                  {rentalDuration()}{" "}
+                  {activeTab == "Hourly" && (
+                    <RegularText typography="H3">hour(s)</RegularText>
+                  )}
+                  {activeTab == "Daily" && (
+                    <RegularText typography="H3">day(s)</RegularText>
+                  )}
+                </RegularText>
+              </View>
+            </View>
+            <View style={styles.pricingRow}>
+              <View>
+                <RegularText typography="H3">Rental Fee</RegularText>
+              </View>
+              <View>
+                <RegularText typography="H3">${rentalCost()}</RegularText>
+              </View>
+            </View>
+            <View style={styles.pricingRow}>
+              <View>
+                <RegularText typography="H3">Deposit Fee</RegularText>
+              </View>
+              <View>
+                <RegularText typography="H3">{depositFee}</RegularText>
+              </View>
+            </View>
+            <View style={styles.pricingRow}>
+              <View>
+                <RegularText typography="H3">TOTAL FEE</RegularText>
+              </View>
+              <View>
+                <RegularText typography="H3">${totalCost()}</RegularText>
+              </View>
+            </View>
+          </View>
+      </View>
+    );
   };
 
   const handleCreateRentalRequest = async (values) => {
@@ -523,50 +602,7 @@ const createRentals = () => {
                   minHeight={100}
                   style={{ marginTop: -10 }}
                 />
-                {activeTab == "Hourly" && (
-                  <View style={styles.pricing}>
-                    <View style={styles.pricingRow}>
-                      <View>
-                        <RegularText typography="H3">
-                          Rental Duration
-                        </RegularText>
-                      </View>
-                      <View>
-                        <RegularText typography="H3">
-                          {rentalDurationHourly()} hours
-                        </RegularText>
-                      </View>
-                    </View>
-                    <View style={styles.pricingRow}>
-                      <View>
-                        <RegularText typography="H3">Rental Fee</RegularText>
-                      </View>
-                      <View>
-                        <RegularText typography="H3">
-                          ${rentalCost()}
-                        </RegularText>
-                      </View>
-                    </View>
-                    <View style={styles.pricingRow}>
-                      <View>
-                        <RegularText typography="H3">Deposit Fee</RegularText>
-                      </View>
-                      <View>
-                        <RegularText typography="H3">{depositFee}</RegularText>
-                      </View>
-                    </View>
-                    <View style={styles.pricingRow}>
-                      <View>
-                        <RegularText typography="H3">TOTAL FEE</RegularText>
-                      </View>
-                      <View>
-                        <RegularText typography="H3">
-                          ${totalCost()}
-                        </RegularText>
-                      </View>
-                    </View>
-                  </View>
-                )}
+                <CostCalculation activeTab={activeTab} />
                 <RegularText
                   typography="Subtitle"
                   style={{ alignSelf: "center" }}
@@ -598,9 +634,7 @@ const createRentals = () => {
                     </RegularText>
                   </Pressable>
                 </View>
-                <MessageBox
-                  success={isSuccessMessage}
-                >
+                <MessageBox success={isSuccessMessage}>
                   {message || " "}
                 </MessageBox>
                 <RoundedButton
@@ -674,6 +708,13 @@ const styles = StyleSheet.create({
     borderBottomColor: inputbackground,
   },
   activeTab: {
+    backgroundColor: dark,
+  },
+  onlyTab: {
+    flex: 1,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: dark,
   },
   textMargin: {
