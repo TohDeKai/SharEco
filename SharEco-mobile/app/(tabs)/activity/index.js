@@ -366,9 +366,9 @@ const Content = ({ activeTab }) => {
   };
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       {activeTab == "Lending" && (
-        <View>
+        <View style={{ flex: 1 }}>
           <RentalNotifContainer />
           <Pills
             pillItems={lendingPill}
@@ -376,7 +376,7 @@ const Content = ({ activeTab }) => {
             handlePillPress={handlePillPress}
           />
           {activeLendingPill == "Upcoming" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", flex: 1}}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -400,7 +400,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Ongoing" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", flex: 1}}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -424,7 +424,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Completed" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center",  flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -448,7 +448,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Cancelled" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center",  flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -474,7 +474,7 @@ const Content = ({ activeTab }) => {
       )}
 
       {activeTab == "Borrowing" && (
-        <View>
+        <View style={{ flex: 1 }}>
           <Pills
             pillItems={borrowingPill}
             activeLendingPill={activeBorrowingPill}
@@ -482,7 +482,7 @@ const Content = ({ activeTab }) => {
           />
 
           {activeBorrowingPill == "Pending" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -506,7 +506,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeBorrowingPill == "Upcoming" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -530,7 +530,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeBorrowingPill == "Ongoing" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -554,7 +554,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeBorrowingPill == "Completed" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -578,7 +578,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeBorrowingPill == "Cancelled" && (
-            <View style={{ alignItems: "center" }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -606,7 +606,7 @@ const Content = ({ activeTab }) => {
       {activeTab == "Others" && (
         <View
           style={{
-            height: "75%",
+            flex: 1,
             justifyContent: "center",
             alignItems: "center",
           }}
@@ -639,9 +639,11 @@ const activity = () => {
 
   return (
     <SafeAreaContainer>
+    <View style={{flex:1}}>
       <ActivityHeader />
       <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
       <Content activeTab={activeTab} />
+    </View>
     </SafeAreaContainer>
   );
 };
@@ -683,7 +685,6 @@ const styles = StyleSheet.create({
     borderBottomColor: primary,
   },
   pillContainer: {
-    paddingHorizontal: 23,
     paddingVertical: 18,
   },
   pill: {
@@ -691,7 +692,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 20,
     backgroundColor: inputbackground,
-    marginRight: 10,
+    marginLeft: 13,
   },
   activePill: {
     backgroundColor: white,
