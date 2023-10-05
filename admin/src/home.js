@@ -365,6 +365,7 @@ const Home = () => {
                         {column.label}
                       </TableCell>
                     ))}
+                    <TableCell>Disable/Enable</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

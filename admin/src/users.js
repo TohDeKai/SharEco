@@ -194,6 +194,7 @@ const Users = ({ username }) => {
                         {column.label}
                       </TableCell>
                     ))}
+                    <TableCell>Ban/Unban</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
