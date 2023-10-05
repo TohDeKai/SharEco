@@ -231,6 +231,11 @@ const Listing = ({}) => {
     }
   };
 
+  const cellStyle = {
+    borderRight: "1px solid #e0e0e0", // Add a border at the bottom of each cell
+    padding: "10px", // Adjust padding as needed
+  };
+
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
       <div style={{ display: "flex" }}>
@@ -399,49 +404,90 @@ const Listing = ({}) => {
 
         {/* Popup box to show all details of each listing */}
         <Dialog
-          open={!loading && openDetails} // Open the dialog only when `openDetails` is true and `loading` is false
+          open={!loading && openDetails}
           onClose={handleClose}
           scroll="paper"
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">
-            {`Listing Title: ${selectedItemTitle}`}
-          </DialogTitle>
+          <DialogTitle id="alert-dialog-title">{`Listing Title: ${selectedItemTitle}`}</DialogTitle>
           <DialogContent>
-            <DialogContentText>{`Listing ID: ${selectedItemId}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Owner User ID: ${selectedUserId}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Owner username: ${selectedUsername}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Item Description: ${selectedItemDescription}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Rental Rate (Hourly): ${selectedRentalRateHourly}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Rental Rate (Daily): ${selectedRentalRateDaily}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Item Original Price: ${selectedItemOriginalPrice}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Deposit Fee: ${selectedDepositFee}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Users Liked Count: ${selectedUsersLikedCount}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Impressions: ${selectedImpressions}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Total Rent Collected: ${selectedTotalRentCollected}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Disabled: ${selectedDisabled}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Other Location: ${
-              selectedOtherLocation !== ""
-                ? selectedOtherLocation
-                : "None selected"
-            }`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Category: ${selectedCategory}`}</DialogContentText>
-            &nbsp;
-            <DialogContentText>{`Is Business: ${selectedIsBusiness}`}</DialogContentText>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell style={cellStyle}>Listing ID</TableCell>
+                  <TableCell>{selectedItemId}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Owner User ID</TableCell>
+                  <TableCell>{selectedUserId}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Owner username</TableCell>
+                  <TableCell>{selectedUsername}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Item Description</TableCell>
+                  <TableCell>{selectedItemDescription}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Collection Locations</TableCell>
+                  <TableCell>
+                    {selectedCollectionLocations.length > 0
+                      ? selectedCollectionLocations.join(", ") // Assuming selectedOtherLocation is an array
+                      : "None selected"}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Rental Rate (Hourly)</TableCell>
+                  <TableCell>{selectedRentalRateHourly}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Rental Rate (Daily)</TableCell>
+                  <TableCell>{selectedRentalRateDaily}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Item Original Price</TableCell>
+                  <TableCell>{selectedItemOriginalPrice}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Deposit Fee</TableCell>
+                  <TableCell>{selectedDepositFee}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Users Liked Count</TableCell>
+                  <TableCell>{selectedUsersLikedCount}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Impressions</TableCell>
+                  <TableCell>{selectedImpressions}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Total Rent Collected</TableCell>
+                  <TableCell>{selectedTotalRentCollected}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Disabled</TableCell>
+                  <TableCell>{selectedDisabled ? "Yes" : "No"}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Other Location</TableCell>
+                  <TableCell>
+                    {selectedOtherLocation === ""
+                      ? "None selected"
+                      : selectedOtherLocation}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Category</TableCell>
+                  <TableCell>{selectedCategory}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Is Business</TableCell>
+                  <TableCell>{selectedIsBusiness ? "Yes" : "No"}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </DialogContent>
         </Dialog>
       </div>
