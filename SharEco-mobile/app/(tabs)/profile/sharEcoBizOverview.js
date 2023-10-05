@@ -37,7 +37,7 @@ const sharEcoBizOverview = () => {
           setUser(userData);
 
           const bizVeriId = userData ? userData.businessVerificationId : null;
-          console.log("bizVeriId 46", bizVeriId);
+          console.log("bizVeriId:", bizVeriId);
 
           if (!bizVeriId) {
             setMessage(
