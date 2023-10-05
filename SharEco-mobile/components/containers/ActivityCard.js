@@ -72,11 +72,37 @@ const ActivityCard = ({ rental, type }) => {
   }, [userId, rental.itemId]);
 
   const CardHeader = () => {
-    // daily countdown
-    const numOfDays = 4; // some calculation
+    
+    function getDurationToRentalStart() {
+      const today = new Date();
+      const rentalStart = new Date(rental.startDate);
+      const millisecondsDifference = rentalStart - today;
+      const secondsDifference = millisecondsDifference / 1000;
+      const minutesDifference = secondsDifference / 60;
+      const hoursDifference = minutesDifference / 60;
 
-    //hourly countdown
-    const numOfHours = 5; // some calculation
+      if (hoursDifference <= 24) {
+        return `${hoursDifference.toFixed(0)} hours`;
+      } else {
+        const daysDifference = Math.floor(hoursDifference / 24);
+        return `${daysDifference} days`;
+      }
+    } 
+    function getDurationToRentalEnd() {
+      const today = new Date();
+      const rentalEnd = new Date(rental.endDate);
+      const millisecondsDifference = rentalEnd - today;
+      const secondsDifference = millisecondsDifference / 1000;
+      const minutesDifference = secondsDifference / 60;
+      const hoursDifference = minutesDifference / 60;
+
+      if (hoursDifference <= 24) {
+        return `${hoursDifference.toFixed(0)} hours`;
+      } else {
+        const daysDifference = Math.floor(hoursDifference / 24);
+        return `${daysDifference} days`;
+      }
+    } 
 
     return (
       <View
@@ -106,13 +132,7 @@ const ActivityCard = ({ rental, type }) => {
               {isLending ? "lending" : "borrowing"} in{" "}
             </RegularText>
             <RegularText typography="B3">
-              {isHourly
-                ? numOfHours === 1
-                  ? `${numOfHours} hour`
-                  : `${numOfHours} hours`
-                : numOfDays === 1
-                ? `${numOfDays} day`
-                : `${numOfDays} days`}
+              {getDurationToRentalStart()}
             </RegularText>
           </View>
         )}
@@ -121,13 +141,7 @@ const ActivityCard = ({ rental, type }) => {
           <View style={styles.countdown}>
             <RegularText typography="Subtitle">return in </RegularText>
             <RegularText typography="B3">
-              {isHourly
-                ? numOfHours === 1
-                  ? `${numOfHours} hour`
-                  : `${numOfHours} hours`
-                : numOfDays === 1
-                ? `${numOfDays} day`
-                : `${numOfDays} days`}
+            {getDurationToRentalEnd()}
             </RegularText>
           </View>
         )}
