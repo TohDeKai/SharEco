@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, Pressable } from 'react-native';
+import { View, StyleSheet, Image, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import UserAvatar from "../UserAvatar";
 import RegularText from "../text/RegularText";
-import { 
-  PrimaryButton, 
-  SecondaryButton, 
-} from "../buttons/RegularButton";
+import { PrimaryButton, SecondaryButton } from "../buttons/RegularButton";
 import { colours } from "../ColourPalette";
 import axios from "axios";
 const { inputbackground, primary, white, placeholder } = colours;
@@ -15,11 +12,11 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 // use dummy data / hardcode for now
 const rentalData = {
-  startDate: '2023-09-27 07:00:00',
-  endDate: '2023-09-27 15:00:00',
-  collectionLocation: 'Orchard Towers',
-  additionalRequest: 'lens + straps',
-  rentalFee: '$80.00',
+  startDate: "2023-09-27 07:00:00",
+  endDate: "2023-09-27 15:00:00",
+  collectionLocation: "Orchard Towers",
+  additionalRequest: "lens + straps",
+  rentalFee: "$80.00",
   itemId: 134,
   borrowerId: 85,
   lenderId: 84,
@@ -31,7 +28,7 @@ const rentalData = {
 
 const ActivityCard = ({ rental, type }) => {
   const isLending = type === "Lending";
-  const isHourly = true // some comparison
+  const isHourly = true; // some comparison
 
   const userId = isLending ? rental.borrowerId : rental.lenderId;
 
@@ -72,10 +69,9 @@ const ActivityCard = ({ rental, type }) => {
 
     fetchItemData();
     fetchUserData();
-  }, [userId, rental.itemId])
+  }, [userId, rental.itemId]);
 
   const CardHeader = () => {
-
     // daily countdown
     const numOfDays = 4; // some calculation
 
@@ -83,32 +79,31 @@ const ActivityCard = ({ rental, type }) => {
     const numOfHours = 5; // some calculation
 
     return (
-      <View style={[
-        styles.cardHeader, 
-        rental.status === "UPCOMING" || rental.status === "ONGOING" 
-          ? styles.cardHeaderWithCountdown 
-          : styles.cardHeaderUsernameOnly
-      ]}>
+      <View
+        style={[
+          styles.cardHeader,
+          rental.status === "UPCOMING" || rental.status === "ONGOING"
+            ? styles.cardHeaderWithCountdown
+            : styles.cardHeaderUsernameOnly,
+        ]}
+      >
         <View style={styles.username}>
           {/* fix this get image */}
           <UserAvatar
             size="xsmall"
-            source={{ 
-              uri: 
-                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+            source={{
+              uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
             }}
           />
           {user && (
-            <RegularText typography="Subtitle">
-              {user.username}
-            </RegularText>
+            <RegularText typography="Subtitle">{user.username}</RegularText>
           )}
         </View>
-        
-        {(rental.status === "UPCOMING") && (
+
+        {rental.status === "UPCOMING" && (
           <View style={styles.countdown}>
             <RegularText typography="Subtitle">
-              {isLending ? "lending" : "borrowing"} in{' '}
+              {isLending ? "lending" : "borrowing"} in{" "}
             </RegularText>
             <RegularText typography="B3">
               {isHourly
@@ -116,33 +111,29 @@ const ActivityCard = ({ rental, type }) => {
                   ? `${numOfHours} hour`
                   : `${numOfHours} hours`
                 : numOfDays === 1
-                  ? `${numOfDays} day`
-                  : `${numOfDays} days`
-              }
+                ? `${numOfDays} day`
+                : `${numOfDays} days`}
             </RegularText>
           </View>
         )}
 
-        {(rental.status === "ONGOING") && (
+        {rental.status === "ONGOING" && (
           <View style={styles.countdown}>
-            <RegularText typography="Subtitle">
-              return in{' '}
-            </RegularText>
+            <RegularText typography="Subtitle">return in </RegularText>
             <RegularText typography="B3">
               {isHourly
                 ? numOfHours === 1
                   ? `${numOfHours} hour`
                   : `${numOfHours} hours`
                 : numOfDays === 1
-                  ? `${numOfDays} day`
-                  : `${numOfDays} days`
-              }
+                ? `${numOfDays} day`
+                : `${numOfDays} days`}
             </RegularText>
           </View>
         )}
       </View>
-    )
-  }
+    );
+  };
 
   const CardDetails = () => {
     // Daily
@@ -160,26 +151,22 @@ const ActivityCard = ({ rental, type }) => {
       <View style={styles.cardDetailsContainer}>
         <View style={styles.rentalDetails}>
           {/* to fix the get image and it has to be image[0] */}
-          <Image 
+          <Image
             style={styles.image}
-            source={{ 
-              uri: 
-                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+            source={{
+              uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
             }}
           />
-            
+
           {isHourly && (
             <View style={styles.rentalDetailsText}>
-             {item && (
-                <RegularText typography="B2">
-                  {item.itemTitle}
-                </RegularText>
-             )}
+              {item && (
+                <RegularText typography="B2">{item.itemTitle}</RegularText>
+              )}
+              <RegularText typography="Subtitle">{rentalDay}</RegularText>
               <RegularText typography="Subtitle">
-                {rentalDay}
-              </RegularText>
-              <RegularText typography="Subtitle">
-                {startTime} - {endTime} ({hourlyRentalLength} {hourlyRentalLength == 1 ? 'Hour' : 'Hours'})
+                {startTime} - {endTime} ({hourlyRentalLength}{" "}
+                {hourlyRentalLength == 1 ? "Hour" : "Hours"})
               </RegularText>
             </View>
           )}
@@ -191,23 +178,24 @@ const ActivityCard = ({ rental, type }) => {
                 Item Title
               </RegularText>
               <RegularText typography="Subtitle">
-                {startDay} - {endDay} ({dailyRentalLength} {dailyRentalLength == 1 ? 'Day' : 'Days'})
+                {startDay} - {endDay} ({dailyRentalLength}{" "}
+                {dailyRentalLength == 1 ? "Day" : "Days"})
               </RegularText>
             </View>
           )}
         </View>
 
-        <RegularText typography="B3" style={{ textAlign: 'right' }}>
+        <RegularText typography="B3" style={{ textAlign: "right" }}>
           {rentalData.rentalFee}
-        </RegularText>          
+        </RegularText>
       </View>
-    )
-  }
+    );
+  };
 
   const CardFooter = () => {
     return (
       <View>
-        {(rental.status === "UPCOMING") && (
+        {rental.status === "PENDING" && (
           <View style={styles.buttons}>
             {/* to be implemented */}
             <Pressable>
@@ -219,13 +207,12 @@ const ActivityCard = ({ rental, type }) => {
             </Pressable>
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
-              <SecondaryButton typography="B3" color={placeholder} style={{ paddingVertical: 0 }}>
+              <SecondaryButton
+                typography="B3"
+                color={placeholder}
+                style={{ paddingVertical: 0 }}
+              >
                 Report
-              </SecondaryButton>
-            </View>
-            <View style={styles.buttonContainer}>
-              <SecondaryButton typography="B3" color={primary}>
-                Cancel
               </SecondaryButton>
             </View>
             {type === "Borrowing" && (
@@ -238,7 +225,44 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
 
-        {(rental.status === "ONGOING") && (
+        {rental.status === "UPCOMING" && (
+          <View style={styles.buttons}>
+            {/* to be implemented */}
+            <Pressable>
+              <Ionicons
+                name="chatbubble-outline"
+                color={placeholder}
+                size={35}
+              />
+            </Pressable>
+            {/* to be implemented */}
+            <View style={styles.buttonContainer}>
+              <SecondaryButton
+                typography="B3"
+                color={placeholder}
+                style={{ paddingVertical: 0 }}
+              >
+                Report
+              </SecondaryButton>
+            </View>
+            {type === "Lending" && (
+              <View style={styles.buttonContainer}>
+                <SecondaryButton typography="B3" color={primary}>
+                  Cancel
+                </SecondaryButton>
+              </View>
+            )}
+            {type === "Borrowing" && (
+              <View style={styles.buttonContainer}>
+                <PrimaryButton typography="B3" color={white}>
+                  Edit
+                </PrimaryButton>
+              </View>
+            )}
+          </View>
+        )}
+
+        {rental.status === "ONGOING" && (
           <View style={styles.buttons}>
             {/* to be implemented */}
             <Pressable>
@@ -271,7 +295,7 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
 
-        {(rental.status === "COMPLETED") && (
+        {rental.status === "COMPLETED" && (
           <View style={styles.buttonContainer}>
             <PrimaryButton typography="B3" color={white}>
               Rate
@@ -279,11 +303,9 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
 
-        {(rental.status === "CANCELLED") && (
+        {rental.status === "CANCELLED" && (
           <View style={styles.reason}>
-            <RegularText typography="B3">
-              Reason:{' '}
-            </RegularText>
+            <RegularText typography="B3">Reason: </RegularText>
             <RegularText typography="Subtitle">
               {/* to be fixed */}
               Type of reason
@@ -291,8 +313,8 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <View style={styles.activityCard}>
@@ -300,7 +322,6 @@ const ActivityCard = ({ rental, type }) => {
       <CardDetails />
       <CardFooter />
     </View>
-    
   );
 };
 
@@ -311,35 +332,35 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     borderBottomWidth: 1,
     borderBottomColor: inputbackground,
-    flexDirection: "row"
+    flexDirection: "row",
   },
   cardHeaderUsernameOnly: {
-    alignItems: "flex-start"
+    alignItems: "flex-start",
   },
   cardHeaderWithCountdown: {
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   username: {
     gap: 7,
     alignItems: "center",
-    flexDirection: "row"
-  },
-  countdown:  {
     flexDirection: "row",
-    alignItems: "center"
+  },
+  countdown: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   cardDetailsContainer: {
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
     marginTop: 10,
-    marginBottom: 15
+    marginBottom: 15,
   },
   rentalDetails: {
     alignItems: "center",
-    flexDirection:  "row",
-    gap: 10
+    flexDirection: "row",
+    gap: 10,
   },
   image: {
     width: 50,
@@ -350,21 +371,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-start",
     width: 200,
-    gap: 4
+    gap: 4,
   },
   buttons: {
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
-    gap: 12
+    gap: 12,
   },
   buttonContainer: {
     flex: 1,
   },
   reason: {
-    alignItems: "flex-start"
+    alignItems: "flex-start",
   },
   activityCard: {
-    marginBottom: 20
+    marginBottom: 20,
   },
-})
+});

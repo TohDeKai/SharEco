@@ -222,28 +222,28 @@ const Content = ({ activeTab }) => {
         const response1 = await axios.get(
           `http://${BASE_URL}:4000/api/v1/rentals/lenderId/${userId}`
         );
-        if (response1.status === 200){
+        if (response1.status === 200) {
           const lending = response1.data.data.rental;
           setUserLendings(lending);
         } else {
           // Handle the error condition appropriately
           console.log("Failed to retrieve items");
         }
-      } catch(error) {
+      } catch (error) {
         console.log(error);
       }
       try {
         const response2 = await axios.get(
           `http://${BASE_URL}:4000/api/v1/rentals/borrowerId/${userId}`
         );
-        if (response2.status === 200){
+        if (response2.status === 200) {
           const borrowing = response2.data.data.rental;
           setUserBorrowings(borrowing);
         } else {
           // Handle the error condition appropriately
           console.log("Failed to retrieve items");
         }
-      } catch(error) {
+      } catch (error) {
         console.log(error);
       }
     } catch (error) {
@@ -264,28 +264,28 @@ const Content = ({ activeTab }) => {
           const response1 = await axios.get(
             `http://${BASE_URL}:4000/api/v1/rentals/lenderId/${userId}`
           );
-          if (response1.status === 200){
+          if (response1.status === 200) {
             const lending = response1.data.data.rental;
             setUserLendings(lending);
           } else {
             // Handle the error condition appropriately
             console.log("Failed to retrieve items");
           }
-        } catch(error) {
+        } catch (error) {
           console.log(error);
         }
         try {
           const response2 = await axios.get(
             `http://${BASE_URL}:4000/api/v1/rentals/borrowerId/${userId}`
           );
-          if (response2.status === 200){
+          if (response2.status === 200) {
             const borrowing = response2.data.data.rental;
             setUserBorrowings(borrowing);
           } else {
             // Handle the error condition appropriately
             console.log("Failed to retrieve items");
           }
-        } catch(error) {
+        } catch (error) {
           console.log(error);
         }
       } catch (error) {
@@ -318,9 +318,9 @@ const Content = ({ activeTab }) => {
 
   const lendingPill = ["Upcoming", "Ongoing", "Completed", "Cancelled"];
   const borrowingPill = [
+    "Pending",
     "Upcoming",
     "Ongoing",
-    "Pending",
     "Completed",
     "Cancelled",
   ];
@@ -336,8 +336,8 @@ const Content = ({ activeTab }) => {
       {activeTab == "Lending" && (
         <View>
           <RentalNotifContainer />
-          <Pills
-            pillItems={lendingPill}
+          <Pills //change to borrowing
+            pillItems={lendingPill} 
             activeLendingPill={activeLendingPill}
             handlePillPress={handlePillPress}
           />
@@ -347,7 +347,7 @@ const Content = ({ activeTab }) => {
               style={styles.activityCardContainer}
               contentContainerStyle={{ flexGrow: 1 }}
             >
-              {rentals.map((rental) => (
+              {userLendings.map((rental) => (
                 <ActivityCard
                   key={rental.rentalId}
                   rental={rental}
@@ -359,7 +359,32 @@ const Content = ({ activeTab }) => {
         </View>
       )}
 
-      {(activeTab == "Borrowing" || activeTab == "Others") && (
+      {activeTab == "Borrowing" && (
+        <View>
+          <Pills
+            pillItems={borrowingPill}
+            activeLendingPill={activeLendingPill}
+            handlePillPress={handlePillPress}
+          />
+          <View style={{ alignItems: "center" }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.activityCardContainer}
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              {userBorrowings.map((rental) => (
+                <ActivityCard
+                  key={rental.rentalId}
+                  rental={rental}
+                  type={"Borrowing"} 
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      )}
+
+      {(activeTab == "Others") && (
         <View
           style={{
             height: "75%",
