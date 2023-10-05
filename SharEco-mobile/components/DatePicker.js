@@ -41,14 +41,21 @@ const stringDate = (date) => {
   return `${year}-${formattedMonth}-${formattedDay}`;
 };
 
-const maxDate = (date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 6; // Can book up to 5 months from current date
-  const day = date.getDate();
-  const formattedMonth = month < 10 ? `0${month}` : month;
-  const formattedDay = day < 10 ? `0${day}` : day;
-  return `${year}-${formattedMonth}-${formattedDay}`;
-};
+const maxDate = () => {
+    const today = new Date();
+    const futureDate = new Date(today);
+    const inFiveMonths = futureDate.getMonth() + 5;
+    if (inFiveMonths <= 12) {
+      futureDate.setMonth(inFiveMonths);
+    } else {
+      futureDate.setMonth(inFiveMonths % 12);
+      futureDate.setFullYear(today.getFullYear() + 1);
+    }
+    if (today.getDate() !== futureDate.getDate()) {
+      futureDate.setDate(0);
+    }
+    return stringDate(futureDate);
+  };
 
 const formatTodayDate = (dateString) => {
   const [year, month, day] = dateString.split("/");
@@ -160,7 +167,6 @@ const datePicker = ({ itemId, activeTab }) => {
         mode="calendar"
         minimumDate={stringDate(nextDate)}
         maximumDate={maxDate(currentDate)}
-        minuteInterval={30}
         onSelectedChange={handleSelectedChange}
       />
       {activeTab == "Hourly" && (

@@ -168,6 +168,7 @@ const createRentals = () => {
   const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
   const [endDate, setEndDate] = useState(stringDate(tomorrow()));
   const [endTime, setEndTime] = useState(new Date(toNearest30Min(today)));
+  const [totalRentalCost, setTotalCost] = useState(0);
 
   const handleStartDateChange = (event) => {
     const selectedTimestamp = event.nativeEvent.timestamp;
@@ -373,92 +374,45 @@ const createRentals = () => {
     );
   };
 
-  const CostCalculation = (activeTab) => {
-    const rentalDuration = () => {
-      let time = 0;
-      if (activeTab == "Hourly") {
-        const timeDifferenceInMilliseconds =
-          new Date(fullEndDate()).setMilliseconds(0) -
-          new Date(fullStartDate()).setMilliseconds(0);
-        time = timeDifferenceInMilliseconds / (1000 * 60 * 60);
-      } else {
-        const timeDifferenceInMilliseconds =
-          new Date(fullEndDate()).setHours(0, 0, 0, 0) -
-          new Date(fullStartDate()).setHours(0, 0, 0, 0);
-        time = timeDifferenceInMilliseconds / (1000 * 60 * 60 * 24);
-      }
-      return time;
-    };
+  const rentalDuration = (activeTab) => {
+    let time = 0;
+    if (activeTab == "Hourly") {
+      const timeDifferenceInMilliseconds =
+        new Date(fullEndDate()).setMilliseconds(0) -
+        new Date(fullStartDate()).setMilliseconds(0);
+      time = timeDifferenceInMilliseconds / (1000 * 60 * 60);
+    } else {
+      const timeDifferenceInMilliseconds =
+        new Date(fullEndDate()).setHours(0, 0, 0, 0) -
+        new Date(fullStartDate()).setHours(0, 0, 0, 0);
+      time = timeDifferenceInMilliseconds / (1000 * 60 * 60 * 24);
+    }
+    return time;
+  };
 
-    const rentalCost = (activeTab) => {
-      let rentalRate = 0;
-      if (activeTab == "Hourly") {
-        rentalRate = rentalRateHourly
-          ? parseFloat(rentalRateHourly.replace("$", ""))
-          : 0;
-      } else {
-        rentalRate = rentalRateDaily
-          ? parseFloat(rentalRateDaily.replace("$", ""))
-          : 0;
-      }
-      const cost = rentalDuration(activeTab) * rentalRate;
-      return cost.toFixed(2);
-    };
+  const rentalCost = (activeTab) => {
+    let rentalRate = 0;
+    if (activeTab == "Hourly") {
+      rentalRate = rentalRateHourly
+        ? parseFloat(rentalRateHourly.replace("$", ""))
+        : 0;
+    } else {
+      rentalRate = rentalRateDaily
+        ? parseFloat(rentalRateDaily.replace("$", ""))
+        : 0;
+    }
+    const cost = rentalDuration(activeTab) * rentalRate;
+    return cost.toFixed(2);
+  };
 
-    const totalCost = (activeTab) => {
-      const deposit = depositFee ? parseFloat(depositFee.replace("$", "")) : 0;
-      if (rentalCost(activeTab) == 0) {
-        return deposit.toFixed(2);
-      }
-      const total = parseFloat(rentalCost(activeTab) + deposit);
-      return total.toFixed(2);
-    };
-    return (
-      <View>
-          <View style={styles.pricing}>
-            <View style={styles.pricingRow}>
-              <View>
-                <RegularText typography="H3">Rental Duration</RegularText>
-              </View>
-              <View>
-                <RegularText typography="H3">
-                  {rentalDuration()}{" "}
-                  {activeTab == "Hourly" && (
-                    <RegularText typography="H3">hour(s)</RegularText>
-                  )}
-                  {activeTab == "Daily" && (
-                    <RegularText typography="H3">day(s)</RegularText>
-                  )}
-                </RegularText>
-              </View>
-            </View>
-            <View style={styles.pricingRow}>
-              <View>
-                <RegularText typography="H3">Rental Fee</RegularText>
-              </View>
-              <View>
-                <RegularText typography="H3">${rentalCost()}</RegularText>
-              </View>
-            </View>
-            <View style={styles.pricingRow}>
-              <View>
-                <RegularText typography="H3">Deposit Fee</RegularText>
-              </View>
-              <View>
-                <RegularText typography="H3">{depositFee}</RegularText>
-              </View>
-            </View>
-            <View style={styles.pricingRow}>
-              <View>
-                <RegularText typography="H3">TOTAL FEE</RegularText>
-              </View>
-              <View>
-                <RegularText typography="H3">${totalCost()}</RegularText>
-              </View>
-            </View>
-          </View>
-      </View>
-    );
+  const totalCost = (activeTab) => {
+    const deposit = depositFee ? parseFloat(depositFee.replace("$", "")) : 0;
+    if (rentalCost(activeTab) == 0) {
+      return deposit.toFixed(2);
+    }
+    const total = parseFloat(rentalCost(activeTab) + deposit);
+    // setTotalCost(total);
+    return total.toFixed(2);
   };
 
   const handleCreateRentalRequest = async (values) => {
@@ -469,7 +423,7 @@ const createRentals = () => {
         itemId: itemId,
         collectionLocation: selectedLocation,
         depositFee: depositFee,
-        rentalFee: totalCost(),
+        rentalFee: totalCost(activeTab),
         startDate: fullStartDate(),
         endDate: fullEndDate(),
         additionalRequest: values.addComments,
@@ -483,7 +437,8 @@ const createRentals = () => {
       console.log(response.data);
 
       if (response.status === 201) {
-        router.replace("/home");
+        // router.replace("/home");
+        router.back()
       }
     } catch (error) {
       console.log(error.message);
@@ -602,7 +557,56 @@ const createRentals = () => {
                   minHeight={100}
                   style={{ marginTop: -10 }}
                 />
-                <CostCalculation activeTab={activeTab} />
+                <View>
+                  <View style={styles.pricing}>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">
+                          Rental Duration
+                        </RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          {rentalDuration(activeTab)}{" "}
+                          {activeTab == "Hourly" && (
+                            <RegularText typography="H3">hour(s)</RegularText>
+                          )}
+                          {activeTab == "Daily" && (
+                            <RegularText typography="H3">day(s)</RegularText>
+                          )}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">Rental Fee</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          ${rentalCost(activeTab)}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">Deposit Fee</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">{depositFee}</RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">TOTAL FEE</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          ${totalCost(activeTab)}
+                        </RegularText>
+                      </View>
+                    </View>
+                  </View>
+                </View>
                 <RegularText
                   typography="Subtitle"
                   style={{ alignSelf: "center" }}
