@@ -111,8 +111,8 @@ export default categoryMenu;
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    alignSelf: "center",
-    width: '85%',
+    alignSelf: "flex-end",
+    width: '91%',
     paddingVertical: 40,
   },
 });
