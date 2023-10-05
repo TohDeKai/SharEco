@@ -423,7 +423,7 @@ const Listing = ({}) => {
                   <TableCell>{selectedUserId}</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell style={cellStyle}>Owner username</TableCell>
+                  <TableCell style={cellStyle}>Owner Username</TableCell>
                   <TableCell>{selectedUsername}</TableCell>
                 </TableRow>
                 <TableRow>
