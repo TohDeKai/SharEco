@@ -403,23 +403,25 @@ const Home = () => {
                           <TableCell>
                             {row.approved ? (
                               <Button
-                                variant="outlined"
-                                onClick={() =>
+                                variant="contained"
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleRemoveClickOpen(
                                     row.businessVerificationId
-                                  )
-                                }
+                                  );
+                                }}
                               >
                                 Remove Verification
                               </Button>
                             ) : (
                               <Button
                                 variant="contained"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleApproveRequestClickOpen(
                                     row.businessVerificationId
-                                  )
-                                }
+                                  );
+                                }}
                               >
                                 Approve Request
                               </Button>
