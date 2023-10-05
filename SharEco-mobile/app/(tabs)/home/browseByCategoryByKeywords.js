@@ -302,10 +302,8 @@ const browseByCategoryByKeywords = () => {
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
           <Content activeTab={activeTab} keywords={keywords} category={category}/>
-          <RegularText>{keywords} browseByCategoryByKeywords.js</RegularText>
         </View>
       </View>
-      
     </SafeAreaContainer>
   );
 };

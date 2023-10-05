@@ -262,7 +262,6 @@ const Content = ({ navigation, activeTab }) => {
   }, []);
 
   const ListingCard = ({ item }) => {
-    console.log("ListingCard");
     return <Listing item={item} mine={true}/>;
   };
 

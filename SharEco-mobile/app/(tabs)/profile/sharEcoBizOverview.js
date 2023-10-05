@@ -78,7 +78,7 @@ const sharEcoBizOverview = () => {
 
       if (response.status === 200) {
         const bizVeri = response.data.data.businessVerification;
-        console.log("bizVeri 77", bizVeri);
+        console.log("bizVeri:", bizVeri);
         return bizVeri;
       } else {
         console.log("Failed to retrieve business verification.");
