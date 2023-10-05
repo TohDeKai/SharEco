@@ -127,6 +127,7 @@ const Home = () => {
   const [selectedApproved, setSelectedApproved] = React.useState("");
   const [selectedUsername, setSelectedUsername] = React.useState("");
   const [selectedDocuments, setSelectedDocuments] = React.useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [userData, setUserData] = useState([]);
 
@@ -158,14 +159,17 @@ const Home = () => {
     setSelectedUserId(userId);
     setSelectedApproved(approved);
     setSelectedDocuments(documents);
-    setDetailsOpen(true);
     try {
+      console.log(selectedUserId);
       const response = await axios.get(
-        `http://localhost:4000/api/v1/users/userId/${selectedUserId}`
+        `http://localhost:4000/api/v1/users/userId/${userId}`
       );
       setSelectedUsername(response.data.data.user.username);
-    } catch (error) {
-      console.log("Error getting username of business verification: ", error);
+    } catch (err) {
+      console.log("Error getting listing username: ", err);
+    } finally {
+      setLoading(false); // Set loading state to false when the request is complete
+      setDetailsOpen(true); // Open the dialog
     }
   };
 
@@ -554,7 +558,7 @@ const Home = () => {
 
           {/* Popup box to show all details of each business verification */}
           <Dialog
-            open={openDetails}
+            open={openDetails && !loading}
             onClose={handleClose}
             scroll="paper"
             aria-labelledby="alert-dialog-title"
