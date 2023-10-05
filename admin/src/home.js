@@ -408,7 +408,7 @@ const Home = () => {
                           <TableCell>
                             {row.approved ? (
                               <Button
-                                variant="contained"
+                                variant="outlined"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleRemoveClickOpen(
