@@ -201,7 +201,7 @@ const createRentals = () => {
     const date = new Date(timeString);
     const minutes = date.getMinutes();
     const roundedMinutes = Math.round(minutes / 30) * 30;
-    
+
     return date.setMinutes(roundedMinutes);
   };
 
@@ -523,28 +523,53 @@ const createRentals = () => {
                   minHeight={100}
                   style={{ marginTop: -10 }}
                 />
-                <View style={styles.textMargin} />
-                <View>
-                  <RegularText typography="H3">Rental Duration</RegularText>
-                  <RegularText typography="H3">
-                    {rentalDurationHourly()}
-                  </RegularText>
-                </View>
-                <View>
-                  <RegularText typography="H3">Rental Fee</RegularText>
-                  <RegularText typography="H3">${rentalCost()}</RegularText>
-                </View>
-                <View>
-                  <RegularText typography="H3">Deposit Fee</RegularText>
-                  <RegularText typography="H3">{depositFee}</RegularText>
-                </View>
-                <View>
-                  <RegularText typography="H3">TOTAL FEE</RegularText>
-                  <RegularText typography="H3">${totalCost()}</RegularText>
-                </View>
+                {activeTab == "Hourly" && (
+                  <View style={styles.pricing}>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">
+                          Rental Duration
+                        </RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          {rentalDurationHourly()} hours
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">Rental Fee</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          ${rentalCost()}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">Deposit Fee</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">{depositFee}</RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">TOTAL FEE</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          ${totalCost()}
+                        </RegularText>
+                      </View>
+                    </View>
+                  </View>
+                )}
                 <RegularText
                   typography="Subtitle"
-                  style={{ alignSelf: "center", marginTop: 20 }}
+                  style={{ alignSelf: "center" }}
                 >
                   By proceeding, you are agreeing to our
                 </RegularText>
@@ -574,7 +599,6 @@ const createRentals = () => {
                   </Pressable>
                 </View>
                 <MessageBox
-                  style={{ marginTop: 10 }}
                   success={isSuccessMessage}
                 >
                   {message || " "}
@@ -669,33 +693,17 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     marginHorizontal: viewportWidthInPixels(5),
-    marginBottom: 20,
   },
-  bottomContainer: {
-    marginBottom: 20,
-    alignSelf: "center", // Center horizontally
+  pricing: {
+    marginVertical: 15,
+    paddingTop: 25,
+    borderTopWidth: 2,
+    borderTopColor: inputbackground,
   },
-  headerText: {
-    marginTop: 20,
-    alignSelf: "flex-start",
-  },
-  imageCarousel: {
-    gap: 10,
-  },
-  perDayContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+  pricingRow: {
     display: "flex",
+    flexDirection: "row",
     justifyContent: "space-between",
-    position: "relative",
-    width: viewportWidthInPixels(85),
-  },
-  perDayText: {
-    position: "relative",
-    width: "fit-content%",
-  },
-  perDayInputBox: {
-    justifyContent: "flex-end",
-    width: viewportWidthInPixels(35),
+    marginBottom: 8,
   },
 });
