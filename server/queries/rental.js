@@ -19,13 +19,13 @@ const createRentalRequest = async (
   rentalFee,
   itemId,
   borrowerId,
-  lenderId
+  lenderId,
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."rental" 
-          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId") 
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) returning *`,
+          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId", "creationDate") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) returning *`,
       [
         startDate,
         endDate,
@@ -38,6 +38,7 @@ const createRentalRequest = async (
         itemId,
         borrowerId,
         lenderId,
+        new Date(),
       ]
     );
     return result.rows[0];

@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, Pressable } from 'react-native';
+import { View, StyleSheet, Image, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 // import { AWS_GETFILE_URL } from '../../../server/s3';
 import UserAvatar from "../UserAvatar";
 import RegularText from "../text/RegularText";
-import { 
-  PrimaryButton, 
-  SecondaryButton, 
-} from "../buttons/RegularButton";
+import { PrimaryButton, SecondaryButton } from "../buttons/RegularButton";
 import { colours } from "../ColourPalette";
 import axios from "axios";
 const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const AWS_GETFILE_URL = "https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/";
+
 
 const ActivityCard = ({ rental, type }) => {
   const startDate = new Date(rental.startDate); 
@@ -68,7 +66,7 @@ const ActivityCard = ({ rental, type }) => {
 
     fetchItemData();
     fetchUserData();
-  }, [userId, rental.itemId])
+  }, [userId, rental.itemId]);
 
   const currentDate = new Date();
 
@@ -100,12 +98,14 @@ const ActivityCard = ({ rental, type }) => {
     countdown.trim();
 
     return (
-      <View style={[
-        styles.cardHeader, 
-        rental.status === "UPCOMING" || rental.status === "ONGOING" 
-          ? styles.cardHeaderWithCountdown 
-          : styles.cardHeaderUsernameOnly
-      ]}>
+      <View
+        style={[
+          styles.cardHeader,
+          rental.status === "UPCOMING" || rental.status === "ONGOING"
+            ? styles.cardHeaderWithCountdown
+            : styles.cardHeaderUsernameOnly,
+        ]}
+      >
         <View style={styles.username}>
           {user && (
             <UserAvatar
@@ -118,9 +118,7 @@ const ActivityCard = ({ rental, type }) => {
           )}
             
           {user && (
-            <RegularText typography="Subtitle">
-              {user.username}
-            </RegularText>
+            <RegularText typography="Subtitle">{user.username}</RegularText>
           )}
         </View>
         
@@ -162,8 +160,8 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
       </View>
-    )
-  }
+    );
+  };
 
   const CardDetails = () => {
     // calculate daily rental details
@@ -233,13 +231,13 @@ const ActivityCard = ({ rental, type }) => {
           </RegularText>
         </View>   
       </View>
-    )
-  }
+    );
+  };
 
   const CardFooter = () => {
     return (
       <View>
-        {(rental.status === "UPCOMING") && (
+        {rental.status === "PENDING" && (
           <View style={styles.buttons}>
             {/* to be implemented */}
             <Pressable>
@@ -255,11 +253,6 @@ const ActivityCard = ({ rental, type }) => {
                 Report
               </SecondaryButton>
             </View>
-            <View style={styles.buttonContainer}>
-              <SecondaryButton typography="B3" color={primary}>
-                Cancel
-              </SecondaryButton>
-            </View>
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
@@ -270,7 +263,44 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
 
-        {(rental.status === "ONGOING") && (
+        {rental.status === "UPCOMING" && (
+          <View style={styles.buttons}>
+            {/* to be implemented */}
+            <Pressable>
+              <Ionicons
+                name="chatbubble-outline"
+                color={placeholder}
+                size={35}
+              />
+            </Pressable>
+            {/* to be implemented */}
+            <View style={styles.buttonContainer}>
+              <SecondaryButton
+                typography="B3"
+                color={placeholder}
+                style={{ paddingVertical: 0 }}
+              >
+                Report
+              </SecondaryButton>
+            </View>
+            {type === "Lending" && (
+              <View style={styles.buttonContainer}>
+                <SecondaryButton typography="B3" color={primary}>
+                  Cancel
+                </SecondaryButton>
+              </View>
+            )}
+            {type === "Borrowing" && (
+              <View style={styles.buttonContainer}>
+                <PrimaryButton typography="B3" color={white}>
+                  Edit
+                </PrimaryButton>
+              </View>
+            )}
+          </View>
+        )}
+
+        {rental.status === "ONGOING" && (
           <View style={styles.buttons}>
             {/* to be implemented */}
             <Pressable>
@@ -303,7 +333,7 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
 
-        {(rental.status === "COMPLETED") && (
+        {rental.status === "COMPLETED" && (
           <View style={styles.buttonContainer}>
             <PrimaryButton typography="B3" color={white}>
               Rate
@@ -311,11 +341,9 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
 
-        {(rental.status === "CANCELLED") && (
+        {rental.status === "CANCELLED" && (
           <View style={styles.reason}>
-            <RegularText typography="B3">
-              Reason:{' '}
-            </RegularText>
+            <RegularText typography="B3">Reason: </RegularText>
             <RegularText typography="Subtitle">
               {/* to be fixed */}
               Type of reason
@@ -323,8 +351,8 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
       </View>
-    )
-  }
+    );
+  };
 
   return (
     (rental.status !== "PENDING") && (
@@ -344,23 +372,23 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     borderBottomWidth: 1,
     borderBottomColor: inputbackground,
-    flexDirection: "row"
+    flexDirection: "row",
   },
   cardHeaderUsernameOnly: {
-    alignItems: "flex-start"
+    alignItems: "flex-start",
   },
   cardHeaderWithCountdown: {
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   username: {
     gap: 7,
     alignItems: "center",
-    flexDirection: "row"
-  },
-  countdown:  {
     flexDirection: "row",
-    alignItems: "center"
+  },
+  countdown: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   cardDetailsContainer: {
     marginTop: 10,
@@ -373,8 +401,8 @@ const styles = StyleSheet.create({
   },
   rentalDetails: {
     alignItems: "center",
-    flexDirection:  "row",
-    gap: 10
+    flexDirection: "row",
+    gap: 10,
   },
   image: {
     width: 50,
@@ -385,7 +413,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-start",
     width: 200,
-    gap: 4
+    gap: 4,
   },
   rentalLocation: {
     flexDirection: "row",
@@ -395,15 +423,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
-    gap: 12
+    gap: 12,
   },
   buttonContainer: {
     flex: 1,
   },
   reason: {
-    alignItems: "flex-start"
+    alignItems: "flex-start",
   },
   activityCard: {
-    marginBottom: 20
+    marginBottom: 20,
   },
-})
+});
