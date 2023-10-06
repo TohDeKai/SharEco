@@ -7,13 +7,16 @@ import {
   Pressable,
   Dimensions,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Formik, Field } from "formik";
 import { router, Link, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
+import { DatePickerModal } from "react-native-paper-dates";
 import axios from "axios";
+import { enGB, registerTranslation } from "react-native-paper-dates";
+registerTranslation("en-GB", enGB);
 import DateTimePicker from "@react-native-community/datetimepicker";
 import DropDownPicker from "react-native-dropdown-picker";
 
@@ -29,6 +32,7 @@ import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black, dark } = colours;
 import { useAuth } from "../../../context/auth";
 import Calendar from "../../../components/DatePicker";
+import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import {
   SelectList,
   MultipleSelectList,
@@ -57,6 +61,15 @@ const createRentals = () => {
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [locations, setLocations] = useState([]);
+  const currentDate = new Date();
+  const [visible, setVisibility] = useState(false);
+  const [unavails, setUnavails] = useState({});
+  const nextDate = new Date(new Date().setDate(currentDate.getDate() + 1));
+  const [range, setRange] = useState({
+    startDate: new Date(nextDate),
+    endDate: new Date(nextDate),
+  });
+  const [rangeMessage, setRangeMessage] = useState("");
 
   useEffect(() => {
     async function fetchListingData() {
@@ -88,6 +101,23 @@ const createRentals = () => {
       } catch (error) {
         console.log(error.message);
       }
+
+      try {
+        const unavailResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/item/unavailability/${itemId}`
+        );
+
+        console.log(unavailResponse.response);
+
+        if (unavailResponse.status === 200) {
+          const unavail = unavailResponse.data.data.unavail;
+          setUnavails(unavail);
+        } else {
+          console.log("Failed to retrieve daily unavailabilities");
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
     }
     fetchListingData();
   }, []);
@@ -105,9 +135,6 @@ const createRentals = () => {
   } = listingItem;
 
   const handleBack = () => {
-    //   setImages([null, null, null, null, null]);
-    //   setCategory("");
-    //   setLockers([]);
     router.back();
   };
 
@@ -127,9 +154,10 @@ const createRentals = () => {
   const today = new Date();
 
   const stringDate = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1; // Months are zero-based
-    const day = date.getDate();
+    const newDate = new Date(date);
+    const year = newDate.getFullYear();
+    const month = newDate.getMonth() + 1; // Months are zero-based
+    const day = newDate.getDate();
     // Ensure that single-digit months and days have a leading zero
     const formattedMonth = month < 10 ? `0${month}` : month;
     const formattedDay = day < 10 ? `0${day}` : day;
@@ -142,11 +170,31 @@ const createRentals = () => {
     return `${fillZero(hours)}:${fillZero(minutes)}:00`;
   };
 
-  const fullStartDate = () => {
+  function formatDate(inputDate) {
+    const date = new Date(inputDate);
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return date.toLocaleDateString("en-US", options);
+  }
+
+  const fullStartDate = (activeTab) => {
+    if (activeTab == "Daily") {
+      const date = stringDate(new Date(range.startDate));
+      return date.concat(
+        " ",
+        stringTime(new Date(new Date().setHours(9, 0, 0, 0)))
+      );
+    }
     return startDate.concat(" ", stringTime(startTime));
   };
 
-  const fullEndDate = () => {
+  const fullEndDate = (activeTab) => {
+    if (activeTab == "Daily") {
+      const date = stringDate(new Date(range.endDate));
+      return date.concat(
+        " ",
+        stringTime(new Date(new Date().setHours(9, 0, 0, 0)))
+      );
+    }
     return endDate.concat(" ", stringTime(endTime));
   };
 
@@ -168,14 +216,12 @@ const createRentals = () => {
   const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
   const [endDate, setEndDate] = useState(stringDate(tomorrow()));
   const [endTime, setEndTime] = useState(new Date(toNearest30Min(today)));
-  const [totalRentalCost, setTotalCost] = useState(0);
 
   const handleStartDateChange = (event) => {
     const selectedTimestamp = event.nativeEvent.timestamp;
     const selectedDate = new Date(selectedTimestamp);
     if (stringDate(selectedDate) != stringDate(today)) {
       const formattedDate = stringDate(selectedDate);
-      console.log("Selected Date: ", formattedDate);
       setStartDate(formattedDate);
     }
   };
@@ -189,9 +235,7 @@ const createRentals = () => {
 
       // If the result is not the current time
       if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
-        console.log("Selected Time: ", formattedTime);
         setStartTime(selectedTime);
-        console.log("Full Start Date (time lag): ", fullStartDate());
       }
     }
   };
@@ -201,9 +245,7 @@ const createRentals = () => {
     const selectedDate = new Date(selectedTimestamp);
     if (stringDate(selectedDate) != stringDate(today)) {
       const formattedDate = stringDate(selectedDate);
-      console.log("Selected Date: ", formattedDate);
       setEndDate(formattedDate);
-      console.log("Full End Date (time lag): ", fullEndDate());
     }
   };
 
@@ -216,26 +258,15 @@ const createRentals = () => {
 
       // If the result is not the current time
       if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
-        console.log("Selected Time: ", formattedTime);
         setEndTime(selectedTime);
-        console.log("Full End Date (time lag): ", fullEndDate());
       }
     }
   };
 
   const maxDate = () => {
-    const futureDate = new Date(today);
-    const inFiveMonths = futureDate.getMonth() + 5;
-    if (inFiveMonths <= 12) {
-      futureDate.setMonth(inFiveMonths);
-    } else {
-      futureDate.setMonth(inFiveMonths % 12);
-      futureDate.setFullYear(today.getFullYear() + 1);
-    }
-    if (today.getDate() !== futureDate.getDate()) {
-      futureDate.setDate(0);
-    }
-    return futureDate;
+    const today = new Date();
+    today.setMonth(today.getMonth() + 5);
+    return today;
   };
 
   const chosenStart = () => {
@@ -343,49 +374,52 @@ const createRentals = () => {
     );
   };
 
-  const DailySelection = () => {
-    return (
-      <View>
-        <View style={styles.selector}>
-          <RegularText typography="H4">Starts at 9AM on</RegularText>
-          <View style={styles.dateTimePicker}>
-            <DateTimePicker
-              mode="date"
-              value={new Date(startDate)}
-              onChange={(startDate) => handleStartDateChange(startDate)}
-              minimumDate={tomorrow()}
-              maximumDate={maxDate()}
-            />
-          </View>
-        </View>
-        <View style={styles.selector}>
-          <RegularText typography="H4">Ends at 9AM on</RegularText>
-          <View style={styles.dateTimePicker}>
-            <DateTimePicker
-              mode="date"
-              value={new Date(endDate)}
-              onChange={(endDate) => handleEndDateChange(endDate)}
-              minimumDate={chosenStart()}
-              maximumDate={maxDate()}
-            />
-          </View>
-        </View>
-      </View>
-    );
-  };
+  // const DailySelection = () => {
+  //   return (
+  //     <View>
+  //       <View style={styles.selector}>
+  //         <RegularText typography="H4">Starts at 9AM on</RegularText>
+  //         <View style={styles.dateTimePicker}>
+  //           <DateTimePicker
+  //             mode="date"
+  //             value={new Date(startDate)}
+  //             onChange={(startDate) => handleStartDateChange(startDate)}
+  //             minimumDate={tomorrow()}
+  //             maximumDate={maxDate()}
+  //           />
+  //         </View>
+  //       </View>
+  //       <View style={styles.selector}>
+  //         <RegularText typography="H4">Ends at 9AM on</RegularText>
+  //         <View style={styles.dateTimePicker}>
+  //           <DateTimePicker
+  //             mode="date"
+  //             value={new Date(endDate)}
+  //             onChange={(endDate) => handleEndDateChange(endDate)}
+  //             minimumDate={chosenStart()}
+  //             maximumDate={maxDate()}
+  //           />
+  //         </View>
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   const rentalDuration = (activeTab) => {
     let time = 0;
     if (activeTab == "Hourly") {
       const timeDifferenceInMilliseconds =
-        new Date(fullEndDate()).setMilliseconds(0) -
-        new Date(fullStartDate()).setMilliseconds(0);
+        new Date(fullEndDate(activeTab)).setMilliseconds(0) -
+        new Date(fullStartDate(activeTab)).setMilliseconds(0);
       time = timeDifferenceInMilliseconds / (1000 * 60 * 60);
     } else {
-      const timeDifferenceInMilliseconds =
-        new Date(fullEndDate()).setHours(0, 0, 0, 0) -
-        new Date(fullStartDate()).setHours(0, 0, 0, 0);
-      time = timeDifferenceInMilliseconds / (1000 * 60 * 60 * 24);
+      let curr = new Date(range.startDate);
+      curr.setDate(curr.getDate() + 1);
+      const end = new Date(range.endDate);
+      while (curr < end) {
+        time++;
+        curr.setDate(curr.getDate() + 1);
+      }
     }
     return time;
   };
@@ -407,13 +441,76 @@ const createRentals = () => {
 
   const totalCost = (activeTab) => {
     const deposit = depositFee ? parseFloat(depositFee.replace("$", "")) : 0;
-    if (rentalCost(activeTab) == 0) {
+    const rental = rentalCost(activeTab);
+    if (rental == 0) {
       return deposit.toFixed(2);
     }
-    const total = parseFloat(rentalCost(activeTab) + deposit);
-    // setTotalCost(total);
+    const total = parseFloat(rental) + deposit;
     return total.toFixed(2);
   };
+
+  const onDismiss = useCallback(() => {
+    setVisibility(false);
+  }, [setVisibility]);
+
+  function convertToISOString(dateString) {
+    const [datePart, timePart] = dateString.split(", ");
+    const [month, day, year] = datePart.split("/");
+    const [time, period] = timePart.split(" ");
+    const [hour, minute] = time.split(":");
+    let adjustedHour = parseInt(hour, 10);
+    if (period.toUpperCase() === "PM" && adjustedHour !== 12) {
+      adjustedHour += 12;
+    } else if (period.toUpperCase() === "AM" && adjustedHour === 12) {
+      adjustedHour = 0;
+    }
+    const isoDateString = `${year}-${month}-${day}T${String(
+      adjustedHour
+    ).padStart(2, "0")}:${minute}:00Z`;
+
+    return isoDateString;
+  }
+
+  const unavailDates = Array.isArray(unavails)
+    ? unavails.map((unavail) => new Date(convertToISOString(unavail)))
+    : [];
+
+  const onConfirm = useCallback(
+    ({ startDate, endDate }) => {
+      setVisibility(false);
+      const selectedDates = [];
+      let currentDate = new Date(startDate);
+      currentDate.setDate(currentDate.getDate() + 1);
+      while (currentDate <= endDate) {
+        console.log("PASS ", currentDate);
+        selectedDates.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      const isRangeBlocked = selectedDates.some((date) =>
+        unavailDates.some(
+          (unavailDate) =>
+            stringDate(new Date(unavailDate)) == stringDate(new Date(date))
+        )
+      );
+      if (isRangeBlocked) {
+        console.log("Selected range overlaps with blocked dates.");
+      } else {
+        // Continue with the selected range
+        setRange({ startDate, endDate });
+      }
+    },
+    [setVisibility, setRange, unavailDates]
+  );
+
+  const isDateBlocked = useCallback(
+    (date) => {
+      // Check if the date is in the unavails array
+      return unavailDates.some(
+        (unavailDate) => unavailDate.getTime() === date.getTime()
+      );
+    },
+    [unavailDates]
+  );
 
   const handleCreateRentalRequest = async (values) => {
     try {
@@ -424,8 +521,8 @@ const createRentals = () => {
         collectionLocation: selectedLocation,
         depositFee: depositFee,
         rentalFee: totalCost(activeTab),
-        startDate: fullStartDate(),
-        endDate: fullEndDate(),
+        startDate: fullStartDate(activeTab),
+        endDate: fullEndDate(activeTab),
         additionalRequest: values.addComments,
       };
 
@@ -438,7 +535,7 @@ const createRentals = () => {
 
       if (response.status === 201) {
         // router.replace("/home");
-        router.back()
+        router.back();
       }
     } catch (error) {
       console.log(error.message);
@@ -501,16 +598,61 @@ const createRentals = () => {
           showsVerticalScrollIndicator={false}
           style={styles.scrollContainer}
         >
-          <View style={styles.textMargin}>
-            <RegularText typography="H3">View Availabilities</RegularText>
-          </View>
-          <Calendar itemId={itemId} activeTab={activeTab} />
+          {activeTab == "Hourly" && (
+            <View style={styles.textMargin}>
+              <View>
+                <View>
+                  {" "}
+                  <RegularText typography="H3">View Availabilities</RegularText>
+                </View>
+              </View>
+              <Calendar itemId={itemId} activeTab={activeTab} />
+            </View>
+          )}
 
-          <View style={styles.textMarginDivider}>
-            <RegularText typography="H3">Select rental period</RegularText>
+          <View style={styles.textMargin}>
+            <RegularText typography="H3">Choose your rental period</RegularText>
+            <RegularText typography="Subtitle">
+              Click on the box below to edit the dates
+            </RegularText>
           </View>
           {activeTab == "Hourly" && <HourlySelection />}
-          {activeTab == "Daily" && <DailySelection />}
+          {/* {activeTab == "Daily" && <DailySelection />} */}
+          {activeTab == "Daily" && (
+            <View>
+              <PrimaryButton
+                onPress={() => setVisibility(true)}
+                style={styles.rentalPeriod}
+              >
+                <View style={styles.buttonContainer}>
+                  <Ionicons
+                    name="calendar"
+                    size={27}
+                    style={{ paddingRight: 20 }}
+                  />
+                  <RegularText style={{ paddingTop: 6 }}>
+                    {formatDate(range.startDate)} - {formatDate(range.endDate)}
+                  </RegularText>
+                </View>
+              </PrimaryButton>
+              <DatePickerModal
+                presentationStyle="pageSheet"
+                locale="en-GB"
+                mode="range"
+                startDate={range.startDate}
+                endDate={range.endDate}
+                validRange={{
+                  startDate: new Date(nextDate),
+                  endDate: new Date(maxDate()),
+                  disabledDates: unavailDates,
+                }}
+                onConfirm={onConfirm}
+                visible={visible}
+                onDismiss={onDismiss}
+                isDateBlocked={isDateBlocked}
+              />
+            </View>
+          )}
 
           <Formik
             initialValues={{
@@ -726,6 +868,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   textMarginDivider: {
+    //maybe remove
     marginTop: 25,
     marginBottom: 10,
     paddingBottom: 10,
@@ -750,5 +893,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 8,
+  },
+  rentalPeriod: {
+    borderWidth: 1,
+    borderColor: black,
+    borderRadius: 20,
+    backgroundColor: white,
+    alignItems: "center",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

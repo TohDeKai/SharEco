@@ -513,27 +513,27 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
   }
 };
 
-//Get availabilities by rental ID and selected date
-const getDailyAvailByRentalIdAndDate = async (itemId, date) => {
+//Get unavailability for daily bookings
+const getDailyUnavailability = async (itemId) => {
   try {
-    // Convert date string to a Date object
-    const selectedDate = new Date(date);
-
+    const date = new Date();
+    const maxDate = new Date();
+    maxDate.setMonth(date.getMonth() + 5);
     const result = await pool.query(
-      `SELECT "startDate", "endDate" FROM "sharEco-schema"."rental"
+      `SELECT "startDate", "endDate"
+       FROM "sharEco-schema"."rental"
        WHERE "itemId" = $1
-         AND (($2 BETWEEN "startDate"::date AND "endDate"::date))
-         AND (("status" = 'PENDING' OR "status" = 'UPCOMING' OR "status" = 'ONGOING'))`,
-      [itemId, date]
+         AND (("startDate"::date BETWEEN $2 AND $3) OR
+           ("endDate"::date BETWEEN $2 AND $3))
+         AND ("status" IN ('PENDING', 'UPCOMING', 'ONGOING'))`,
+      [itemId, date, maxDate]
     );
 
-    // Process the result to generate a list of available time intervals
     const bookings = result.rows;
     const unavail = [];
-    const intervals = [];
     const singaporeTimeZone = "Asia/Singapore";
+    const nineAM = new Date(new Date().setHours(9, 0, 0, 0));
 
-    // Process each booking to create intervals
     for (const booking of bookings) {
       const bookingStart = new Date(
         new Date(booking.startDate).toLocaleString("en-US", {
@@ -545,20 +545,43 @@ const getDailyAvailByRentalIdAndDate = async (itemId, date) => {
           timeZone: singaporeTimeZone,
         })
       );
-      let currentDate = bookingStart;
-      while (currentDate <= bookingEnd) {
+
+      // If booking starts and ends on the same day after 9AM
+      if (
+        bookingStart.getDate == bookingEnd.getDate &&
+        bookingEnd.getTime() < nineAM
+      ) {
         unavail.push(
-          new Date(currentDate).toLocaleString("en-US", {
+          bookingStart.getDate().toLocaleString("en-US", {
             timeZone: singaporeTimeZone,
           })
         );
-        currentDate
-          .setDate(currentDate.getDate() + 1)
-          .toLocaleString("en-US", { timeZone: singaporeTimeZone });
+        console.log("Same day booking ends after 9AM");
+      }
+
+      // If booking ends before 9AM
+      else {
+        let currentDate = bookingStart;
+        while (currentDate < bookingEnd) {
+          console.log("Logging for ", currentDate);
+          unavail.push(
+            new Date(currentDate).toLocaleString("en-US", {
+              timeZone: singaporeTimeZone,
+            })
+          );
+          currentDate
+            .setDate(currentDate.getDate() + 1)
+            .toLocaleString("en-US", { timeZone: singaporeTimeZone });
+        }
+        if (bookingEnd.getTime() < nineAM) {
+          unavail.push(
+            new Date(currentDate).toLocaleString("en-US", {
+              timeZone: singaporeTimeZone,
+            })
+          );
+        }
       }
     }
-    // Calculate availabilities
-
     return unavail;
   } catch (err) {
     throw err;
@@ -576,5 +599,5 @@ module.exports = {
   getRentalsByItemId,
   getRentalByRentalId,
   getAvailByRentalIdAndDate,
-  getDailyAvailByRentalIdAndDate,
+  getDailyUnavailability,
 };
