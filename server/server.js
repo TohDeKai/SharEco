@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // S3 BASE URL for GET & PUT request
-const { AWS_GETFILE_URL, AWS_PUTFILE_URL } = require("./s3");
+const { AWS_GETFILE_URL } = require("./s3");
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
@@ -816,52 +816,8 @@ app.get(
 );
 
 // Auth functionalities
-app.post("/api/v1/admin/signIn", async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const token = await auth.AdminSignIn(username, password);
-
-    // Send the newly created user as the response
-    res.status(200).json({
-      status: "success",
-      data: {
-        token: token,
-      },
-    });
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err.message);
-    if (err.message == "Admin not found") {
-      res.status(404).json({ status: "error", error: err.message });
-    } else if (err.message == "Incorrect password") {
-      res.status(400).json({ status: "error", error: err.message });
-    } else {
-      res.status(500).json({ status: "error", error: err.message });
-    }
-  }
-});
-
-app.post("/api/v1/admin/signUp", async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const admin = await auth.AdminSignUp(username, password);
-
-    // Send the newly created user as the response
-    res.status(200).json({
-      status: "success",
-      data: {
-        admin: admin,
-      },
-    });
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err.message);
-    res.status(500).json({ status: "error", error: err });
-  }
-});
-
+app.post("/api/v1/admin/signIn", auth.AdminSignIn);
+app.post("/api/v1/admin/signUp", auth.AdminSignUp);
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
 
@@ -1288,26 +1244,27 @@ app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
   }
 });
 
-//Get rental availability by listing Id and date
-app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
+//Update rental status
+app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
   try {
-    console.log("Request Parameters:", req.params);
-    const intervals = await rentaldb.getAvailByRentalIdAndDate(
-      req.params.itemId,
-      req.params.date
+    const { status } = req.body;
+    const rental = await rentaldb.updateRentalStatus(
+      status,
+      req.params.rentalId
     );
-    console.log(intervals);
-    if (intervals) {
+    if (rental) {
       res.status(200).json({
         status: "success",
         data: {
-          intervals: intervals,
+          rental: rental,
         },
       });
     } else {
-      res.status(404).json({ error: "Listing not found" });
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
     }
   } catch (err) {
+    // Handle the error here if needed
     console.log(err);
     res.status(500).json({ error: "Database error" });
   }
