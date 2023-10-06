@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // S3 BASE URL for GET & PUT request
-const { AWS_GETFILE_URL, AWS_PUTFILE_URL } = require("./s3");
+const { AWS_GETFILE_URL } = require("./s3");
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
