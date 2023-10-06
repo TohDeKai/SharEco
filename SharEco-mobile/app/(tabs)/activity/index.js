@@ -135,7 +135,7 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
   );
 };
 
-const RentalNotifContainer = () => {
+const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
   const handlePress = (route) => {
     router.push(`activity/${route}`);
   }
@@ -156,15 +156,11 @@ const RentalNotifContainer = () => {
 
         <View style={styles.rentalNotifItems}>
           <View style={styles.badge}>
-            {/* {number > 0 && (
+            {numOfNewRentalReq > 0 && (
               <RegularText typography="Subtitle2" color={white}>
-                {number}
+                {numOfNewRentalReq >= 99 ? '99+' : numOfNewRentalReq}
               </RegularText>
-            )} */}
-            {/* testing purpose, to delete. if number > 99, just show 99+ */}
-            <RegularText typography="Subtitle2" color={white}>
-              99+
-            </RegularText>
+            )}
           </View>
           <Ionicons name="chevron-forward" size={23} color={placeholder} />
         </View>
@@ -183,10 +179,10 @@ const RentalNotifContainer = () => {
         </View>
 
         <View style={styles.rentalNotifItems}>
-          {/* {number > 0 && (
+          {/* {numOfRentalUpdates > 0 && (
             <View style={styles.badge}>
               <RegularText typography="Subtitle2" color={white}>
-                {number}
+                {numOfRentalUpdates >= 99 ? '99+' : numOfRentalUpdates}
               </RegularText>
             </View>
           )} */}
@@ -202,20 +198,6 @@ const Content = ({ activeTab }) => {
   const [userLendings, setUserLendings] = useState([]);
   const [userBorrowings, setUserBorrowings] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  // to delete
-  const [rentals, setRentals] = useState([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const allRentals = await fetchAllRentals();
-      if (allRentals) {
-        setRentals(allRentals);
-      }
-
-      console.log("rentals data: ", allRentals);
-    };
-    fetchData();
-  }, []);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -300,24 +282,6 @@ const Content = ({ activeTab }) => {
     fetchAllListings();
   }, []);
 
-  const fetchAllRentals = async () => {
-    try {
-      const response = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/rentals`
-      );
-
-      if (response.status === 200) {
-        const allRentals = response.data.data.rentals;
-        console.log("fetchAllRentals: " + allRentals);
-        return allRentals;
-      } else {
-        console.log("Failed to retrieve all rentals.");
-      }
-    } catch (error) {
-      console.log("fetchAllRentals error: ", error.message);
-    }
-  };
-
   const [activeLendingPill, setActiveLendingPill] = useState("Upcoming");
   const [activeBorrowingPill, setActiveBorrowingPill] = useState("Pending");
 
@@ -341,6 +305,12 @@ const Content = ({ activeTab }) => {
   );
   const cancelledLendings = userLendings.filter(
     (rental) => rental.status === "CANCELLED"
+  );
+  const pendingLendings = userLendings.filter(
+    (rental) => rental.status === "PENDING"
+  );
+  const updatedLendings = userLendings.filter(
+    (rental) => rental.status === "UPDATED"
   );
 
   const pendingBorrowings = userBorrowings.filter(
@@ -374,7 +344,10 @@ const Content = ({ activeTab }) => {
     <View style={{ flex: 1 }}>
       {activeTab == "Lending" && (
         <View style={{ flex: 1 }}>
-          <RentalNotifContainer />
+          <RentalNotifContainer 
+            numOfNewRentalReq={pendingLendings.length}
+            // numOfRentalUpdates={updatedLendings.length}
+          />
           <Pills
             pillItems={lendingPill}
             activeLendingPill={activeLendingPill}
