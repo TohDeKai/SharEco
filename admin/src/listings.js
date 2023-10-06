@@ -22,13 +22,14 @@ import {
   TablePagination,
   TableRow,
 } from "@mui/material";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const columns = [
   { id: "itemId", label: "Item ID", minWidth: 20 },
@@ -46,6 +47,20 @@ const columns = [
 ];
 
 const Listing = ({}) => {
+  // State for Disable Listing Snackbar
+  const [disableSnackbarOpen, setDisableSnackbarOpen] = useState(false);
+
+  const handleDisableSnackbarClose = () => {
+    setDisableSnackbarOpen(false);
+  };
+
+  // State for Enable Listing Snackbar
+  const [enableSnackbarOpen, setEnableSnackbarOpen] = useState(false);
+
+  const handleEnableSnackbarClose = () => {
+    setEnableSnackbarOpen(false);
+  };
+
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [itemData, setItemData] = useState([]);
@@ -194,6 +209,7 @@ const Listing = ({}) => {
           return item;
         });
         setItemData(updatedItemData);
+        setDisableSnackbarOpen(true);
         console.log("Disabled item successfully");
       } else {
         console.log("Disable failed");
@@ -221,6 +237,7 @@ const Listing = ({}) => {
           return item;
         });
         setItemData(updatedItemData);
+        setEnableSnackbarOpen(true);
         console.log("Enabled item successfully");
       } else {
         console.log("Enabled failed");
@@ -490,6 +507,29 @@ const Listing = ({}) => {
             </Table>
           </DialogContent>
         </Dialog>
+
+        {/* Alert pop-ups for disabling and enabling*/}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={enableSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleEnableSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleEnableSnackbarClose}>
+            Listing successfully enabled
+          </Alert>
+        </Snackbar>
+
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={disableSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleDisableSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleDisableSnackbarClose}>
+            Listing successfully disabled!
+          </Alert>
+        </Snackbar>
       </div>
     </ThemeProvider>
   );
