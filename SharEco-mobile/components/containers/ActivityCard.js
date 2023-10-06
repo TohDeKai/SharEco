@@ -107,13 +107,16 @@ const ActivityCard = ({ rental, type }) => {
           : styles.cardHeaderUsernameOnly
       ]}>
         <View style={styles.username}>
-          <UserAvatar
-            size="xsmall"
-            source={{ 
-              uri: 
-                `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`
-            }}
-          />
+          {user && (
+            <UserAvatar
+              size="xsmall"
+              source={{ 
+                uri: 
+                  `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`
+              }}
+            />
+          )}
+            
           {user && (
             <RegularText typography="Subtitle">
               {user.username}
@@ -248,7 +251,7 @@ const ActivityCard = ({ rental, type }) => {
             </Pressable>
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
-              <SecondaryButton typography="B3" color={placeholder} style={{ paddingVertical: 0 }}>
+              <SecondaryButton typography="B3" color={placeholder}>
                 Report
               </SecondaryButton>
             </View>

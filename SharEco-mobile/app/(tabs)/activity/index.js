@@ -5,9 +5,11 @@ import {
   StyleSheet,
   Dimensions,
   RefreshControl,
+  ScrollView
 } from "react-native";
 import React, { useEffect, useState } from 'react';
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import axios from 'axios';
 
 import SafeAreaContainer from '../../../components/containers/SafeAreaContainer';
@@ -147,7 +149,11 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
   );
 };
 
-const RentalNotifContainer = ({ handlePress }) => {
+const RentalNotifContainer = () => {
+  const handlePress = (route) => {
+    router.push(`activity/${route}`);
+  }
+
   return (
     <View style={styles.rentalNotifContainer}>
       <Pressable
@@ -189,7 +195,7 @@ const RentalNotifContainer = ({ handlePress }) => {
       </Pressable>
 
       <Pressable 
-        onPress={() => handlePress("newRentalRequests")}
+        onPress={() => handlePress("rentalUpdates")}
         style={({ pressed }) => [
           { opacity: pressed ? 0.5 : 1 },
           styles.rentalNotif
