@@ -31,10 +31,7 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black } = colours;
 import { useAuth } from "../../../context/auth";
-import {
-  SelectList,
-  MultipleSelectList,
-} from "react-native-dropdown-select-list";
+import DropDownPicker from "react-native-dropdown-picker";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportWidthInPixels = (percentage) => {
@@ -52,12 +49,19 @@ const createListing = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 
   const [images, setImages] = useState([null, null, null, null, null]);
-  const [imagesResult, setImagesResult] = useState([null, null, null, null, null]);
+  const [imagesResult, setImagesResult] = useState([
+    null,
+    null,
+    null,
+    null,
+    null,
+  ]);
   const [category, setCategory] = useState("");
   const [lockers, setLockers] = useState([]);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
-  const [isBusiness, setIsBusiness] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -73,50 +77,32 @@ const createListing = () => {
     fetchUserData();
   }, []);
 
-  // useEffect(() => {
-  //   async function fetchBusinessVerification() {
-  //     try {
-  //       const businessVerificationResponse = await axios.get(
-  //         `http://${BASE_URL}:4000/api/v1/businessVerifications/businessVerificationId/${user.businessVerificationId}`
-  //       );
-  //       if (businessVerificationResponse.status === 200) {
-  //         const businessVerificationData =
-  //           businessVerificationResponse.data.data.businessVerification;
-  //           console.log("Business approved:" + businessVerificationData.approved);
-  //         setIsBusiness(businessVerificationData.approved);
-  //       }
-  //     } catch (error) {
-  //       console.log(error.message);
-  //     }
-  //   }
-  //   fetchBusinessVerification();
-  // }, [user.businessVerificationId]);
-
-  const categories = [
-    "Audio",
-    "Car Accessories",
-    "Computer & Tech",
-    "Health & Personal Care",
-    "Hobbies & Craft",
-    "Home & Living",
-    "Luxury",
-    "Mens Fashion",
-    "Womens Fashion",
-    "Mobile Phone & Gadgets",
-    "Photography & Videography",
-    "Sports Equipment",
-    "Vehicles",
-  ];
-
-  const locations = [
-    "Hougang",
-    "Punggol",
-    "Serangoon",
-    "Orchard",
-    "Woodlands",
-    "Yishun",
-    "Clementi",
-  ];
+  const [categories, setCategories] = useState([
+    { label: "Audio", value: "Audio" },
+    { label: "Car Accessories", value: "Car Accessories" },
+    { label: "Computer & Tech", value: "Computer & Tech" },
+    { label: "Health & Personal Care", value: "Health & Personal Care" },
+    { label: "Hobbies & Craft", value: "Hobbies & Craft" },
+    { label: "Home & Living", value: "Home & Living" },
+    { label: "Luxury", value: "Luxury" },
+    { label: "Men's Fashion", value: "Men's Fashion" },
+    { label: "Women's Fashion", value: "Women's Fashion" },
+    { label: "Mobile Phone & Gadgets", value: "Mobile Phone & Gadgets" },
+    { label: "Photography & Videography", value: "Photography & Videography" },
+    { label: "Sports Equipment", value: "Sports Equipment" },
+    { label: "Vehicles", value: "Vehicles" },
+  ]);
+  
+  const [locations, setLocations] = useState([
+    { label: "Hougang", value: "Hougang" },
+    { label: "Punggol", value: "Punggol" },
+    { label: "Serangoon", value: "Serangoon" },
+    { label: "Orchard", value: "Orchard" },
+    { label: "Woodlands", value: "Woodlands" },
+    { label: "Yishun", value: "Yishun" },
+    { label: "Clementi", value: "Clementi" },
+  ]);
+  
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -159,18 +145,20 @@ const createListing = () => {
       try {
         const img = await fetchImageUri(file.uri);
         const key = `listingId-${listingId}-${index + 1}.jpeg`;
-  
+
         // Upload the image with the unique key
         await Storage.put(key, img, {
           level: "public",
           contentType: file.type,
           progressCallback(uploadProgress) {
             console.log(
-              `PROGRESS (${index + 1}/${files.length}) - ${uploadProgress.loaded}/${uploadProgress.total}`
+              `PROGRESS (${index + 1}/${files.length}) - ${
+                uploadProgress.loaded
+              }/${uploadProgress.total}`
             );
           },
         });
-  
+
         // Retrieve the uploaded image URI
         const result = await Storage.get(key);
         const awsImageUri = result.substring(0, result.indexOf("?"));
@@ -181,7 +169,7 @@ const createListing = () => {
         console.log(`Error uploading image (${index + 1}):`, error);
       }
     });
-  
+
     // Wait for all uploads to complete
     const uploadedURIs = await Promise.all(uploadPromises);
     console.log("All images uploaded");
@@ -238,7 +226,7 @@ const createListing = () => {
         //handle upload all images and returns the array of uris
         const itemId = response.data.data.item.itemId;
         const uploadedURIs = await uploadImageFiles(imagesResult, itemId);
-        
+
         //update images column in db
         const updateImagesResponse = await axios.put(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}/images`,
@@ -334,7 +322,7 @@ const createListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Category
                 </RegularText>
-                <SelectList
+                {/* <SelectList
                   setSelected={setCategory}
                   data={categories}
                   placeholder="Select Category"
@@ -351,6 +339,18 @@ const createListing = () => {
                     borderColor: inputbackground,
                     borderWidth: 2,
                   }}
+                /> */}
+                <DropDownPicker
+                  open={categoryOpen}
+                  value={category}
+                  items={categories}
+                  setOpen={setCategoryOpen}
+                  setValue={setCategory}
+                  setItems={setCategories}
+                  autoScroll={true}
+                  maxHeight={200}
+                  placeholder="Select a category"
+                  style={{marginTop: 10}}
                 />
 
                 <RegularText typography="H3" style={styles.headerText}>
@@ -431,25 +431,20 @@ const createListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Collection & return location
                 </RegularText>
-                <MultipleSelectList
-                  setSelected={(val) => setLockers(val)}
-                  data={locations}
-                  placeholder="Select Locations"
-                  save="value"
-                  label="Locker locations"
-                  defaultOption={[]}
-                  boxStyles={{
-                    marginTop: 16,
-                    backgroundColor: inputbackground,
-                    padding: 13,
-                    paddingRight: 28,
-                    borderRadius: 9,
-                    fontSize: 14,
-                    width: "100%",
-                    color: black,
-                    borderColor: inputbackground,
-                    borderWidth: 2,
-                  }}
+                <DropDownPicker
+                  multiple={true}
+                  open={locationOpen}
+                  value={lockers}
+                  items={locations}
+                  setOpen={setLocationOpen}
+                  setValue={setLockers}
+                  setItems={setLocations}
+                  autoScroll={true}
+                  maxHeight={200}
+                  placeholder="Select locations"
+                  style={{marginTop: 10}}
+                  mode="BADGE"
+                  showBadgeDot={false}
                 />
 
                 <RegularText typography="B2" style={styles.headerText}>
@@ -483,7 +478,8 @@ const createListing = () => {
                       alignSelf: "center",
                     })}
                   >
-                    <RegularText typography="Subtitle"
+                    <RegularText
+                      typography="Subtitle"
                       style={{
                         color: primary,
                         textDecorationLine: "underline",

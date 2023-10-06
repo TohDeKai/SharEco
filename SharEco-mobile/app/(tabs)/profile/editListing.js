@@ -30,10 +30,7 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black } = colours;
 import { useAuth } from "../../../context/auth";
-import {
-  SelectList,
-  MultipleSelectList,
-} from "react-native-dropdown-select-list";
+import DropDownPicker from "react-native-dropdown-picker";
 import ConfirmationModal from "../../../components/ConfirmationModal";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -59,8 +56,9 @@ const editListing = () => {
 
   const [images, setImages] = useState([]);
   const [category, setCategory] = useState(listingItem.category);
-  const [lockers, setLockers] = useState([]);
-  console.log(listingItem);
+  const [lockers, setLockers] = useState(listingItem.collectionLocations ? listingItem.collectionLocations : []);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -87,33 +85,31 @@ const editListing = () => {
     fetchUserData();
   }, []);
 
-  console.log(listingItem.itemTitle + " " + listingItem.itemDescription);
-
-  const categories = [
-    "Audio",
-    "Car Accessories",
-    "Computer & Tech",
-    "Health & Personal Care",
-    "Hobbies & Craft",
-    "Home & Living",
-    "Luxury",
-    "Mens Fashion",
-    "Womens Fashion",
-    "Mobile Phone & Gadgets",
-    "Photography & Videography",
-    "Sports Equipment",
-    "Vehicles",
-  ];
-
-  const locations = [
-    "Hougang",
-    "Punggol",
-    "Serangoon",
-    "Orchard",
-    "Woodlands",
-    "Yishun",
-    "Clementi",
-  ];
+  const [categories, setCategories] = useState([
+    { label: "Audio", value: "Audio" },
+    { label: "Car Accessories", value: "Car Accessories" },
+    { label: "Computer & Tech", value: "Computer & Tech" },
+    { label: "Health & Personal Care", value: "Health & Personal Care" },
+    { label: "Hobbies & Craft", value: "Hobbies & Craft" },
+    { label: "Home & Living", value: "Home & Living" },
+    { label: "Luxury", value: "Luxury" },
+    { label: "Men's Fashion", value: "Men's Fashion" },
+    { label: "Women's Fashion", value: "Women's Fashion" },
+    { label: "Mobile Phone & Gadgets", value: "Mobile Phone & Gadgets" },
+    { label: "Photography & Videography", value: "Photography & Videography" },
+    { label: "Sports Equipment", value: "Sports Equipment" },
+    { label: "Vehicles", value: "Vehicles" },
+  ]);
+  
+  const [locations, setLocations] = useState([
+    { label: "Hougang", value: "Hougang" },
+    { label: "Punggol", value: "Punggol" },
+    { label: "Serangoon", value: "Serangoon" },
+    { label: "Orchard", value: "Orchard" },
+    { label: "Woodlands", value: "Woodlands" },
+    { label: "Yishun", value: "Yishun" },
+    { label: "Clementi", value: "Clementi" },
+  ]);
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -338,23 +334,17 @@ const editListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Category
                 </RegularText>
-                <SelectList
-                  setSelected={setCategory}
-                  data={categories}
+                <DropDownPicker
+                  open={categoryOpen}
+                  value={category}
+                  items={categories}
+                  setOpen={setCategoryOpen}
+                  setValue={setCategory}
+                  setItems={setCategories}
+                  autoScroll={true}
+                  maxHeight={200}
                   placeholder={listingItem.category}
-                  defaultOption={listingItem.category}
-                  boxStyles={{
-                    marginTop: 16,
-                    backgroundColor: inputbackground,
-                    padding: 13,
-                    paddingRight: 28,
-                    borderRadius: 9,
-                    fontSize: 14,
-                    width: "100%",
-                    color: black,
-                    borderColor: inputbackground,
-                    borderWidth: 2,
-                  }}
+                  style={{marginTop: 10}}
                 />
 
                 <RegularText typography="H3" style={styles.headerText}>
@@ -440,25 +430,20 @@ const editListing = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Collection & return location
                 </RegularText>
-                <MultipleSelectList
-                  setSelected={(val) => setLockers(val)}
-                  data={locations}
-                  save="value"
-                  label="Locker locations"
-                  placeholder={listingItem.collectionLocations}
-                  defaultOption={listingItem.collectionLocations}
-                  boxStyles={{
-                    marginTop: 16,
-                    backgroundColor: inputbackground,
-                    padding: 13,
-                    paddingRight: 28,
-                    borderRadius: 9,
-                    fontSize: 14,
-                    width: "100%",
-                    color: black,
-                    borderColor: inputbackground,
-                    borderWidth: 2,
-                  }}
+                <DropDownPicker
+                  multiple={true}
+                  open={locationOpen}
+                  value={lockers}
+                  items={locations}
+                  setOpen={setLocationOpen}
+                  setValue={setLockers}
+                  setItems={setLocations}
+                  autoScroll={true}
+                  maxHeight={200}
+                  placeholder={lockers}
+                  style={{marginTop: 10}}
+                  mode="BADGE"
+                  showBadgeDot={false}
                 />
 
                 <RegularText typography="B2" style={styles.headerText}>
