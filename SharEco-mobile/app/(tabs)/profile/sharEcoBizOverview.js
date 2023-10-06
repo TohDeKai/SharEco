@@ -37,7 +37,7 @@ const sharEcoBizOverview = () => {
           setUser(userData);
 
           const bizVeriId = userData ? userData.businessVerificationId : null;
-          console.log("bizVeriId 46", bizVeriId);
+          console.log("bizVeriId:", bizVeriId);
 
           if (!bizVeriId) {
             setMessage(
@@ -78,7 +78,7 @@ const sharEcoBizOverview = () => {
 
       if (response.status === 200) {
         const bizVeri = response.data.data.businessVerification;
-        console.log("bizVeri 77", bizVeri);
+        console.log("bizVeri:", bizVeri);
         return bizVeri;
       } else {
         console.log("Failed to retrieve business verification.");
