@@ -21,11 +21,9 @@ const rentalUpdates = () => {
       <Header title="Rental Updates" action="back" onPress={handleBack} />
       <RentalRequestCard title="Dummy" />
     </SafeAreaContainer>
-  )
-}
+  );
+};
 
 export default rentalUpdates;
 
-const styles = StyleSheet.create({
-
-})
+const styles = StyleSheet.create({});

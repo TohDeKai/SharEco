@@ -7,6 +7,8 @@ import UserAvatar from "../UserAvatar";
 import RegularText from "../text/RegularText";
 import { PrimaryButton, SecondaryButton } from "../buttons/RegularButton";
 import { colours } from "../ColourPalette";
+import { useAuth } from "../../context/auth";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import axios from "axios";
 const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -14,14 +16,14 @@ const AWS_GETFILE_URL = "https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c18
 
 
 const ActivityCard = ({ rental, type }) => {
-  const startDate = new Date(rental.startDate); 
+  const startDate = new Date(rental.startDate);
   const endDate = new Date(rental.endDate);
 
   const isLending = type === "Lending";
 
   // check if rental is hourly
-  const isHourly = 
-    new Date(startDate).setHours(0, 0, 0, 0) === 
+  const isHourly =
+    new Date(startDate).setHours(0, 0, 0, 0) ===
     new Date(endDate).setHours(0, 0, 0, 0);
 
   // calculate date difference in milliseconds
@@ -29,20 +31,17 @@ const ActivityCard = ({ rental, type }) => {
 
   const userId = isLending ? rental.borrowerId : rental.lenderId;
 
-  const [user, setUser] = useState(null);
-  const [item, setItem] = useState(null);
+  const [item, setItem] = useState();
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     async function fetchUserData() {
       try {
-        console.log("UserId: ", userId);
-        const userResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/users/userId/${userId}`
-        );
-        if (userResponse.status === 200) {
-          const userData = userResponse.data.data.user;
+        const userData = await getUserData();
+        if (userData) {
           setUser(userData);
-          console.log("Borrower userId: ", userData.userId);
         }
       } catch (error) {
         console.log(error.message);
@@ -64,11 +63,43 @@ const ActivityCard = ({ rental, type }) => {
       }
     }
 
-    fetchItemData();
     fetchUserData();
-  }, [userId, rental.itemId]);
+    fetchItemData();
+  }, [userId, rental.status]);;
 
   const currentDate = new Date();
+
+  const handleShowModal = () => {
+    setShowModal(true);
+  };
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  // Cancel for Lenders
+  const handleStatus = async (action, id) => {
+    try {
+      let newStatus = "";
+      const rentalId = id;
+
+      if (action === "Cancel") {
+        newStatus = "CANCELLED";
+      } else if (action === "Reject") {
+        newStatus = "REJECTED";
+      } else if (action === "Accept") {
+        newStatus = "PENDING";
+      }
+
+      const response = await axios.patch(
+        `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
+        { status: newStatus }
+      );
+
+      handleCloseModal();
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   const CardHeader = () => {
     let timeDifferenceMs;
@@ -81,10 +112,16 @@ const ActivityCard = ({ rental, type }) => {
     }
 
     // Calculate numOfMonths, numOfDays, and numOfHours
-    const numOfMonths = Math.floor(timeDifferenceMs / (1000 * 60 * 60 * 24 * 30));
-    const numOfDays = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
-    const numOfHours = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
+    const numOfMonths = Math.floor(
+      timeDifferenceMs / (1000 * 60 * 60 * 24 * 30)
+    );
+    const numOfDays = Math.floor(
+      (timeDifferenceMs % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24)
+    );
+    const numOfHours = Math.floor(
+      (timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
+
     let countdown = "";
     if (numOfMonths > 0) {
       countdown += numOfMonths + "m ";
@@ -121,17 +158,15 @@ const ActivityCard = ({ rental, type }) => {
             <RegularText typography="Subtitle">{user.username}</RegularText>
           )}
         </View>
-        
-        {(rental.status === "UPCOMING") && (
+
+        {rental.status === "UPCOMING" && (
           <View>
             {timeDifferenceMs > 0 ? (
               <View style={styles.countdown}>
                 <RegularText typography="Subtitle">
-                  {isLending ? "lending" : "borrowing"} in{' '}
+                  {isLending ? "lending" : "borrowing"} in{" "}
                 </RegularText>
-                <RegularText typography="B3">
-                  {countdown}
-                </RegularText>
+                <RegularText typography="B3">{countdown}</RegularText>
               </View>
             ) : (
               <RegularText typography="Subtitle">
@@ -141,21 +176,15 @@ const ActivityCard = ({ rental, type }) => {
           </View>
         )}
 
-        {(rental.status === "ONGOING") && (
+        {rental.status === "ONGOING" && (
           <View>
             {timeDifferenceMs > 0 ? (
               <View style={styles.countdown}>
-                <RegularText typography="Subtitle">
-                  return in{' '}
-                </RegularText>
-                <RegularText typography="B3">
-                  {countdown}
-                </RegularText>
+                <RegularText typography="Subtitle">return in </RegularText>
+                <RegularText typography="B3">{countdown}</RegularText>
               </View>
             ) : (
-              <RegularText typography="Subtitle">
-                return now
-              </RegularText>
+              <RegularText typography="Subtitle">return now</RegularText>
             )}
           </View>
         )}
@@ -165,14 +194,28 @@ const ActivityCard = ({ rental, type }) => {
 
   const CardDetails = () => {
     // calculate daily rental details
-    const startDay = startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const endDay = endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const dailyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60 * 24));
+    const startDay = startDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    const endDay = endDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    const dailyRentalLength = Math.ceil(
+      dateDifferenceMs / (1000 * 60 * 60 * 24)
+    );
 
     // calculate hourly rental details
-    const rentalDay = startDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-    const startTime = startDate.toLocaleTimeString("en-US", {  hour: "numeric" });
-    const endTime = endDate.toLocaleTimeString("en-US", {  hour: "numeric"  });
+    const rentalDay = startDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const startTime = startDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+    });
+    const endTime = endDate.toLocaleTimeString("en-US", { hour: "numeric" });
     const hourlyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60));
 
     return (
@@ -180,26 +223,22 @@ const ActivityCard = ({ rental, type }) => {
         <View style={styles.rentalDetailsWithoutLocation}>
           <View style={styles.rentalDetails}>
             {/* to fix the get image and it has to be image[0] */}
-            <Image 
+            <Image
               style={styles.image}
-              source={{ 
-                uri: 
-                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+              source={{
+                uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
               }}
             />
-              
+
             {isHourly && (
               <View style={styles.rentalDetailsText}>
                 {item && (
-                  <RegularText typography="B2">
-                    {item.itemTitle}
-                  </RegularText>
+                  <RegularText typography="B2">{item.itemTitle}</RegularText>
                 )}
+                <RegularText typography="Subtitle">{rentalDay}</RegularText>
                 <RegularText typography="Subtitle">
-                  {rentalDay}
-                </RegularText>
-                <RegularText typography="Subtitle">
-                  {startTime} - {endTime} ({hourlyRentalLength} {hourlyRentalLength == 1 ? 'Hour' : 'Hours'})
+                  {startTime} - {endTime} ({hourlyRentalLength}{" "}
+                  {hourlyRentalLength == 1 ? "Hour" : "Hours"})
                 </RegularText>
               </View>
             )}
@@ -207,29 +246,26 @@ const ActivityCard = ({ rental, type }) => {
             {!isHourly && (
               <View style={styles.rentalDetailsText}>
                 {item && (
-                  <RegularText typography="B2">
-                    {item.itemTitle}
-                  </RegularText>
+                  <RegularText typography="B2">{item.itemTitle}</RegularText>
                 )}
                 <RegularText typography="Subtitle">
-                  {startDay} - {endDay} ({dailyRentalLength} {dailyRentalLength == 1 ? 'Day' : 'Days'})
+                  {startDay} - {endDay} ({dailyRentalLength}{" "}
+                  {dailyRentalLength == 1 ? "Day" : "Days"})
                 </RegularText>
               </View>
             )}
           </View>
 
-          <RegularText typography="B3" style={{ textAlign: 'right' }}>
+          <RegularText typography="B3" style={{ textAlign: "right" }}>
             {rental.rentalFee}
-          </RegularText> 
+          </RegularText>
         </View>
         <View style={styles.rentalLocation}>
-          <RegularText typography="B3">
-            Location:
-          </RegularText>
+          <RegularText typography="B3">Location:</RegularText>
           <RegularText typography="Subtitle">
             {rental.collectionLocation}
           </RegularText>
-        </View>   
+        </View>
       </View>
     );
   };
@@ -355,7 +391,7 @@ const ActivityCard = ({ rental, type }) => {
   };
 
   return (
-    (rental.status !== "PENDING") && (
+    rental.status !== "PENDING" && (
       <View style={styles.activityCard}>
         <CardHeader />
         <CardDetails />
@@ -392,7 +428,7 @@ const styles = StyleSheet.create({
   },
   cardDetailsContainer: {
     marginTop: 10,
-    marginBottom: 15
+    marginBottom: 15,
   },
   rentalDetailsWithoutLocation: {
     justifyContent: "space-between",
@@ -417,7 +453,7 @@ const styles = StyleSheet.create({
   },
   rentalLocation: {
     flexDirection: "row",
-    gap: 5
+    gap: 5,
   },
   buttons: {
     justifyContent: "space-between",

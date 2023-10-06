@@ -612,7 +612,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
 app.put("/api/v1/items/itemId/:itemId/images", async (req, res) => {
   try {
     const itemId = req.params.itemId;
-    const images = req.body.images; 
+    const images = req.body.images;
 
     // Update the images associated with the item using the itemId and the new images array
     const updatedImages = await listingdb.updateItemImages(itemId, images);
@@ -750,7 +750,7 @@ app.get("/api/v1/items/not/:userId", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by keywords
 app.get("/api/v1/items/not/:userId/keywords", async (req, res) => {
@@ -774,7 +774,7 @@ app.get("/api/v1/items/not/:userId/keywords", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by category
 app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
@@ -798,32 +798,39 @@ app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by category by keywords
-app.get("/api/v1/items/not/:userId/category/:category/keywords", async (req, res) => {
-  const userId = req.params.userId;
-  const category = req.params.category;
-  const keywords = req.query.keywords.split(/[ +]/);
+app.get(
+  "/api/v1/items/not/:userId/category/:category/keywords",
+  async (req, res) => {
+    const userId = req.params.userId;
+    const category = req.params.category;
+    const keywords = req.query.keywords.split(/[ +]/);
 
-  try {
-    const items = await listingdb.getOtherUserItemsByCategoryByKeywords(userId, category, keywords);
+    try {
+      const items = await listingdb.getOtherUserItemsByCategoryByKeywords(
+        userId,
+        category,
+        keywords
+      );
 
-    if (items) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          items: items,
-        },
-      });
-    } else {
-      // Handle the case where no items are found
-      res.status(404).json({ error: "No Items Found" });
+      if (items) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            items: items,
+          },
+        });
+      } else {
+        // Handle the case where no items are found
+        res.status(404).json({ error: "No Items Found" });
+      }
+    } catch (error) {
+      console.log(error.message);
     }
-  } catch (error) {
-    console.log(error.message);
   }
-})
+);
 
 // Auth functionalities
 app.post("/api/v1/admin/signIn", auth.AdminSignIn);
@@ -1207,7 +1214,33 @@ app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
   try {
     const rental = await rentaldb.updateRentalStatus(
       req.body.status,
-      req.params.rentalId,
+      req.params.rentalId
+    );
+    if (rental) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rental: rental,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Rental Request not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Update rental status
+app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const rental = await rentaldb.updateRentalStatus(
+      status,
+      req.params.rentalId
     );
     if (rental) {
       res.status(200).json({
