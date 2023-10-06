@@ -588,6 +588,172 @@ const getDailyUnavailability = async (itemId) => {
   }
 };
 
+const getFullDayUnavailability = async (itemId) => {
+  try {
+    const date = new Date();
+    const maxDate = new Date();
+    maxDate.setMonth(date.getMonth() + 5);
+    const result = await pool.query(
+      `SELECT "startDate", "endDate"
+       FROM "sharEco-schema"."rental"
+       WHERE "itemId" = $1
+         AND (("startDate"::date BETWEEN $2 AND $3) OR
+           ("endDate"::date BETWEEN $2 AND $3))
+         AND ("status" IN ('PENDING', 'UPCOMING', 'ONGOING'))`,
+      [itemId, date, maxDate]
+    );
+
+    const bookings = result.rows;
+    const unavail = [];
+    const fullDay = [];
+    const singaporeTimeZone = "Asia/Singapore";
+
+    for (const booking of bookings) {
+      const bookingStart = new Date(
+        new Date(booking.startDate).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        })
+      );
+      const bookingEnd = new Date(
+        new Date(booking.endDate).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        })
+      );
+
+      // If booking starts and ends on the same day
+      if (bookingStart.getDate == bookingEnd.getDate) {
+        unavail.push({
+          start: bookingStart.toLocaleString("en-GB", {
+            timeZone: singaporeTimeZone,
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          end: bookingEnd.toLocaleString("en-GB", {
+            timeZone: singaporeTimeZone,
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        });
+        console.log("Same day booking ends after 9AM (added to unavail)");
+      }
+
+      // If booking consists of 2 or more days
+      else {
+        let currentDate = bookingStart;
+        while (currentDate <= bookingEnd) {
+          // Add start of booking
+          if (currentDate == bookingStart) {
+            unavail.push({
+              start: bookingStart.toLocaleString("en-GB", {
+                timeZone: singaporeTimeZone,
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              end: new Date(currentDate.setHours(23, 59, 0, 0)).toLocaleString(
+                "en-GB",
+                {
+                  timeZone: singaporeTimeZone,
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              ),
+            });
+            currentDate
+              .setDate(currentDate.getDate() + 1)
+              .toLocaleString("en-US", { timeZone: singaporeTimeZone });
+            // Add end of booking
+          } else if (currentDate == bookingEnd) {
+            unavail.push({
+              start: new Date(currentDate.setHours(0, 0, 0, 0)).toLocaleString(
+                "en-GB",
+                {
+                  timeZone: singaporeTimeZone,
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              ),
+              end: bookingEnd.toLocaleString("en-GB", {
+                timeZone: singaporeTimeZone,
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            });
+            // In between days are fully booked => Add to fullDay[]
+          } else {
+            fullDay.push(
+              new Date(currentDate).toLocaleString("en-GB", {
+                timeZone: singaporeTimeZone,
+              })
+            );
+          }
+          // Move onto next day
+          currentDate
+            .setDate(currentDate.getDate() + 1)
+            .toLocaleString("en-US", { timeZone: singaporeTimeZone });
+        }
+      }
+    }
+
+    // Checking unavails for any full day bookings
+    // THIS PART IS PROBABLY ALL WRONG
+    const isFullDay = (date) => {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      return unavail.some((booking) => {
+        const start = new Date(booking.start);
+        const end = new Date(booking.end);
+        return start <= startOfDay && end >= endOfDay;
+      });
+    };
+
+    const fullDayBookings = unavail.filter((booking) => {
+      const start = new Date(booking.start);
+      return isFullDay(start);
+    });
+
+    // Add full day bookings to the existing fullDay array
+    fullDayBookings.forEach((booking) => {
+      const start = new Date(booking.start);
+      fullDay.push(
+        start.toLocaleString("en-GB", {
+          timeZone: singaporeTimeZone,
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+    });
+
+    return fullDay;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -600,4 +766,5 @@ module.exports = {
   getRentalByRentalId,
   getAvailByRentalIdAndDate,
   getDailyUnavailability,
+  getFullDayUnavailability,
 };

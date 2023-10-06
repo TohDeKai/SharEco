@@ -29,7 +29,7 @@ import MessageBox from "../../../components/text/MessageBox";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
-const { white, primary, inputbackground, black, dark } = colours;
+const { white, primary, inputbackground, black, dark, fail } = colours;
 import { useAuth } from "../../../context/auth";
 import Calendar from "../../../components/DatePicker";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
@@ -213,8 +213,8 @@ const createRentals = () => {
   };
 
   const [startDate, setStartDate] = useState(stringDate(tomorrow()));
-  const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
   const [endDate, setEndDate] = useState(stringDate(tomorrow()));
+  const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
   const [endTime, setEndTime] = useState(new Date(toNearest30Min(today)));
 
   const handleStartDateChange = (event) => {
@@ -405,6 +405,87 @@ const createRentals = () => {
   //   );
   // };
 
+  const convertToAMPM = (timeString) => {
+    const [date, time] = timeString.split(", ");
+    const [hours, minutes] = time.split(":");
+    let ampm = "AM";
+    let formattedHours = parseInt(hours, 10);
+
+    if (formattedHours >= 12) {
+      ampm = "PM";
+      if (formattedHours > 12) {
+        formattedHours -= 12;
+      }
+    } else if (formattedHours == 0) {
+      formattedHours = 12;
+    }
+    return `${formattedHours}:${minutes} ${ampm}`;
+  };
+
+  const [startAvails, setStartAvails] = useState([]);
+  const [endAvails, setEndAvails] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("SelectedDate: ", startDate);
+        const formattedDate = startDate.replace(/\//g, "-");
+        console.log("FormattedDate: ", formattedDate);
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
+        );
+
+        if (response.status === 200) {
+          const intervals = response.data.data.intervals;
+          setStartAvails(intervals);
+
+          if (range.startDate.getDate() != range.endDate.getDate()) {
+            try {
+              console.log("SelectedDate: ", startDate);
+              const formattedDate = startDate.replace(/\//g, "-");
+              console.log("FormattedDate: ", formattedDate);
+              const endResponse = await axios.get(
+                `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
+              );
+
+              if (endResponse.status === 200) {
+                const endIntervals = endResponse.data.data.intervals;
+                setEndAvails(endIntervals);
+              }
+            } catch (error) {
+              console.error(error.message);
+            }
+          }
+        } else {
+          console.log("Failed to retrieve availabilities");
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    fetchData();
+  }, [range.startDate || range.endDate]);
+
+  const Availability = ({ avails }) => {
+    return (
+      <View>
+        <View>
+          {avails.length != 0 &&
+            avails.map((slot, index) => {
+              const { start, end } = slot;
+              return (
+                <Text key={index} style={{ marginBottom: 5 }}>
+                  <RegularText typography="H4">
+                    {convertToAMPM(start)} - {convertToAMPM(end)}
+                  </RegularText>
+                </Text>
+              );
+            })}
+        </View>
+      </View>
+    );
+  };
+
   const rentalDuration = (activeTab) => {
     let time = 0;
     if (activeTab == "Hourly") {
@@ -494,9 +575,12 @@ const createRentals = () => {
       );
       if (isRangeBlocked) {
         console.log("Selected range overlaps with blocked dates.");
+        setRangeMessage(
+          "Oops, those dates aren't available, please select again!"
+        );
       } else {
-        // Continue with the selected range
         setRange({ startDate, endDate });
+        setRangeMessage("");
       }
     },
     [setVisibility, setRange, unavailDates]
@@ -598,26 +682,124 @@ const createRentals = () => {
           showsVerticalScrollIndicator={false}
           style={styles.scrollContainer}
         >
+          <View style={{ marginTop: 25, marginBottom: 5 }}>
+            <RegularText typography="H3">Choose your rental period</RegularText>
+          </View>
+          <View style={{ marginBottom: 15 }}>
+            {activeTab == "Daily" && (
+              <RegularText typography="Subtitle">
+                Rentals start and end at 9AM
+              </RegularText>
+            )}
+          </View>
+          {/* {activeTab == "Hourly" && <HourlySelection />} */}
+          {/* {activeTab == "Daily" && <DailySelection />} */}
           {activeTab == "Hourly" && (
-            <View style={styles.textMargin}>
+            <View>
               <View>
-                <View>
-                  {" "}
-                  <RegularText typography="H3">View Availabilities</RegularText>
+                <PrimaryButton
+                  onPress={() => setVisibility(true)}
+                  style={styles.rentalPeriod}
+                >
+                  <View style={styles.buttonContainer}>
+                    <Ionicons
+                      name="calendar"
+                      size={27}
+                      style={{ paddingRight: 15 }}
+                    />
+                    <RegularText style={{ paddingTop: 6 }}>
+                      {formatDate(range.startDate)} -{" "}
+                      {formatDate(range.endDate)}
+                    </RegularText>
+                  </View>
+                </PrimaryButton>
+                <DatePickerModal
+                  presentationStyle="pageSheet"
+                  locale="en-GB"
+                  mode="single"
+                  date={startDate}
+                  validRange={{
+                    startDate: new Date(nextDate),
+                    endDate: new Date(maxDate()),
+                    disabledDates: unavailDates,
+                  }}
+                  onConfirm={onConfirm}
+                  visible={visible}
+                  onDismiss={onDismiss}
+                  isDateBlocked={isDateBlocked}
+                />
+                {rangeMessage && (
+                  <View>
+                    <RegularText style={{ marginTop: 7 }} color={fail}>
+                      {rangeMessage}
+                    </RegularText>
+                  </View>
+                )}
+              </View>
+              <View style={styles.availContainer}>
+                <View style={styles.availCard}>
+                  <View>
+                    <Text style={styles.textMargin}>
+                      <View>
+                        <RegularText typography="Subtitle">
+                          Availabilities for
+                        </RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="B1">
+                          {formatDate(range.startDate)}
+                        </RegularText>
+                      </View>
+                    </Text>
+                    <View>
+                      <Availability avails={startAvails} />
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.availCard}>
+                  <View>
+                    <Text style={styles.textMargin}>
+                      <View>
+                        <RegularText typography="Subtitle">
+                          Availabilities for
+                        </RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="B1">
+                          {formatDate(range.endDate)}
+                        </RegularText>
+                      </View>
+                    </Text>
+                    <View>
+                      <Availability avails={endAvails} />
+                    </View>
+                  </View>
                 </View>
               </View>
-              <Calendar itemId={itemId} activeTab={activeTab} />
+              <View style={styles.selector}>
+                <RegularText typography="H4">Start time</RegularText>
+                <View style={styles.dateTimePicker}>
+                  <DateTimePicker
+                    mode="time"
+                    value={new Date(startTime)}
+                    onChange={(date) => handleStartTimeChange(date)}
+                    minuteInterval={30}
+                  />
+                </View>
+              </View>
+              <View style={styles.selector}>
+                <RegularText typography="H4">End time</RegularText>
+                <View style={styles.dateTimePicker}>
+                  <DateTimePicker
+                    mode="time"
+                    value={new Date(endTime)}
+                    onChange={(date) => handleEndTimeChange(date)}
+                    minuteInterval={30}
+                  />
+                </View>
+              </View>
             </View>
           )}
-
-          <View style={styles.textMargin}>
-            <RegularText typography="H3">Choose your rental period</RegularText>
-            <RegularText typography="Subtitle">
-              Click on the box below to edit the dates
-            </RegularText>
-          </View>
-          {activeTab == "Hourly" && <HourlySelection />}
-          {/* {activeTab == "Daily" && <DailySelection />} */}
           {activeTab == "Daily" && (
             <View>
               <PrimaryButton
@@ -628,7 +810,7 @@ const createRentals = () => {
                   <Ionicons
                     name="calendar"
                     size={27}
-                    style={{ paddingRight: 20 }}
+                    style={{ paddingRight: 15 }}
                   />
                   <RegularText style={{ paddingTop: 6 }}>
                     {formatDate(range.startDate)} - {formatDate(range.endDate)}
@@ -651,6 +833,13 @@ const createRentals = () => {
                 onDismiss={onDismiss}
                 isDateBlocked={isDateBlocked}
               />
+              {rangeMessage && (
+                <View>
+                  <RegularText style={{ marginTop: 7 }} color={fail}>
+                    {rangeMessage}
+                  </RegularText>
+                </View>
+              )}
             </View>
           )}
 
@@ -900,10 +1089,32 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: white,
     alignItems: "center",
+    marginBottom: 10,
   },
   buttonContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+  },
+  availContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  availCard: {
+    flexDirection: "column",
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: inputbackground,
+    borderRadius: 7,
+    minHeight: 80,
+    paddingBottom: 20,
+    width: viewportWidthInPixels(42),
+  },
+  textMargin: {
+    marginBottom: 10,
+  },
+  centerText: {
+    display: "flex",
+    alignItems: "center",
   },
 });

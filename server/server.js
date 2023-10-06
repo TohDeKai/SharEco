@@ -1259,11 +1259,33 @@ app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
   }
 });
 
-//Get daily rental availability by listing Id and date
+//Get daily rental availability by listing Id 
 app.get("/api/v1/item/unavailability/:itemId", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
     const unavail = await rentaldb.getDailyUnavailability(req.params.itemId);
+    console.log(unavail);
+    if (unavail) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          unavail: unavail,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get full day unavailability by listing Id
+app.get("/api/v1/item/unavailability/fullDay/:itemId", async (req, res) => {
+  try {
+    console.log("Request Parameters:", req.params);
+    const unavail = await rentaldb.getFullDayUnavailability(req.params.itemId);
     console.log(unavail);
     if (unavail) {
       res.status(200).json({
