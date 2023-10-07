@@ -22,7 +22,7 @@ const createItem = async (
   category,
   collectionLocations,
   otherLocation,
-  isBusiness,
+  isBusiness
 ) => {
   try {
     const result = await pool.query(
@@ -169,12 +169,9 @@ const getItemsByUserId = async (userId) => {
 };
 
 //Get All Items
-const getAllItems= async () => {
+const getAllItems = async () => {
   try {
-    const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."item" 
-          WHERE "disabled" != true`,
-    );
+    const result = await pool.query(`SELECT * FROM "sharEco-schema"."item"`);
     return result.rows;
   } catch (err) {
     throw err;
@@ -182,18 +179,18 @@ const getAllItems= async () => {
 };
 
 //Get all items listed by other users
-const getOtherUserItems= async (userId) => {
+const getOtherUserItems = async (userId) => {
   try {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."item" 
           WHERE "userId" != $1 AND "disabled" != true`,
-          [userId]
+      [userId]
     );
     return result.rows;
   } catch (err) {
     throw err;
   }
-}
+};
 
 //Full text search for other user's items
 const getOtherUserItemsByKeywords = async (userId, keywords) => {
@@ -216,24 +213,26 @@ const getOtherUserItemsByKeywords = async (userId, keywords) => {
   }
 };
 
-
-
 //Get all items listed by other users by category
-const getOtherUserItemsByCategory= async (userId, category) => {
+const getOtherUserItemsByCategory = async (userId, category) => {
   try {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."item" 
           WHERE "userId" != $1 AND "category" = $2 AND "disabled" != true`,
-          [userId, category]
+      [userId, category]
     );
     return result.rows;
   } catch (err) {
     throw err;
   }
-}
+};
 
 //Full text search for other user's items by category
-const getOtherUserItemsByCategoryByKeywords = async (userId, category, keywords ) => {
+const getOtherUserItemsByCategoryByKeywords = async (
+  userId,
+  category,
+  keywords
+) => {
   try {
     const result = await pool.query(
       `
@@ -253,7 +252,6 @@ const getOtherUserItemsByCategoryByKeywords = async (userId, category, keywords 
     throw err;
   }
 };
-
 
 module.exports = {
   createItem,

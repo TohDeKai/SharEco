@@ -93,6 +93,27 @@ const updateBusinessVerification = async (
   }
 };
 
+// Update documents for a business verification
+const updateDocumentsForBusinessVerification = async (businessVerificationId, files) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."businessVerification" 
+        SET documents = $1
+        WHERE "businessVerificationId" = $2
+        RETURNING documents`,
+      [files, businessVerificationId]
+    );
+
+    if (result.rows.length > 0) {
+      return result.rows[0].documents;
+    } else {
+      return null; // Return null if the item is not found or the update fails
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 // Delete business verification
 const deleteBusinessVerification = async (businessVerificationId) => {
   try {
@@ -114,5 +135,6 @@ module.exports = {
   getBusinessVerificationByBusinessVerificationId,
   createBusinessVerification,
   updateBusinessVerification,
+  updateDocumentsForBusinessVerification,
   deleteBusinessVerification,
 };

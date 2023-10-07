@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // S3 BASE URL for GET & PUT request
-const { AWS_GETFILE_URL, AWS_PUTFILE_URL } = require("./s3");
+const { AWS_GETFILE_URL } = require("./s3");
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
@@ -509,23 +509,6 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
   }
 });
 
-// Get all items
-app.get("/api/v1/items", async (req, res) => {
-  try {
-    const items = await listingdb.getItems();
-    res.status(200).json({
-      status: "success",
-      data: {
-        item: items,
-      },
-    });
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
 //Create item
 app.post("/api/v1/items", async (req, res) => {
   const {
@@ -612,7 +595,7 @@ app.put("/api/v1/items/itemId/:itemId", async (req, res) => {
 app.put("/api/v1/items/itemId/:itemId/images", async (req, res) => {
   try {
     const itemId = req.params.itemId;
-    const images = req.body.images; 
+    const images = req.body.images;
 
     // Update the images associated with the item using the itemId and the new images array
     const updatedImages = await listingdb.updateItemImages(itemId, images);
@@ -750,7 +733,7 @@ app.get("/api/v1/items/not/:userId", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by keywords
 app.get("/api/v1/items/not/:userId/keywords", async (req, res) => {
@@ -774,7 +757,7 @@ app.get("/api/v1/items/not/:userId/keywords", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by category
 app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
@@ -798,32 +781,39 @@ app.get("/api/v1/items/not/:userId/category/:category", async (req, res) => {
   } catch (error) {
     console.log(error.message);
   }
-})
+});
 
 //Get other people's items by category by keywords
-app.get("/api/v1/items/not/:userId/category/:category/keywords", async (req, res) => {
-  const userId = req.params.userId;
-  const category = req.params.category;
-  const keywords = req.query.keywords.split(/[ +]/);
+app.get(
+  "/api/v1/items/not/:userId/category/:category/keywords",
+  async (req, res) => {
+    const userId = req.params.userId;
+    const category = req.params.category;
+    const keywords = req.query.keywords.split(/[ +]/);
 
-  try {
-    const items = await listingdb.getOtherUserItemsByCategoryByKeywords(userId, category, keywords);
+    try {
+      const items = await listingdb.getOtherUserItemsByCategoryByKeywords(
+        userId,
+        category,
+        keywords
+      );
 
-    if (items) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          items: items,
-        },
-      });
-    } else {
-      // Handle the case where no items are found
-      res.status(404).json({ error: "No Items Found" });
+      if (items) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            items: items,
+          },
+        });
+      } else {
+        // Handle the case where no items are found
+        res.status(404).json({ error: "No Items Found" });
+      }
+    } catch (error) {
+      console.log(error.message);
     }
-  } catch (error) {
-    console.log(error.message);
   }
-})
+);
 
 // Auth functionalities
 app.post("/api/v1/admin/signIn", auth.AdminSignIn);
@@ -934,6 +924,33 @@ app.put(
     }
   }
 );
+
+//update businessVerification documents only
+app.put("/api/v1/businessVerifications/businessVerificationId/:businessVerificationId/documents", async (req, res) => {
+  try {
+    const businessVerificationId = req.params.businessVerificationId;
+    const documents = req.body.documents; 
+
+    // Update the documents associated with the businessverification
+    const updatedFiles = await businessdb.updateDocumentsForBusinessVerification(businessVerificationId, documents);
+
+    if (updatedFiles) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          documents: updatedFiles,
+        },
+      });
+    } else {
+      // Handle the case where the item is not found or the update fails
+      res.status(404).json({ error: "Item not found or file update failed" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 
 // Approve business verification request based on business verification Id
 app.put(
@@ -1207,7 +1224,7 @@ app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
   try {
     const rental = await rentaldb.updateRentalStatus(
       req.body.status,
-      req.params.rentalId,
+      req.params.rentalId
     );
     if (rental) {
       res.status(200).json({

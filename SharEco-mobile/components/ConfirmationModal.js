@@ -5,39 +5,92 @@ import { colours } from "./ColourPalette";
 import RegularText from "./text/RegularText";
 const { primary, white, black, secondary } = colours;
 
-const ConfirmationModal = ({ isVisible, onClose, onConfirm }) => {
+const ConfirmationModal = ({
+  isVisible,
+  onClose,
+  onConfirm,
+  type,
+  ...props
+}) => {
   return (
-    <View style={[styles.centeredView]}>
-      <Modal visible={isVisible} animationType="slide" transparent={false}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <RegularText
-              typography="H3"
-              color={black}
-              style={styles.modalStyle}
-            >
-              Are you sure you want to delete? This action cannot be reversed.
-            </RegularText>
-            <View style={styles.nav}>
-              <View style={styles.buttonContainer}>
-                <SecondaryButton
+    <View>
+      {type === "Delete" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
                   typography="H3"
-                  color={primary}
-                  onPress={onConfirm}
+                  color={black}
+                  style={styles.modalStyle}
                 >
-                  Confirm
-                </SecondaryButton>
+                  Are you sure you want to delete? This action cannot be
+                  reversed.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Cancel
+                    </PrimaryButton>
+                  </View>
                 </View>
-                <View style={styles.buttonContainer}>
-                <PrimaryButton typography="H3" color={white} onPress={onClose}>
-                  Cancel
-                </PrimaryButton>
               </View>
-              
             </View>
-          </View>
+          </Modal>
         </View>
-      </Modal>
+      )}
+
+      {type === "Cancel" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H3"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  Are you sure you want to cancel? This action cannot be
+                  reversed.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Go Back
+                    </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
     </View>
   );
 };
@@ -68,17 +121,16 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   nav: {
-    height:70,
+    height: 70,
     borderColor: white,
     flexDirection: "row",
     borderTopWidth: 1,
     paddingHorizontal: 5,
-
   },
   buttonContainer: {
     flex: 0.5,
     paddingHorizontal: 5,
-    paddingVertical:0,
+    paddingVertical: 0,
     justifyContent: "center",
   },
 });
