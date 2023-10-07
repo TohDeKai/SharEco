@@ -120,7 +120,7 @@ const createRentals = () => {
         } else {
           console.log("Failed to retrieve daily unavailabilities");
         }
-      } catch (error) {
+      } catch (error) {start
         console.log(error.message);
       }
 
@@ -240,16 +240,49 @@ const createRentals = () => {
   const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
   const [endTime, setEndTime] = useState(new Date(toNearest30Min(today)));
 
+  function createDateFromIntervalTime(intervalTime) {
+    
+    const [datePart, timePart] = intervalTime.split(", ");
+    const [day, month, year] = datePart.split("/");
+    const [hour, minute] = timePart.split(":");
+    const newDate = new Date(year, month - 1, day, hour, minute);
+    
+    return newDate;
+  }
+
+  function isStartDateWithinIntervals(selectedTime, startAvails) {
+    // Convert startDate to a time value for comparison
+    const selectedStartTime = new Date(selectedTime).getTime();
+    console.log("start time", new Date(selectedTime));
+    // Iterate through the startAvails array
+    for (const interval of startAvails) {
+      // Convert start and end times of the interval to time values
+      const intervalStart = createDateFromIntervalTime(interval.start).getTime();
+      const intervalEnd = createDateFromIntervalTime(interval.end).getTime();
+      console.log("avail start", createDateFromIntervalTime(interval.start).getTime());
+      console.log("avail end", createDateFromIntervalTime(interval.end).getTime());
+      // Check if startDate is within the current interval
+      if (selectedStartTime >= intervalStart && selectedStartTime <= intervalEnd) {
+        return true; // startDate is within this interval
+      }
+    }
+    return false; // startDate is not within any interval
+  }
+
   const handleStartTimeChange = (event) => { //WORK ON THIS
-    const selectedTimestamp = event.nativeEvent.timestamp;
+    const selectedTimestamp = event.nativeEvent.timestamp; // this is not changing when you select a time (JW)
 
     if (selectedTimestamp) {
       const selectedTime = new Date(selectedTimestamp);
-      console.log("Full start date: ", new Date(fullStartDate(activeTab)));
+      console.log("selectedTimestamp, ", new Date(selectedTimestamp));
       if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
+      
+        //console.log("is start date within intervals", isStartDateWithinIntervals(selectedTime, startAvails));
         if (new Date(fullStartDate(activeTab)) >= new Date(fullEndDate(activeTab))) {
+          console.log("start is after end")
           setHourlyMessage("Your start time cannot be after your end");
-        } else if (stub) { // method here to check if startTime is within any time range in startAvails
+        } else if (!isStartDateWithinIntervals(selectedTime, startAvails)) { // method here to check if startTime is within any time range in startAvails
+          console.log("start is not within avail")
           setHourlyMessage("Your chosen start time is unavailable")
         } else {
           setStartTime(selectedTime);
@@ -267,7 +300,13 @@ const createRentals = () => {
 
       // If the result is not the current time
       if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
-        setEndTime(selectedTime);
+        if (new Date(fullStartDate(activeTab)) >= new Date(fullEndDate(activeTab))) {
+          console.log("end is before start")
+          setHourlyMessage("Your end time cannot be before your start");
+        } else{
+          setEndTime(selectedTime);
+        }
+        
       }
     }
   };
@@ -918,7 +957,7 @@ const createRentals = () => {
               {hourlyMessage && (
                 <View>
                   <RegularText style={{ marginTop: 7 }} color={fail}>
-                    {setHourlyMessage}
+                    {hourlyMessage}
                   </RegularText>
                 </View>
               )}
@@ -985,7 +1024,7 @@ const createRentals = () => {
               <View>
                 <View style={styles.textMargin}>
                   <RegularText typography="H3">
-                    Colletion & return location
+                    Collection & return location
                   </RegularText>
                 </View>
                 <DropDownPicker
