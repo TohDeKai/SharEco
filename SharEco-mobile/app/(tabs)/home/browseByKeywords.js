@@ -317,7 +317,6 @@ import {
           <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
           <View style={styles.contentContainer}>
             <Content activeTab={activeTab} keywords={keywords} />
-            <RegularText>{keywords} browseByKeywords.js</RegularText>
           </View>
         </View>
       </SafeAreaContainer>

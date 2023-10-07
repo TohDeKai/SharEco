@@ -31,6 +31,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import { PictureAsPdf as PdfIcon } from "@mui/icons-material";
+import { List, ListItem, ListItemText, ListItemIcon } from "@mui/material";
 
 const columns = [
   { id: "businessVerificationId", label: "Biz Verification ID", minWidth: 170 },
@@ -65,6 +69,38 @@ async function fetchOriginalUser(originalUserId) {
 }
 
 const Home = () => {
+  // State for success Snackbar
+  const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
+
+  const handleSuccessSnackbarClose = () => {
+    setSuccessSnackbarOpen(false);
+  };
+
+  // State for error Snackbar
+  const [errorSnackbarOpen, setErrorSnackbarOpen] = useState(false);
+
+  const handleErrorSnackbarClose = () => {
+    setErrorSnackbarOpen(false);
+  };
+
+  // State for business verification Snackbar
+  const [successBusinessVeriSnackbarOpen, setSuccessBusinessVeriSnackbarOpen] =
+    useState(false);
+
+  const handleSuccessBusinessVeriSnackbarClose = () => {
+    setSuccessBusinessVeriSnackbarOpen(false);
+  };
+
+  // State for verification removal Snackbar
+  const [
+    successApprovalRemovalSnackbarOpen,
+    setSuccessApprovalRemovalSnackbarOpen,
+  ] = useState(false);
+
+  const handleSuccessApprovalRemovalSnackbarClose = () => {
+    setSuccessApprovalRemovalSnackbarOpen(false);
+  };
+
   const [openAdminDialog, setOpenAdminDialog] = React.useState(false);
 
   const handleAdminClickOpen = () => {
@@ -80,8 +116,19 @@ const Home = () => {
     React.useState(false);
   const [openRemoveVerification, setOpenRemoveVerification] =
     React.useState(false);
+  const [openDetails, setDetailsOpen] = React.useState(false);
+
+  // Handling popup
   const [selectedBusinessVerificationId, setSelectedBusinessVerificationId] =
     React.useState("");
+
+  const [selectedUEN, setSelectedUEN] = React.useState("");
+  const [selectedUserId, setSelectedUserId] = React.useState("");
+  const [selectedApproved, setSelectedApproved] = React.useState("");
+  const [selectedUsername, setSelectedUsername] = React.useState("");
+  const [selectedDocuments, setSelectedDocuments] = React.useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [userData, setUserData] = useState([]);
 
   const handleApproveRequestClickOpen = (businessVerificationId) => {
@@ -97,6 +144,33 @@ const Home = () => {
   const handleClose = () => {
     setOpenApproveVerification(false);
     setOpenRemoveVerification(false);
+    setDetailsOpen(false);
+  };
+
+  const handleClickDetails = async (
+    businessVerificationId,
+    UEN,
+    userId,
+    approved,
+    documents
+  ) => {
+    setSelectedBusinessVerificationId(businessVerificationId);
+    setSelectedUEN(UEN);
+    setSelectedUserId(userId);
+    setSelectedApproved(approved);
+    setSelectedDocuments(documents);
+    try {
+      console.log(selectedUserId);
+      const response = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${userId}`
+      );
+      setSelectedUsername(response.data.data.user.username);
+    } catch (err) {
+      console.log("Error getting listing username: ", err);
+    } finally {
+      setLoading(false); // Set loading state to false when the request is complete
+      setDetailsOpen(true); // Open the dialog
+    }
   };
 
   const handleRemove = async () => {
@@ -111,6 +185,7 @@ const Home = () => {
       );
       console.log(response);
       if (response.status === 200) {
+        setSuccessApprovalRemovalSnackbarOpen(true);
         // Update the business verification after approve
         const updatedBusinessVerificationData = businessVerificationData.map(
           (businessVerification) => {
@@ -146,6 +221,7 @@ const Home = () => {
       );
       console.log(response);
       if (response.status === 200) {
+        setSuccessBusinessVeriSnackbarOpen(true);
         // Update the business verification after approve
         const updatedBusinessVerificationData = businessVerificationData.map(
           (businessVerification) => {
@@ -190,11 +266,14 @@ const Home = () => {
 
         if (response.status === 200) {
           console.log("Registered new admin successfully");
+          setSuccessSnackbarOpen(true);
         } else {
+          setErrorSnackbarOpen(true);
           console.log("Registration failed");
         }
       } catch (error) {
         // Handle network errors or server issues
+        setErrorSnackbarOpen(true);
         console.error("Error during signup:", error);
       }
     } else {
@@ -248,6 +327,11 @@ const Home = () => {
     fetchData();
   }, []);
 
+  const cellStyle = {
+    borderRight: "1px solid #e0e0e0",
+    padding: "10px",
+  };
+
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
       <div style={{ display: "flex" }}>
@@ -286,6 +370,7 @@ const Home = () => {
                         {column.label}
                       </TableCell>
                     ))}
+                    <TableCell>Disable/Enable</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -298,6 +383,15 @@ const Home = () => {
                           role="checkbox"
                           tabIndex={-1}
                           key={row.code}
+                          onClick={() =>
+                            handleClickDetails(
+                              row.businessVerificationId,
+                              row.UEN,
+                              row.originalUserId,
+                              row.approved,
+                              row.documents
+                            )
+                          }
                         >
                           {columns.map((column) => {
                             const value = row[column.id];
@@ -315,22 +409,24 @@ const Home = () => {
                             {row.approved ? (
                               <Button
                                 variant="outlined"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleRemoveClickOpen(
                                     row.businessVerificationId
-                                  )
-                                }
+                                  );
+                                }}
                               >
                                 Remove Verification
                               </Button>
                             ) : (
                               <Button
                                 variant="contained"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   handleApproveRequestClickOpen(
                                     row.businessVerificationId
-                                  )
-                                }
+                                  );
+                                }}
                               >
                                 Approve Request
                               </Button>
@@ -467,6 +563,102 @@ const Home = () => {
               </Button>
             </DialogActions>
           </Dialog>
+
+          {/* Popup box to show all details of each business verification */}
+          <Dialog
+            open={openDetails && !loading}
+            onClose={handleClose}
+            scroll="paper"
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">{`Business Verification ID: ${selectedBusinessVerificationId}`}</DialogTitle>
+            <DialogContent>
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell style={cellStyle}>Requester User ID</TableCell>
+                    <TableCell>{selectedUserId}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={cellStyle}>Requester Username</TableCell>
+                    <TableCell>{selectedUsername}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={cellStyle}>UEN</TableCell>
+                    <TableCell>{selectedUEN}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={cellStyle}>Approved</TableCell>
+                    <TableCell>{selectedApproved ? "Yes" : "No"}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+
+              <List>
+                {selectedDocuments.map((pdf, index) => (
+                  <ListItem button key={index}>
+                    <ListItemIcon>
+                      <PdfIcon />
+                    </ListItemIcon>
+                    <a href={pdf} target="_blank" rel="noopener noreferrer">
+                      <ListItemText primary={`Attached File ${index + 1}`} />
+                    </a>
+                  </ListItem>
+                ))}
+              </List>
+            </DialogContent>
+          </Dialog>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={successSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSuccessSnackbarClose}
+          >
+            <Alert severity="success" onClose={handleSuccessSnackbarClose}>
+              Admin created successfully!
+            </Alert>
+          </Snackbar>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={successBusinessVeriSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSuccessBusinessVeriSnackbarClose}
+          >
+            <Alert
+              severity="success"
+              onClose={handleSuccessBusinessVeriSnackbarClose}
+            >
+              Business successfully verified!
+            </Alert>
+          </Snackbar>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={successApprovalRemovalSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSuccessApprovalRemovalSnackbarClose}
+          >
+            <Alert
+              severity="success"
+              onClose={handleSuccessApprovalRemovalSnackbarClose}
+            >
+              Verification successfully removed!
+            </Alert>
+          </Snackbar>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={errorSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleErrorSnackbarClose}
+          >
+            <Alert severity="error" onClose={handleErrorSnackbarClose}>
+              Admin unable to be created. Username already in use
+            </Alert>
+          </Snackbar>
         </Box>
       </div>
     </ThemeProvider>

@@ -1,4 +1,5 @@
 const Pool = require("pg").Pool;
+const moment = require("moment");
 
 // PostgreSQL connection pool configuration
 const pool = new Pool({
@@ -8,6 +9,8 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
   port: process.env.PGPORT,
 });
+
+const currentTimeStamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
 // Create Rental
 const createRentalRequest = async (
@@ -24,8 +27,8 @@ const createRentalRequest = async (
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."rental" 
-          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId", "creationDate") 
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) returning *`,
+          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId", "creationDate", "isUpdated") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`,
       [
         startDate,
         endDate,
@@ -38,7 +41,8 @@ const createRentalRequest = async (
         itemId,
         borrowerId,
         lenderId,
-        new Date(),
+        currentTimeStamp,
+        false,
       ]
     );
     return result.rows[0];
@@ -67,8 +71,10 @@ const editRentalRequest = async (
           "additionalRequest" = $4,
           "additionalCharges" = $5,
           "depositFee" = $6,
-          "rentalFee" = $7
-          WHERE "rentalId" = $8
+          "rentalFee" = $7,
+          "isUpdated" = $8,
+          "updatedDate" = $9,
+          WHERE "rentalId" = $10
           RETURNING *`,
       [
         startDate,
@@ -78,6 +84,8 @@ const editRentalRequest = async (
         additionalCharges,
         depositFee,
         rentalFee,
+        true,
+        currentTimeStamp,
         rentalId,
       ]
     );
@@ -332,21 +340,21 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
       });
     } else {
       //Previous time is at the start of the day
-      let nextStart = new Date(currentDate.setHours(0, 0, 0, 0)).toLocaleString("en-GB", {
-        timeZone: singaporeTimeZone,
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      let nextStart = new Date(currentDate.setHours(0, 0, 0, 0)).toLocaleString(
+        "en-GB",
+        {
+          timeZone: singaporeTimeZone,
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      );
 
       for (const slot of unavail) {
         //First booking starts at 12AM
-        if (
-          slot == unavail[0] &&
-          slot.start == nextStart
-        ) {
+        if (slot == unavail[0] && slot.start == nextStart) {
           console.log(slot.start);
           console.log(nextStart);
           console.log("First start 12am");
@@ -376,21 +384,20 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
                   hour: "2-digit",
                   minute: "2-digit",
                 }),
-                end: new Date(currentDate.setHours(23, 59, 0, 0)).toLocaleString(
-                  "en-GB",
-                  {
-                    timeZone: singaporeTimeZone,
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }
-                ),
+                end: new Date(
+                  currentDate.setHours(23, 59, 0, 0)
+                ).toLocaleString("en-GB", {
+                  timeZone: singaporeTimeZone,
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
               });
             }
             //Everything else
-          } 
+          }
         } else if (slot == unavail[unavail.length - 1]) {
           console.log("last unavailable");
           //Add to front

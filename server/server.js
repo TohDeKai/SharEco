@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // S3 BASE URL for GET & PUT request
-const { AWS_GETFILE_URL, AWS_PUTFILE_URL } = require("./s3");
+const { AWS_GETFILE_URL } = require("./s3");
 
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
@@ -509,23 +509,6 @@ app.delete("/api/v1/admins/:adminId", async (req, res) => {
   }
 });
 
-// Get all items
-app.get("/api/v1/items", async (req, res) => {
-  try {
-    const items = await listingdb.getItems();
-    res.status(200).json({
-      status: "success",
-      data: {
-        item: items,
-      },
-    });
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
 //Create item
 app.post("/api/v1/items", async (req, res) => {
   const {
@@ -933,6 +916,40 @@ app.put(
       } else {
         // Handle the case where the business verification is not found
         res.status(404).json({ error: "Business Verification not found" });
+      }
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
+//update businessVerification documents only
+app.put(
+  "/api/v1/businessVerifications/businessVerificationId/:businessVerificationId/documents",
+  async (req, res) => {
+    try {
+      const businessVerificationId = req.params.businessVerificationId;
+      const documents = req.body.documents;
+
+      // Update the documents associated with the businessverification
+      const updatedFiles =
+        await businessdb.updateDocumentsForBusinessVerification(
+          businessVerificationId,
+          documents
+        );
+
+      if (updatedFiles) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            documents: updatedFiles,
+          },
+        });
+      } else {
+        // Handle the case where the item is not found or the update fails
+        res.status(404).json({ error: "Item not found or file update failed" });
       }
     } catch (err) {
       // Handle the error here if needed

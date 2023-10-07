@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, Pressable } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Image,
+  Pressable,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 // import { AWS_GETFILE_URL } from '../../../server/s3';
@@ -314,20 +319,27 @@ const ActivityCard = ({ rental, type }) => {
             </Pressable>
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
-              <SecondaryButton
-                typography="B3"
-                color={placeholder}
-                style={{ paddingVertical: 0 }}
-              >
+              <SecondaryButton typography="B3" color={placeholder}>
                 Report
               </SecondaryButton>
             </View>
             {type === "Lending" && (
               <View style={styles.buttonContainer}>
-                <SecondaryButton typography="B3" color={primary}>
+                <SecondaryButton 
+                  typography="B3" 
+                  color={primary}
+                  onPress={handleShowModal}
+                >
                   Cancel
                 </SecondaryButton>
+
+                <ConfirmationModal
+                  isVisible={showModal}
+                  onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+                  onClose={handleCloseModal}
+                />
               </View>
+                
             )}
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
