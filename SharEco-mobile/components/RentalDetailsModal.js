@@ -58,7 +58,16 @@ const RentalDetailsModal = ({
     }
     fetchUserData();
   }, [rental.lenderId, rental.borrowerId]);
-  console.log(lender);
+
+  const startDate = new Date(rental.startDate);
+  const endDate = new Date(rental.endDate);
+  const dateDifferenceMs = endDate - startDate;
+  // calculate daily rental details
+  const dailyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60 * 24));
+
+  // calculate hourly rental details
+  const hourlyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60));
+
   return (
     <View style={[styles.centeredView]}>
       <Modal visible={isVisible} animationType="slide" transparent={false}>
@@ -91,18 +100,30 @@ const RentalDetailsModal = ({
                 >
                   {item.itemTitle}
                 </RegularText>
-                <RegularText
-                  typography="Subtitle"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                  style={styles.overflowEllipsis}
-                >
-                  (duration stub)
-                </RegularText>
+                {rental.isHourly && (
+                  <RegularText
+                    typography="Subtitle"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={styles.overflowEllipsis}
+                  >
+                    {hourlyRentalLength} Hour(s)
+                  </RegularText>
+                )}
+                {!rental.isHourly && (
+                  <RegularText
+                    typography="Subtitle"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={styles.overflowEllipsis}
+                  >
+                    {dailyRentalLength} Day(s)
+                  </RegularText>
+                )}
               </View>
             </View>
             {isLending && (
-                <View>
+              <View>
                 {/* <RegularText typography="H4" style={{ marginVertical: 10}}>Lender Profile</RegularText> */}
                 <View style={[styles.seller]}>
                   <View style={styles.avatarContainer}>
@@ -110,7 +131,7 @@ const RentalDetailsModal = ({
                       size="small"
                       source={{
                         uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${
-                            borrower && borrower.userPhotoUrl
+                          borrower && borrower.userPhotoUrl
                         }.jpeg`,
                       }}
                     />
@@ -255,7 +276,11 @@ const RentalDetailsModal = ({
             <View
               style={[
                 styles.perDayContainer,
-                { borderTopWidth: 2, borderColor: inputbackground, paddingTop: 10 },
+                {
+                  borderTopWidth: 2,
+                  borderColor: inputbackground,
+                  paddingTop: 10,
+                },
               ]}
             >
               <RegularText
@@ -270,7 +295,7 @@ const RentalDetailsModal = ({
                 color={black}
                 style={[styles.modalStyle, styles.perDayInputBox]}
               >
-                {rental.rentalFee - rental.depositFee}
+                {rental.rentalFee}
               </RegularText>
             </View>
             <View style={styles.perDayContainer}>
@@ -302,7 +327,7 @@ const RentalDetailsModal = ({
                 color={black}
                 style={[styles.modalStyle, styles.perDayInputBox]}
               >
-                {rental.rentalFee}
+                {rental.totalFee}
               </RegularText>
             </View>
 
