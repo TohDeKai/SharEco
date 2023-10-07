@@ -492,6 +492,7 @@ const editListing = () => {
                         isVisible={showModal}
                         onConfirm={handleDelist}
                         onClose={handleCloseModal}
+                        type="Delete"
                       />
                 </View>
                 {/* <RoundedButton

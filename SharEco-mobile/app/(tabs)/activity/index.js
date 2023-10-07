@@ -10,7 +10,6 @@ import {
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";
 import ActivityCard from "../../../components/containers/ActivityCard";
@@ -311,7 +310,6 @@ const Content = ({ activeTab }) => {
 
       if (response.status === 200) {
         const allRentals = response.data.data.rentals;
-        console.log("fetchAllRentals: " + allRentals);
         return allRentals;
       } else {
         console.log("Failed to retrieve all rentals.");

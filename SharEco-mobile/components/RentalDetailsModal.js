@@ -102,31 +102,25 @@ const RentalDetailsModal = ({
               </View>
             </View>
             {isLending && (
-              <View>
+                <View>
+                {/* <RegularText typography="H4" style={{ marginVertical: 10}}>Lender Profile</RegularText> */}
                 <View style={[styles.seller]}>
                   <View style={styles.avatarContainer}>
                     <UserAvatar
-                      size="medium"
+                      size="small"
                       source={{
                         uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${
-                          borrower && borrower.userPhotoUrl
+                            borrower && borrower.userPhotoUrl
                         }.jpeg`,
                       }}
                     />
-                    <RegularText
-                      typography="H4"
-                      color={black}
-                      style={[styles.modalStyle, styles.sellerHeader]}
-                    >
-                      Borrower
-                    </RegularText>
                   </View>
                   <View style={styles.profile}>
                     <RegularText typography="H4">
-                      {borrower.displayName}
-                    </RegularText>
-                    <RegularText typography="Subtitle">
-                      @{borrower.username}
+                      {borrower.displayName}{" "}
+                      <RegularText typography="Subtitle">
+                        @{borrower.username}
+                      </RegularText>
                     </RegularText>
                     <View style={styles.ratingsContainer}>
                       <RegularText typography="Subtitle">0.0</RegularText>

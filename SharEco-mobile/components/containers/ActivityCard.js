@@ -6,8 +6,10 @@ import { Ionicons } from "@expo/vector-icons";
 import RentalDetailsModal from "../RentalDetailsModal";
 import UserAvatar from "../UserAvatar";
 import RegularText from "../text/RegularText";
-import { PrimaryButton, SecondaryButton } from "../buttons/RegularButton";
+import { PrimaryButton, SecondaryButton, DisabledButton } from "../buttons/RegularButton";
 import { colours } from "../ColourPalette";
+import { useAuth } from "../../context/auth";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import axios from "axios";
 const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -32,13 +34,21 @@ const ActivityCard = ({ rental, type }) => {
 
   const [user, setUser] = useState({});
   const [item, setItem] = useState({});
-  const [showModal, setShowModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const { getUserData } = useAuth();
 
-  const handleShowModal = () => {
-    setShowModal(true);
+  const handleShowDetailsModal = () => {
+    setShowDetailsModal(true);
   };
-  const handleCloseModal = () => {
-    setShowModal(false);
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
+  };
+  const handleShowCancelModal = () => {
+    setShowCancelModal(true);
+  };
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(false);
   };
 
   useEffect(() => {
@@ -51,7 +61,6 @@ const ActivityCard = ({ rental, type }) => {
         if (userResponse.status === 200) {
           const userData = userResponse.data.data.user;
           setUser(userData);
-          console.log("Borrower userId: ", userData.userId);
         }
       } catch (error) {
         console.log(error.message);
@@ -65,7 +74,6 @@ const ActivityCard = ({ rental, type }) => {
         );
         if (itemResponse.status === 200) {
           const itemData = itemResponse.data.data.item;
-          console.log("item: ", itemData);
           setItem(itemData);
         }
       } catch (error) {
@@ -73,11 +81,37 @@ const ActivityCard = ({ rental, type }) => {
       }
     }
 
-    fetchItemData();
     fetchUserData();
-  }, [userId, rental.itemId]);
+    fetchItemData();
+  }, [userId, rental.status]);
 
   const currentDate = new Date();
+
+  // Cancel for Lenders
+  const handleStatus = async (action, id) => {
+    try {
+      let newStatus = "";
+      const rentalId = id;
+
+      if (action === "Cancel") {
+        newStatus = "CANCELLED";
+      } else if (action === "Reject") {
+        newStatus = "REJECTED";
+      } else if (action === "Accept") {
+        newStatus = "PENDING";
+      }
+
+      const response = await axios.patch(
+        `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
+        { status: newStatus }
+      );
+
+      handleCloseCancelModal();
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   const CardHeader = () => {
     let timeDifferenceMs;
     if (rental.status === "UPCOMING") {
@@ -260,13 +294,13 @@ const ActivityCard = ({ rental, type }) => {
             </Pressable>
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
-              <SecondaryButton
+              <DisabledButton
                 typography="B3"
-                color={placeholder}
+                color={white}
                 style={{ paddingVertical: 0 }}
               >
                 Report
-              </SecondaryButton>
+              </DisabledButton>
             </View>
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
@@ -290,27 +324,38 @@ const ActivityCard = ({ rental, type }) => {
             </Pressable>
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
-              <SecondaryButton
+              <DisabledButton
                 typography="B3"
-                color={placeholder}
+                color={white}
                 style={{ paddingVertical: 0 }}
               >
                 Report
+              </DisabledButton>
+            </View>
+            <View style={styles.buttonContainer}>
+              <SecondaryButton
+                typography="B3"
+                color={primary}
+                onPress={handleShowCancelModal}
+              >
+                Cancel
               </SecondaryButton>
             </View>
-            {type === "Lending" && (
-              <View style={styles.buttonContainer}>
-                <SecondaryButton typography="B3" color={primary}>
-                  Cancel
-                </SecondaryButton>
-              </View>
-            )}
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
                   Edit
                 </PrimaryButton>
               </View>
+            )}
+            {showCancelModal &&(
+              <ConfirmationModal
+              isVisible={showCancelModal}
+              onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+              onClose={handleCloseCancelModal}
+              style={{flex:0}}
+              type="Cancel"
+            />
             )}
           </View>
         )}
@@ -327,9 +372,9 @@ const ActivityCard = ({ rental, type }) => {
             </Pressable>
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
-              <SecondaryButton typography="B3" color={placeholder}>
+              <DisabledButton typography="B3" color={white}>
                 Report
-              </SecondaryButton>
+              </DisabledButton>
             </View>
             {type === "Lending" && (
               <View style={styles.buttonContainer}>
@@ -358,11 +403,11 @@ const ActivityCard = ({ rental, type }) => {
 
         {rental.status === "CANCELLED" && (
           <View style={styles.reason}>
-            <RegularText typography="B3">Reason: </RegularText>
+            {/* <RegularText typography="B3">Reason: </RegularText>
             <RegularText typography="Subtitle">
-              {/* to be fixed */}
+              
               Type of reason
-            </RegularText>
+            </RegularText> */}
           </View>
         )}
       </View>
@@ -371,14 +416,20 @@ const ActivityCard = ({ rental, type }) => {
 
   return (
     <View>
-      <Pressable onPress={handleShowModal}>
+      <Pressable onPress={handleShowDetailsModal}>
         <View style={styles.activityCard}>
           <CardHeader />
           <CardDetails />
           <CardFooter />
         </View>
       </Pressable>
-      <RentalDetailsModal isVisible={showModal} onClose={handleCloseModal} rental={rental} item={(item)} isLending={isLending}/>
+      <RentalDetailsModal
+        isVisible={showDetailsModal}
+        onClose={handleCloseDetailsModal}
+        rental={rental}
+        item={item}
+        isLending={isLending}
+      />
     </View>
   );
 };

@@ -36,7 +36,7 @@ export default function App() {
           <Route
             path="rental"
             element={
-              <RequireAuth loginPath="signin">
+              <RequireAuth loginPath="../signin">
                 <Rental />
               </RequireAuth>
             }
@@ -54,7 +54,7 @@ export default function App() {
           <Route
             path="businesses"
             element={
-              <RequireAuth loginPath="signin">
+              <RequireAuth loginPath="../signin">
                 <Business />
               </RequireAuth>
             }
@@ -63,7 +63,7 @@ export default function App() {
           <Route
             path="listings"
             element={
-              <RequireAuth loginPath="signin">
+              <RequireAuth loginPath="../signin">
                 <Listing />
               </RequireAuth>
             }
@@ -72,7 +72,7 @@ export default function App() {
           <Route
             path="transactions"
             element={
-              <RequireAuth loginPath="signin">
+              <RequireAuth loginPath="../signin">
                 <Transaction />
               </RequireAuth>
             }

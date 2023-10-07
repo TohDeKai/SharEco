@@ -12,6 +12,11 @@ import { Formik } from "formik";
 import * as DocumentPicker from "expo-document-picker";
 import axios from "axios";
 
+// AWS Amplify
+import { Amplify, Storage } from "aws-amplify";
+import awsconfig from "../../../src/aws-exports";
+Amplify.configure(awsconfig);
+
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import FileUploadContainer from "../../../components/containers/FileUploadContainer";
@@ -61,7 +66,7 @@ const sharEcoBiz = () => {
   const handleAddFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "application/*",
+        type: "*/*",
         multiple: true,
       });
 
@@ -112,6 +117,46 @@ const sharEcoBiz = () => {
     setSelectedFiles(updatedFiles);
   };
 
+  const fetchFileUri = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return blob;
+  };
+
+  const uploadFiles = async (files, businessVerificationId) => {
+    const uploadPromises = files.map(async (file, index) => {
+      try {
+        const document = await fetchFileUri(file.uri);
+        const key = `businessVerificationId-${businessVerificationId}-${index + 1}`;
+  
+        // Upload the file with the unique key
+        await Storage.put(key, document, {
+          level: "public",
+          contentType: file.mimeType,
+          progressCallback(uploadProgress) {
+            console.log(
+              `PROGRESS (${index + 1}/${files.length}) - ${uploadProgress.loaded}/${uploadProgress.total}`
+            );
+          },
+        });
+  
+        // Retrieve the uploaded file URI
+        const result = await Storage.get(key);
+        const awsFileUri = result.substring(0, result.indexOf("?"));
+        console.log(`Uploaded file (${index + 1}): ${awsFileUri}`);
+
+        return awsFileUri;
+      } catch (error) {
+        console.log(`Error uploading file (${index + 1}):`, error);
+      }
+    });
+  
+    // Wait for all uploads to complete
+    const uploadedURIs = await Promise.all(uploadPromises);
+    console.log("All files uploaded");
+    return uploadedURIs;
+  };
+
   const handleBack = () => {
     router.back();
   };
@@ -120,7 +165,7 @@ const sharEcoBiz = () => {
     const userId = user.userId;
     const bizVeriData = {
       UEN: values.uen,
-      documents: selectedFiles,
+      documents: selectedFiles, //currently stores everything in the world, will update later
       // by default approved is false
       approved: false,
       originalUserId: userId,
@@ -132,17 +177,13 @@ const sharEcoBiz = () => {
         bizVeriData
       );
 
-      console.log("RESPONSE:", response.data);
-
       if (response.status === 201) {
         console.log("Business verification request submitted successfully");
-        router.back();
       } else {
         console.log("Unable to submit business verification request");
       }
 
-      const bizVeriId =
-        response.data.data.businessVerifications.businessVerificationId;
+      const bizVeriId = response.data.data.businessVerifications.businessVerificationId;
 
       const linkResponse = await axios.put(
         `http://${BASE_URL}:4000/api/v1/users/businessVerification/${userId}`,
@@ -150,12 +191,30 @@ const sharEcoBiz = () => {
       );
 
       if (linkResponse.status === 200) {
-        console.log(
-          "Business verification request linked to the user successfully"
+        console.log("Business verification request linked to the user successfully" );
+       
+        //upload files to AWS
+        const uploadedURIs = await uploadFiles(selectedFiles, bizVeriId);
+
+        //update documents column in db
+        const updateFilesResponse = await axios.put(
+          `http://${BASE_URL}:4000/api/v1/businessVerifications/businessVerificationId/${bizVeriId}/documents`,
+          { documents: uploadedURIs }
         );
+        if (updateFilesResponse === 200) {
+          console.log("files uploaded to S3 and document column in db successfully");
+          router.back();
+        } 
+        else {
+          console.log("Unable to update documents in the database");
+        }
+
       } else {
         console.log("Unable to link business verification request to the user");
       }
+
+      
+      router.back();
     } catch (error) {
       console.log(error.message);
     }

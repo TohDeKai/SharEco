@@ -261,6 +261,7 @@ const Content = ({ navigation, activeTab }) => {
     fetchUserData();
   }, []);
 
+  
   return (
     <View style={{ flex: 1 }}>
       {activeTab == "Listings" && (userItems ? userItems.length : 0) === 0 && (
