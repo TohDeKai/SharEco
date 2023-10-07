@@ -1,4 +1,5 @@
 const Pool = require("pg").Pool;
+const moment = require("moment");
 
 // PostgreSQL connection pool configuration
 const pool = new Pool({
@@ -8,6 +9,8 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
   port: process.env.PGPORT,
 });
+
+const currentTimeStamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
 // Create Rental
 const createRentalRequest = async (
@@ -24,8 +27,8 @@ const createRentalRequest = async (
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."rental" 
-          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId") 
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) returning *`,
+          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId", "creationDate", "isUpdated") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`,
       [
         startDate,
         endDate,
@@ -38,6 +41,8 @@ const createRentalRequest = async (
         itemId,
         borrowerId,
         lenderId,
+        currentTimeStamp,
+        false,
       ]
     );
     return result.rows[0];
@@ -67,8 +72,9 @@ const editRentalRequest = async (
           "additionalCharges" = $5,
           "depositFee" = $6,
           "rentalFee" = $7,
-          "isUpdated" = $8
-          WHERE "rentalId" = $9
+          "isUpdated" = $8,
+          "updatedDate" = $9,
+          WHERE "rentalId" = $10
           RETURNING *`,
       [
         startDate,
@@ -79,6 +85,7 @@ const editRentalRequest = async (
         depositFee,
         rentalFee,
         true,
+        currentTimeStamp,
         rentalId,
       ]
     );
