@@ -500,7 +500,7 @@ const createRentals = () => {
     const newDate = dayBefore ? dayBefore.getDate() - 1 : 1;
     dayBefore.setDate(newDate);
     return dayBefore;
-  }
+  };
 
   // Hourly booking
   // To get next booking to limit endDate selection in calendar
@@ -622,7 +622,6 @@ const createRentals = () => {
   const unavailFullDays = Array.isArray(fullDayUnavails)
     ? fullDayUnavails.map((unavail) => new Date(convertToISOString(unavail)))
     : [];
-
 
   const onConfirm = useCallback(
     ({ startDate, endDate }) => {
@@ -789,36 +788,46 @@ const createRentals = () => {
           {activeTab == "Hourly" && (
             <View>
               <View>
-                <PrimaryButton
-                  onPress={() => setStartVisibility(true)}
-                  style={styles.rentalPeriod}
-                >
-                  <View style={styles.buttonContainer}>
-                    <Ionicons
-                      name="calendar"
-                      size={27}
-                      style={{ paddingRight: 15 }}
-                    />
-                    <RegularText style={{ paddingTop: 6 }}>
-                      {formatDate(startDate)}
-                    </RegularText>
+                <View style={styles.hourlyRentalContainer}>
+                  <View style={{ width: viewportWidthInPixels(43) }}>
+                    <RegularText typography="H4">Starts from</RegularText>
                   </View>
-                </PrimaryButton>
-                <PrimaryButton
-                  onPress={() => setEndVisibility(true)}
-                  style={styles.rentalPeriod}
-                >
-                  <View style={styles.buttonContainer}>
-                    <Ionicons
-                      name="calendar"
-                      size={27}
-                      style={{ paddingRight: 15 }}
-                    />
-                    <RegularText style={{ paddingTop: 6 }}>
-                      {formatDate(endDate)}
-                    </RegularText>
+                  <View style={{ width: viewportWidthInPixels(43) }}>
+                    <RegularText typography="H4">Ends on</RegularText>
                   </View>
-                </PrimaryButton>
+                </View>
+                <View style={styles.hourlyRentalContainer}>
+                  <PrimaryButton
+                    onPress={() => setStartVisibility(true)}
+                    style={styles.hourlyRentalPeriod}
+                  >
+                    <View style={styles.buttonContainer}>
+                      <Ionicons
+                        name="calendar"
+                        size={27}
+                        style={{ paddingRight: 8 }}
+                      />
+                      <RegularText style={{ paddingTop: 6 }}>
+                        {formatDate(startDate)}
+                      </RegularText>
+                    </View>
+                  </PrimaryButton>
+                  <PrimaryButton
+                    onPress={() => setEndVisibility(true)}
+                    style={styles.hourlyRentalPeriod}
+                  >
+                    <View style={styles.buttonContainer}>
+                      <Ionicons
+                        name="calendar"
+                        size={27}
+                        style={{ paddingRight: 8 }}
+                      />
+                      <RegularText style={{ paddingTop: 6 }}>
+                        {formatDate(endDate)}
+                      </RegularText>
+                    </View>
+                  </PrimaryButton>
+                </View>
                 <DatePickerModal
                   presentationStyle="pageSheet"
                   locale="en-GB"
@@ -836,7 +845,7 @@ const createRentals = () => {
                 />
                 {rangeMessage && (
                   <View>
-                    <RegularText style={{ marginTop: 7 }} color={fail}>
+                    <RegularText style={{ marginTop: 7, marginBottom: 10 }} color={fail}>
                       {rangeMessage}
                     </RegularText>
                   </View>
@@ -897,26 +906,30 @@ const createRentals = () => {
                   </View>
                 </View>
               </View>
-              <View style={styles.selector}>
-                <RegularText typography="H4">Start time</RegularText>
-                <View style={styles.dateTimePicker}>
-                  <DateTimePicker
-                    mode="time"
-                    value={new Date(startTime)}
-                    onChange={(date) => handleStartTimeChange(date)}
-                    minuteInterval={30}
-                  />
+              <View style={styles.hourlyRentalContainer}>
+                <View style={styles.selector}>
+                  <RegularText typography="H4">Start time</RegularText>
+                  <View>
+                    <DateTimePicker
+                      style={{ marginTop: 5, marginLeft: -10 }}
+                      mode="time"
+                      value={new Date(startTime)}
+                      onChange={(date) => handleStartTimeChange(date)}
+                      minuteInterval={30}
+                    />
+                  </View>
                 </View>
-              </View>
-              <View style={styles.selector}>
-                <RegularText typography="H4">End time</RegularText>
-                <View style={styles.dateTimePicker}>
-                  <DateTimePicker
-                    mode="time"
-                    value={new Date(endTime)}
-                    onChange={(date) => handleEndTimeChange(date)}
-                    minuteInterval={30}
-                  />
+                <View style={styles.selector}>
+                  <RegularText typography="H4">End time</RegularText>
+                  <View>
+                    <DateTimePicker
+                      style={{ marginTop: 5, marginLeft: -10 }}
+                      mode="time"
+                      value={new Date(endTime)}
+                      onChange={(date) => handleEndTimeChange(date)}
+                      minuteInterval={30}
+                    />
+                  </View>
                 </View>
               </View>
             </View>
@@ -995,6 +1008,7 @@ const createRentals = () => {
                   autoScroll={true}
                   maxHeight={200}
                   placeholder="Select a location"
+                  style={{ marginBottom: 10 }}
                 />
                 <View style={styles.textMargin}>
                   <RegularText typography="H3">Additional Comments</RegularText>
@@ -1118,10 +1132,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   selector: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
     marginBottom: 10,
+    width: viewportWidthInPixels(43),
   },
   listingDetails: {
     height: 70,
@@ -1174,7 +1189,7 @@ const styles = StyleSheet.create({
     backgroundColor: dark,
   },
   textMargin: {
-    marginTop: 25,
+    marginTop: 35,
     marginBottom: 15,
   },
   textMarginDivider: {
@@ -1212,6 +1227,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
+  hourlyRentalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 5,
+  },
+  hourlyRentalPeriod: {
+    borderWidth: 1,
+    borderColor: black,
+    borderRadius: 20,
+    backgroundColor: white,
+    alignItems: "center",
+    marginBottom: 10,
+    width: viewportWidthInPixels(43),
+  },
   buttonContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -1229,7 +1258,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     minHeight: 80,
     paddingBottom: 20,
-    width: viewportWidthInPixels(42),
+    width: viewportWidthInPixels(43),
   },
   textMargin: {
     marginBottom: 10,
