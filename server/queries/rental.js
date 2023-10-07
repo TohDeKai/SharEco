@@ -682,7 +682,7 @@ const getFullDayUnavailability = async (itemId) => {
               })
             ) {
               fullDay.push(
-                new Date(currentDate).toLocaleString("en-GB", {
+                new Date(currentDate).toLocaleString("en-US", {
                   timeZone: singaporeTimeZone,
                 })
               );
@@ -729,7 +729,7 @@ const getFullDayUnavailability = async (itemId) => {
               })
             ) {
               fullDay.push(
-                new Date(currentDate).toLocaleString("en-GB", {
+                new Date(currentDate).toLocaleString("en-US", {
                   timeZone: singaporeTimeZone,
                 })
               );
@@ -738,7 +738,7 @@ const getFullDayUnavailability = async (itemId) => {
           } else {
             console.log("In between days");
             fullDay.push(
-              new Date(currentDate).toLocaleString("en-GB", {
+              new Date(currentDate).toLocaleString("en-US", {
                 timeZone: singaporeTimeZone,
               })
             );
@@ -818,6 +818,55 @@ const getFullDayUnavailability = async (itemId) => {
   }
 };
 
+//Get next booking based on item ID and selected date
+const getNextRentalByItemIdAndDate = async (itemId, date) => {
+  try {
+    const selectedDate = new Date(date);
+    const today = new Date();
+    const maxDate = new Date();
+    maxDate.setMonth(today.getMonth() + 5);
+    const result = await pool.query(
+      `SELECT "startDate", "endDate"
+       FROM "sharEco-schema"."rental"
+       WHERE "itemId" = $1
+         AND (("startDate"::date BETWEEN $2 AND $3) OR
+           ("endDate"::date BETWEEN $2 AND $3))
+         AND ("status" IN ('PENDING', 'UPCOMING', 'ONGOING'))`,
+      [itemId, date, maxDate]
+    );
+
+    const bookings = result.rows;
+    const singaporeTimeZone = "Asia/Singapore";
+
+    const sortedBookings = bookings.sort((a, b) => {
+      const dateA = new Date(a.start);
+      const dateB = new Date(b.start);
+      return dateA - dateB;
+    });
+
+    for (const booking of sortedBookings) {
+      const bookingEnd = new Date(
+        new Date(booking.endDate).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        })
+      );
+      const bookingStart = new Date(
+        new Date(booking.startDate).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        })
+      );
+      // If the booking does not end on selected date
+      if (new Date(bookingEnd.setHours(0,0,0,0)) != new Date(selectedDate.setHours(0,0,0,0))) {
+        // Return the latest a rental can be booked until; the start of next booking
+        return bookingStart;
+      }
+    }
+    return maxDate;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -831,4 +880,5 @@ module.exports = {
   getAvailByRentalIdAndDate,
   getDailyUnavailability,
   getFullDayUnavailability,
+  getNextRentalByItemIdAndDate,
 };

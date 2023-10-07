@@ -63,7 +63,10 @@ const createRentals = () => {
   const [locations, setLocations] = useState([]);
   const currentDate = new Date();
   const [visible, setVisibility] = useState(false);
+  const [startVisible, setStartVisibility] = useState(false);
+  const [endVisible, setEndVisibility] = useState(false);
   const [unavails, setUnavails] = useState({});
+  const [fullDayUnavails, setFullDayUnavails] = useState({});
   const nextDate = new Date(new Date().setDate(currentDate.getDate() + 1));
   const [range, setRange] = useState({
     startDate: new Date(nextDate),
@@ -112,6 +115,24 @@ const createRentals = () => {
         if (unavailResponse.status === 200) {
           const unavail = unavailResponse.data.data.unavail;
           setUnavails(unavail);
+        } else {
+          console.log("Failed to retrieve daily unavailabilities");
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+
+      try {
+        const unavailResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/item/unavailability/fullDay/${itemId}`
+        );
+
+        console.log(unavailResponse.response);
+
+        if (unavailResponse.status === 200) {
+          const unavail = unavailResponse.data.data.unavail;
+          setFullDayUnavails(unavail);
+          console.log("Set full day unavail: ", unavail);
         } else {
           console.log("Failed to retrieve daily unavailabilities");
         }
@@ -184,7 +205,7 @@ const createRentals = () => {
         stringTime(new Date(new Date().setHours(9, 0, 0, 0)))
       );
     }
-    return startDate.concat(" ", stringTime(startTime));
+    return stringDate(startDate).concat(" ", stringTime(startTime));
   };
 
   const fullEndDate = (activeTab) => {
@@ -195,7 +216,7 @@ const createRentals = () => {
         stringTime(new Date(new Date().setHours(9, 0, 0, 0)))
       );
     }
-    return endDate.concat(" ", stringTime(endTime));
+    return stringDate(endDate).concat(" ", stringTime(endTime));
   };
 
   const tomorrow = () => {
@@ -212,8 +233,8 @@ const createRentals = () => {
     return date.setMinutes(roundedMinutes);
   };
 
-  const [startDate, setStartDate] = useState(stringDate(tomorrow()));
-  const [endDate, setEndDate] = useState(stringDate(tomorrow()));
+  const [startDate, setStartDate] = useState(tomorrow());
+  const [endDate, setEndDate] = useState(tomorrow());
   const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
   const [endTime, setEndTime] = useState(new Date(toNearest30Min(today)));
 
@@ -331,48 +352,48 @@ const createRentals = () => {
     );
   };
 
-  const HourlySelection = () => {
-    return (
-      <View>
-        <View style={styles.selector}>
-          <RegularText typography="H4">Starts from</RegularText>
-          <View style={styles.dateTimePicker}>
-            <DateTimePicker
-              mode="date"
-              value={new Date(startDate)}
-              onChange={(date) => handleStartDateChange(date)}
-              minimumDate={tomorrow()}
-              maximumDate={maxDate()}
-            />
-            <DateTimePicker
-              mode="time"
-              value={new Date(startTime)}
-              onChange={(date) => handleStartTimeChange(date)}
-              minuteInterval={30}
-            />
-          </View>
-        </View>
-        <View style={styles.selector}>
-          <RegularText typography="H4">Ends on</RegularText>
-          <View style={styles.dateTimePicker}>
-            <DateTimePicker
-              mode="date"
-              value={new Date(endDate)}
-              onChange={(endDate) => handleEndDateChange(endDate)}
-              minimumDate={chosenStart()}
-              maximumDate={maxDate()}
-            />
-            <DateTimePicker
-              mode="time"
-              value={new Date(endTime)}
-              onChange={(endTime) => handleEndTimeChange(endTime)}
-              minuteInterval={30}
-            />
-          </View>
-        </View>
-      </View>
-    );
-  };
+  // const HourlySelection = () => {
+  //   return (
+  //     <View>
+  //       <View style={styles.selector}>
+  //         <RegularText typography="H4">Starts from</RegularText>
+  //         <View style={styles.dateTimePicker}>
+  //           <DateTimePicker
+  //             mode="date"
+  //             value={new Date(startDate)}
+  //             onChange={(date) => handleStartDateChange(date)}
+  //             minimumDate={tomorrow()}
+  //             maximumDate={maxDate()}
+  //           />
+  //           <DateTimePicker
+  //             mode="time"
+  //             value={new Date(startTime)}
+  //             onChange={(date) => handleStartTimeChange(date)}
+  //             minuteInterval={30}
+  //           />
+  //         </View>
+  //       </View>
+  //       <View style={styles.selector}>
+  //         <RegularText typography="H4">Ends on</RegularText>
+  //         <View style={styles.dateTimePicker}>
+  //           <DateTimePicker
+  //             mode="date"
+  //             value={new Date(endDate)}
+  //             onChange={(endDate) => handleEndDateChange(endDate)}
+  //             minimumDate={chosenStart()}
+  //             maximumDate={maxDate()}
+  //           />
+  //           <DateTimePicker
+  //             mode="time"
+  //             value={new Date(endTime)}
+  //             onChange={(endTime) => handleEndTimeChange(endTime)}
+  //             minuteInterval={30}
+  //           />
+  //         </View>
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   // const DailySelection = () => {
   //   return (
@@ -424,12 +445,15 @@ const createRentals = () => {
 
   const [startAvails, setStartAvails] = useState([]);
   const [endAvails, setEndAvails] = useState([]);
+  const [nextBooking, setNextBooking] = useState({});
 
+  // Hourly booking
+  // Fetch daily time availabilities for start date
   useEffect(() => {
     const fetchData = async () => {
       try {
         console.log("SelectedDate: ", startDate);
-        const formattedDate = startDate.replace(/\//g, "-");
+        const formattedDate = stringDate(startDate);
         console.log("FormattedDate: ", formattedDate);
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
@@ -438,33 +462,70 @@ const createRentals = () => {
         if (response.status === 200) {
           const intervals = response.data.data.intervals;
           setStartAvails(intervals);
-
-          if (range.startDate.getDate() != range.endDate.getDate()) {
-            try {
-              console.log("SelectedDate: ", startDate);
-              const formattedDate = startDate.replace(/\//g, "-");
-              console.log("FormattedDate: ", formattedDate);
-              const endResponse = await axios.get(
-                `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
-              );
-
-              if (endResponse.status === 200) {
-                const endIntervals = endResponse.data.data.intervals;
-                setEndAvails(endIntervals);
-              }
-            } catch (error) {
-              console.error(error.message);
-            }
-          }
         } else {
-          console.log("Failed to retrieve availabilities");
+          console.log("Failed to retrieve availabilities (start)");
         }
       } catch (error) {
         console.error(error.message);
       }
     };
     fetchData();
-  }, [range.startDate || range.endDate]);
+  }, [startDate]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("SelectedDate: ", endDate);
+        const formattedDate = stringDate(endDate);
+        console.log("FormattedDate: ", formattedDate);
+        const endResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/item/availability/${itemId}/${formattedDate}`
+        );
+
+        if (endResponse.status === 200) {
+          const endIntervals = endResponse.data.data.intervals;
+          setEndAvails(endIntervals);
+        } else {
+          ("Failed to retrieve availabilites (end)");
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    fetchData();
+  }, [endDate]);
+
+  const dayBefore = (date) => {
+    const dayBefore = new Date(date);
+    const newDate = dayBefore ? dayBefore.getDate() - 1 : 1;
+    dayBefore.setDate(newDate);
+    return dayBefore;
+  }
+
+  // Hourly booking
+  // To get next booking to limit endDate selection in calendar
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("SelectedDate: ", startDate);
+        const formattedDate = stringDate(startDate);
+        console.log("FormattedDate: ", formattedDate);
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/item/nextBooking/${itemId}/${formattedDate}`
+        );
+        if (response.status === 200) {
+          const nextBooking = response.data.data.booking;
+          console.log(new Date(nextBooking));
+          setNextBooking(dayBefore(new Date(nextBooking)));
+        } else {
+          console.log("Failed to get next booking");
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    fetchData();
+  }, [startDate]);
 
   const Availability = ({ avails }) => {
     return (
@@ -532,9 +593,11 @@ const createRentals = () => {
 
   const onDismiss = useCallback(() => {
     setVisibility(false);
-  }, [setVisibility]);
+    setStartVisibility(false);
+    setEndVisibility(false);
+  }, [setVisibility || setStartVisibility || setEndVisibility]);
 
-  function convertToISOString(dateString) {
+  function convertToISOString(dateString, convertTime) {
     const [datePart, timePart] = dateString.split(", ");
     const [month, day, year] = datePart.split("/");
     const [time, period] = timePart.split(" ");
@@ -555,6 +618,11 @@ const createRentals = () => {
   const unavailDates = Array.isArray(unavails)
     ? unavails.map((unavail) => new Date(convertToISOString(unavail)))
     : [];
+
+  const unavailFullDays = Array.isArray(fullDayUnavails)
+    ? fullDayUnavails.map((unavail) => new Date(convertToISOString(unavail)))
+    : [];
+
 
   const onConfirm = useCallback(
     ({ startDate, endDate }) => {
@@ -586,6 +654,22 @@ const createRentals = () => {
     [setVisibility, setRange, unavailDates]
   );
 
+  const onConfirmHourlyStart = useCallback((startDate) => {
+    setStartVisibility(false);
+    setStartDate(startDate.date);
+    if (startDate.date > endDate) {
+      setEndDate(startDate.date);
+    }
+    console.log("Unavail Full Days: ", unavailFullDays);
+  });
+
+  const onConfirmHourlyEnd = useCallback((endDate) => {
+    console.log("On confirm hourly end");
+    setEndVisibility(false);
+    setEndDate(endDate.date);
+    console.log("Unavail Full Days: ", unavailFullDays);
+  });
+
   const isDateBlocked = useCallback(
     (date) => {
       // Check if the date is in the unavails array
@@ -594,6 +678,16 @@ const createRentals = () => {
       );
     },
     [unavailDates]
+  );
+
+  const isFullDateBlocked = useCallback(
+    (date) => {
+      // Check if the date is in the unavails array
+      return unavailFullDays.some(
+        (unavailDate) => unavailDate.getTime() === date.getTime()
+      );
+    },
+    [unavailFullDays]
   );
 
   const handleCreateRentalRequest = async (values) => {
@@ -692,13 +786,11 @@ const createRentals = () => {
               </RegularText>
             )}
           </View>
-          {/* {activeTab == "Hourly" && <HourlySelection />} */}
-          {/* {activeTab == "Daily" && <DailySelection />} */}
           {activeTab == "Hourly" && (
             <View>
               <View>
                 <PrimaryButton
-                  onPress={() => setVisibility(true)}
+                  onPress={() => setStartVisibility(true)}
                   style={styles.rentalPeriod}
                 >
                   <View style={styles.buttonContainer}>
@@ -708,8 +800,22 @@ const createRentals = () => {
                       style={{ paddingRight: 15 }}
                     />
                     <RegularText style={{ paddingTop: 6 }}>
-                      {formatDate(range.startDate)} -{" "}
-                      {formatDate(range.endDate)}
+                      {formatDate(startDate)}
+                    </RegularText>
+                  </View>
+                </PrimaryButton>
+                <PrimaryButton
+                  onPress={() => setEndVisibility(true)}
+                  style={styles.rentalPeriod}
+                >
+                  <View style={styles.buttonContainer}>
+                    <Ionicons
+                      name="calendar"
+                      size={27}
+                      style={{ paddingRight: 15 }}
+                    />
+                    <RegularText style={{ paddingTop: 6 }}>
+                      {formatDate(endDate)}
                     </RegularText>
                   </View>
                 </PrimaryButton>
@@ -721,12 +827,12 @@ const createRentals = () => {
                   validRange={{
                     startDate: new Date(nextDate),
                     endDate: new Date(maxDate()),
-                    disabledDates: unavailDates,
+                    disabledDates: unavailFullDays,
                   }}
-                  onConfirm={onConfirm}
-                  visible={visible}
+                  onConfirm={onConfirmHourlyStart}
+                  visible={startVisible}
                   onDismiss={onDismiss}
-                  isDateBlocked={isDateBlocked}
+                  isDateBlocked={isFullDateBlocked}
                 />
                 {rangeMessage && (
                   <View>
@@ -735,6 +841,21 @@ const createRentals = () => {
                     </RegularText>
                   </View>
                 )}
+                <DatePickerModal
+                  presentationStyle="pageSheet"
+                  locale="en-GB"
+                  mode="single"
+                  date={new Date(endDate)}
+                  validRange={{
+                    startDate: new Date(startDate),
+                    endDate: new Date(nextBooking),
+                    disabledDates: unavailFullDays,
+                  }}
+                  onConfirm={onConfirmHourlyEnd}
+                  visible={endVisible}
+                  onDismiss={onDismiss}
+                  isDateBlocked={isFullDateBlocked}
+                />
               </View>
               <View style={styles.availContainer}>
                 <View style={styles.availCard}>
@@ -747,7 +868,7 @@ const createRentals = () => {
                       </View>
                       <View>
                         <RegularText typography="B1">
-                          {formatDate(range.startDate)}
+                          {formatDate(startDate)}
                         </RegularText>
                       </View>
                     </Text>
@@ -766,7 +887,7 @@ const createRentals = () => {
                       </View>
                       <View>
                         <RegularText typography="B1">
-                          {formatDate(range.endDate)}
+                          {formatDate(endDate)}
                         </RegularText>
                       </View>
                     </Text>
@@ -776,7 +897,7 @@ const createRentals = () => {
                   </View>
                 </View>
               </View>
-              <View style={styles.selector}>
+              {/* <View style={styles.selector}>
                 <RegularText typography="H4">Start time</RegularText>
                 <View style={styles.dateTimePicker}>
                   <DateTimePicker
@@ -797,7 +918,7 @@ const createRentals = () => {
                     minuteInterval={30}
                   />
                 </View>
-              </View>
+              </View> */}
             </View>
           )}
           {activeTab == "Daily" && (

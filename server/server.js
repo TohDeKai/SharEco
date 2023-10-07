@@ -1301,3 +1301,24 @@ app.get("/api/v1/item/unavailability/fullDay/:itemId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+//Get next booking by listing Id and date
+app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
+  try {
+    console.log("Request Parameters:", req.params);
+    const booking = await rentaldb.getNextRentalByItemIdAndDate(req.params.itemId, req.params.date);
+    if (booking) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          booking: booking,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
