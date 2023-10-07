@@ -33,14 +33,17 @@ const ActivityCard = ({ rental, type }) => {
 
   const [item, setItem] = useState();
   const [user, setUser] = useState("");
-  const { getUserData } = useAuth();
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     async function fetchUserData() {
       try {
-        const userData = await getUserData();
-        if (userData) {
+        const userResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/users/userId/${userId}`
+        );
+        if (userResponse.status === 200) {
+          const userData = userResponse.data.data.user;
+          console.log("user: ", userData);
           setUser(userData);
         }
       } catch (error) {
@@ -65,7 +68,7 @@ const ActivityCard = ({ rental, type }) => {
 
     fetchUserData();
     fetchItemData();
-  }, [userId, rental.status]);;
+  }, [userId, rental.status]);
 
   const currentDate = new Date();
 
@@ -124,12 +127,12 @@ const ActivityCard = ({ rental, type }) => {
 
     let countdown = "";
     if (numOfMonths > 0) {
-      countdown += numOfMonths + "m ";
+      countdown += numOfMonths + "M ";
     }
     if (numOfDays > 0 || numOfMonths > 0) {
-      countdown += numOfDays + "d ";
+      countdown += numOfDays + "D ";
     }
-    countdown += numOfHours + "h";
+    countdown += numOfHours + "H";
 
     // trim if any trailing whitespace
     countdown.trim();

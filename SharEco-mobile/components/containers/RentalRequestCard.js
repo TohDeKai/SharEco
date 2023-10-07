@@ -4,15 +4,111 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
 import SafeAreaContainer from "./SafeAreaContainer";
+import UserAvatar from "../UserAvatar";
+import { Rating } from "react-native-stock-star-rating";
 import RegularText from "../text/RegularText";
-import RegularButton from "../buttons/RegularButton";
+import { PrimaryButton, SecondaryButton } from "../buttons/RegularButton";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { colours } from "../ColourPalette";
-const { black, dark, placeholder, white, inputbackground } = colours;
+const { black, dark, placeholder, white, inputbackground, yellow } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const RentalRequestCard = (props) => {
+  const rental = props.newRentalRequest;
   const [ isExpanded, setIsExpanded ] = useState(false);
+  const [item, setItem] = useState();
+  const [user, setUser] = useState("");
+
+  const startDate = new Date(rental.startDate);
+  const endDate = new Date(rental.endDate);
+  const currentDate = new Date();
+
+  // check if rental is hourly
+  const isHourly =
+    new Date(startDate).setHours(0, 0, 0, 0) ===
+    new Date(endDate).setHours(0, 0, 0, 0);
+
+  const dateDifferenceMs = endDate - startDate;
+
+  // calculate daily rental details
+  const startDay = startDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  const endDay = endDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  const dailyRentalLength = Math.ceil(
+    dateDifferenceMs / (1000 * 60 * 60 * 24)
+  );
+
+  // calculate hourly rental details
+  const rentalDay = startDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  const startTime = startDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+  });
+  const endTime = endDate.toLocaleTimeString("en-US", { hour: "numeric" });
+  const hourlyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60));
+
+  // calculate accept countdown
+  // lender accept within 3 days after creation date or by fulfilment time, whichever is earlier
+  let acceptThreshold;
+  if (rental.status === "UPDATED") {
+    acceptThreshold = new Date(rental.updatedDate);
+    acceptThreshold.setDate(acceptThreshold.getDate() + 3);
+  } else {
+    acceptThreshold = new Date(rental.creationDate);
+    acceptThreshold.setDate(acceptThreshold.getDate() + 3);
+  }
+
+  let timeDifferenceMs;
+  if (acceptThreshold < startDate) {
+    timeDifferenceMs = acceptThreshold - currentDate;
+  } else {
+    timeDifferenceMs = startDate - currentDate;
+  }
+
+  const numOfDays = Math.floor(timeDifferenceMs / (1000 * 60 * 60 * 24));
+  const numOfHours = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/users/userId/${rental.borrowerId}`
+        );
+        if (userResponse.status === 200) {
+          const userData = userResponse.data.data.user;
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log("user", error.message);
+      }
+    }
+
+    async function fetchItemData() {
+      try {
+        const itemResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${rental.itemId}`
+        );
+        if (itemResponse.status === 200) {
+          const itemData = itemResponse.data.data.item;
+          setItem(itemData);
+        }
+      } catch (error) {
+        console.log("item", error.message);
+      }
+    }
+
+    fetchUserData();
+    fetchItemData();
+  }, [rental.borrowerId, rental.status]);;
 
   const handleShowModal = () => {
     setShowModal(true);
@@ -68,17 +164,22 @@ const RentalRequestCard = (props) => {
 
               <View style={styles.rentalDetailsText}>
                 <RegularText typography="B2">
-                  {/* dummy */}
-                  {props.title}
+                  {item && item.itemTitle}
                 </RegularText>
-                <RegularText typography="Subtitle">
-                  {/* dummy */}
-                  10 Sep 2023, 1PM - 5PM (4 Hours)
-                </RegularText>
+                {isHourly ? (
+                  <RegularText typography="Subtitle">
+                    {rentalDay}, {startTime} - {endTime} ({hourlyRentalLength}{" "}
+                    {hourlyRentalLength == 1 ? "Hour" : "Hours"})
+                  </RegularText>
+                ) : (
+                  <RegularText typography="Subtitle">
+                    {startDay} - {endDay} ({dailyRentalLength}{" "}
+                    {dailyRentalLength == 1 ? "Day" : "Days"})
+                  </RegularText>
+                )}
                 {!isExpanded && (
                   <RegularText typography="B2">
-                    {/* dummy */}
-                    $40
+                    {rental.rentalFee}
                   </RegularText>
                 )}
               </View>
@@ -107,8 +208,7 @@ const RentalRequestCard = (props) => {
                 Accept in{' '}
               </RegularText>
               <RegularText typography="B3">
-                {/* dummy */}
-                3 Days
+                {numOfDays}D {numOfHours}H
               </RegularText>
             </View>
           )}
@@ -117,38 +217,45 @@ const RentalRequestCard = (props) => {
         
       {isExpanded && (
         <View style={styles.expanded}>
+          <View style={styles.user}>
+            <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
+            <View style={styles.profile}>
+              <RegularText typography="B1">{user.displayName}</RegularText>
+              {/* to be implemented */}
+              <View style={styles.ratingsContainer}>
+                <RegularText typography="Subtitle">0.0</RegularText>
+                <Rating stars={0} size={16} color={yellow} />
+                <RegularText typography="Subtitle">(0)</RegularText>
+              </View>
+            </View>
+          </View>
+          
           <View style={styles.location}>
             <RegularText typography="B3">
-              Location:
+              Location
             </RegularText>
             <RegularText typography="Subtitle">
-              {/* dummy */}
-              Sengkang
+              {rental.collectionLocation}
             </RegularText>
           </View>
           
-          <View style={styles.user}>
-            {/* should have component */}
-          </View>
-
-          <View style={styles.additionalRequests}>
-            <RegularText typography="B3">
-              Additional Requests
-            </RegularText>
-            <RegularText typography="Subtitle">
-              {/* dummy */}
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-              Nunc quis tempus eros. Sed vel egestas nulla, eget hendrerit quam.
-            </RegularText>
-          </View>
-
+          {rental.additionalRequest !== "" && (
+            <View style={styles.additionalRequests}>
+              <RegularText typography="B3">
+                Additional Requests
+              </RegularText>
+              <RegularText typography="Subtitle">
+                {rental.additionalRequest}
+              </RegularText>
+            </View>
+          )}
+            
           <View style={styles.totalEarnings}>
             <RegularText typography="H3" color={dark}>
               Total Earnings
             </RegularText>
             <RegularText typography="H3" color={dark}>
-              {/* dummy */}
-              $40
+              {rental.rentalFee}
             </RegularText>
           </View>
 
@@ -158,8 +265,7 @@ const RentalRequestCard = (props) => {
                 Accept in{' '}
               </RegularText>
               <RegularText typography="B3">
-                {/* dummy */}
-                3 Days
+                {numOfDays}D {numOfHours}H
               </RegularText>
             </View>
 
@@ -226,14 +332,36 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end"
   },
   expanded: {
-    gap: 5,
+    gap: 10,
   },
   location: {
-    flexDirection: "row",
     gap: 5,
   },
   user: {
-
+    display: "flex",
+    flexDirection: "row",
+    backgroundColor: inputbackground,
+    paddingHorizontal: "5%",
+    paddingVertical: 15,
+    borderRadius: 15,
+    gap: 15,
+    alignItems: "center",
+    marginVertical: 5,
+  },
+  avatarContainer: {
+    paddingRight: "5%",
+  },
+  profile: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+  },
+  ratingsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 2,
+    gap: 2
   },
   additionalRequests: {
     gap: 5,

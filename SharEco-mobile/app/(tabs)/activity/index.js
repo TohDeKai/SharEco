@@ -179,13 +179,13 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
         </View>
 
         <View style={styles.rentalNotifItems}>
-          {/* {numOfRentalUpdates > 0 && (
+          {numOfRentalUpdates > 0 && (
             <View style={styles.badge}>
               <RegularText typography="Subtitle2" color={white}>
                 {numOfRentalUpdates >= 99 ? '99+' : numOfRentalUpdates}
               </RegularText>
             </View>
-          )} */}
+          )}
           <Ionicons name="chevron-forward" size={23} color={placeholder} />
         </View>
       </Pressable>
@@ -214,7 +214,7 @@ const Content = ({ activeTab }) => {
           setUserLendings(lending);
         } else {
           // Handle the error condition appropriately
-          console.log("Failed to retrieve items");
+          console.log("Failed to retrieve lendings");
         }
       } catch (error) {
         console.log(error);
@@ -228,7 +228,7 @@ const Content = ({ activeTab }) => {
           setUserBorrowings(borrowing);
         } else {
           // Handle the error condition appropriately
-          console.log("Failed to retrieve items");
+          console.log("Failed to retrieve lendings");
         }
       } catch (error) {
         console.log(error);
@@ -242,8 +242,7 @@ const Content = ({ activeTab }) => {
   };
 
   useEffect(() => {
-    async function fetchAllListings() {
-      //TO DO: get all item listings
+    async function fetchRentals() {
       try {
         const userData = await getUserData();
         const userId = userData.userId;
@@ -279,7 +278,7 @@ const Content = ({ activeTab }) => {
         console.log(error.message);
       }
     }
-    fetchAllListings();
+    fetchRentals();
   }, []);
 
   const [activeLendingPill, setActiveLendingPill] = useState("Upcoming");
@@ -346,7 +345,7 @@ const Content = ({ activeTab }) => {
         <View style={{ flex: 1 }}>
           <RentalNotifContainer 
             numOfNewRentalReq={pendingLendings.length}
-            // numOfRentalUpdates={updatedLendings.length}
+            numOfRentalUpdates={updatedLendings.length}
           />
           <Pills
             pillItems={lendingPill}
