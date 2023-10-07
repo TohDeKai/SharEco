@@ -1286,7 +1286,6 @@ app.get("/api/v1/item/unavailability/fullDay/:itemId", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
     const unavail = await rentaldb.getFullDayUnavailability(req.params.itemId);
-    console.log(unavail);
     if (unavail) {
       res.status(200).json({
         status: "success",

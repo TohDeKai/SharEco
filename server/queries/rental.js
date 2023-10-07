@@ -621,36 +621,80 @@ const getFullDayUnavailability = async (itemId) => {
       );
 
       // If booking starts and ends on the same day
-      if (bookingStart.getDate == bookingEnd.getDate) {
-        unavail.push({
-          start: bookingStart.toLocaleString("en-GB", {
-            timeZone: singaporeTimeZone,
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          end: bookingEnd.toLocaleString("en-GB", {
-            timeZone: singaporeTimeZone,
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        });
-        console.log("Same day booking ends after 9AM (added to unavail)");
+      if (
+        new Date(bookingStart).setHours(0, 0, 0, 0) ==
+        new Date(bookingEnd).setHours(0, 0, 0, 0)
+      ) {
+        // If full day booked
+        if (
+          bookingStart == new Date(bookingStart).setHours(0, 0, 0, 0) &&
+          bookingEnd == new Date(bookingEnd).setHours(23, 30, 0, 0)
+        ) {
+          fullDay.push(
+            new Date(bookingStart).toLocaleString("en-GB", {
+              timeZone: singaporeTimeZone,
+            })
+          );
+        } else {
+          unavail.push({
+            start: bookingStart,
+            end: bookingEnd,
+          });
+          console.log(
+            "Same day booking (added to unavail): ",
+            bookingStart.toLocaleString("en-GB", {
+              timeZone: singaporeTimeZone,
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            " ",
+            bookingEnd.toLocaleString("en-GB", {
+              timeZone: singaporeTimeZone,
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          );
+        }
       }
 
       // If booking consists of 2 or more days
       else {
         let currentDate = bookingStart;
+        let isStartOfBooking = true;
         while (currentDate <= bookingEnd) {
-          // Add start of booking
-          if (currentDate == bookingStart) {
+          // First day of booking
+          // If it starts at 00:00, add to fullDay[]
+          if (isStartOfBooking) {
+            if (
+              currentDate.toLocaleString("en-US", {
+                timeZone: singaporeTimeZone,
+              }) ==
+              new Date(
+                new Date(currentDate).setHours(0, 0, 0, 0)
+              ).toLocaleString("en-US", {
+                timeZone: singaporeTimeZone,
+              })
+            ) {
+              fullDay.push(
+                new Date(currentDate).toLocaleString("en-GB", {
+                  timeZone: singaporeTimeZone,
+                })
+              );
+            }
             unavail.push({
-              start: bookingStart.toLocaleString("en-GB", {
+              start: bookingStart,
+              end: bookingEnd,
+            });
+            isStartOfBooking = false;
+            console.log(
+              "Add multiday booking (start & end): ",
+              bookingStart.toLocaleString("en-GB", {
                 timeZone: singaporeTimeZone,
                 day: "2-digit",
                 month: "2-digit",
@@ -658,95 +702,115 @@ const getFullDayUnavailability = async (itemId) => {
                 hour: "2-digit",
                 minute: "2-digit",
               }),
-              end: new Date(currentDate.setHours(23, 59, 0, 0)).toLocaleString(
-                "en-GB",
-                {
-                  timeZone: singaporeTimeZone,
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }
-              ),
-            });
-            currentDate
-              .setDate(currentDate.getDate() + 1)
-              .toLocaleString("en-US", { timeZone: singaporeTimeZone });
-            // Add end of booking
-          } else if (currentDate == bookingEnd) {
-            unavail.push({
-              start: new Date(currentDate.setHours(0, 0, 0, 0)).toLocaleString(
-                "en-GB",
-                {
-                  timeZone: singaporeTimeZone,
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }
-              ),
-              end: bookingEnd.toLocaleString("en-GB", {
+              " ",
+              bookingEnd.toLocaleString("en-GB", {
                 timeZone: singaporeTimeZone,
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",
                 hour: "2-digit",
                 minute: "2-digit",
-              }),
-            });
-            // In between days are fully booked => Add to fullDay[]
+              })
+            );
+
+          // Last day of booking
+          // If it ends at 23:30 (last slot), add to fullDay[]
+          } else if (
+            currentDate.setHours(0, 0, 0, 0) == bookingEnd.setHours(0, 0, 0, 0)
+          ) {
+            if (
+              currentDate.toLocaleString("en-US", {
+                timeZone: singaporeTimeZone,
+              }) ==
+              new Date(
+                new Date(currentDate).setHours(23, 30, 0, 0)
+              ).toLocaleString("en-US", {
+                timeZone: singaporeTimeZone,
+              })
+            ) {
+              fullDay.push(
+                new Date(currentDate).toLocaleString("en-GB", {
+                  timeZone: singaporeTimeZone,
+                })
+              );
+            }
+          // In between days are fully booked => Add to fullDay[]
           } else {
+            console.log("In between days");
             fullDay.push(
               new Date(currentDate).toLocaleString("en-GB", {
                 timeZone: singaporeTimeZone,
               })
             );
           }
-          // Move onto next day
+          // Move onto process the next day in booking
           currentDate
             .setDate(currentDate.getDate() + 1)
             .toLocaleString("en-US", { timeZone: singaporeTimeZone });
         }
       }
     }
+    console.log(unavail);
+    console.log(fullDay);
 
-    // Checking unavails for any full day bookings
-    // THIS PART IS PROBABLY ALL WRONG
-    const isFullDay = (date) => {
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      return unavail.some((booking) => {
-        const start = new Date(booking.start);
-        const end = new Date(booking.end);
-        return start <= startOfDay && end >= endOfDay;
-      });
-    };
-
-    const fullDayBookings = unavail.filter((booking) => {
-      const start = new Date(booking.start);
-      return isFullDay(start);
+    const sortedBookings = unavail.sort((a, b) => {
+      const dateA = new Date(a.start);
+      const dateB = new Date(b.start);
+      return dateA - dateB;
     });
 
-    // Add full day bookings to the existing fullDay array
-    fullDayBookings.forEach((booking) => {
-      const start = new Date(booking.start);
-      fullDay.push(
-        start.toLocaleString("en-GB", {
+    let continueCheck = false;
+
+    // Checking for full days
+    for (let i = 0; i < sortedBookings.length - 1; i++) {
+      const currentEnd = new Date(sortedBookings[i].end).toLocaleString(
+        "en-US",
+        {
           timeZone: singaporeTimeZone,
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
+        }
       );
-    });
+      const nextStart = new Date(sortedBookings[i + 1].start).toLocaleString(
+        "en-US",
+        {
+          timeZone: singaporeTimeZone,
+        }
+      );
+      const nextEnd = new Date(sortedBookings[i + 1].end).toLocaleString(
+        "en-US",
+        {
+          timeZone: singaporeTimeZone,
+        }
+      );
+
+      console.log("Processing ", currentEnd);
+
+      // Back to back bookings
+      if (currentEnd == nextStart) {
+        // Booking is till the end of the day
+        const endOfDay = new Date(
+          new Date(currentEnd).setHours(23, 30, 0, 0)
+        ).toLocaleString("en-US", {
+          timeZone: singaporeTimeZone,
+        });
+        console.log("--> Has back to back at", currentEnd);
+
+        // If booking ends at the end of day OR on a day after
+        if (
+          nextEnd == endOfDay ||
+          nextEnd.substring(0, 10) != nextStart.substring(0, 10)
+        ) {
+          console.log("It's a full day on ", currentEnd);
+          fullDay.push(
+            currentEnd.toLocaleString("en-US", {
+              timeZone: singaporeTimeZone,
+            })
+          );
+          continueCheck = false;
+        } else {
+          continueCheck = true;
+        }
+      }
+    }
 
     return fullDay;
   } catch (err) {
