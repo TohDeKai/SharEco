@@ -1,6 +1,6 @@
-import { View, Pressable, StyleSheet } from "react-native";
-import React from "react";
-import axios from "axios";
+import { View, Pressable, StyleSheet } from 'react-native';
+import React from 'react';
+import axios from 'axios';
 
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";

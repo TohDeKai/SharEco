@@ -1243,29 +1243,3 @@ app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-
-//Update rental status
-app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
-  try {
-    const { status } = req.body;
-    const rental = await rentaldb.updateRentalStatus(
-      status,
-      req.params.rentalId
-    );
-    if (rental) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
