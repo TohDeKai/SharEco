@@ -1029,6 +1029,8 @@ app.post("/api/v1/rental", async (req, res) => {
     itemId,
     borrowerId,
     lenderId,
+    totalFee,
+    isHourly,
   } = req.body;
 
   try {
@@ -1041,7 +1043,9 @@ app.post("/api/v1/rental", async (req, res) => {
       rentalFee,
       itemId,
       borrowerId,
-      lenderId
+      lenderId,
+      totalFee,
+      isHourly
     );
 
     // Send the newly created business verification as the response
@@ -1220,10 +1224,11 @@ app.get("/api/v1/rentals/itemId/:itemId", async (req, res) => {
 });
 
 //Update rental status
-app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
+app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
   try {
+    const { status } = req.body;
     const rental = await rentaldb.updateRentalStatus(
-      req.body.status,
+      status,
       req.params.rentalId
     );
     if (rental) {

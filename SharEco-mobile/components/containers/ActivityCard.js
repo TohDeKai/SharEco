@@ -6,7 +6,11 @@ import { Ionicons } from "@expo/vector-icons";
 import RentalDetailsModal from "../RentalDetailsModal";
 import UserAvatar from "../UserAvatar";
 import RegularText from "../text/RegularText";
-import { PrimaryButton, SecondaryButton, DisabledButton } from "../buttons/RegularButton";
+import {
+  PrimaryButton,
+  SecondaryButton,
+  DisabledButton,
+} from "../buttons/RegularButton";
 import { colours } from "../ColourPalette";
 import { useAuth } from "../../context/auth";
 import ConfirmationModal from "../../components/ConfirmationModal";
@@ -23,9 +27,7 @@ const ActivityCard = ({ rental, type }) => {
   const isLending = type === "Lending";
 
   // check if rental is hourly
-  const isHourly =
-    new Date(startDate).setHours(0, 0, 0, 0) ===
-    new Date(endDate).setHours(0, 0, 0, 0);
+  const isHourly = rental.isHourly;
 
   // calculate date difference in milliseconds
   const dateDifferenceMs = endDate - startDate;
@@ -54,7 +56,6 @@ const ActivityCard = ({ rental, type }) => {
   useEffect(() => {
     async function fetchUserData() {
       try {
-        console.log("UserId: ", userId);
         const userResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/users/userId/${userId}`
         );
@@ -266,7 +267,7 @@ const ActivityCard = ({ rental, type }) => {
           </View>
 
           <RegularText typography="B3" style={{ textAlign: "right" }}>
-            {rental.rentalFee}
+            {rental.totalFee}
           </RegularText>
         </View>
         <View style={styles.rentalLocation}>
@@ -282,7 +283,7 @@ const ActivityCard = ({ rental, type }) => {
   const CardFooter = () => {
     return (
       <View>
-        {rental.status === "PENDING" && (
+        {rental.status === "PENDING" && type === "Borrowing" && (
           <View style={styles.buttons}>
             {/* to be implemented */}
             <Pressable>
@@ -302,13 +303,29 @@ const ActivityCard = ({ rental, type }) => {
                 Report
               </DisabledButton>
             </View>
-            {type === "Borrowing" && (
-              <View style={styles.buttonContainer}>
-                <PrimaryButton typography="B3" color={white}>
-                  Edit
-                </PrimaryButton>
-              </View>
+            <View style={styles.buttonContainer}>
+              <SecondaryButton
+                typography="B3"
+                color={primary}
+                onPress={handleShowCancelModal}
+              >
+                Cancel
+              </SecondaryButton>
+            </View>
+            {showCancelModal && (
+              <ConfirmationModal
+                isVisible={showCancelModal}
+                onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+                onClose={handleCloseCancelModal}
+                style={{ flex: 0 }}
+                type="Cancel"
+              />
             )}
+            <View style={styles.buttonContainer}>
+              <PrimaryButton typography="B3" color={white}>
+                Edit
+              </PrimaryButton>
+            </View>
           </View>
         )}
 
@@ -341,11 +358,6 @@ const ActivityCard = ({ rental, type }) => {
                 Cancel
               </SecondaryButton>
             </View>
-            <ConfirmationModal
-              isVisible={showModal}
-              onConfirm={() => handleStatus("Cancel", rental.rentalId)}
-              onClose={handleCloseModal}
-            />
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
@@ -353,14 +365,14 @@ const ActivityCard = ({ rental, type }) => {
                 </PrimaryButton>
               </View>
             )}
-            {showCancelModal &&(
+            {showCancelModal && (
               <ConfirmationModal
-              isVisible={showCancelModal}
-              onConfirm={() => handleStatus("Cancel", rental.rentalId)}
-              onClose={handleCloseCancelModal}
-              style={{flex:0}}
-              type="Cancel"
-            />
+                isVisible={showCancelModal}
+                onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+                onClose={handleCloseCancelModal}
+                style={{ flex: 0 }}
+                type="Cancel"
+              />
             )}
           </View>
         )}
