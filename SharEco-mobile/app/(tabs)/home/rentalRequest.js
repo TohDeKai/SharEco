@@ -73,7 +73,9 @@ const createRentals = () => {
     endDate: new Date(nextDate),
   });
   const [rangeMessage, setRangeMessage] = useState("");
+  const [hourlyMessage, setHourlyMessage] = useState("");
 
+  // Fetch listing information and unavailabilities
   useEffect(() => {
     async function fetchListingData() {
       try {
@@ -238,39 +240,25 @@ const createRentals = () => {
   const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
   const [endTime, setEndTime] = useState(new Date(toNearest30Min(today)));
 
-  const handleStartDateChange = (event) => {
-    const selectedTimestamp = event.nativeEvent.timestamp;
-    const selectedDate = new Date(selectedTimestamp);
-    if (stringDate(selectedDate) != stringDate(today)) {
-      const formattedDate = stringDate(selectedDate);
-      setStartDate(formattedDate);
-    }
-  };
-
-  const handleStartTimeChange = (event) => {
+  const handleStartTimeChange = (event) => { //WORK ON THIS
     const selectedTimestamp = event.nativeEvent.timestamp;
 
     if (selectedTimestamp) {
       const selectedTime = new Date(selectedTimestamp);
-      const formattedTime = stringTime(selectedTime);
-
-      // If the result is not the current time
+      console.log("Full start date: ", new Date(fullStartDate(activeTab)));
       if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
-        setStartTime(selectedTime);
+        if (new Date(fullStartDate(activeTab)) >= new Date(fullEndDate(activeTab))) {
+          setHourlyMessage("Your start time cannot be after your end");
+        } else if (stub) { // method here to check if startTime is within any time range in startAvails
+          setHourlyMessage("Your chosen start time is unavailable")
+        } else {
+          setStartTime(selectedTime);
+        }
       }
     }
   };
 
-  const handleEndDateChange = (event) => {
-    const selectedTimestamp = event.nativeEvent.timestamp;
-    const selectedDate = new Date(selectedTimestamp);
-    if (stringDate(selectedDate) != stringDate(today)) {
-      const formattedDate = stringDate(selectedDate);
-      setEndDate(formattedDate);
-    }
-  };
-
-  const handleEndTimeChange = (event) => {
+  const handleEndTimeChange = (event) => { //WORK ON THIS
     const selectedTimestamp = event.nativeEvent.timestamp;
 
     if (selectedTimestamp) {
@@ -472,6 +460,8 @@ const createRentals = () => {
     fetchData();
   }, [startDate]);
 
+  // Hourly booking
+  // Fetch daily time availabilities for end date
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -843,13 +833,6 @@ const createRentals = () => {
                   onDismiss={onDismiss}
                   isDateBlocked={isFullDateBlocked}
                 />
-                {rangeMessage && (
-                  <View>
-                    <RegularText style={{ marginTop: 7, marginBottom: 10 }} color={fail}>
-                      {rangeMessage}
-                    </RegularText>
-                  </View>
-                )}
                 <DatePickerModal
                   presentationStyle="pageSheet"
                   locale="en-GB"
@@ -932,6 +915,13 @@ const createRentals = () => {
                   </View>
                 </View>
               </View>
+              {hourlyMessage && (
+                <View>
+                  <RegularText style={{ marginTop: 7 }} color={fail}>
+                    {setHourlyMessage}
+                  </RegularText>
+                </View>
+              )}
             </View>
           )}
           {activeTab == "Daily" && (
