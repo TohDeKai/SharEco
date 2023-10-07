@@ -341,6 +341,11 @@ const ActivityCard = ({ rental, type }) => {
                 Cancel
               </SecondaryButton>
             </View>
+            <ConfirmationModal
+              isVisible={showModal}
+              onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+              onClose={handleCloseModal}
+            />
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
