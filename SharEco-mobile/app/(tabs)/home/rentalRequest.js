@@ -515,7 +515,7 @@ const createRentals = () => {
         );
         if (response.status === 200) {
           const nextBooking = response.data.data.booking;
-          console.log(new Date(nextBooking));
+          console.log("Next Booking: ", new Date(nextBooking));
           setNextBooking(dayBefore(new Date(nextBooking)));
         } else {
           console.log("Failed to get next booking");
@@ -897,7 +897,7 @@ const createRentals = () => {
                   </View>
                 </View>
               </View>
-              {/* <View style={styles.selector}>
+              <View style={styles.selector}>
                 <RegularText typography="H4">Start time</RegularText>
                 <View style={styles.dateTimePicker}>
                   <DateTimePicker
@@ -918,7 +918,7 @@ const createRentals = () => {
                     minuteInterval={30}
                   />
                 </View>
-              </View> */}
+              </View>
             </View>
           )}
           {activeTab == "Daily" && (

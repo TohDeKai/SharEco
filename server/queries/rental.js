@@ -844,6 +844,8 @@ const getNextRentalByItemIdAndDate = async (itemId, date) => {
       return dateA - dateB;
     });
 
+    console.log(sortedBookings);
+
     for (const booking of sortedBookings) {
       const bookingEnd = new Date(
         new Date(booking.endDate).toLocaleString("en-US", {
@@ -855,8 +857,17 @@ const getNextRentalByItemIdAndDate = async (itemId, date) => {
           timeZone: singaporeTimeZone,
         })
       );
+      console.log("Processing booking: ", bookingStart, bookingEnd)
+      const endOfBooking = new Date(bookingEnd.setHours(0,0,0,0)).toLocaleString("en-US", {
+        timeZone: singaporeTimeZone,
+      });
+      const currentDate = new Date(selectedDate.setHours(0,0,0,0)).toLocaleString("en-US", {
+        timeZone: singaporeTimeZone,
+      });
+      console.log(endOfBooking != currentDate);
       // If the booking does not end on selected date
-      if (new Date(bookingEnd.setHours(0,0,0,0)) != new Date(selectedDate.setHours(0,0,0,0))) {
+      if (endOfBooking != currentDate) {
+        console.log("Next booking found");
         // Return the latest a rental can be booked until; the start of next booking
         return bookingStart;
       }
