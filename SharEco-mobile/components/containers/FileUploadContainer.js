@@ -45,7 +45,10 @@ const FileUploadContainer = ({ files, onAddFile, onRemoveFile, maxFiles }) => {
             )}`}</RegularText>
           </View>
 
-          <Pressable onPress={() => onRemoveFile(index)}>
+          <Pressable 
+            onPress={() => onRemoveFile(index)}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+          >
             <Ionicons name="trash-outline" size={30} color={black} />
           </Pressable>
         </View>

@@ -29,6 +29,8 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const columns = [
   { id: "userId", label: "User ID", minWidth: 170 },
@@ -50,6 +52,20 @@ const Users = ({ username }) => {
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [selectedUsername, setSelectedUsername] = React.useState("");
   const [userData, setUserData] = useState([]);
+
+  // State for Ban Snackbar
+  const [banSnackbarOpen, setBanSnackbarOpen] = useState(false);
+
+  const handleBanSnackbarClose = () => {
+    setBanSnackbarOpen(false);
+  };
+
+  // State for Unban Snackbar
+  const [unbanSnackbarOpen, setUnbanSnackbarOpen] = useState(false);
+
+  const handleUnbanSnackbarClose = () => {
+    setUnbanSnackbarOpen(false);
+  };
 
   useEffect(() => {
     // Fetch user data when the component mounts
@@ -103,6 +119,7 @@ const Users = ({ username }) => {
         }
       );
       if (response.status === 200) {
+        setBanSnackbarOpen(true);
         // Update the user data after banning
         const updatedUserData = userData.map((user) => {
           if (user.username === selectedUsername) {
@@ -131,6 +148,7 @@ const Users = ({ username }) => {
         }
       );
       if (response.status === 200) {
+        setUnbanSnackbarOpen(true);
         // Update the user data after unbanning
         const updatedUserData = userData.map((user) => {
           if (user.username === selectedUsername) {
@@ -176,6 +194,7 @@ const Users = ({ username }) => {
                         {column.label}
                       </TableCell>
                     ))}
+                    <TableCell>Ban/Unban</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -285,6 +304,29 @@ const Users = ({ username }) => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Alert pop-ups for banning and unbanning*/}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={banSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleBanSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleBanSnackbarClose}>
+            User successfully banned!
+          </Alert>
+        </Snackbar>
+
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={unbanSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleUnbanSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleUnbanSnackbarClose}>
+            User successfully unbanned!
+          </Alert>
+        </Snackbar>
       </div>
     </ThemeProvider>
   );

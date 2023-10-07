@@ -22,13 +22,14 @@ import {
   TablePagination,
   TableRow,
 } from "@mui/material";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const columns = [
   { id: "itemId", label: "Item ID", minWidth: 20 },
@@ -46,18 +47,59 @@ const columns = [
 ];
 
 const Listing = ({}) => {
+  // State for Disable Listing Snackbar
+  const [disableSnackbarOpen, setDisableSnackbarOpen] = useState(false);
+
+  const handleDisableSnackbarClose = () => {
+    setDisableSnackbarOpen(false);
+  };
+
+  // State for Enable Listing Snackbar
+  const [enableSnackbarOpen, setEnableSnackbarOpen] = useState(false);
+
+  const handleEnableSnackbarClose = () => {
+    setEnableSnackbarOpen(false);
+  };
+
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
-  const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
-  const [selectedItemId, setSelectedItemId] = React.useState("");
   const [itemData, setItemData] = useState([]);
+
+  const [selectedItemId, setSelectedItemId] = React.useState("");
+  const [selectedUsername, setSelectedUsername] = React.useState("");
+  const [selectedItemDescription, setSelectedItemDescription] =
+    React.useState("");
+  const [selectedRentalRateHourly, setSelectedRentalRateHourly] =
+    React.useState("");
+  const [selectedRentalRateDaily, setSelectedRentalRateDaily] =
+    React.useState("");
+  const [selectedImages, setSelectedImages] = React.useState([]);
+  const [selectedCollectionLocations, setSelectedCollectionLocations] =
+    React.useState([]);
+  const [selectedUserId, setSelectedUserId] = React.useState("");
+  const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
+  const [selectedItemOriginalPrice, setSelectedItemOriginalPrice] =
+    React.useState("");
+  const [selectedDepositFee, setSelectedDepositFee] = React.useState("");
+  const [selectedUsersLikedCount, setSelectedUsersLikedCount] =
+    React.useState(0);
+  const [selectedImpressions, setSelectedImpressions] = React.useState(0);
+  const [selectedTotalRentCollected, setSelectedTotalRentCollected] =
+    React.useState(0);
+  const [selectedDisabled, setSelectedDisabled] = React.useState(false);
+  const [selectedOtherLocation, setSelectedOtherLocation] = React.useState("");
+  const [selectedCategory, setSelectedCategory] = React.useState("");
+  const [selectedIsBusiness, setSelectedIsBusiness] = React.useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Fetch item data when the component mounts
     async function fetchData() {
       try {
         const response = await axios.get("http://localhost:4000/api/v1/items");
-        const items = response.data.data.item;
+        console.log(response);
+        const items = response.data.data.items;
         setItemData(items);
       } catch (error) {
         console.error("Error fetching item data:", error);
@@ -78,6 +120,7 @@ const Listing = ({}) => {
   // To handle dialog
   const [openDisable, setDisableOpen] = React.useState(false);
   const [openEnable, setEnableOpen] = React.useState(false);
+  const [openDetails, setDetailsOpen] = React.useState(false);
 
   const handleClickOpen = (title, itemId) => {
     setSelectedItemTitle(title);
@@ -91,9 +134,62 @@ const Listing = ({}) => {
     setEnableOpen(true);
   };
 
+  // Enter all attributes of the listings in
+  const handleClickDetails = async (
+    itemId,
+    itemDescription,
+    rentalRateHourly,
+    rentalRateDaily,
+    images,
+    collectionLocations,
+    userId,
+    itemTitle,
+    itemOriginalPrice,
+    depositFee,
+    usersLikedCount,
+    impressions,
+    totalRentCollected,
+    disabled,
+    otherLocation,
+    category,
+    isBusiness
+  ) => {
+    setLoading(true); // Set loading state to true
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${userId}`
+      );
+      // Update the username state with the new data
+      setSelectedUsername(response.data.data.user.username);
+    } catch (err) {
+      console.log("Error getting listing username: ", err);
+    } finally {
+      setSelectedUserId(userId);
+      setSelectedItemId(itemId);
+      setSelectedItemDescription(itemDescription);
+      setSelectedRentalRateHourly(rentalRateHourly);
+      setSelectedRentalRateDaily(rentalRateDaily);
+      setSelectedImages(images);
+      setSelectedCollectionLocations(collectionLocations);
+      setSelectedItemTitle(itemTitle);
+      setSelectedItemOriginalPrice(itemOriginalPrice);
+      setSelectedDepositFee(depositFee);
+      setSelectedUsersLikedCount(usersLikedCount);
+      setSelectedImpressions(impressions);
+      setSelectedTotalRentCollected(totalRentCollected);
+      setSelectedDisabled(disabled);
+      setSelectedOtherLocation(otherLocation);
+      setSelectedCategory(category);
+      setSelectedIsBusiness(isBusiness);
+      setLoading(false); // Set loading state to false when the request is complete
+      setDetailsOpen(true); // Open the dialog
+    }
+  };
+
   const handleClose = () => {
     setDisableOpen(false);
     setEnableOpen(false);
+    setDetailsOpen(false);
   };
 
   const handleDisable = async () => {
@@ -113,6 +209,7 @@ const Listing = ({}) => {
           return item;
         });
         setItemData(updatedItemData);
+        setDisableSnackbarOpen(true);
         console.log("Disabled item successfully");
       } else {
         console.log("Disable failed");
@@ -140,6 +237,7 @@ const Listing = ({}) => {
           return item;
         });
         setItemData(updatedItemData);
+        setEnableSnackbarOpen(true);
         console.log("Enabled item successfully");
       } else {
         console.log("Enabled failed");
@@ -148,6 +246,11 @@ const Listing = ({}) => {
     } catch (error) {
       console.error("Error enabling item:", error);
     }
+  };
+
+  const cellStyle = {
+    borderRight: "1px solid #e0e0e0", // Add a border at the bottom of each cell
+    padding: "10px", // Adjust padding as needed
   };
 
   return (
@@ -177,6 +280,7 @@ const Listing = ({}) => {
                         {column.label}
                       </TableCell>
                     ))}
+                    <TableCell>Disable/Enable</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -189,6 +293,27 @@ const Listing = ({}) => {
                           role="checkbox"
                           tabIndex={-1}
                           key={row.code}
+                          onClick={() =>
+                            handleClickDetails(
+                              row.itemId,
+                              row.itemDescription,
+                              row.rentalRateHourly,
+                              row.rentalRateDaily,
+                              row.images,
+                              row.collectionLocations,
+                              row.userId,
+                              row.itemTitle,
+                              row.itemOriginalPrice,
+                              row.depositFee,
+                              row.usersLikedCount,
+                              row.impressions,
+                              row.totalRentCollected,
+                              row.disabled,
+                              row.otherLocation,
+                              row.category,
+                              row.isBusiness
+                            )
+                          }
                         >
                           {columns.map((column) => {
                             const value = row[column.id];
@@ -202,21 +327,23 @@ const Listing = ({}) => {
                             {row.disabled ? (
                               <Button
                                 variant="outlined"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent click event from propagating
                                   handleEnableClickOpen(
                                     row.itemTitle,
                                     row.itemId
-                                  )
-                                }
+                                  );
+                                }}
                               >
                                 Enable Item
                               </Button>
                             ) : (
                               <Button
                                 variant="contained"
-                                onClick={() =>
-                                  handleClickOpen(row.itemTitle, row.itemId)
-                                }
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent click event from propagating
+                                  handleClickOpen(row.itemTitle, row.itemId);
+                                }}
                               >
                                 Disable Item
                               </Button>
@@ -291,6 +418,118 @@ const Listing = ({}) => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Popup box to show all details of each listing */}
+        <Dialog
+          open={!loading && openDetails}
+          onClose={handleClose}
+          scroll="paper"
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{`Listing Title: ${selectedItemTitle}`}</DialogTitle>
+          <DialogContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell style={cellStyle}>Listing ID</TableCell>
+                  <TableCell>{selectedItemId}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Owner User ID</TableCell>
+                  <TableCell>{selectedUserId}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Owner Username</TableCell>
+                  <TableCell>{selectedUsername}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Item Description</TableCell>
+                  <TableCell>{selectedItemDescription}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Collection Locations</TableCell>
+                  <TableCell>
+                    {selectedCollectionLocations.length > 0
+                      ? selectedCollectionLocations.join(", ") // Assuming selectedOtherLocation is an array
+                      : "None selected"}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Rental Rate (Hourly)</TableCell>
+                  <TableCell>{selectedRentalRateHourly}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Rental Rate (Daily)</TableCell>
+                  <TableCell>{selectedRentalRateDaily}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Item Original Price</TableCell>
+                  <TableCell>{selectedItemOriginalPrice}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Deposit Fee</TableCell>
+                  <TableCell>{selectedDepositFee}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Users Liked Count</TableCell>
+                  <TableCell>{selectedUsersLikedCount}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Impressions</TableCell>
+                  <TableCell>{selectedImpressions}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Total Rent Collected</TableCell>
+                  <TableCell>{selectedTotalRentCollected}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Disabled</TableCell>
+                  <TableCell>{selectedDisabled ? "Yes" : "No"}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Other Location</TableCell>
+                  <TableCell>
+                    {selectedOtherLocation === ""
+                      ? "None selected"
+                      : selectedOtherLocation}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Category</TableCell>
+                  <TableCell>{selectedCategory}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Is Business</TableCell>
+                  <TableCell>{selectedIsBusiness ? "Yes" : "No"}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </DialogContent>
+        </Dialog>
+
+        {/* Alert pop-ups for disabling and enabling*/}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={enableSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleEnableSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleEnableSnackbarClose}>
+            Listing successfully enabled
+          </Alert>
+        </Snackbar>
+
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={disableSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleDisableSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleDisableSnackbarClose}>
+            Listing successfully disabled!
+          </Alert>
+        </Snackbar>
       </div>
     </ThemeProvider>
   );
