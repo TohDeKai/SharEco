@@ -1,182 +1,178 @@
 import {
-    View,
-    Text,
-    ScrollView,
-    StyleSheet,
-    Dimensions,
-    Pressable,
-    FlatList,
-    Image,
-    RefreshControl,
-  } from "react-native";
-  import React, { useState, useEffect } from "react";
-  import { useAuth } from "../../../context/auth";
-  import { Link, useLocalSearchParams } from "expo-router";
-  import { router } from "expo-router";
-  
-  //components
-  import { Rating } from "react-native-stock-star-rating";
-  import RegularText from "../../../components/text/RegularText";
-  import { colours } from "../../../components/ColourPalette";
-  import UserAvatar from "../../../components/UserAvatar";
-  import Header from "../../../components/Header";
-  import axios from "axios";
-  import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
-  import Carousel, { Pagination } from "react-native-snap-carousel";
-  import {
-    DisabledButton,
-    PrimaryButton,
-    SecondaryButton,
-  } from "../../../components/buttons/RegularButton";
-  import CarouselItem from "../../../components/CarouselItem";
-  const { primary, secondary, white, yellow, dark, inputbackground } = colours;
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-  //const[listingItemId, setListingItemId] = useState();
-  
-  const viewportHeightInPixels = (percentage) => {
-    const screenHeight = Dimensions.get("window").height;
-    return (percentage / 100) * screenHeight;
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+  FlatList,
+  Image,
+  RefreshControl,
+} from "react-native";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../../context/auth";
+import { Link, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
+
+//components
+import { Rating } from "react-native-stock-star-rating";
+import RegularText from "../../../components/text/RegularText";
+import { colours } from "../../../components/ColourPalette";
+import UserAvatar from "../../../components/UserAvatar";
+import Header from "../../../components/Header";
+import axios from "axios";
+import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
+import Carousel, { Pagination } from "react-native-snap-carousel";
+import {
+  DisabledButton,
+  PrimaryButton,
+  SecondaryButton,
+} from "../../../components/buttons/RegularButton";
+import CarouselItem from "../../../components/CarouselItem";
+const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+//const[listingItemId, setListingItemId] = useState();
+
+const viewportHeightInPixels = (percentage) => {
+  const screenHeight = Dimensions.get("window").height;
+  return (percentage / 100) * screenHeight;
+};
+
+const viewportWidthInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").width;
+  return (percentage / 100) * screenWidth;
+};
+
+const ItemInformation = () => {
+  const [listingItem, setListingItem] = useState({});
+  const [user, setUser] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const params = useLocalSearchParams();
+  const { itemId } = params;
+  const handleBack = () => {
+    router.back();
   };
-  
-  const viewportWidthInPixels = (percentage) => {
-    const screenWidth = Dimensions.get("window").width;
-    return (percentage / 100) * screenWidth;
-  };
-  
-  const ItemInformation = () => {
-    const [listingItem, setListingItem] = useState({});
-    const [user, setUser] = useState("");
-    const [refreshing, setRefreshing] = useState(false);
-    const params = useLocalSearchParams();
-    const { itemId } = params;
-    const handleBack = () => {
-      router.back();
-    };
-  
-    const handleRefresh = async () => {
-      setRefreshing(true);
-  
-      try {
-          const itemResponse = await axios.get(
-            `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
-          );
-    
-          if (itemResponse.status === 200) {
-            const item = itemResponse.data.data.item;
-            setListingItem(item);
-    
-            // Now that listingItem is set, fetch user data
-            const userResponse = await axios.get(
-              `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
-            );
-    
-            if (userResponse.status === 200) {
-              const user = userResponse.data.data.user;
-              setUser(user);
-            } else {
-              console.log("Failed to retrieve user");
-            }
-          } else {
-            console.log("Failed to retrieve item");
-          }
-        } catch (error) {
-          console.error(error.message);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      const itemResponse = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+      );
+
+      if (itemResponse.status === 200) {
+        const item = itemResponse.data.data.item;
+        setListingItem(item);
+
+        // Now that listingItem is set, fetch user data
+        const userResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
+        );
+
+        if (userResponse.status === 200) {
+          const user = userResponse.data.data.user;
+          setUser(user);
+        } else {
+          console.log("Failed to retrieve user");
         }
-  
-      setRefreshing(false);
-    };
-  
-    useEffect(() => {
-      async function fetchData() {
-        try {
-          const itemResponse = await axios.get(
-            `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
-          );
-    
-          if (itemResponse.status === 200) {
-            const item = itemResponse.data.data.item;
-            setListingItem(item);
-    
-            // Now that listingItem is set, fetch user data
-            const userResponse = await axios.get(
-              `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
-            );
-    
-            if (userResponse.status === 200) {
-              const user = userResponse.data.data.user;
-              setUser(user);
-            } else {
-              console.log("Failed to retrieve user");
-            }
-          } else {
-            console.log("Failed to retrieve item");
-          }
-        } catch (error) {
-          console.error(error.message);
-        }
+      } else {
+        console.log("Failed to retrieve item");
       }
-    
-      fetchData(); 
-    
-    }, [itemId, BASE_URL]);
-    
-  
-    const {
-      itemTitle,
-      images,
-      itemDescription,
-      itemOriginalPrice,
-      rentalRateHourly,
-      rentalRateDaily,
-      collectionLocations,
-      usersLikedCount,
-      userId,
-      depositFee,
-    } = listingItem;
-  
-    const formattedLocations = collectionLocations
-      ? collectionLocations.join(", ")
-      : collectionLocations;
-  
-    return (
-      <View>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ marginBottom: 50 }}
-          refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-              />
-            }
-        >
-          <View style={style.imgContainer}>
-            <View style={style.header}>
-              <Header action="back" onPress={handleBack} />
-            </View>
-            <View style={{ marginTop: -31 }}>
-              <CustomSlider data={images} />
-            </View>
+    } catch (error) {
+      console.error(error.message);
+    }
+
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const itemResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+        );
+
+        if (itemResponse.status === 200) {
+          const item = itemResponse.data.data.item;
+          setListingItem(item);
+
+          // Now that listingItem is set, fetch user data
+          const userResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
+          );
+
+          if (userResponse.status === 200) {
+            const user = userResponse.data.data.user;
+            setUser(user);
+          } else {
+            console.log("Failed to retrieve user");
+          }
+        } else {
+          console.log("Failed to retrieve item");
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+
+    fetchData();
+  }, [itemId, BASE_URL]);
+
+  const {
+    itemTitle,
+    images,
+    itemDescription,
+    itemOriginalPrice,
+    rentalRateHourly,
+    rentalRateDaily,
+    collectionLocations,
+    usersLikedCount,
+    userId,
+    depositFee,
+  } = listingItem;
+
+  const formattedLocations = collectionLocations
+    ? collectionLocations.join(", ")
+    : collectionLocations;
+
+  return (
+    <View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ marginBottom: 50 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        <View style={style.imgContainer}>
+          <View style={style.header}>
+            <Header action="back" onPress={handleBack} />
           </View>
-  
-          <View style={style.textContainer}>
-            <View style={style.title}>
-              <RegularText typography="H1">{itemTitle}</RegularText>
-            </View>
-  
-            {rentalRateHourly != "$0.00" && rentalRateDaily != "$0.00" && (
-              <View style={style.rates}>
-                <View style={style.pricing}>
-                  <RegularText typography="H2">{rentalRateHourly}</RegularText>
-                  <RegularText typography="Subtitle">/ hour</RegularText>
-                </View>
-                <View style={style.pricing}>
-                  <RegularText typography="H2">{rentalRateDaily}</RegularText>
-                  <RegularText typography="Subtitle">/ day</RegularText>
-                </View>
+          <View style={{ marginTop: -31 }}>
+            <CustomSlider data={images} />
+          </View>
+        </View>
+
+        <View style={style.textContainer}>
+          <View style={style.title}>
+            <RegularText typography="H1">{itemTitle}</RegularText>
+          </View>
+
+          {rentalRateHourly != "$0.00" && rentalRateDaily != "$0.00" && (
+            <View style={style.rates}>
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateHourly}</RegularText>
+                <RegularText typography="Subtitle">/ hour</RegularText>
               </View>
-            )}
-            {rentalRateHourly == "$0.00" && rentalRateDaily != "0.00" && (
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/ day</RegularText>
+              </View>
+            </View>
+          )}
+          {rentalRateHourly == "$0.00" && rentalRateDaily != "0.00" && (
+            <View style={style.rates}>
               <View style={style.pricing}>
                 <RegularText typography="H2">{rentalRateDaily}</RegularText>
                 <RegularText typography="Subtitle">/ day</RegularText>
