@@ -53,6 +53,44 @@ const ConfirmationModal = ({
 
   return (
     <View>
+      {type === "Delete" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H3"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  Are you sure you want to delete? This action cannot be
+                  reversed.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Cancel
+                    </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
       {
         type === "Cancel" && (
           <View style={[styles.centeredView]}>

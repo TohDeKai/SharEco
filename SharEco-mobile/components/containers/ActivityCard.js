@@ -354,6 +354,9 @@ const ActivityCard = ({ rental, type }) => {
                 isVisible={showModal}
                 onConfirm={() => handleStatus("Cancel", rental.rentalId)}
                 onClose={handleCloseModal}
+                rental={rental}
+                type="Cancel"
+                forCancellationData={handleCancellationData}
               />
             )}
           </View>
