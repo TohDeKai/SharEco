@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,43 +10,36 @@ import {
   RefreshControl,
 } from "react-native";
 import DatePicker from "react-native-modern-datepicker";
+import { DatePickerModal } from "react-native-paper-dates";
 import axios from "axios";
+import { enGB, registerTranslation } from "react-native-paper-dates";
+registerTranslation("en-GB", enGB);
 
 import { colours } from "./ColourPalette";
 import RegularText from "./text/RegularText";
 import { useLocalSearchParams } from "expo-router";
+import { PrimaryButton } from "./buttons/RegularButton";
 const { primary, secondary, white, yellow, dark, black, inputbackground } =
   colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-const viewportHeightInPixels = (percentage) => {
-  const screenHeight = Dimensions.get("window").height;
-  return (percentage / 100) * screenHeight;
-};
-
-const viewportWidthInPixels = (percentage) => {
-  const screenWidth = Dimensions.get("window").width;
-  return (percentage / 100) * screenWidth;
-};
 const currentDate = new Date();
 
 const stringDate = (date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1; // Months are zero-based
-  const day = date.getDate();
+  const newDate = new Date(date);
+  const year = newDate.getFullYear();
+  const month = newDate.getMonth() + 1; // Months are zero-based
+  const day = newDate.getDate();
   // Ensure that single-digit months and days have a leading zero
   const formattedMonth = month < 10 ? `0${month}` : month;
   const formattedDay = day < 10 ? `0${day}` : day;
   return `${year}-${formattedMonth}-${formattedDay}`;
 };
 
-const maxDate = (date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 6; // Can book up to 5 months from current date
-  const day = date.getDate();
-  const formattedMonth = month < 10 ? `0${month}` : month;
-  const formattedDay = day < 10 ? `0${day}` : day;
-  return `${year}-${formattedMonth}-${formattedDay}`;
+const maxDate = () => {
+  const today = new Date();
+  today.setMonth(today.getMonth() + 5);
+  return today;
 };
 
 const formatTodayDate = (dateString) => {
@@ -58,12 +51,32 @@ const formatTodayDate = (dateString) => {
   return `${updatedDay}/${updatedMonth}/${updatedYear}`;
 };
 
-const datePicker = ({ selected }) => {
+const convertToAMPM = (timeString) => {
+  const [hours, minutes] = timeString.split(":");
+  let ampm = "AM";
+  let formattedHours = parseInt(hours, 10);
+
+  if (formattedHours >= 12) {
+    ampm = "PM";
+    if (formattedHours > 12) {
+      formattedHours -= 12;
+    }
+  } else if (formattedHours == 0) {
+    formattedHours = 12;
+  }
+  return `${formattedHours}:${minutes} ${ampm}`;
+};
+
+const datePicker = ({ itemId, activeTab }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [today, setToday] = useState("");
   const [avails, setAvails] = useState({});
-  const params = useLocalSearchParams();
-  const { itemId } = params;
+  const [unavails, setUnavails] = useState({});
+  const nextDate = new Date(new Date().setDate(currentDate.getDate() + 1));
+  const [range, setRange] = useState({
+    startDate: new Date(nextDate),
+    endDate: new Date(nextDate),
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,48 +96,42 @@ const datePicker = ({ selected }) => {
       } catch (error) {
         console.error(error.message);
       }
-    };
-
+    }
     if (selectedDate !== "") {
       setAvails([]);
-      fetchData();
     }
-  }, [selectedDate, itemId]); // Include itemId as a dependency
+    fetchData();
+  }, [itemId]);
 
   const handleSelectedChange = (date) => {
     setSelectedDate(date);
   };
 
-  //   const Availability = ({ slot }) => {
-  //     const { start, end } = slot;
-  //     const formattedStartTime = formatTime(start);
-  //     const formattedEndTime = formatTime(end);
-
-  //     return (
-  //       <Text>
-  //         <RegularText typography="H3" color={white}>
-  //           {formattedStartTime} - {formattedEndTime}
-  //         </RegularText>
-  //       </Text>
-  //     );
-  //   };
-
   const Availability = ({ avails }) => {
     return (
       <View>
-        {avails.map((slot, index) => {
-          const { start, end } = slot;
-          const formattedStartTime = formatTime(start);
-          const formattedEndTime = formatTime(end);
+        {avails.length != 0 &&
+          avails.map((slot, index) => {
+            const { start, end } = slot;
+            const formattedStartTime = formatTime(start);
+            const formattedEndTime = formatTime(end);
 
-          return (
-            <Text key={index} style={{ marginBottom: 5}}>
-              <RegularText typography="H3" color={white}>
-                {formattedStartTime} - {formattedEndTime}
-              </RegularText>
-            </Text>
-          );
-        })}
+            return (
+              <Text key={index} style={{ marginBottom: 5 }}>
+                <RegularText typography="H3" color={white}>
+                  {convertToAMPM(formattedStartTime)} -{" "}
+                  {convertToAMPM(formattedEndTime)}
+                </RegularText>
+              </Text>
+            );
+          })}
+        {avails.length == 0 && (
+          <View>
+            <RegularText typography="H3" color={white}>
+              There seems to be no slots...
+            </RegularText>
+          </View>
+        )}
       </View>
     );
   };
@@ -136,44 +143,72 @@ const datePicker = ({ selected }) => {
     return `${hours}:${minutes}`;
   };
 
+
+  function convertToISOString(dateString) {
+    const [datePart, timePart] = dateString.split(", ");
+    const [month, day, year] = datePart.split("/");
+    const [time, period] = timePart.split(" ");
+    const [hour, minute] = time.split(":");
+    let adjustedHour = parseInt(hour, 10);
+    if (period.toUpperCase() === "PM" && adjustedHour !== 12) {
+      adjustedHour += 12;
+    } else if (period.toUpperCase() === "AM" && adjustedHour === 12) {
+      adjustedHour = 0;
+    }
+    const isoDateString = `${year}-${month}-${day}T${String(
+      adjustedHour
+    ).padStart(2, "0")}:${minute}:00Z`;
+
+    return isoDateString;
+  }
+
+  const unavailDates = Array.isArray(unavails)
+    ? unavails.map((unavail) => new Date(convertToISOString(unavail)))
+    : [];
+
+    console.log(unavailDates);
+
   return (
     <View style={style.container}>
-      <DatePicker
-        options={{
-          backgroundColor: inputbackground,
-          textHeaderColor: primary,
-          textDefaultColor: black,
-          selectedTextColor: white,
-          mainColor: primary,
-          textSecondaryColor: secondary,
-        }}
-        mode="calendar"
-        minimumDate={stringDate(currentDate)}
-        maximumDate={maxDate(currentDate)}
-        minuteInterval={30}
-        onSelectedChange={handleSelectedChange}
-      />
-      <View style={style.availCard}>
-        {today !== "" && (
-          <View>
-            <Text style={style.textMargin}>
-              <RegularText typography="B1" color={white}>
-                Availabilities for {today}
-              </RegularText>
-            </Text>
-            <View>
-              <Availability avails={avails} />
-            </View>
+      {activeTab == "Hourly" && (
+        <View>
+          <DatePicker
+            options={{
+              backgroundColor: inputbackground,
+              textHeaderColor: primary,
+              textDefaultColor: black,
+              selectedTextColor: white,
+              mainColor: primary,
+              textSecondaryColor: secondary,
+            }}
+            mode="calendar"
+            minimumDate={stringDate(nextDate)}
+            maximumDate={maxDate(currentDate)}
+            onSelectedChange={handleSelectedChange}
+          />
+          <View style={style.availCard}>
+            {today !== "" && (
+              <View>
+                <Text style={style.textMargin}>
+                  <RegularText typography="B1" color={white}>
+                    Availabilities for {today}
+                  </RegularText>
+                </Text>
+                <View>
+                  <Availability avails={avails} />
+                </View>
+              </View>
+            )}
+            {today == "" && (
+              <View style={style.centerText}>
+                <RegularText typography="B1" color={white}>
+                  Select a date to view availabilities
+                </RegularText>
+              </View>
+            )}
           </View>
-        )}
-        {today == "" && (
-          <View style={style.centerText}>
-            <RegularText typography="B1" color={white}>
-              Select a date to view availabilities
-            </RegularText>
-          </View>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   );
 };
