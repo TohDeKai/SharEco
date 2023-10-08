@@ -11,7 +11,8 @@ import RegularText from "../text/RegularText";
 import { PrimaryButton, SecondaryButton } from "../buttons/RegularButton";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { colours } from "../ColourPalette";
-const { black, dark, placeholder, white, inputbackground, yellow } = colours;
+const { black, dark, placeholder, white, inputbackground, yellow, primary } =
+  colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const RentalRequestCard = (props) => {
@@ -155,7 +156,7 @@ const RentalRequestCard = (props) => {
               <Image
                 style={styles.image}
                 source={{
-                  uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                  uri: item && item.images && item.images[0],
                 }}
               />
 
@@ -210,26 +211,36 @@ const RentalRequestCard = (props) => {
 
       {isExpanded && (
         <View style={styles.expanded}>
-          <Pressable 
+          <Pressable
             style={({ pressed }) => ({
               opacity: pressed ? 0.5 : 1,
             })}
-            onPress={() => router.push({pathname: "home/othersProfile", params: { userId: user.userId }})}
+            onPress={() =>
+              router.push({
+                pathname: "home/othersProfile",
+                params: { userId: user.userId },
+              })
+            }
           >
             <View style={styles.user}>
-                <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
-                <View style={styles.profile}>
-                  <RegularText typography="B1">{user.displayName}</RegularText>
-                  {/* to be implemented */}
-                  <View style={styles.ratingsContainer}>
-                    <RegularText typography="Subtitle">0.0</RegularText>
-                    <Rating stars={0} size={16} color={yellow} />
-                    <RegularText typography="Subtitle">(0)</RegularText>
-                  </View>
+              <UserAvatar
+                size="medium"
+                source={{
+                  uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
+                }}
+              />
+              <View style={styles.profile}>
+                <RegularText typography="B1">{user.displayName}</RegularText>
+                {/* to be implemented */}
+                <View style={styles.ratingsContainer}>
+                  <RegularText typography="Subtitle">0.0</RegularText>
+                  <Rating stars={0} size={16} color={yellow} />
+                  <RegularText typography="Subtitle">(0)</RegularText>
                 </View>
               </View>
-          </Pressable>            
-          
+            </View>
+          </Pressable>
+
           <View style={styles.location}>
             <RegularText typography="B3">Location</RegularText>
             <RegularText typography="Subtitle">
@@ -274,7 +285,7 @@ const RentalRequestCard = (props) => {
               <View style={styles.button}>
                 <SecondaryButton
                   typography="B3"
-                  color={placeholder}
+                  color={primary}
                   onPress={() => handleShowModal("Reject")}
                 >
                   Reject
@@ -288,19 +299,19 @@ const RentalRequestCard = (props) => {
                 >
                   Accept
                 </PrimaryButton>
-                <ConfirmationModal
-                  isVisible={showModal}
-                  onConfirm={() =>
-                    handleStatus(
-                      modalType == "Accept" ? "Accept" : "Reject",
-                      rental.rentalId
-                    )
-                  }
-                  onClose={handleCloseModal}
-                  type={modalType}
-                  rental={rental}
-                />
               </View>
+              <ConfirmationModal
+                isVisible={showModal}
+                onConfirm={() =>
+                  handleStatus(
+                    modalType == "Accept" ? "Accept" : "Reject",
+                    rental.rentalId
+                  )
+                }
+                onClose={handleCloseModal}
+                type={modalType}
+                rental={rental}
+              />
             </View>
           </View>
         </View>

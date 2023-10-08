@@ -90,12 +90,12 @@ const ActivityCard = ({ rental, type }) => {
 
   const currentDate = new Date();
 
-//   const handleShowModal = () => {
-//     setShowModal(true);
-//   };
-//   const handleCloseModal = () => {
-//     setShowModal(false);
-//   };
+  //   const handleShowModal = () => {
+  //     setShowModal(true);
+  //   };
+  //   const handleCloseModal = () => {
+  //     setShowModal(false);
+  //   };
 
   const handleCancellationData = (data) => {
     setCancellationReason(data);
@@ -341,6 +341,8 @@ const ActivityCard = ({ rental, type }) => {
                 onClose={handleCloseCancelModal}
                 style={{ flex: 0 }}
                 type="Cancel"
+                rental={rental}
+                forCancellationData={handleCancellationData}
               />
             )}
             <View style={styles.buttonContainer}>
@@ -371,41 +373,7 @@ const ActivityCard = ({ rental, type }) => {
                 Report
               </DisabledButton>
             </View>
-//             {type === "Borrowing" && (
-//               <View style={styles.buttonContainer}>
-//                 <PrimaryButton typography="B3" color={white}>
-//                   Edit
-//                 </PrimaryButton>
-//               </View>
-//             )}
-//           </View>
-//         )}
-//         {rental.status === "UPCOMING" && (
-//           <View style={styles.buttons}>
-//             {/* to be implemented */}
-//             <Pressable>
-//               <Ionicons
-//                 name="chatbubble-outline"
-//                 color={placeholder}
-//                 size={35}
-//               />
-//             </Pressable>
-//             {/* to be implemented */}
-//             <View style={styles.buttonContainer}>
-//               <SecondaryButton typography="B3" color={placeholder}>
-//                 Report
-//               </SecondaryButton>
-//             </View>
-             <View style={styles.buttonContainer}>
-//                 <SecondaryButton
-//                   typography="B3"
-//                   color={primary}
-//                   onPress={handleShowModal}
-//                 >
-//                   Cancel
-//                 </SecondaryButton>
-//               </View>
-//             )}
+            <View style={styles.buttonContainer}>
               <SecondaryButton
                 typography="B3"
                 color={primary}
@@ -421,11 +389,6 @@ const ActivityCard = ({ rental, type }) => {
                 </PrimaryButton>
               </View>
             )}
-//             {showModal && (
-//               <ConfirmationModal
-//                 isVisible={showModal}
-//                 onConfirm={() => handleStatus("Cancel", rental.rentalId)}
-//                 onClose={handleCloseModal}
             {showCancelModal && (
               <ConfirmationModal
                 isVisible={showCancelModal}
@@ -433,6 +396,8 @@ const ActivityCard = ({ rental, type }) => {
                 onClose={handleCloseCancelModal}
                 style={{ flex: 0 }}
                 type="Cancel"
+                forCancellationData={handleCancellationData}
+                rental={rental}
               />
             )}
           </View>
