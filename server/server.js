@@ -1067,14 +1067,8 @@ app.put("/api/v1/rental/rentalId/:rentalId", async (req, res) => {
   try {
     const rental = await rentaldb.editRentalRequest(
       req.params.rentalId,
-      req.body.startDate,
-      req.body.endDate,
       req.body.collectionLocation,
       req.body.additionalRequest,
-      req.body.additionalCharges,
-      req.body.depositFee,
-      req.body.rentalFee,
-      req.body.totalFee,
       req.body.status,
     );
 

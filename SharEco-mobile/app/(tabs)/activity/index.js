@@ -345,7 +345,7 @@ const Content = ({ activeTab }) => {
   );
 
   const pendingBorrowings = userBorrowings.filter(
-    (rental) => rental.status === "PENDING"
+    (rental) => rental.status === "PENDING" || rental.status === "UPDATED"
   );
   const ongoingBorrowings = userBorrowings.filter(
     (rental) => rental.status === "ONGOING"
@@ -677,6 +677,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
     width: "100%",
+    paddingTop: 10,
   },
   tab: {
     flex: 1,

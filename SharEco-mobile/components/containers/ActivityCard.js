@@ -283,11 +283,13 @@ const ActivityCard = ({ rental, type }) => {
 
   const CardFooter = () => {
     const handleEditRental = () => {
-      router.push({ pathname: "activity/editRentalRequest", params: { rentalId: rental.rentalId } });
+      const rentalId = rental.rentalId
+      const item = rental.itemId;
+      router.push({ pathname: "activity/editRentalRequest", params: { rentalId: rentalId, itemId: item} });
     }
     return (
       <View>
-        {rental.status === "PENDING" && type === "Borrowing" && (
+        {(rental.status === "PENDING" || rental.status === "UPDATED") && type === "Borrowing" && (
           <View style={styles.buttons}>
             {/* to be implemented */}
             <Pressable>
@@ -506,6 +508,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   rentalLocation: {
+    marginTop:5,
     flexDirection: "row",
     gap: 5,
   },

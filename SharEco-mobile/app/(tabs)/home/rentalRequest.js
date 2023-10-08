@@ -327,7 +327,7 @@ const createRentals = () => {
 
         console.log("selected duration valid" , isSelectedDurationWithinAvailable(selectedTimeDate, endDateTime, startAvails, endAvails));
         if (selectedTimeDate >= endDateTime) {
-          setHourlyMessage("Your start time cannot be after your end");
+          setHourlyMessage("Selected end time is before start time. Please choose again.");
           setStartTime(endTime);
           setValidStart(false);
         } else if (!isStartDateWithinIntervals(selectedTimeDate, startAvails) || !isSelectedDurationWithinAvailable(selectedTimeDate, endDateTime, startAvails, endAvails)) { 
@@ -355,7 +355,7 @@ const createRentals = () => {
         console.log("selected duration valid" , isSelectedDurationWithinAvailable(startDateTime, selectedTimeDate, startAvails, endAvails));
         if (selectedTimeDate <= new Date(fullStartDate(activeTab))) {
           console.log("end is before start")
-          setHourlyMessage("Your end time cannot be before your start");
+          setHourlyMessage("Selected end time is before start time. Please choose again.");
           setEndTime(startTime);
           setValidEnd(false);
         } else if (!isStartDateWithinIntervals(selectedTimeDate, endAvails) || !isSelectedDurationWithinAvailable(startDateTime, selectedTimeDate, startAvails, endAvails)) { 
@@ -662,8 +662,12 @@ const createRentals = () => {
         setRangeMessage(
           "Oops, those dates aren't available, please select again!"
         );
+        setValidStart(false)
+        setValidEnd(false);
       } else {
         setRange({ startDate, endDate });
+        setValidStart(true)
+        setValidEnd(true);
         setRangeMessage("");
       }
     },
@@ -806,10 +810,10 @@ const createRentals = () => {
             <View>
               <View>
                 <View style={styles.hourlyRentalContainer}>
-                  <View style={{ width: viewportWidthInPixels(43) }}>
+                  <View style={{ width: viewportWidthInPixels(43) , marginBottom:8}}>
                     <RegularText typography="H4">Starts from</RegularText>
                   </View>
-                  <View style={{ width: viewportWidthInPixels(43) }}>
+                  <View style={{ width: viewportWidthInPixels(43) , marginBottom:8 }}>
                     <RegularText typography="H4">Ends on</RegularText>
                   </View>
                 </View>
@@ -879,7 +883,7 @@ const createRentals = () => {
               <View style={styles.availContainer}>
                 <View style={styles.availCard}>
                   <View>
-                    <Text style={styles.textMargin}>
+                    <Text style={[styles.textMargin, {marginTop:10}]}>
                       <View>
                         <RegularText typography="Subtitle">
                           Availabilities for
@@ -898,7 +902,7 @@ const createRentals = () => {
                 </View>
                 <View style={styles.availCard}>
                   <View>
-                    <Text style={styles.textMargin}>
+                    <Text style={[styles.textMargin, {marginTop:10}]}>
                       <View>
                         <RegularText typography="Subtitle">
                           Availabilities for
@@ -944,7 +948,7 @@ const createRentals = () => {
               </View>
               {(!validStart || !validEnd) && (
                 <View>
-                  <RegularText style={{ marginTop: 3, marginBottom: 15, }} color={fail}>
+                  <RegularText style={{ marginTop: 10, marginBottom: 15, }} color={fail}>
                     {hourlyMessage}
                   </RegularText>
                 </View>
@@ -1029,7 +1033,6 @@ const createRentals = () => {
                   autoScroll={true}
                   maxHeight={200}
                   placeholder="Select a location"
-                  style={{ marginBottom: 10 }}
                 />
                 <View style={styles.textMargin}>
                   <RegularText typography="H3">Additional Comments</RegularText>
@@ -1156,7 +1159,6 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "flex-start",
     alignItems: "flex-start",
-    marginBottom: 10,
     width: viewportWidthInPixels(43),
   },
   listingDetails: {
@@ -1210,16 +1212,8 @@ const styles = StyleSheet.create({
     backgroundColor: dark,
   },
   textMargin: {
-    marginTop: 35,
-    marginBottom: 15,
-  },
-  textMarginDivider: {
-    //maybe remove
     marginTop: 25,
-    marginBottom: 10,
-    paddingBottom: 10,
-    borderBottomColor: inputbackground,
-    borderBottomWidth: 2,
+    marginBottom: 15,
   },
   container: {
     flex: 1,
@@ -1251,7 +1245,6 @@ const styles = StyleSheet.create({
   hourlyRentalContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 5,
   },
   hourlyRentalPeriod: {
     borderWidth: 1,
@@ -1280,9 +1273,6 @@ const styles = StyleSheet.create({
     minHeight: 80,
     paddingBottom: 20,
     width: viewportWidthInPixels(43),
-  },
-  textMargin: {
-    marginBottom: 10,
   },
   centerText: {
     display: "flex",

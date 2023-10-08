@@ -54,41 +54,24 @@ const createRentalRequest = async (
 // Edit Rental
 const editRentalRequest = async (
   rentalId,
-  startDate,
-  endDate,
   collectionLocation,
   additionalRequest,
-  additionalCharges,
-  depositFee,
-  rentalFee,
-  totalFee,
   status,
 ) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."rental" 
-          SET "startDate" = $1, 
-          "endDate" = $2,
-          "collectionLocation" = $3,
-          "additionalRequest" = $4,
-          "additionalCharges" = $5,
-          "depositFee" = $6,
-          "rentalFee" = $7,
-          "isUpdated" = $8,
-          "totalFee" = $9,
-          "status" = $10
-          WHERE "rentalId" = $11
+          SET 
+          "collectionLocation" = $1,
+          "additionalRequest" = $2,
+          "isUpdated" = $3,
+          "status" = $4
+          WHERE "rentalId" = $5
           RETURNING *`,
       [
-        startDate,
-        endDate,
         collectionLocation,
         additionalRequest,
-        additionalCharges,
-        depositFee,
-        rentalFee,
         true,
-        totalFee,
         status,
         rentalId,
       ]
