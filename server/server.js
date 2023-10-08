@@ -816,8 +816,54 @@ app.get(
 );
 
 // Auth functionalities
-app.post("/api/v1/admin/signIn", auth.AdminSignIn);
-app.post("/api/v1/admin/signUp", auth.AdminSignUp);
+app.post("/api/v1/admin/signIn", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const token = await auth.AdminSignIn(username, password);
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        token: token,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err.message);
+    if (err.message == "Admin not found") {
+      res.status(404).json({ status: "error", error: err.message });
+    } else if (err.message == "Incorrect password") {
+      res.status(400).json({ status: "error", error: err.message });
+    } else {
+      res.status(500).json({ status: "error", error: err.message });
+    }
+  }
+});
+
+// Admin Auth Functionalities
+app.post("/api/v1/admin/signUp", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const admin = await auth.AdminSignUp(username, password);
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        admin: admin,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err.message);
+    res.status(500).json({ status: "error", error: err });
+  }
+});
+
+// User Auth Functionalities
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
 
@@ -926,31 +972,38 @@ app.put(
 );
 
 //update businessVerification documents only
-app.put("/api/v1/businessVerifications/businessVerificationId/:businessVerificationId/documents", async (req, res) => {
-  try {
-    const businessVerificationId = req.params.businessVerificationId;
-    const documents = req.body.documents; 
+app.put(
+  "/api/v1/businessVerifications/businessVerificationId/:businessVerificationId/documents",
+  async (req, res) => {
+    try {
+      const businessVerificationId = req.params.businessVerificationId;
+      const documents = req.body.documents;
 
-    // Update the documents associated with the businessverification
-    const updatedFiles = await businessdb.updateDocumentsForBusinessVerification(businessVerificationId, documents);
+      // Update the documents associated with the businessverification
+      const updatedFiles =
+        await businessdb.updateDocumentsForBusinessVerification(
+          businessVerificationId,
+          documents
+        );
 
-    if (updatedFiles) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          documents: updatedFiles,
-        },
-      });
-    } else {
-      // Handle the case where the item is not found or the update fails
-      res.status(404).json({ error: "Item not found or file update failed" });
+      if (updatedFiles) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            documents: updatedFiles,
+          },
+        });
+      } else {
+        // Handle the case where the item is not found or the update fails
+        res.status(404).json({ error: "Item not found or file update failed" });
+      }
+    } catch (err) {
+      // Handle the error here if needed
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
     }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
   }
-});
+);
 
 // Approve business verification request based on business verification Id
 app.put(
@@ -1226,11 +1279,18 @@ app.get("/api/v1/rentals/itemId/:itemId", async (req, res) => {
 //Update rental status
 app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
   try {
-    const { status } = req.body;
-    const rental = await rentaldb.updateRentalStatus(
-      status,
-      req.params.rentalId
-    );
+    let rental;
+    const status = req.body.status;
+    if (status === "CANCELLED") {
+      const cancellationReason = req.body.cancellationReason;
+      rental = await rentaldb.updateRentalStatusToCancel(
+        status,
+        req.params.rentalId,
+        cancellationReason
+      );
+    } else {
+      rental = await rentaldb.updateRentalStatus(status, req.params.rentalId);
+    }
     if (rental) {
       res.status(200).json({
         status: "success",

@@ -9,7 +9,9 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import axios from "axios";
+
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";
 import ActivityCard from "../../../components/containers/ActivityCard";
@@ -20,11 +22,11 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ActivityHeader = () => {
   const toWishlist = () => {
-    //push wishlist
+    router.push("home/wishlist");
   };
 
   const toChat = () => {
-    //push chat
+    router.push("home/chats");
   };
 
   return (
@@ -133,7 +135,11 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
   );
 };
 
-const RentalNotifContainer = ({ handlePress }) => {
+const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
+  const handlePress = (route) => {
+    router.push(`activity/${route}`);
+  };
+
   return (
     <View style={styles.rentalNotifContainer}>
       <Pressable
@@ -150,22 +156,18 @@ const RentalNotifContainer = ({ handlePress }) => {
 
         <View style={styles.rentalNotifItems}>
           <View style={styles.badge}>
-            {/* {number > 0 && (
+            {numOfNewRentalReq > 0 && (
               <RegularText typography="Subtitle2" color={white}>
-                {number}
+                {numOfNewRentalReq >= 99 ? "99+" : numOfNewRentalReq}
               </RegularText>
-            )} */}
-            {/* testing purpose, to delete. if number > 99, just show 99+ */}
-            <RegularText typography="Subtitle2" color={white}>
-              99+
-            </RegularText>
+            )}
           </View>
           <Ionicons name="chevron-forward" size={23} color={placeholder} />
         </View>
       </Pressable>
 
       <Pressable
-        onPress={() => handlePress("newRentalRequests")}
+        onPress={() => handlePress("rentalUpdates")}
         style={({ pressed }) => [
           { opacity: pressed ? 0.5 : 1 },
           styles.rentalNotif,
@@ -177,13 +179,13 @@ const RentalNotifContainer = ({ handlePress }) => {
         </View>
 
         <View style={styles.rentalNotifItems}>
-          {/* {number > 0 && (
+          {numOfRentalUpdates > 0 && (
             <View style={styles.badge}>
               <RegularText typography="Subtitle2" color={white}>
-                {number}
+                {numOfRentalUpdates >= 99 ? "99+" : numOfRentalUpdates}
               </RegularText>
             </View>
-          )} */}
+          )}
           <Ionicons name="chevron-forward" size={23} color={placeholder} />
         </View>
       </Pressable>
@@ -196,6 +198,7 @@ const Content = ({ activeTab }) => {
   const [userLendings, setUserLendings] = useState([]);
   const [userBorrowings, setUserBorrowings] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   // to delete
   const [rentals, setRentals] = useState([]);
@@ -213,15 +216,10 @@ const Content = ({ activeTab }) => {
       if (allRentals) {
         setRentals(allRentals);
       }
-
-      console.log("rentals data: ", allRentals);
     };
-    fetchData();
-  }, []);
-
+  });
   const handleRefresh = async () => {
     setRefreshing(true);
-
     try {
       const userData = await getUserData();
       const userId = userData.userId;
@@ -234,7 +232,7 @@ const Content = ({ activeTab }) => {
           setUserLendings(lending);
         } else {
           // Handle the error condition appropriately
-          console.log("Failed to retrieve items");
+          console.log("Failed to retrieve lendings");
         }
       } catch (error) {
         console.log(error);
@@ -248,7 +246,7 @@ const Content = ({ activeTab }) => {
           setUserBorrowings(borrowing);
         } else {
           // Handle the error condition appropriately
-          console.log("Failed to retrieve items");
+          console.log("Failed to retrieve lendings");
         }
       } catch (error) {
         console.log(error);
@@ -262,8 +260,7 @@ const Content = ({ activeTab }) => {
   };
 
   useEffect(() => {
-    async function fetchAllListings() {
-      //TO DO: get all item listings
+    async function fetchRentals() {
       try {
         const userData = await getUserData();
         const userId = userData.userId;
@@ -299,25 +296,8 @@ const Content = ({ activeTab }) => {
         console.log(error.message);
       }
     }
-    fetchAllListings();
+    fetchRentals();
   }, []);
-
-  const fetchAllRentals = async () => {
-    try {
-      const response = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/rentals`
-      );
-
-      if (response.status === 200) {
-        const allRentals = response.data.data.rentals;
-        return allRentals;
-      } else {
-        console.log("Failed to retrieve all rentals.");
-      }
-    } catch (error) {
-      console.log("fetchAllRentals error: ", error.message);
-    }
-  };
 
   const [activeLendingPill, setActiveLendingPill] = useState("Upcoming");
   const [activeBorrowingPill, setActiveBorrowingPill] = useState("Pending");
@@ -342,6 +322,12 @@ const Content = ({ activeTab }) => {
   );
   const cancelledLendings = userLendings.filter(
     (rental) => rental.status === "CANCELLED"
+  );
+  const pendingLendings = userLendings.filter(
+    (rental) => rental.status === "PENDING"
+  );
+  const updatedLendings = userLendings.filter(
+    (rental) => rental.status === "UPDATED"
   );
 
   const pendingBorrowings = userBorrowings.filter(
@@ -375,14 +361,17 @@ const Content = ({ activeTab }) => {
     <View style={{ flex: 1 }}>
       {activeTab == "Lending" && (
         <View style={{ flex: 1 }}>
-          <RentalNotifContainer />
+          <RentalNotifContainer
+            numOfNewRentalReq={pendingLendings.length}
+            numOfRentalUpdates={updatedLendings.length}
+          />
           <Pills
             pillItems={lendingPill}
             activeLendingPill={activeLendingPill}
             handlePillPress={handlePillPress}
           />
           {activeLendingPill == "Upcoming" && (
-            <View style={{ alignItems: "center", flex: 1}}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -406,7 +395,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Ongoing" && (
-            <View style={{ alignItems: "center", flex: 1}}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -430,7 +419,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Completed" && (
-            <View style={{ alignItems: "center",  flex: 1 }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -454,7 +443,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Cancelled" && (
-            <View style={{ alignItems: "center",  flex: 1 }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -645,11 +634,11 @@ const activity = () => {
 
   return (
     <SafeAreaContainer>
-    <View style={{flex:1}}>
-      <ActivityHeader />
-      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-      <Content activeTab={activeTab} />
-    </View>
+      <View style={{ flex: 1 }}>
+        <ActivityHeader />
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+        <Content activeTab={activeTab} />
+      </View>
     </SafeAreaContainer>
   );
 };

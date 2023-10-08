@@ -1,4 +1,5 @@
 const Pool = require("pg").Pool;
+const moment = require("moment");
 
 // PostgreSQL connection pool configuration
 const pool = new Pool({
@@ -8,6 +9,8 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
   port: process.env.PGPORT,
 });
+
+const currentTimeStamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
 // Create Rental
 const createRentalRequest = async (
@@ -26,8 +29,8 @@ const createRentalRequest = async (
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."rental" 
-          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId", "creationDate","totalFee", "isHourly") 
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) returning *`,
+          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId", "creationDate", "isUpdated", "totalFee", "isHourly") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) returning *`,
       [
         startDate,
         endDate,
@@ -40,7 +43,8 @@ const createRentalRequest = async (
         itemId,
         borrowerId,
         lenderId,
-        new Date(),
+        currentTimeStamp,
+        false,
         totalFee,
         isHourly,
       ]
@@ -74,8 +78,9 @@ const editRentalRequest = async (
           "depositFee" = $6,
           "rentalFee" = $7,
           "isUpdated" = $8,
-          "totalFee" = $9
-          WHERE "rentalId" = $10
+          "updatedDate" = $9,
+          "totalFee" = $10,
+          WHERE "rentalId" = $11
           RETURNING *`,
       [
         startDate,
@@ -86,6 +91,7 @@ const editRentalRequest = async (
         depositFee,
         rentalFee,
         true,
+        currentTimeStamp,
         totalFee,
         rentalId,
       ]
@@ -105,6 +111,26 @@ const updateRentalStatus = async (status, rentalId) => {
           WHERE "rentalId" = $2
           RETURNING *`,
       [status, rentalId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+const updateRentalStatusToCancel = async (
+  status,
+  rentalId,
+  cancellationReason
+) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."rental" 
+          SET "status" = $1,
+          "cancellationReason" = $2
+          WHERE "rentalId" = $3
+          RETURNING *`,
+      [status, cancellationReason, rentalId]
     );
     return result.rows[0];
   } catch (err) {
@@ -499,4 +525,6 @@ module.exports = {
   getRentalsByBorrowerId,
   getRentalsByItemId,
   getRentalByRentalId,
+  getAvailByRentalIdAndDate,
+  updateRentalStatusToCancel,
 };

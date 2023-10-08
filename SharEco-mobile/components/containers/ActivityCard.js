@@ -34,6 +34,8 @@ const ActivityCard = ({ rental, type }) => {
 
   const userId = isLending ? rental.borrowerId : rental.lenderId;
 
+  const [showModal, setShowModal] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState();
   const [user, setUser] = useState({});
   const [item, setItem] = useState({});
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -88,6 +90,18 @@ const ActivityCard = ({ rental, type }) => {
 
   const currentDate = new Date();
 
+  //   const handleShowModal = () => {
+  //     setShowModal(true);
+  //   };
+  //   const handleCloseModal = () => {
+  //     setShowModal(false);
+  //   };
+
+  const handleCancellationData = (data) => {
+    setCancellationReason(data);
+    console.log("TEST", data);
+  };
+
   // Cancel for Lenders
   const handleStatus = async (action, id) => {
     try {
@@ -95,16 +109,24 @@ const ActivityCard = ({ rental, type }) => {
       const rentalId = id;
 
       if (action === "Cancel") {
-        newStatus = "CANCELLED";
-      } else if (action === "Reject") {
-        newStatus = "REJECTED";
-      } else if (action === "Accept") {
-        newStatus = "PENDING";
+        newStatus = {
+          status: "CANCELLED",
+          cancellationReason: cancellationReason,
+        };
       }
+      // else if (action === "Reject") {
+      //   newStatus = {
+      //     status: "REJECTED",
+      //   };
+      // } else if (action === "Accept") {
+      //   newStatus = {
+      //     status: "PENDING",
+      //   };
+      // }
 
       const response = await axios.patch(
         `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
-        { status: newStatus }
+        newStatus
       );
 
       handleCloseCancelModal();
@@ -136,12 +158,12 @@ const ActivityCard = ({ rental, type }) => {
 
     let countdown = "";
     if (numOfMonths > 0) {
-      countdown += numOfMonths + "m ";
+      countdown += numOfMonths + "M ";
     }
     if (numOfDays > 0 || numOfMonths > 0) {
-      countdown += numOfDays + "d ";
+      countdown += numOfDays + "D ";
     }
-    countdown += numOfHours + "h";
+    countdown += numOfHours + "H";
 
     // trim if any trailing whitespace
     countdown.trim();
@@ -156,14 +178,14 @@ const ActivityCard = ({ rental, type }) => {
         ]}
       >
         <View style={styles.username}>
-          <UserAvatar
-            size="xsmall"
-            source={{
-              uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${
-                user && user.userPhotoUrl
-              }.jpeg`,
-            }}
-          />
+          {user && (
+            <UserAvatar
+              size="xsmall"
+              source={{
+                uri: `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`,
+              }}
+            />
+          )}
           {user && (
             <RegularText typography="Subtitle">@{user.username}</RegularText>
           )}
@@ -319,6 +341,8 @@ const ActivityCard = ({ rental, type }) => {
                 onClose={handleCloseCancelModal}
                 style={{ flex: 0 }}
                 type="Cancel"
+                rental={rental}
+                forCancellationData={handleCancellationData}
               />
             )}
             <View style={styles.buttonContainer}>
@@ -372,6 +396,8 @@ const ActivityCard = ({ rental, type }) => {
                 onClose={handleCloseCancelModal}
                 style={{ flex: 0 }}
                 type="Cancel"
+                forCancellationData={handleCancellationData}
+                rental={rental}
               />
             )}
           </View>
