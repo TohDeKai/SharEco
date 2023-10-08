@@ -15,6 +15,11 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
+// AWS Amplify
+import { Amplify, Storage } from "aws-amplify";
+import awsconfig from "../../../src/aws-exports";
+Amplify.configure(awsconfig);
+
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import ImagePickerContainer from "../../../components/containers/ImagePickerContainer";
@@ -55,6 +60,13 @@ const editListing = () => {
   const [user, setUser] = useState("");
 
   const [images, setImages] = useState([]);
+  const [imagesResult, setImagesResult] = useState([
+    null,
+    null,
+    null,
+    null,
+    null,
+  ]);
   const [category, setCategory] = useState(listingItem.category);
   const [lockers, setLockers] = useState(listingItem.collectionLocations ? listingItem.collectionLocations : []);
   const [locationOpen, setLocationOpen] = useState(false);
@@ -73,6 +85,7 @@ const editListing = () => {
           const item = response.data.data.item;
           setListingItem(item);
           setImages(item.images);
+          setImagesResult(item.images); //not correct but will be handled in uploadImageFiles
           setLockers(item.collectionLocations);
         } else {
           // Shouldn't come here
@@ -128,6 +141,10 @@ const editListing = () => {
       const newImages = [...images];
       newImages[imageNumber - 1] = result.assets[0].uri;
       setImages(newImages);
+
+      const newImagesResult = [...imagesResult];
+      newImagesResult[imageNumber - 1] = result;
+      setImagesResult(newImagesResult);
     }
   };
 
@@ -135,6 +152,59 @@ const editListing = () => {
     const newImages = [...images];
     newImages[imageNumber - 1] = null;
     setImages(newImages);
+
+    const newImagesResult = [...imagesResult];
+    newImagesResult[imageNumber - 1] = null;
+    setImagesResult(newImagesResult);
+  };
+
+  const fetchImageUri = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return blob;
+  };
+
+  const uploadImageFiles = async (files, listingId) => {
+    const uploadPromises = files.map(async (file, index) => {
+      try {
+        if (file != null) {  
+          if (file.uri != null) {
+            const img = await fetchImageUri(file.uri);
+            const key = `listingId-${listingId}-${index + 1}.jpeg`;
+
+            // Upload the image with the unique key
+            await Storage.put(key, img, {
+              level: "public",
+              contentType: file.type,
+              progressCallback(uploadProgress) {
+                console.log(
+                  `PROGRESS (${index + 1}/${files.length}) - ${
+                    uploadProgress.loaded
+                  }/${uploadProgress.total}`
+                );
+              },
+            });
+
+            // Retrieve the uploaded image URI
+            const result = await Storage.get(key);
+            const awsImageUri = result.substring(0, result.indexOf("?"));
+            console.log(`Uploaded image (${index + 1}): ${awsImageUri}`);
+            return awsImageUri;
+          } else {
+            return file; //case where there is existing AWS URI
+          }
+        } else {
+          return null; //case where image is deleted
+        }
+      } catch (error) {
+        console.log(`Error uploading image (${index + 1}):`, error);
+      }
+    });
+
+    // Wait for all uploads to complete
+    const uploadedURIs = await Promise.all(uploadPromises);
+    console.log("All images uploaded");
+    return uploadedURIs;
   };
 
   // Render the ImagePickerContainers
@@ -200,7 +270,7 @@ const editListing = () => {
         rentalRateHourly: values.rentalRateHour || listingItem.rentalRateHourly,
         rentalRateDaily: values.rentalRateDay || listingItem.rentalRateDaily,
         depositFee: values.depositFee || listingItem.depositFee,
-        images: images || listingItem.images,
+        images: listingItem.images, //if new images, later then will upload 
         category: category || listingItem.category,
         collectionLocations: lockers || listingItem.collectionLocations,
         otherLocation: values.meetupLocation || listingItem.otherLocation,
@@ -217,7 +287,23 @@ const editListing = () => {
         console.log("Item edited successfully");
         console.log(lockers);
         console.log(category);
-        router.replace("profile");
+
+        //handle upload all images and returns the array of uris
+        const uploadedURIs = await uploadImageFiles(imagesResult, itemId);
+
+        //update images column in db
+        const updateImagesResponse = await axios.put(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}/images`,
+          { images: uploadedURIs }
+        );
+        
+        if (updateImagesResponse.status === 200) {
+          setImages([null, null, null, null, null]);
+          setImagesResult([null, null, null, null, null]);
+          setCategory("");
+          setLockers([]);
+          router.replace("profile");
+        }
       } else {
         //shouldnt come here
         console.log("Item editing unsuccessful");
@@ -492,6 +578,7 @@ const editListing = () => {
                         isVisible={showModal}
                         onConfirm={handleDelist}
                         onClose={handleCloseModal}
+                        type="Delete"
                       />
                 </View>
                 {/* <RoundedButton

@@ -10,7 +10,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import axios from 'axios';
+import axios from "axios";
 
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";
@@ -138,7 +138,7 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
 const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
   const handlePress = (route) => {
     router.push(`activity/${route}`);
-  }
+  };
 
   return (
     <View style={styles.rentalNotifContainer}>
@@ -158,7 +158,7 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
           <View style={styles.badge}>
             {numOfNewRentalReq > 0 && (
               <RegularText typography="Subtitle2" color={white}>
-                {numOfNewRentalReq >= 99 ? '99+' : numOfNewRentalReq}
+                {numOfNewRentalReq >= 99 ? "99+" : numOfNewRentalReq}
               </RegularText>
             )}
           </View>
@@ -166,7 +166,7 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
         </View>
       </Pressable>
 
-      <Pressable 
+      <Pressable
         onPress={() => handlePress("rentalUpdates")}
         style={({ pressed }) => [
           { opacity: pressed ? 0.5 : 1 },
@@ -182,7 +182,7 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
           {numOfRentalUpdates > 0 && (
             <View style={styles.badge}>
               <RegularText typography="Subtitle2" color={white}>
-                {numOfRentalUpdates >= 99 ? '99+' : numOfRentalUpdates}
+                {numOfRentalUpdates >= 99 ? "99+" : numOfRentalUpdates}
               </RegularText>
             </View>
           )}
@@ -199,9 +199,27 @@ const Content = ({ activeTab }) => {
   const [userBorrowings, setUserBorrowings] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
+  const [showModal, setShowModal] = useState(false);
+  // to delete
+  const [rentals, setRentals] = useState([]);
+
+  const handleShowModal = () => {
+    setShowModal(true);
+  };
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const allRentals = await fetchAllRentals();
+      if (allRentals) {
+        setRentals(allRentals);
+      }
+    };
+  });
   const handleRefresh = async () => {
     setRefreshing(true);
-
     try {
       const userData = await getUserData();
       const userId = userData.userId;
@@ -343,7 +361,7 @@ const Content = ({ activeTab }) => {
     <View style={{ flex: 1 }}>
       {activeTab == "Lending" && (
         <View style={{ flex: 1 }}>
-          <RentalNotifContainer 
+          <RentalNotifContainer
             numOfNewRentalReq={pendingLendings.length}
             numOfRentalUpdates={updatedLendings.length}
           />
@@ -353,7 +371,7 @@ const Content = ({ activeTab }) => {
             handlePillPress={handlePillPress}
           />
           {activeLendingPill == "Upcoming" && (
-            <View style={{ alignItems: "center", flex: 1}}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -377,7 +395,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Ongoing" && (
-            <View style={{ alignItems: "center", flex: 1}}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -401,7 +419,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Completed" && (
-            <View style={{ alignItems: "center",  flex: 1 }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -425,7 +443,7 @@ const Content = ({ activeTab }) => {
           )}
 
           {activeLendingPill == "Cancelled" && (
-            <View style={{ alignItems: "center",  flex: 1 }}>
+            <View style={{ alignItems: "center", flex: 1 }}>
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={styles.activityCardContainer}
@@ -616,11 +634,11 @@ const activity = () => {
 
   return (
     <SafeAreaContainer>
-    <View style={{flex:1}}>
-      <ActivityHeader />
-      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-      <Content activeTab={activeTab} />
-    </View>
+      <View style={{ flex: 1 }}>
+        <ActivityHeader />
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+        <Content activeTab={activeTab} />
+      </View>
     </SafeAreaContainer>
   );
 };

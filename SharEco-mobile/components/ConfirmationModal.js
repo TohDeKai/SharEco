@@ -33,23 +33,25 @@ const ConfirmationModal = ({
   //   onConfirm();
   // };
 
-  const startDate = new Date(props.rental.startDate);
-  const formattedStartDate = new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(startDate);
+  if (type !== "Delete") {
+    const startDate = new Date(props.rental.startDate);
+    const formattedStartDate = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(startDate);
 
-  const endDate = new Date(props.rental.endDate);
-  const formattedEndDate = new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(endDate);
+    const endDate = new Date(props.rental.endDate);
+    const formattedEndDate = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(endDate);
+  }
 
   return (
     <View>

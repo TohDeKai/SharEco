@@ -1082,6 +1082,8 @@ app.post("/api/v1/rental", async (req, res) => {
     itemId,
     borrowerId,
     lenderId,
+    totalFee,
+    isHourly,
   } = req.body;
 
   try {
@@ -1094,7 +1096,9 @@ app.post("/api/v1/rental", async (req, res) => {
       rentalFee,
       itemId,
       borrowerId,
-      lenderId
+      lenderId,
+      totalFee,
+      isHourly
     );
 
     // Send the newly created business verification as the response
@@ -1255,31 +1259,6 @@ app.get("/api/v1/rentals/itemId/:itemId", async (req, res) => {
   try {
     const rental = await rentaldb.getRentalsByItemId(req.params.itemId);
     if (rental.length != 0) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          rental: rental,
-        },
-      });
-    } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Rental Request not found" });
-    }
-  } catch (err) {
-    // Handle the error here if needed
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
-//Update rental status
-app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
-  try {
-    const rental = await rentaldb.updateRentalStatus(
-      req.body.status,
-      req.params.rentalId
-    );
-    if (rental) {
       res.status(200).json({
         status: "success",
         data: {
