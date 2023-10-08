@@ -62,6 +62,7 @@ const editRentalRequest = async (
   depositFee,
   rentalFee,
   totalFee,
+  status,
 ) => {
   try {
     const result = await pool.query(
@@ -74,8 +75,9 @@ const editRentalRequest = async (
           "depositFee" = $6,
           "rentalFee" = $7,
           "isUpdated" = $8,
-          "totalFee" = $9
-          WHERE "rentalId" = $10
+          "totalFee" = $9,
+          "status" = $10
+          WHERE "rentalId" = $11
           RETURNING *`,
       [
         startDate,
@@ -87,6 +89,7 @@ const editRentalRequest = async (
         rentalFee,
         true,
         totalFee,
+        status,
         rentalId,
       ]
     );
@@ -260,7 +263,7 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
         });
         console.log("booking starts on selected and ends after selected date");
 
-        //booking starts before selected and ends after selected date
+//booking starts before selected and ends after selected date
       } else if (
         bookingStart.getDate() < currentDate.getDate() &&
         bookingEnd.getDate() > currentDate.getDate()
@@ -333,7 +336,7 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
       });
       console.log(sortedUnavail);
 
-      for (const slot of sortedUnavail) {
+for (const slot of sortedUnavail) {
         const nextStartString = nextStart.toLocaleString("en-GB", {
           timeZone: singaporeTimeZone,
           day: "2-digit",
@@ -392,26 +395,26 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
               end: slotStartString,
             });
           }
-          if (slot.end != new Date(currentDate.setHours(23, 59, 0, 0))) {
+          const slotEndString = slot.end.toLocaleString("en-GB", {
+            timeZone: singaporeTimeZone,
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          const endString = new Date(
+            currentDate.setHours(23, 59, 0, 0)
+          ).toLocaleString("en-GB", {
+            timeZone: singaporeTimeZone,
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          if (slotEndString != endString) {
             //Add to end
-            const slotEndString = slot.end.toLocaleString("en-GB", {
-              timeZone: singaporeTimeZone,
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-            const endString = new Date(
-              currentDate.setHours(23, 59, 0, 0)
-            ).toLocaleString("en-GB", {
-              timeZone: singaporeTimeZone,
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
             intervals.push({
               start: slotEndString,
               end: endString,

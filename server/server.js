@@ -1073,7 +1073,9 @@ app.put("/api/v1/rental/rentalId/:rentalId", async (req, res) => {
       req.body.additionalRequest,
       req.body.additionalCharges,
       req.body.depositFee,
-      req.body.rentalFee
+      req.body.rentalFee,
+      req.body.totalFee,
+      req.body.status,
     );
 
     if (rental) {
