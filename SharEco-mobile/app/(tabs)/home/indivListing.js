@@ -222,22 +222,28 @@ import {
               <RegularText typography="H3" style={style.topic}>
                 Meet the owner
               </RegularText>
-              <View style={style.seller}>
-                <View style={style.avatarContainer}>
-                  <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
-                </View>
-                <View style={style.profile}>
-                  <RegularText typography="H3">{user.displayName}</RegularText>
-                  <RegularText typography="Subtitle">
-                    @{user.username}
-                  </RegularText>
-                  <View style={style.ratingsContainer}>
-                    <RegularText typography="Subtitle">0.0</RegularText>
-                    <Rating stars={0} size={18} color={yellow} />
-                    <RegularText typography="Subtitle">(0)</RegularText>
+              <Pressable 
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                })}
+                onPress={() => router.push({pathname: "home/othersProfile", params: { userId: user.userId }})}>
+                <View style={style.seller}>
+                  <View style={style.avatarContainer}>
+                    <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
+                  </View>
+                  <View style={style.profile}>
+                    <RegularText typography="H3">{user.displayName}</RegularText>
+                    <RegularText typography="Subtitle">
+                      @{user.username}
+                    </RegularText>
+                    <View style={style.ratingsContainer}>
+                      <RegularText typography="Subtitle">0.0</RegularText>
+                      <Rating stars={0} size={18} color={yellow} />
+                      <RegularText typography="Subtitle">(0)</RegularText>
+                    </View>
                   </View>
                 </View>
-              </View>
+              </Pressable>
             </View>
   
             <View>
