@@ -22,11 +22,11 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ActivityHeader = () => {
   const toWishlist = () => {
-    //push wishlist
+    router.push("home/wishlist");
   };
 
   const toChat = () => {
-    //push chat
+    router.push("home/chats");
   };
 
   return (
