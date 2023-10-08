@@ -265,7 +265,7 @@ const ActivityCard = ({ rental, type }) => {
           </View>
 
           <RegularText typography="B3" style={{ textAlign: "right" }}>
-            {rental.rentalFee}
+            {rental.totalFee}
           </RegularText>
         </View>
         <View style={styles.rentalLocation}>
@@ -332,14 +332,7 @@ const ActivityCard = ({ rental, type }) => {
                 >
                   Cancel
                 </SecondaryButton>
-
-                <ConfirmationModal
-                  isVisible={showModal}
-                  onConfirm={() => handleStatus("Cancel", rental.rentalId)}
-                  onClose={handleCloseModal}
-                />
               </View>
-                
             )}
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
@@ -347,6 +340,13 @@ const ActivityCard = ({ rental, type }) => {
                   Edit
                 </PrimaryButton>
               </View>
+            )}
+            {showModal && (
+              <ConfirmationModal
+                isVisible={showModal}
+                onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+                onClose={handleCloseModal}
+              />
             )}
           </View>
         )}

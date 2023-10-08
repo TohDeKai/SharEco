@@ -217,18 +217,25 @@ const RentalRequestCard = (props) => {
         
       {isExpanded && (
         <View style={styles.expanded}>
-          <View style={styles.user}>
-            <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
-            <View style={styles.profile}>
-              <RegularText typography="B1">{user.displayName}</RegularText>
-              {/* to be implemented */}
-              <View style={styles.ratingsContainer}>
-                <RegularText typography="Subtitle">0.0</RegularText>
-                <Rating stars={0} size={16} color={yellow} />
-                <RegularText typography="Subtitle">(0)</RegularText>
+          <Pressable 
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+            onPress={() => router.push({pathname: "home/othersProfile", params: { userId: user.userId }})}
+          >
+            <View style={styles.user}>
+                <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
+                <View style={styles.profile}>
+                  <RegularText typography="B1">{user.displayName}</RegularText>
+                  {/* to be implemented */}
+                  <View style={styles.ratingsContainer}>
+                    <RegularText typography="Subtitle">0.0</RegularText>
+                    <Rating stars={0} size={16} color={yellow} />
+                    <RegularText typography="Subtitle">(0)</RegularText>
+                  </View>
+                </View>
               </View>
-            </View>
-          </View>
+          </Pressable>            
           
           <View style={styles.location}>
             <RegularText typography="B3">
@@ -255,7 +262,7 @@ const RentalRequestCard = (props) => {
               Total Earnings
             </RegularText>
             <RegularText typography="H3" color={dark}>
-              {rental.rentalFee}
+              {rental.totalFee}
             </RegularText>
           </View>
 
