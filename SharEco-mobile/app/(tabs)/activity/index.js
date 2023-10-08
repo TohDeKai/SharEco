@@ -199,9 +199,26 @@ const Content = ({ activeTab }) => {
   const [userBorrowings, setUserBorrowings] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
+  const [showModal, setShowModal] = useState(false);
+  // to delete
+  const [rentals, setRentals] = useState([]);
+
+  const handleShowModal = () => {
+    setShowModal(true);
+  };
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const allRentals = await fetchAllRentals();
+      if (allRentals) {
+        setRentals(allRentals);
+      }
+
   const handleRefresh = async () => {
     setRefreshing(true);
-
     try {
       const userData = await getUserData();
       const userId = userData.userId;
