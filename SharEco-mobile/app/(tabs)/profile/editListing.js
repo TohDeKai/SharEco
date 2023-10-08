@@ -152,6 +152,10 @@ const editListing = () => {
     const newImages = [...images];
     newImages[imageNumber - 1] = null;
     setImages(newImages);
+
+    const newImagesResult = [...imagesResult];
+    newImagesResult[imageNumber - 1] = null;
+    setImagesResult(newImagesResult);
   };
 
   const fetchImageUri = async (uri) => {
@@ -189,6 +193,8 @@ const editListing = () => {
           } else {
             return file; //case where there is existing AWS URI
           }
+        } else {
+          return null; //case where image is deleted
         }
       } catch (error) {
         console.log(`Error uploading image (${index + 1}):`, error);
