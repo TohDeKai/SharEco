@@ -49,9 +49,15 @@ const rentalUpdates = () => {
     setRefreshing(false);
   }, [refreshing])
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+  }
+
   const rentalUpdates = userLendings
     .filter((rental) => rental.status === "UPDATED")
     .sort((a, b) => new Date(a.updatedDate) - new Date(b.updatedDate));
+
+  console.log(rentalUpdates);
 
   const handleBack = () => {
     router.back();
@@ -70,9 +76,17 @@ const rentalUpdates = () => {
           </RegularText>
         </View> 
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+        >
           {rentalUpdates.map((rental) => (
-            <RentalRequestCard key={rental.rentalId} rentalUpdate={rental} />
+            <RentalRequestCard key={rental.rentalId} rental={rental} />
           ))}
         </ScrollView>
       )}
