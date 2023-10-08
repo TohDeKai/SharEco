@@ -1120,13 +1120,9 @@ app.put("/api/v1/rental/rentalId/:rentalId", async (req, res) => {
   try {
     const rental = await rentaldb.editRentalRequest(
       req.params.rentalId,
-      req.body.startDate,
-      req.body.endDate,
       req.body.collectionLocation,
       req.body.additionalRequest,
-      req.body.additionalCharges,
-      req.body.depositFee,
-      req.body.rentalFee
+      req.body.status,
     );
 
     if (rental) {
@@ -1304,6 +1300,95 @@ app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
     }
   } catch (err) {
     // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get rental availability by listing Id and date
+app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
+  try {
+    console.log("Request Parameters:", req.params);
+    const intervals = await rentaldb.getAvailByRentalIdAndDate(
+      req.params.itemId,
+      req.params.date
+    );
+    console.log(intervals);
+    if (intervals) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          intervals: intervals,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get daily rental availability by listing Id 
+app.get("/api/v1/item/unavailability/:itemId", async (req, res) => {
+  try {
+    console.log("Request Parameters:", req.params);
+    const unavail = await rentaldb.getDailyUnavailability(req.params.itemId);
+    console.log(unavail);
+    if (unavail) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          unavail: unavail,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get full day unavailability by listing Id
+app.get("/api/v1/item/unavailability/fullDay/:itemId", async (req, res) => {
+  try {
+    console.log("Request Parameters:", req.params);
+    const unavail = await rentaldb.getFullDayUnavailability(req.params.itemId);
+    if (unavail) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          unavail: unavail,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get next booking by listing Id and date
+app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
+  try {
+    console.log("Request Parameters:", req.params);
+    const booking = await rentaldb.getNextRentalByItemIdAndDate(req.params.itemId, req.params.date);
+    if (booking) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          booking: booking,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Listing not found" });
+    }
+  } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Database error" });
   }

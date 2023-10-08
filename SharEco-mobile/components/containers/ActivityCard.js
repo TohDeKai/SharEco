@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Image, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 // import { AWS_GETFILE_URL } from '../../../server/s3';
 import RentalDetailsModal from "../RentalDetailsModal";
@@ -303,9 +304,14 @@ const ActivityCard = ({ rental, type }) => {
   };
 
   const CardFooter = () => {
+    const handleEditRental = () => {
+      const rentalId = rental.rentalId
+      const item = rental.itemId;
+      router.push({ pathname: "activity/editRentalRequest", params: { rentalId: rentalId, itemId: item} });
+    }
     return (
       <View>
-        {rental.status === "PENDING" && type === "Borrowing" && (
+        {(rental.status === "PENDING" || rental.status === "UPDATED") && type === "Borrowing" && (
           <View style={styles.buttons}>
             {/* to be implemented */}
             <Pressable>
@@ -346,7 +352,7 @@ const ActivityCard = ({ rental, type }) => {
               />
             )}
             <View style={styles.buttonContainer}>
-              <PrimaryButton typography="B3" color={white}>
+              <PrimaryButton typography="B3" color={white} onPress={handleEditRental}>
                 Edit
               </PrimaryButton>
             </View>
@@ -384,7 +390,7 @@ const ActivityCard = ({ rental, type }) => {
             </View>
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
-                <PrimaryButton typography="B3" color={white}>
+                <PrimaryButton typography="B3" color={white} onPress={handleEditRental}>
                   Edit
                 </PrimaryButton>
               </View>
@@ -528,6 +534,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   rentalLocation: {
+    marginTop:5,
     flexDirection: "row",
     gap: 5,
   },
