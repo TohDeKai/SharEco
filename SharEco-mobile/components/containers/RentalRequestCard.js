@@ -1,6 +1,7 @@
 import { View, Pressable, StyleSheet, Image } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import axios from "axios";
 
 import SafeAreaContainer from "./SafeAreaContainer";
