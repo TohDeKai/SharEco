@@ -138,6 +138,7 @@ const RentalRequestCard = (props) => {
       );
 
       handleCloseModal();
+      props.handleRefresh();
     } catch (error) {
       console.log(error.message);
     }

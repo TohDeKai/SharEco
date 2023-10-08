@@ -86,7 +86,11 @@ const rentalUpdates = () => {
           }
         >
           {rentalUpdates.map((rental) => (
-            <RentalRequestCard key={rental.rentalId} rental={rental} />
+            <RentalRequestCard 
+              key={rental.rentalId} 
+              rental={rental} 
+              handleRefresh={handleRefresh}
+            />
           ))}
         </ScrollView>
       )}
