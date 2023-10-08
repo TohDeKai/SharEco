@@ -33,9 +33,12 @@ const ConfirmationModal = ({
   //   onConfirm();
   // };
 
+  let formattedStartDate;
+  let formattedEndDate;
+
   if (type !== "Delete") {
     const startDate = new Date(props.rental.startDate);
-    const formattedStartDate = new Intl.DateTimeFormat("en-US", {
+    formattedStartDate = new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -44,7 +47,7 @@ const ConfirmationModal = ({
     }).format(startDate);
 
     const endDate = new Date(props.rental.endDate);
-    const formattedEndDate = new Intl.DateTimeFormat("en-US", {
+    formattedEndDate = new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
