@@ -221,6 +221,7 @@ const createRentals = () => {
     return stringDate(endDate).concat(" ", stringTime(endTime));
   };
 
+
   const tomorrow = () => {
     const nextDay = new Date(today);
     nextDay.setDate(today.getDate() + 1);
@@ -239,6 +240,8 @@ const createRentals = () => {
   const [endDate, setEndDate] = useState(tomorrow());
   const [startTime, setStartTime] = useState(new Date(toNearest30Min(today)));
   const [endTime, setEndTime] = useState(new Date(toNearest30Min(today)));
+  const [validStart, setValidStart] = useState(false);
+  const [validEnd, setValidEnd] = useState(false);
 
   function createDateFromIntervalTime(intervalTime) {
     
@@ -250,17 +253,15 @@ const createRentals = () => {
     return newDate;
   }
 
-  function isStartDateWithinIntervals(selectedTime, startAvails) {
+  //working
+  function isStartDateWithinIntervals(selectedTimeDate, startAvails) {
     // Convert startDate to a time value for comparison
-    const selectedStartTime = new Date(selectedTime).getTime();
-    console.log("start time", new Date(selectedTime));
+    const selectedStartTime = new Date(selectedTimeDate).getTime();
     // Iterate through the startAvails array
     for (const interval of startAvails) {
       // Convert start and end times of the interval to time values
       const intervalStart = createDateFromIntervalTime(interval.start).getTime();
       const intervalEnd = createDateFromIntervalTime(interval.end).getTime();
-      console.log("avail start", createDateFromIntervalTime(interval.start).getTime());
-      console.log("avail end", createDateFromIntervalTime(interval.end).getTime());
       // Check if startDate is within the current interval
       if (selectedStartTime >= intervalStart && selectedStartTime <= intervalEnd) {
         return true; // startDate is within this interval
@@ -269,42 +270,103 @@ const createRentals = () => {
     return false; // startDate is not within any interval
   }
 
-  const handleStartTimeChange = (event) => { //WORK ON THIS
-    const selectedTimestamp = event.nativeEvent.timestamp; // this is not changing when you select a time (JW)
+  function isSelectedDurationWithinAvailable(startDate, endDate, startAvails, endAvails){
+    // Iterate through startAvails to check if startDate and endDate are within any slot
+    for (const startSlot of startAvails) {
+      const startSlotDate = createDateFromIntervalTime(startSlot.start);
+      const endSlotDate = createDateFromIntervalTime(startSlot.end);
 
-    if (selectedTimestamp) {
-      const selectedTime = new Date(selectedTimestamp);
-      console.log("selectedTimestamp, ", new Date(selectedTimestamp));
-      if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
+    // Check if startDate is after startSlotDate and endDate is before endSlotDate
+      if (startDate >= startSlotDate && endDate <= endSlotDate) {
+        return true; // Selected duration is within an available slot
+      }
+
+    // Check if the end of startAvail slot is 23:59 (2359H)
+      if (startSlot.end.endsWith('23:59')) {
+        const lastStartSlotDate = createDateFromIntervalTime(startSlot.start);
+        const firstEndSlotDate = createDateFromIntervalTime(endAvails[0].end);
+
+      // Check if startDate is after lastStartSlotDate and endDate is before firstEndSlotDate
+        if (startDate >= lastStartSlotDate && endDate <= firstEndSlotDate) {
+          return true; // Selected duration wraps around midnight
+        }
+     }
+   }
+
+   for (const endSlot of endAvails) {
+    const startSlotDate = createDateFromIntervalTime(endSlot.start);
+    const endSlotDate = createDateFromIntervalTime(endSlot.end);
+
+  // Check if startDate is after startSlotDate and endDate is before endSlotDate
+    if (startDate >= startSlotDate && endDate <= endSlotDate) {
+      return true; // Selected duration is within an available slot
+    }
+
+  // Check if the end of startAvail slot is 23:59 (2359H)
+  //   if (endSlot.end.endsWith('23:59')) {
+  //     const lastStartSlotDate = createDateFromIntervalTime(startSlot.start);
+  //     const firstEndSlotDate = createDateFromIntervalTime(endAvails[0].end);
+
+  //   // Check if startDate is after lastStartSlotDate and endDate is before firstEndSlotDate
+  //     if (startDate >= lastStartSlotDate && endDate <= firstEndSlotDate) {
+  //       return true; // Selected duration wraps around midnight
+  //     }
+  //  }
+ }
+
+    return false; // No matching available slots found
+  }
+
+  const handleStartTimeChange = (event, selectedDate) => { //WORK ON THIS
+    if (selectedDate) {
+      const selectedTime = new Date(selectedDate);
+      const selectedTimeDate = new Date(new Date(fullStartDate(activeTab)).setHours(selectedTime.getHours(), selectedTime.getMinutes()))
       
-        //console.log("is start date within intervals", isStartDateWithinIntervals(selectedTime, startAvails));
-        if (new Date(fullStartDate(activeTab)) >= new Date(fullEndDate(activeTab))) {
-          console.log("start is after end")
+      if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 50 * 1000) {
+        const endDateTime = new Date(fullEndDate(activeTab));
+
+        console.log("selected duration valid" , isSelectedDurationWithinAvailable(selectedTimeDate, endDateTime, startAvails, endAvails));
+        if (selectedTimeDate >= endDateTime) {
           setHourlyMessage("Your start time cannot be after your end");
-        } else if (!isStartDateWithinIntervals(selectedTime, startAvails)) { // method here to check if startTime is within any time range in startAvails
-          console.log("start is not within avail")
-          setHourlyMessage("Your chosen start time is unavailable")
+          setStartTime(endTime);
+          setValidStart(false);
+        } else if (!isStartDateWithinIntervals(selectedTimeDate, startAvails) || !isSelectedDurationWithinAvailable(selectedTimeDate, endDateTime, startAvails, endAvails)) { 
+          setHourlyMessage("Your chosen start time is unavailable");
+          setValidStart(false);
+          setStartTime(selectedTimeDate)
         } else {
           setStartTime(selectedTime);
+          setValidStart(true);
+          setValidEnd(true);
+          setHourlyMessage("");
         }
       }
     }
   };
 
-  const handleEndTimeChange = (event) => { //WORK ON THIS
-    const selectedTimestamp = event.nativeEvent.timestamp;
-
-    if (selectedTimestamp) {
-      const selectedTime = new Date(selectedTimestamp);
-      const formattedTime = stringTime(selectedTime);
+  const handleEndTimeChange = (event, selectedDate) => { //WORK ON THIS
+    if (selectedDate) {
+      const selectedTime = new Date(selectedDate);
+      const selectedTimeDate = new Date(new Date(fullEndDate(activeTab)).setHours(selectedTime.getHours(), selectedTime.getMinutes()))
 
       // If the result is not the current time
-      if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 30 * 1000) {
-        if (new Date(fullStartDate(activeTab)) >= new Date(fullEndDate(activeTab))) {
+      if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 50 * 1000) {
+        const startDateTime = new Date(fullStartDate(activeTab));
+        console.log("selected duration valid" , isSelectedDurationWithinAvailable(startDateTime, selectedTimeDate, startAvails, endAvails));
+        if (selectedTimeDate <= new Date(fullStartDate(activeTab))) {
           console.log("end is before start")
           setHourlyMessage("Your end time cannot be before your start");
+          setEndTime(startTime);
+          setValidEnd(false);
+        } else if (!isStartDateWithinIntervals(selectedTimeDate, endAvails) || !isSelectedDurationWithinAvailable(startDateTime, selectedTimeDate, startAvails, endAvails)) { 
+          setHourlyMessage("Your chosen end time is unavailable");
+          setValidEnd(false);
+          setEndTime(selectedTimeDate)
         } else{
           setEndTime(selectedTime);
+          setValidStart(true);
+          setValidEnd(true);
+          setHourlyMessage("");
         }
         
       }
@@ -378,80 +440,6 @@ const createRentals = () => {
       </View>
     );
   };
-
-  // const HourlySelection = () => {
-  //   return (
-  //     <View>
-  //       <View style={styles.selector}>
-  //         <RegularText typography="H4">Starts from</RegularText>
-  //         <View style={styles.dateTimePicker}>
-  //           <DateTimePicker
-  //             mode="date"
-  //             value={new Date(startDate)}
-  //             onChange={(date) => handleStartDateChange(date)}
-  //             minimumDate={tomorrow()}
-  //             maximumDate={maxDate()}
-  //           />
-  //           <DateTimePicker
-  //             mode="time"
-  //             value={new Date(startTime)}
-  //             onChange={(date) => handleStartTimeChange(date)}
-  //             minuteInterval={30}
-  //           />
-  //         </View>
-  //       </View>
-  //       <View style={styles.selector}>
-  //         <RegularText typography="H4">Ends on</RegularText>
-  //         <View style={styles.dateTimePicker}>
-  //           <DateTimePicker
-  //             mode="date"
-  //             value={new Date(endDate)}
-  //             onChange={(endDate) => handleEndDateChange(endDate)}
-  //             minimumDate={chosenStart()}
-  //             maximumDate={maxDate()}
-  //           />
-  //           <DateTimePicker
-  //             mode="time"
-  //             value={new Date(endTime)}
-  //             onChange={(endTime) => handleEndTimeChange(endTime)}
-  //             minuteInterval={30}
-  //           />
-  //         </View>
-  //       </View>
-  //     </View>
-  //   );
-  // };
-
-  // const DailySelection = () => {
-  //   return (
-  //     <View>
-  //       <View style={styles.selector}>
-  //         <RegularText typography="H4">Starts at 9AM on</RegularText>
-  //         <View style={styles.dateTimePicker}>
-  //           <DateTimePicker
-  //             mode="date"
-  //             value={new Date(startDate)}
-  //             onChange={(startDate) => handleStartDateChange(startDate)}
-  //             minimumDate={tomorrow()}
-  //             maximumDate={maxDate()}
-  //           />
-  //         </View>
-  //       </View>
-  //       <View style={styles.selector}>
-  //         <RegularText typography="H4">Ends at 9AM on</RegularText>
-  //         <View style={styles.dateTimePicker}>
-  //           <DateTimePicker
-  //             mode="date"
-  //             value={new Date(endDate)}
-  //             onChange={(endDate) => handleEndDateChange(endDate)}
-  //             minimumDate={chosenStart()}
-  //             maximumDate={maxDate()}
-  //           />
-  //         </View>
-  //       </View>
-  //     </View>
-  //   );
-  // };
 
   const convertToAMPM = (timeString) => {
     const [date, time] = timeString.split(", ");
@@ -545,7 +533,7 @@ const createRentals = () => {
         if (response.status === 200) {
           const nextBooking = response.data.data.booking;
           console.log("Next Booking: ", new Date(nextBooking));
-          setNextBooking(dayBefore(new Date(nextBooking)));
+          setNextBooking(new Date(nextBooking));
         } else {
           console.log("Failed to get next booking");
         }
@@ -685,9 +673,7 @@ const createRentals = () => {
   const onConfirmHourlyStart = useCallback((startDate) => {
     setStartVisibility(false);
     setStartDate(startDate.date);
-    if (startDate.date > endDate) {
-      setEndDate(startDate.date);
-    }
+    setEndDate(startDate.date);
     console.log("Unavail Full Days: ", unavailFullDays);
   });
 
@@ -936,7 +922,7 @@ const createRentals = () => {
                       style={{ marginTop: 5, marginLeft: -10 }}
                       mode="time"
                       value={new Date(startTime)}
-                      onChange={(date) => handleStartTimeChange(date)}
+                      onChange={handleStartTimeChange}
                       minuteInterval={30}
                     />
                   </View>
@@ -948,13 +934,13 @@ const createRentals = () => {
                       style={{ marginTop: 5, marginLeft: -10 }}
                       mode="time"
                       value={new Date(endTime)}
-                      onChange={(date) => handleEndTimeChange(date)}
+                      onChange={handleEndTimeChange}
                       minuteInterval={30}
                     />
                   </View>
                 </View>
               </View>
-              {hourlyMessage && (
+              {(!validStart || !validEnd) && (
                 <View>
                   <RegularText style={{ marginTop: 7 }} color={fail}>
                     {hourlyMessage}
@@ -1011,10 +997,14 @@ const createRentals = () => {
               addComments: "",
             }}
             onSubmit={(values, actions) => {
-              if (selectedLocation == "") {
+              if (selectedLocation == null) {
                 setMessage("Please select a location");
                 setIsSuccessMessage(false);
-              } else {
+              } else if (!validEnd || !validStart){
+                setMessage("Please select a valid rental period");
+                setIsSuccessMessage(false);
+              } 
+              else {
                 handleCreateRentalRequest(values);
                 actions.resetForm();
               }
@@ -1133,7 +1123,7 @@ const createRentals = () => {
                     </RegularText>
                   </Pressable>
                 </View>
-                <MessageBox success={isSuccessMessage}>
+                <MessageBox success={isSuccessMessage} style={{marginTop:20}}>
                   {message || " "}
                 </MessageBox>
                 <RoundedButton
