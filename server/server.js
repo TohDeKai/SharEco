@@ -816,8 +816,54 @@ app.get(
 );
 
 // Auth functionalities
-app.post("/api/v1/admin/signIn", auth.AdminSignIn);
-app.post("/api/v1/admin/signUp", auth.AdminSignUp);
+app.post("/api/v1/admin/signIn", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const token = await auth.AdminSignIn(username, password);
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        token: token,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err.message);
+    if (err.message == "Admin not found") {
+      res.status(404).json({ status: "error", error: err.message });
+    } else if (err.message == "Incorrect password") {
+      res.status(400).json({ status: "error", error: err.message });
+    } else {
+      res.status(500).json({ status: "error", error: err.message });
+    }
+  }
+});
+
+// Admin Auth Functionalities
+app.post("/api/v1/admin/signUp", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const admin = await auth.AdminSignUp(username, password);
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        admin: admin,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err.message);
+    res.status(500).json({ status: "error", error: err });
+  }
+});
+
+// User Auth Functionalities
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
 
