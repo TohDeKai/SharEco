@@ -712,10 +712,12 @@ const createRentals = () => {
         itemId: itemId,
         collectionLocation: selectedLocation,
         depositFee: depositFee,
-        rentalFee: totalCost(activeTab),
+        rentalFee: rentalCost(activeTab),
         startDate: fullStartDate(activeTab),
         endDate: fullEndDate(activeTab),
         additionalRequest: values.addComments,
+        totalFee: totalCost(activeTab),
+        isHourly: activeTab == "Hourly" ? true : false,
       };
 
       const response = await axios.post(
@@ -942,7 +944,7 @@ const createRentals = () => {
               </View>
               {(!validStart || !validEnd) && (
                 <View>
-                  <RegularText style={{ marginTop: 7 }} color={fail}>
+                  <RegularText style={{ marginTop: 3, marginBottom: 15, }} color={fail}>
                     {hourlyMessage}
                   </RegularText>
                 </View>
