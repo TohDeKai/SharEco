@@ -1254,11 +1254,18 @@ app.put("/api/v1/rental/status/:rentalId", async (req, res) => {
 //Update rental status
 app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
   try {
-    const { status } = req.body;
-    const rental = await rentaldb.updateRentalStatus(
-      status,
-      req.params.rentalId
-    );
+    let rental;
+    const status = req.body.status;
+    if (status === "CANCELLED") {
+      const cancellationReason = req.body.cancellationReason;
+      rental = await rentaldb.updateRentalStatusToCancel(
+        status,
+        req.params.rentalId,
+        cancellationReason
+      );
+    } else {
+      rental = await rentaldb.updateRentalStatus(status, req.params.rentalId);
+    }
     if (rental) {
       res.status(200).json({
         status: "success",
