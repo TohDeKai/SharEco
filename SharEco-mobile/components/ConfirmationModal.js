@@ -72,11 +72,12 @@ const ConfirmationModal = ({
                   </RegularText>
                   <TextInput
                     style={styles.input}
+                    multiline={true}
                     onChangeText={(text) => {
                       setCancellationReason(text);
                       props.forCancellationData(text);
                     }}
-                    placeholder="Enter your reason for cancellation"
+                    placeholder="Tell us your reason for cancellation"
                   />
                   <View style={styles.nav}>
                     <View style={styles.buttonContainer}>
@@ -192,7 +193,38 @@ const ConfirmationModal = ({
                   color={black}
                   style={styles.modalStyle}
                 >
-                  Confirm rental for {formattedStartDate} - {formattedEndDate}
+                  <Text style={styles.heading}>Please confirm rental for:</Text>
+                  {"\n"}
+                  {"\n"}
+                  <Text style={styles.subHeading}>
+                    Start Date {"       "} {formattedStartDate}
+                  </Text>{" "}
+                  {"\n"}
+                  {"\n"}
+                  <Text style={styles.subHeading}>
+                    End Date {"          "} {formattedEndDate}
+                  </Text>
+                  {"\n"}
+                  {"\n"}
+                  <Text style={styles.subHeading}>
+                    Location {"          "} {props.rental.collectionLocation}
+                  </Text>
+                  {"\n"}
+                  {"\n"}
+                  <Text style={styles.subHeading}>
+                    Deposit Fee {"  "} {props.rental.depositFee}
+                  </Text>
+                  {"\n"}
+                  {"\n"}
+                  <Text style={styles.subHeading}>
+                    Rental Fee {"      "} {props.rental.rentalFee}
+                  </Text>
+                  {"\n"}
+                  {"\n"}
+                  <Text style={styles.subHeading}>
+                    Total Fee {"          "} {props.rental.totalFee}
+                  </Text>
+                  {"\n"}
                 </RegularText>
                 <View style={styles.nav}>
                   <View style={styles.buttonContainer}>
@@ -263,6 +295,18 @@ const styles = StyleSheet.create({
   modalStyle: {
     backgroundColor: white,
     marginVertical: 10,
+    textAlign: "center",
+    textAlignVertical: "center",
+  },
+  heading: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "left",
+  },
+  subHeading: {
+    fontSize: 15,
+    textAlign: "left",
+    color: colours.placeholder,
   },
   centeredView: {
     flex: 1,
@@ -299,7 +343,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   input: {
-    height: 40,
+    height: 55,
     margin: 12,
     borderWidth: 1,
     padding: 10,
