@@ -15,9 +15,11 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const RentalRequestCard = (props) => {
   const rental = props.newRentalRequest;
-  const [ isExpanded, setIsExpanded ] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [item, setItem] = useState();
   const [user, setUser] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
 
   const startDate = new Date(rental.startDate);
   const endDate = new Date(rental.endDate);
@@ -39,9 +41,7 @@ const RentalRequestCard = (props) => {
     month: "short",
     day: "numeric",
   });
-  const dailyRentalLength = Math.ceil(
-    dateDifferenceMs / (1000 * 60 * 60 * 24)
-  );
+  const dailyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60 * 24));
 
   // calculate hourly rental details
   const rentalDay = startDate.toLocaleDateString("en-US", {
@@ -74,8 +74,9 @@ const RentalRequestCard = (props) => {
   }
 
   const numOfDays = Math.floor(timeDifferenceMs / (1000 * 60 * 60 * 24));
-  const numOfHours = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  
+  const numOfHours = Math.floor(
+    (timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
 
   useEffect(() => {
     async function fetchUserData() {
@@ -108,10 +109,11 @@ const RentalRequestCard = (props) => {
 
     fetchUserData();
     fetchItemData();
-  }, [rental.borrowerId, rental.status]);;
+  }, [rental.borrowerId, rental.status]);
 
-  const handleShowModal = () => {
+  const handleShowModal = (type) => {
     setShowModal(true);
+    setModalType(type);
   };
   const handleCloseModal = () => {
     setShowModal(false);
@@ -122,12 +124,10 @@ const RentalRequestCard = (props) => {
       let newStatus = "";
       const rentalId = id;
 
-      if (action === "Cancel") {
-        newStatus = "CANCELLED";
-      } else if (action === "Reject") {
+      if (action === "Reject") {
         newStatus = "REJECTED";
       } else if (action === "Accept") {
-        newStatus = "PENDING";
+        newStatus = "UPCOMING";
       }
 
       const response = await axios.patch(
@@ -143,22 +143,18 @@ const RentalRequestCard = (props) => {
 
   const toggleCollapse = () => {
     setIsExpanded(!isExpanded);
-  }
+  };
 
   return (
     <View style={styles.container}>
       <Pressable onPress={toggleCollapse}>
-        <View style={[
-          styles.collapsed,
-          !isExpanded && styles.collapsedBorder,
-        ]}>
+        <View style={[styles.collapsed, !isExpanded && styles.collapsedBorder]}>
           <View style={styles.rentalDetailsWithChevron}>
             <View style={styles.rentalDetails}>
               <Image
                 style={styles.image}
-                source={{ 
-                  uri: 
-                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" 
+                source={{
+                  uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
                 }}
               />
 
@@ -178,9 +174,7 @@ const RentalRequestCard = (props) => {
                   </RegularText>
                 )}
                 {!isExpanded && (
-                  <RegularText typography="B2">
-                    {rental.rentalFee}
-                  </RegularText>
+                  <RegularText typography="B2">{rental.rentalFee}</RegularText>
                 )}
               </View>
             </View>
@@ -188,14 +182,14 @@ const RentalRequestCard = (props) => {
             {isExpanded ? (
               <Ionicons
                 style={styles.chevron}
-                name='chevron-up'
+                name="chevron-up"
                 size={23}
                 color={black}
               />
             ) : (
               <Ionicons
                 style={styles.chevron}
-                name='chevron-down'
+                name="chevron-down"
                 size={23}
                 color={black}
               />
@@ -204,9 +198,7 @@ const RentalRequestCard = (props) => {
 
           {!isExpanded && (
             <View style={styles.countdown}>
-              <RegularText typography="Subtitle">
-                Accept in{' '}
-              </RegularText>
+              <RegularText typography="Subtitle">Accept in </RegularText>
               <RegularText typography="B3">
                 {numOfDays}D {numOfHours}H
               </RegularText>
@@ -214,11 +206,16 @@ const RentalRequestCard = (props) => {
           )}
         </View>
       </Pressable>
-        
+
       {isExpanded && (
         <View style={styles.expanded}>
           <View style={styles.user}>
-            <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
+            <UserAvatar
+              size="medium"
+              source={{
+                uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
+              }}
+            />
             <View style={styles.profile}>
               <RegularText typography="B1">{user.displayName}</RegularText>
               {/* to be implemented */}
@@ -229,27 +226,23 @@ const RentalRequestCard = (props) => {
               </View>
             </View>
           </View>
-          
+
           <View style={styles.location}>
-            <RegularText typography="B3">
-              Location
-            </RegularText>
+            <RegularText typography="B3">Location</RegularText>
             <RegularText typography="Subtitle">
               {rental.collectionLocation}
             </RegularText>
           </View>
-          
+
           {rental.additionalRequest !== "" && (
             <View style={styles.additionalRequests}>
-              <RegularText typography="B3">
-                Additional Requests
-              </RegularText>
+              <RegularText typography="B3">Additional Requests</RegularText>
               <RegularText typography="Subtitle">
                 {rental.additionalRequest}
               </RegularText>
             </View>
           )}
-            
+
           <View style={styles.totalEarnings}>
             <RegularText typography="H3" color={dark}>
               Total Earnings
@@ -261,9 +254,7 @@ const RentalRequestCard = (props) => {
 
           <View style={styles.buttonContainerWithCountdown}>
             <View style={styles.countdown}>
-              <RegularText typography="Subtitle">
-                Accept in{' '}
-              </RegularText>
+              <RegularText typography="Subtitle">Accept in </RegularText>
               <RegularText typography="B3">
                 {numOfDays}D {numOfHours}H
               </RegularText>
@@ -278,22 +269,42 @@ const RentalRequestCard = (props) => {
                 />
               </Pressable>
               <View style={styles.button}>
-                <SecondaryButton typography="B3" color={placeholder}>
+                <SecondaryButton
+                  typography="B3"
+                  color={placeholder}
+                  onPress={() => handleShowModal("Reject")}
+                >
                   Reject
                 </SecondaryButton>
               </View>
               <View style={styles.button}>
-                <PrimaryButton typography="B3" color={white}>
+                <PrimaryButton
+                  typography="B3"
+                  color={white}
+                  onPress={() => handleShowModal("Accept")}
+                >
                   Accept
                 </PrimaryButton>
+                <ConfirmationModal
+                  isVisible={showModal}
+                  onConfirm={() =>
+                    handleStatus(
+                      modalType == "Accept" ? "Accept" : "Reject",
+                      rental.rentalId
+                    )
+                  }
+                  onClose={handleCloseModal}
+                  type={modalType}
+                  rental={rental}
+                />
               </View>
             </View>
           </View>
         </View>
       )}
     </View>
-  )
-}
+  );
+};
 
 export default RentalRequestCard;
 
@@ -305,7 +316,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     gap: 5,
   },
-  collapsedBorder:{
+  collapsedBorder: {
     borderBottomWidth: 2,
     borderBottomColor: inputbackground,
   },
@@ -329,7 +340,7 @@ const styles = StyleSheet.create({
   },
   countdown: {
     flexDirection: "row",
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
   },
   expanded: {
     gap: 10,
@@ -361,7 +372,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 2,
-    gap: 2
+    gap: 2,
   },
   additionalRequests: {
     gap: 5,
@@ -381,5 +392,5 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-  }
-})
+  },
+});

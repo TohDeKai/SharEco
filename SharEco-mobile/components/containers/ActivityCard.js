@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Image,
-  Pressable,
-} from "react-native";
+import { View, StyleSheet, Image, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 // import { AWS_GETFILE_URL } from '../../../server/s3';
@@ -17,8 +12,8 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import axios from "axios";
 const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-const AWS_GETFILE_URL = "https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/";
-
+const AWS_GETFILE_URL =
+  "https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/";
 
 const ActivityCard = ({ rental, type }) => {
   const startDate = new Date(rental.startDate);
@@ -39,6 +34,7 @@ const ActivityCard = ({ rental, type }) => {
   const [item, setItem] = useState();
   const [user, setUser] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState();
 
   useEffect(() => {
     async function fetchUserData() {
@@ -84,6 +80,11 @@ const ActivityCard = ({ rental, type }) => {
     setShowModal(false);
   };
 
+  const handleCancellationData = (data) => {
+    setCancellationReason(data);
+    console.log("TEST", data);
+  };
+
   // Cancel for Lenders
   const handleStatus = async (action, id) => {
     try {
@@ -91,16 +92,24 @@ const ActivityCard = ({ rental, type }) => {
       const rentalId = id;
 
       if (action === "Cancel") {
-        newStatus = "CANCELLED";
-      } else if (action === "Reject") {
-        newStatus = "REJECTED";
-      } else if (action === "Accept") {
-        newStatus = "PENDING";
+        newStatus = {
+          status: "CANCELLED",
+          cancellationReason: cancellationReason,
+        };
       }
+      // else if (action === "Reject") {
+      //   newStatus = {
+      //     status: "REJECTED",
+      //   };
+      // } else if (action === "Accept") {
+      //   newStatus = {
+      //     status: "PENDING",
+      //   };
+      // }
 
       const response = await axios.patch(
         `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
-        { status: newStatus }
+        newStatus
       );
 
       handleCloseModal();
@@ -155,13 +164,12 @@ const ActivityCard = ({ rental, type }) => {
           {user && (
             <UserAvatar
               size="xsmall"
-              source={{ 
-                uri: 
-                  `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`
+              source={{
+                uri: `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`,
               }}
             />
           )}
-            
+
           {user && (
             <RegularText typography="Subtitle">{user.username}</RegularText>
           )}
@@ -325,8 +333,8 @@ const ActivityCard = ({ rental, type }) => {
             </View>
             {type === "Lending" && (
               <View style={styles.buttonContainer}>
-                <SecondaryButton 
-                  typography="B3" 
+                <SecondaryButton
+                  typography="B3"
                   color={primary}
                   onPress={handleShowModal}
                 >
@@ -337,9 +345,11 @@ const ActivityCard = ({ rental, type }) => {
                   isVisible={showModal}
                   onConfirm={() => handleStatus("Cancel", rental.rentalId)}
                   onClose={handleCloseModal}
+                  type="Cancel"
+                  forCancellationData={handleCancellationData}
+                  rental={rental}
                 />
               </View>
-                
             )}
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>

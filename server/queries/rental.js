@@ -22,7 +22,7 @@ const createRentalRequest = async (
   rentalFee,
   itemId,
   borrowerId,
-  lenderId,
+  lenderId
 ) => {
   try {
     const result = await pool.query(
@@ -104,6 +104,26 @@ const updateRentalStatus = async (status, rentalId) => {
           WHERE "rentalId" = $2
           RETURNING *`,
       [status, rentalId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+const updateRentalStatusToCancel = async (
+  status,
+  rentalId,
+  cancellationReason
+) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."rental" 
+          SET "status" = $1,
+          "cancellationReason" = $2
+          WHERE "rentalId" = $3
+          RETURNING *`,
+      [status, cancellationReason, rentalId]
     );
     return result.rows[0];
   } catch (err) {
@@ -499,4 +519,5 @@ module.exports = {
   getRentalsByItemId,
   getRentalByRentalId,
   getAvailByRentalIdAndDate,
+  updateRentalStatusToCancel,
 };
