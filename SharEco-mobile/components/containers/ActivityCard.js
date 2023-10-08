@@ -452,11 +452,10 @@ const ActivityCard = ({ rental, type }) => {
 
         {rental.status === "CANCELLED" && (
           <View style={styles.reason}>
-            {/* <RegularText typography="B3">Reason: </RegularText>
+            <RegularText typography="B3">Reason: </RegularText>
             <RegularText typography="Subtitle">
-              
-              Type of reason
-            </RegularText> */}
+              {rental.cancellationReason}
+            </RegularText>
           </View>
         )}
       </View>

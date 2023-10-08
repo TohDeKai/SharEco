@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   Pressable,
   StyleSheet,
   Dimensions,
@@ -334,15 +333,18 @@ const Content = ({ activeTab }) => {
     "Cancelled",
   ];
 
-  const upcomingLendings = userLendings.filter(
-    (rental) => rental.status === "UPCOMING"
-  );
-  const ongoingLendings = userLendings.filter(
-    (rental) => rental.status === "ONGOING"
-  );
-  const completedLendings = userLendings.filter(
-    (rental) => rental.status === "COMPLETED"
-  );
+  const upcomingLendings = userLendings
+    .filter((rental) => rental.status === "UPCOMING")
+    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+  const ongoingLendings = userLendings
+    .filter((rental) => rental.status === "ONGOING")
+    .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
+
+  const completedLendings = userLendings
+    .filter((rental) => rental.status === "COMPLETED")
+    .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
+
   const cancelledLendings = userLendings.filter(
     (rental) => rental.status === "CANCELLED"
   );
@@ -353,18 +355,22 @@ const Content = ({ activeTab }) => {
     (rental) => rental.status === "UPDATED"
   );
 
-  const pendingBorrowings = userBorrowings.filter(
-    (rental) => rental.status === "PENDING" || rental.status === "UPDATED"
-  );
-  const ongoingBorrowings = userBorrowings.filter(
-    (rental) => rental.status === "ONGOING"
-  );
-  const upcomingBorrowings = userBorrowings.filter(
-    (rental) => rental.status === "UPCOMING"
-  );
-  const completedBorrowings = userBorrowings.filter(
-    (rental) => rental.status === "COMPLETED"
-  );
+  const pendingBorrowings = userBorrowings
+    .filter((rental) => rental.status === "PENDING" || rental.status === "UPDATED")
+    .sort((a, b) => new Date(b.creationDate) - new Date(a.creationDate));
+
+  const ongoingBorrowings = userBorrowings
+    .filter((rental) => rental.status === "ONGOING")
+    .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
+
+  const upcomingBorrowings = userBorrowings
+    .filter((rental) => rental.status === "UPCOMING")
+    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+  const completedBorrowings = userBorrowings
+    .filter((rental) => rental.status === "COMPLETED")
+    .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
+
   const cancelledBorrowings = userBorrowings.filter(
     (rental) => rental.status === "CANCELLED"
   );
