@@ -16,7 +16,7 @@ const { black, dark, placeholder, white, inputbackground, yellow, primary } =
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const RentalRequestCard = (props) => {
-  const rental = props.newRentalRequest;
+  const rental = props.rental;
   const [isExpanded, setIsExpanded] = useState(false);
   const [item, setItem] = useState();
   const [user, setUser] = useState("");
@@ -138,6 +138,7 @@ const RentalRequestCard = (props) => {
       );
 
       handleCloseModal();
+      props.handleRefresh();
     } catch (error) {
       console.log(error.message);
     }
