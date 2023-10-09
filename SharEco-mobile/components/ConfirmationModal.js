@@ -127,7 +127,10 @@ const ConfirmationModal = ({
                     <SecondaryButton
                       typography="H3"
                       color={primary}
-                      onPress={onConfirm}
+                      onPress={() => {
+                        onConfirm();
+                        props.forCancellationData(cancellationReason);
+                      }}
                     >
                       Confirm
                     </SecondaryButton>
@@ -136,10 +139,7 @@ const ConfirmationModal = ({
                     <PrimaryButton
                       typography="H3"
                       color={white}
-                      onPress={() => {
-                        onClose();
-                        props.forCancellationData(cancellationReason);
-                      }}
+                      onPress={onClose}
                     >
                       Cancel
                     </PrimaryButton>
