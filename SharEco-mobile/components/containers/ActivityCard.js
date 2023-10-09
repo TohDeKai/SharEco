@@ -100,7 +100,7 @@ const ActivityCard = ({ rental, type }) => {
 
   const handleCancellationData = (data) => {
     setCancellationReason(data);
-    console.log("TEST", cancellationReason);
+    console.log("TEST", data);
   };
 
   // Cancel for Lenders
@@ -268,7 +268,9 @@ const ActivityCard = ({ rental, type }) => {
                 {item && (
                   <RegularText typography="B2">{item.itemTitle}</RegularText>
                 )}
-                <RegularText typography="Subtitle">{rentalDay}</RegularText>
+                <RegularText typography="Subtitle">
+                  {startDay} - {endDay}
+                </RegularText>
                 <RegularText typography="Subtitle">
                   {startTime} - {endTime} ({hourlyRentalLength}{" "}
                   {hourlyRentalLength == 1 ? "Hour" : "Hours"})
@@ -305,59 +307,67 @@ const ActivityCard = ({ rental, type }) => {
 
   const CardFooter = () => {
     const handleEditRental = () => {
-      const rentalId = rental.rentalId
+      const rentalId = rental.rentalId;
       const item = rental.itemId;
-      router.push({ pathname: "activity/editRentalRequest", params: { rentalId: rentalId, itemId: item} });
-    }
+      router.push({
+        pathname: "activity/editRentalRequest",
+        params: { rentalId: rentalId, itemId: item },
+      });
+    };
     return (
       <View>
-        {(rental.status === "PENDING" || rental.status === "UPDATED") && type === "Borrowing" && (
-          <View style={styles.buttons}>
-            {/* to be implemented */}
-            <Pressable>
-              <Ionicons
-                name="chatbubble-outline"
-                color={placeholder}
-                size={35}
-              />
-            </Pressable>
-            {/* to be implemented */}
-            <View style={styles.buttonContainer}>
-              <DisabledButton
-                typography="B3"
-                color={white}
-                style={{ paddingVertical: 0 }}
-              >
-                Report
-              </DisabledButton>
+        {(rental.status === "PENDING" || rental.status === "UPDATED") &&
+          type === "Borrowing" && (
+            <View style={styles.buttons}>
+              {/* to be implemented */}
+              <Pressable>
+                <Ionicons
+                  name="chatbubble-outline"
+                  color={placeholder}
+                  size={35}
+                />
+              </Pressable>
+              {/* to be implemented */}
+              <View style={styles.buttonContainer}>
+                <DisabledButton
+                  typography="B3"
+                  color={white}
+                  style={{ paddingVertical: 0 }}
+                >
+                  Report
+                </DisabledButton>
+              </View>
+              <View style={styles.buttonContainer}>
+                <SecondaryButton
+                  typography="B3"
+                  color={primary}
+                  onPress={handleShowCancelModal}
+                >
+                  Cancel
+                </SecondaryButton>
+              </View>
+              {showCancelModal && (
+                <ConfirmationModal
+                  isVisible={showCancelModal}
+                  onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+                  onClose={handleCloseCancelModal}
+                  style={{ flex: 0 }}
+                  type="Cancel"
+                  rental={rental}
+                  forCancellationData={handleCancellationData}
+                />
+              )}
+              <View style={styles.buttonContainer}>
+                <PrimaryButton
+                  typography="B3"
+                  color={white}
+                  onPress={handleEditRental}
+                >
+                  Edit
+                </PrimaryButton>
+              </View>
             </View>
-            <View style={styles.buttonContainer}>
-              <SecondaryButton
-                typography="B3"
-                color={primary}
-                onPress={handleShowCancelModal}
-              >
-                Cancel
-              </SecondaryButton>
-            </View>
-            {showCancelModal && (
-              <ConfirmationModal
-                isVisible={showCancelModal}
-                onConfirm={() => handleStatus("Cancel", rental.rentalId)}
-                onClose={handleCloseCancelModal}
-                style={{ flex: 0 }}
-                type="Cancel"
-                rental={rental}
-                forCancellationData={handleCancellationData}
-              />
-            )}
-            <View style={styles.buttonContainer}>
-              <PrimaryButton typography="B3" color={white} onPress={handleEditRental}>
-                Edit
-              </PrimaryButton>
-            </View>
-          </View>
-        )}
+          )}
 
         {rental.status === "UPCOMING" && (
           <View style={styles.buttons}>
@@ -390,7 +400,11 @@ const ActivityCard = ({ rental, type }) => {
             </View>
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
-                <PrimaryButton typography="B3" color={white} onPress={handleEditRental}>
+                <PrimaryButton
+                  typography="B3"
+                  color={white}
+                  onPress={handleEditRental}
+                >
                   Edit
                 </PrimaryButton>
               </View>
@@ -452,10 +466,10 @@ const ActivityCard = ({ rental, type }) => {
 
         {rental.status === "CANCELLED" && (
           <View style={styles.reason}>
-            <RegularText typography="B3">Reason: </RegularText>
+            {/* <RegularText typography="B3">Reason: </RegularText>
             <RegularText typography="Subtitle">
               {rental.cancellationReason}
-            </RegularText>
+            </RegularText> */}
           </View>
         )}
       </View>
@@ -533,7 +547,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   rentalLocation: {
-    marginTop:5,
+    marginTop: 5,
     flexDirection: "row",
     gap: 5,
   },

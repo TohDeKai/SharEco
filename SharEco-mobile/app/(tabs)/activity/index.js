@@ -214,16 +214,15 @@ const NoRental = ({ rentalStatus }) => {
 
   return (
     <View style={{ marginTop: 100, paddingHorizontal: 30 }}>
-      <RegularText 
+      <RegularText
         typography="H3"
         style={{ marginBottom: 5, textAlign: "center" }}
       >
         {message}
       </RegularText>
     </View>
-  )
-  
-}
+  );
+};
 
 const Content = ({ activeTab }) => {
   const { getUserData } = useAuth();
@@ -331,6 +330,7 @@ const Content = ({ activeTab }) => {
     "Ongoing",
     "Completed",
     "Cancelled",
+    "Rejected",
   ];
 
   const upcomingLendings = userLendings
@@ -356,7 +356,9 @@ const Content = ({ activeTab }) => {
   );
 
   const pendingBorrowings = userBorrowings
-    .filter((rental) => rental.status === "PENDING" || rental.status === "UPDATED")
+    .filter(
+      (rental) => rental.status === "PENDING" || rental.status === "UPDATED"
+    )
     .sort((a, b) => new Date(b.creationDate) - new Date(a.creationDate));
 
   const ongoingBorrowings = userBorrowings
@@ -369,6 +371,10 @@ const Content = ({ activeTab }) => {
 
   const completedBorrowings = userBorrowings
     .filter((rental) => rental.status === "COMPLETED")
+    .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
+
+  const rejectedBorrowings = userBorrowings
+    .filter((rental) => rental.status === "REJECTED")
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const cancelledBorrowings = userBorrowings.filter(
@@ -415,11 +421,11 @@ const Content = ({ activeTab }) => {
               >
                 {upcomingLendings.length > 0 ? (
                   upcomingLendings.map((rental) => (
-                  <ActivityCard
-                    key={rental.rentalId}
-                    rental={rental}
-                    type={"Lending"}
-                  />
+                    <ActivityCard
+                      key={rental.rentalId}
+                      rental={rental}
+                      type={"Lending"}
+                    />
                   ))
                 ) : (
                   <NoRental rentalStatus={activeLendingPill} />
@@ -649,6 +655,33 @@ const Content = ({ activeTab }) => {
               >
                 {cancelledBorrowings.length > 0 ? (
                   cancelledBorrowings.map((rental) => (
+                    <ActivityCard
+                      key={rental.rentalId}
+                      rental={rental}
+                      type={"Borrowing"}
+                    />
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeBorrowingPill} />
+                )}
+              </ScrollView>
+            </View>
+          )}
+          {activeBorrowingPill == "Rejected" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {rejectedBorrowings.length > 0 ? (
+                  rejectedBorrowings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
