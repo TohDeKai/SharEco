@@ -268,7 +268,9 @@ const ActivityCard = ({ rental, type }) => {
                 {item && (
                   <RegularText typography="B2">{item.itemTitle}</RegularText>
                 )}
-                <RegularText typography="Subtitle">{rentalDay}</RegularText>
+                <RegularText typography="Subtitle">
+                  {startDay} - {endDay}
+                </RegularText>
                 <RegularText typography="Subtitle">
                   {startTime} - {endTime} ({hourlyRentalLength}{" "}
                   {hourlyRentalLength == 1 ? "Hour" : "Hours"})
