@@ -154,13 +154,13 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
         </View>
 
         <View style={styles.rentalNotifItems}>
-          <View style={styles.badge}>
-            {numOfNewRentalReq > 0 && (
+          {numOfNewRentalReq > 0 && (
+            <View style={styles.badge}>
               <RegularText typography="Subtitle2" color={white}>
                 {numOfNewRentalReq >= 99 ? "99+" : numOfNewRentalReq}
               </RegularText>
-            )}
-          </View>
+            </View>
+          )}
           <Ionicons name="chevron-forward" size={23} color={placeholder} />
         </View>
       </Pressable>
@@ -402,113 +402,113 @@ const Content = ({ activeTab }) => {
 
           {activeLendingPill == "Upcoming" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {upcomingLendings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {upcomingLendings.map((rental) => (
-                    <ActivityCard
-                      key={rental.rentalId}
-                      rental={rental}
-                      type={"Lending"}
-                    />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeLendingPill} />
-              )}
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {upcomingLendings.length > 0 ? (
+                  upcomingLendings.map((rental) => (
+                  <ActivityCard
+                    key={rental.rentalId}
+                    rental={rental}
+                    type={"Lending"}
+                  />
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeLendingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
 
           {activeLendingPill == "Ongoing" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {ongoingLendings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {ongoingLendings.map((rental) => (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {ongoingLendings.length > 0 ? (
+                  ongoingLendings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
                       type={"Lending"}
                     />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeLendingPill} />
-              )}
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeLendingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
 
           {activeLendingPill == "Completed" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {completedLendings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {completedLendings.map((rental) => (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {completedLendings.length > 0 ? (
+                  completedLendings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
                       type={"Lending"}
                     />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeLendingPill} />
-              )}
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeLendingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
 
           {activeLendingPill == "Cancelled" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {cancelledLendings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {cancelledLendings.map((rental) => (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {cancelledLendings.length > 0 ? (
+                  cancelledLendings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
                       type={"Lending"}
                     />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeLendingPill} />
-              )}
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeLendingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
         </View>
@@ -524,141 +524,141 @@ const Content = ({ activeTab }) => {
 
           {activeBorrowingPill == "Pending" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {pendingBorrowings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {pendingBorrowings.map((rental) => (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {pendingBorrowings.length > 0 ? (
+                  pendingBorrowings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
                       type={"Borrowing"}
                     />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeBorrowingPill} />
-              )}
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeBorrowingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
 
           {activeBorrowingPill == "Upcoming" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {upcomingBorrowings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {upcomingBorrowings.map((rental) => (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {upcomingBorrowings.length > 0 ? (
+                  upcomingBorrowings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
                       type={"Borrowing"}
                     />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeBorrowingPill} />
-              )}
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeBorrowingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
 
           {activeBorrowingPill == "Ongoing" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {ongoingBorrowings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {ongoingBorrowings.map((rental) => (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {ongoingBorrowings.length > 0 ? (
+                  ongoingBorrowings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
                       type={"Borrowing"}
                     />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeBorrowingPill} />
-              )}
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeBorrowingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
 
           {activeBorrowingPill == "Completed" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {completedBorrowings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {completedBorrowings.map((rental) => (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {completedBorrowings.length > 0 ? (
+                  completedBorrowings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
                       type={"Borrowing"}
                     />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeBorrowingPill} />
-              )}
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeBorrowingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
 
           {activeBorrowingPill == "Cancelled" && (
             <View style={{ alignItems: "center", flex: 1 }}>
-              {cancelledBorrowings.length > 0 ? (
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                >
-                  {cancelledBorrowings.map((rental) => (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {cancelledBorrowings.length > 0 ? (
+                  cancelledBorrowings.map((rental) => (
                     <ActivityCard
                       key={rental.rentalId}
                       rental={rental}
                       type={"Borrowing"}
                     />
-                  ))}
-                </ScrollView>
-              ) : (
-                <NoRental rentalStatus={activeBorrowingPill} />
-              )}
+                  ))
+                ) : (
+                  <NoRental rentalStatus={activeBorrowingPill} />
+                )}
+              </ScrollView>
             </View>
           )}
         </View>
