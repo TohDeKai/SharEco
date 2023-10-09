@@ -115,9 +115,10 @@ const ConfirmationModal = ({
                 <TextInput
                   style={styles.input}
                   multiline={true}
+                  value={cancellationReason}
                   onChangeText={(text) => {
                     setCancellationReason(text);
-                    props.forCancellationData(text);
+                    // props.forCancellationData(text);
                   }}
                   placeholder="Tell us your reason for cancellation"
                 />
@@ -135,7 +136,10 @@ const ConfirmationModal = ({
                     <PrimaryButton
                       typography="H3"
                       color={white}
-                      onPress={onClose}
+                      onPress={() => {
+                        onClose();
+                        props.forCancellationData(cancellationReason);
+                      }}
                     >
                       Cancel
                     </PrimaryButton>
