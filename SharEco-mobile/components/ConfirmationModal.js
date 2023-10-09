@@ -7,6 +7,7 @@ const { primary, white, black, secondary } = colours;
 import StyledTextInput from "../components/inputs/LoginTextInputs";
 import MessageBox from "../components/text/MessageBox";
 import { Formik } from "formik";
+import DropDownPicker from "react-native-dropdown-picker";
 
 const ConfirmationModal = ({
   isVisible,
@@ -18,11 +19,13 @@ const ConfirmationModal = ({
   // const [message, setMessage] = useState("");
   // const [isSuccessMessage, setIsSuccessMessage] = useState("false");
 
-  // const handleCancel = async (values) => {
-  //   props.forCancellationData(values.cancellationReason);
+  // const handleCancel = async (reason) => {
+  //   await props.forCancellationData(reason);
   // };
 
-  const [cancellationReason, setCancellationReason] = useState();
+  // const [cancellationReason, setCancellationReason] = useState(
+  //   "Rented the wrong item"
+  // );
   // const cancellationReasonRef = useRef();
 
   // const handleConfirm = () => {
@@ -32,6 +35,29 @@ const ConfirmationModal = ({
   //   props.forCancellationData(text);
   //   onConfirm();
   // };
+
+  const [reasons, setReasons] = useState([
+    { label: "Scheduling Conflict", value: "Scheduling Conflict" },
+    {
+      label: "Item No Longer Needed",
+      value: "Item No Longer Needed",
+    },
+    { label: "Disagreement on Terms", value: "Disagreement on Terms" },
+    { label: "Change in Event Date", value: "Change in Event Date" },
+    {
+      label: "Item Damaged or Malfunctioning",
+      value: "Item Damaged or Malfunctioning",
+    },
+    { label: "Found Another Solution", value: "Found Another Solution" },
+    { label: "Non-compliance with Rules", value: "Non-compliance with Rules" },
+    {
+      label: "Legal or Regulatory Issues",
+      value: "Legal or Regulatory Issues",
+    },
+  ]);
+
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
 
   let formattedStartDate;
   let formattedEndDate;
@@ -96,59 +122,69 @@ const ConfirmationModal = ({
           </Modal>
         </View>
       )}
-      {type === "Cancel" && (
-        <View style={[styles.centeredView]}>
-          <Modal
-            visible={isVisible}
-            animationType="slide"
-            transparent={false}
-          >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <RegularText
-                  typography="H4"
-                  color={black}
-                  style={styles.modalStyle}
-                >
-                  Are you sure you want to cancel? This cannot be reversed.
-                </RegularText>
-                <TextInput
-                  style={styles.input}
-                  multiline={true}
-                  value={cancellationReason}
-                  onChangeText={(text) => {
-                    setCancellationReason(text);
-                    // props.forCancellationData(text);
-                  }}
-                  placeholder="Tell us your reason for cancellation"
-                />
-                <View style={styles.nav}>
-                  <View style={styles.buttonContainer}>
-                    <SecondaryButton
-                      typography="H3"
-                      color={primary}
-                      onPress={onConfirm}
-                    >
-                      Confirm
-                    </SecondaryButton>
-                  </View>
-                  <View style={styles.buttonContainer}>
-                    <PrimaryButton
-                      typography="H3"
-                      color={white}
-                      onPress={() => {
-                        onClose();
-                        props.forCancellationData(cancellationReason);
-                      }}
-                    >
-                      Cancel
-                    </PrimaryButton>
+      {
+        type === "Cancel" && (
+          <View style={[styles.centeredView]}>
+            <Modal
+              visible={isVisible}
+              animationType="slide"
+              transparent={false}
+            >
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <RegularText
+                    typography="H4"
+                    color={black}
+                    style={styles.modalStyle}
+                  >
+                    Are you sure you want to cancel? This cannot be reversed.
+                  </RegularText>
+                  {/* <TextInput
+                    style={styles.input}
+                    multiline={true}
+                    value={cancellationReason}
+                    onChangeText={(text) => {
+                      setCancellationReason(text);
+                      // props.forCancellationData(text);
+                    }}
+                    placeholder="Tell us your reason for cancellation"
+                  /> */}
+                  {/* <DropDownPicker
+                    open={open}
+                    value={reason}
+                    items={reasons}
+                    setOpen={setOpen}
+                    setValue={setReason}
+                    setItems={setReasons}
+                    autoScroll={true}
+                    maxHeight={200}
+                    placeholder="Select a reason"
+                    style={{ marginTop: 10 }}
+                  /> */}
+                  <View style={styles.nav}>
+                    <View style={styles.buttonContainer}>
+                      <SecondaryButton
+                        typography="H3"
+                        color={primary}
+                        onPress={onConfirm}
+                      >
+                        Confirm
+                      </SecondaryButton>
+                    </View>
+                    <View style={styles.buttonContainer}>
+                      <PrimaryButton
+                        typography="H3"
+                        color={white}
+                        onPress={onClose}
+                      >
+                        Cancel
+                      </PrimaryButton>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-          </Modal>
-        </View>
+            </Modal>
+          </View>
         )
         // (
         //   <Formik
