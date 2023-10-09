@@ -100,7 +100,7 @@ const ActivityCard = ({ rental, type }) => {
 
   const handleCancellationData = (data) => {
     setCancellationReason(data);
-    console.log("TEST", data);
+    console.log("TEST", cancellationReason);
   };
 
   // Cancel for Lenders
