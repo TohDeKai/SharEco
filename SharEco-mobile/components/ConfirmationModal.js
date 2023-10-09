@@ -96,56 +96,59 @@ const ConfirmationModal = ({
           </Modal>
         </View>
       )}
-      {
-        type === "Cancel" && (
-          <View style={[styles.centeredView]}>
-            <Modal
-              visible={isVisible}
-              animationType="slide"
-              transparent={false}
-            >
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <RegularText
-                    typography="H4"
-                    color={black}
-                    style={styles.modalStyle}
-                  >
-                    Are you sure you want to cancel? This cannot be reversed.
-                  </RegularText>
-                  <TextInput
-                    style={styles.input}
-                    multiline={true}
-                    onChangeText={(text) => {
-                      setCancellationReason(text);
-                      props.forCancellationData(text);
-                    }}
-                    placeholder="Tell us your reason for cancellation"
-                  />
-                  <View style={styles.nav}>
-                    <View style={styles.buttonContainer}>
-                      <SecondaryButton
-                        typography="H3"
-                        color={primary}
-                        onPress={onConfirm}
-                      >
-                        Confirm
-                      </SecondaryButton>
-                    </View>
-                    <View style={styles.buttonContainer}>
-                      <PrimaryButton
-                        typography="H3"
-                        color={white}
-                        onPress={onClose}
-                      >
-                        Cancel
-                      </PrimaryButton>
-                    </View>
+      {type === "Cancel" && (
+        <View style={[styles.centeredView]}>
+          <Modal
+            visible={isVisible}
+            animationType="slide"
+            transparent={false}
+          >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  Are you sure you want to cancel? This cannot be reversed.
+                </RegularText>
+                <TextInput
+                  style={styles.input}
+                  multiline={true}
+                  value={cancellationReason}
+                  onChangeText={(text) => {
+                    setCancellationReason(text);
+                    // props.forCancellationData(text);
+                  }}
+                  placeholder="Tell us your reason for cancellation"
+                />
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={() => {
+                        onClose();
+                        props.forCancellationData(cancellationReason);
+                      }}
+                    >
+                      Cancel
+                    </PrimaryButton>
                   </View>
                 </View>
               </View>
-            </Modal>
-          </View>
+            </View>
+          </Modal>
+        </View>
         )
         // (
         //   <Formik
@@ -274,18 +277,18 @@ const ConfirmationModal = ({
                     <SecondaryButton
                       typography="H3"
                       color={primary}
-                      onPress={onConfirm}
+                      onPress={onClose}
                     >
-                      Confirm
+                      Cancel
                     </SecondaryButton>
                   </View>
                   <View style={styles.buttonContainer}>
                     <PrimaryButton
                       typography="H3"
                       color={white}
-                      onPress={onClose}
+                      onPress={onConfirm}
                     >
-                      Cancel
+                      Confirm
                     </PrimaryButton>
                   </View>
                 </View>
@@ -349,7 +352,6 @@ const styles = StyleSheet.create({
   subHeading: {
     fontSize: 15,
     textAlign: "left",
-    color: colours.placeholder,
   },
   centeredView: {
     flex: 1,
