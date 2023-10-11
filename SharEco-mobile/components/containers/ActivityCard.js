@@ -42,6 +42,8 @@ const ActivityCard = ({ rental, type }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+
   const { getUserData } = useAuth();
 
   const handleShowDetailsModal = () => {
@@ -61,6 +63,12 @@ const ActivityCard = ({ rental, type }) => {
   };
   const handleCloseUpdateModal = () => {
     setShowUpdateModal(false);
+  };
+  const handleShowCompleteModal = () => {
+    setShowCompleteModal(true);
+  };
+  const handleCloseCompleteModal = () => {
+    setShowCompleteModal(false);
   };
 
   useEffect(() => {
@@ -127,6 +135,11 @@ const ActivityCard = ({ rental, type }) => {
           status: "ONGOING",
         };
         handleCloseUpdateModal();
+      } else if (action === "Complete") {
+        newStatus = {
+          status: "COMPLETED",
+        };
+        handleCloseCompleteModal();
       }
       // else if (action === "Reject") {
       //   newStatus = {
@@ -465,7 +478,11 @@ const ActivityCard = ({ rental, type }) => {
             </View>
             {type === "Lending" && (
               <View style={styles.buttonContainer}>
-                <PrimaryButton typography="B3" color={white}>
+                <PrimaryButton
+                  typography="B3"
+                  color={white}
+                  onPress={handleShowCompleteModal}
+                >
                   Complete
                 </PrimaryButton>
               </View>
@@ -476,6 +493,17 @@ const ActivityCard = ({ rental, type }) => {
                   Return
                 </PrimaryButton>
               </View>
+            )}
+            {/* Popup modal to confirm if user wants to complete rental */}
+            {handleShowCompleteModal && (
+              <ConfirmationModal
+                isVisible={showCompleteModal}
+                onConfirm={() => handleStatus("Complete", rental.rentalId)}
+                onClose={handleCloseCompleteModal}
+                style={{ flex: 0 }}
+                type="Complete"
+                rental={rental}
+              />
             )}
           </View>
         )}
