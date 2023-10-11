@@ -571,11 +571,17 @@ const Content = ({ activeTab }) => {
               >
                 {upcomingBorrowings.length > 0 ? (
                   upcomingBorrowings.map((rental) => (
-                    <ActivityCard
-                      key={rental.rentalId}
-                      rental={rental}
-                      type={"Borrowing"}
-                    />
+                    <>
+                      <ActivityCard
+                        key={rental.rentalId}
+                        rental={rental}
+                        type={"Borrowing"}
+                      />
+                      {/* DEKAI REFACTOR THIS */}
+                      <Pressable onPress={() => router.push({pathname: "activity/submitChecklist", params: { rentalId: rental.rentalId, checklistFormType: "Start Rental" }})}>
+                        <RegularText>Press me to see start rental checklist</RegularText>
+                      </Pressable>
+                    </>
                   ))
                 ) : (
                   <NoRental rentalStatus={activeBorrowingPill} />
@@ -599,15 +605,22 @@ const Content = ({ activeTab }) => {
               >
                 {ongoingBorrowings.length > 0 ? (
                   ongoingBorrowings.map((rental) => (
-                    <ActivityCard
-                      key={rental.rentalId}
-                      rental={rental}
-                      type={"Borrowing"}
-                    />
+                    <>
+                      <ActivityCard
+                        key={rental.rentalId}
+                        rental={rental}
+                        type={"Borrowing"}
+                      />
+                      {/* DEKAI REFACTOR THIS */}
+                      <Pressable onPress={() => router.push({pathname: "activity/submitChecklist", params: { rental: rental, checklistFormType: "End Rental" }})}>
+                        <RegularText>Press me to see end rental checklist</RegularText>
+                      </Pressable>
+                    </>
                   ))
                 ) : (
                   <NoRental rentalStatus={activeBorrowingPill} />
                 )}
+                
               </ScrollView>
             </View>
           )}
