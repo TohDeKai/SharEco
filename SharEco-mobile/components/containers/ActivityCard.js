@@ -41,6 +41,7 @@ const ActivityCard = ({ rental, type }) => {
   const [item, setItem] = useState({});
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const { getUserData } = useAuth();
 
   const handleShowDetailsModal = () => {
@@ -54,6 +55,12 @@ const ActivityCard = ({ rental, type }) => {
   };
   const handleCloseCancelModal = () => {
     setShowCancelModal(false);
+  };
+  const handleShowUpdateModal = () => {
+    setShowUpdateModal(true);
+  };
+  const handleCloseUpdateModal = () => {
+    setShowUpdateModal(false);
   };
 
   useEffect(() => {
@@ -114,6 +121,12 @@ const ActivityCard = ({ rental, type }) => {
           status: "CANCELLED",
           cancellationReason: cancellationReason,
         };
+        handleCloseCancelModal();
+      } else if (action === "Update") {
+        newStatus = {
+          status: "ONGOING",
+        };
+        handleCloseUpdateModal();
       }
       // else if (action === "Reject") {
       //   newStatus = {
@@ -129,8 +142,6 @@ const ActivityCard = ({ rental, type }) => {
         `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
         newStatus
       );
-
-      handleCloseCancelModal();
     } catch (error) {
       console.log(error.message);
     }
@@ -314,6 +325,7 @@ const ActivityCard = ({ rental, type }) => {
         params: { rentalId: rentalId, itemId: item },
       });
     };
+
     return (
       <View>
         {(rental.status === "PENDING" || rental.status === "UPDATED") &&
@@ -398,17 +410,17 @@ const ActivityCard = ({ rental, type }) => {
                 Cancel
               </SecondaryButton>
             </View>
-            {type === "Borrowing" && (
-              <View style={styles.buttonContainer}>
-                <PrimaryButton
-                  typography="B3"
-                  color={white}
-                  onPress={handleEditRental}
-                >
-                  Edit
-                </PrimaryButton>
-              </View>
-            )}
+            {/* This button will allow users to update rental status from upcoming to ongoing */}
+            <View style={styles.buttonContainer}>
+              <PrimaryButton
+                typography="B3"
+                color={white}
+                onPress={handleShowUpdateModal}
+              >
+                Update
+              </PrimaryButton>
+            </View>
+
             {showCancelModal && (
               <ConfirmationModal
                 isVisible={showCancelModal}
@@ -417,6 +429,18 @@ const ActivityCard = ({ rental, type }) => {
                 style={{ flex: 0 }}
                 type="Cancel"
                 forCancellationData={handleCancellationData}
+                rental={rental}
+              />
+            )}
+
+            {/* Popup modal to confirm if user really wants to update rental status */}
+            {handleShowUpdateModal && (
+              <ConfirmationModal
+                isVisible={showUpdateModal}
+                onConfirm={() => handleStatus("Update", rental.rentalId)}
+                onClose={handleCloseUpdateModal}
+                style={{ flex: 0 }}
+                type="Update"
                 rental={rental}
               />
             )}
