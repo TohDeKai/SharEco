@@ -58,10 +58,15 @@ const createListing = () => {
   ]);
   const [category, setCategory] = useState("");
   const [lockers, setLockers] = useState([]);
+  const [checklistCriteria, setChecklistCriteria] = useState([]);
+
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
+  const [business, setBusiness] = useState(null);
+
   const [locationOpen, setLocationOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [handoverChecklistOpen, setHandoverChecklistOpen] = useState(false);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -76,6 +81,23 @@ const createListing = () => {
     }
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    async function fetchBusinessVerification() {
+      try {
+        const businessVerificationResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/businessVerifications/businessVerificationId/${user.businessVerificationId}`
+        );
+        if (businessVerificationResponse.status === 200) {
+          const businessVerificationData = businessVerificationResponse.data.data.businessVerification;
+          setBusiness(businessVerificationData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchBusinessVerification();
+  }, [user.businessVerificationId]);
 
   const [categories, setCategories] = useState([
     { label: "Audio", value: "Audio" },
@@ -103,6 +125,15 @@ const createListing = () => {
     { label: "Clementi", value: "Clementi" },
   ]);
   
+  const [checklistItems, setChecklistItems] = useState([
+    { label: "No new cosmetic damage", value: "No new cosmetic damage" },
+    { label: "No new functional damage", value: "No new functional damage" },
+    { label: "Item has been cleaned", value: "Item has been cleaned" },
+    { label: "Item has been sanitised", value: "Item has been sanitised" },
+    { label: "Battery has been charged fully", value: "Battery has been charged fully" },
+    { label: "Memory has been cleared", value: "Memory has been cleared" },
+    { label: "All included accessories have been returned", value: "All included accessories have been returned" },
+  ])
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -212,7 +243,8 @@ const createListing = () => {
         category: category,
         collectionLocations: lockers,
         otherLocation: values.meetupLocation,
-        isBusiness: isBusiness,
+        isBusiness: business ? business.approved : false,
+        checklistCriteria: checklistCriteria,
       };
 
       const response = await axios.post(
@@ -459,6 +491,26 @@ const createListing = () => {
                   scrollEnabled={false}
                   minHeight={80}
                 />
+
+                <RegularText typography="H3" style={styles.headerText}>
+                  Handover checklist (optional)
+                </RegularText>
+                <DropDownPicker
+                  multiple={true}
+                  open={handoverChecklistOpen}
+                  value={checklistCriteria}
+                  items={checklistItems}
+                  setOpen={setHandoverChecklistOpen}
+                  setValue={setChecklistCriteria}
+                  setItems={setChecklistItems}
+                  autoScroll={true}
+                  maxHeight={200}
+                  placeholder="Select handover checklist criteria"
+                  style={{marginTop: 10}}
+                  mode="BADGE"
+                  showBadgeDot={false}
+                />
+
                 <RegularText
                   typography="Subtitle"
                   style={{ alignSelf: "center", marginTop: 20 }}

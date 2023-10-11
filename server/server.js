@@ -524,6 +524,7 @@ app.post("/api/v1/items", async (req, res) => {
     collectionLocations,
     otherLocation,
     isBusiness,
+    checklistCriteria,
   } = req.body;
 
   try {
@@ -539,7 +540,8 @@ app.post("/api/v1/items", async (req, res) => {
       category,
       collectionLocations,
       otherLocation,
-      isBusiness
+      isBusiness,
+      checklistCriteria
     );
 
     // Send the newly created user as the response
