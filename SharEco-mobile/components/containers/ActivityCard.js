@@ -463,10 +463,19 @@ const ActivityCard = ({ rental, type }) => {
         )}
 
         {rental.status === "COMPLETED" && (
-          <View style={styles.buttonContainer}>
-            <PrimaryButton typography="B3" color={white}>
-              Rate
-            </PrimaryButton>
+          <View style={styles.buttons}>
+            <View style={styles.buttonContainer}>
+              <PrimaryButton typography="B3" color={white}>
+                Rate
+              </PrimaryButton>
+            </View>
+            {item.checklistCriteria && (
+            <View style={styles.buttonContainer}>
+              <PrimaryButton typography="B3" color={white} onPress={() => router.push({pathname: "activity/reviewChecklist", params: {rentalId : rental.rentalId}})}>
+                Checklist
+              </PrimaryButton>
+            </View>
+            )}
           </View>
         )}
 

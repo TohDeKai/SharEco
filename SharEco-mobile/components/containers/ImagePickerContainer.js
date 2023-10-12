@@ -25,7 +25,7 @@ const ImagePickerContainer = ({ imageSource, onImagePress, onRemovePress }) => {
           </Pressable>
         </View>
       )}
-      {imageSource && (
+      {imageSource && onRemovePress && (
         <View style={styles.cancelContainer}>
           <Pressable
             onPress={onRemovePress}
