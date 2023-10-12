@@ -178,19 +178,25 @@ const ActivityCard = ({ rental, type }) => {
             : styles.cardHeaderUsernameOnly,
         ]}
       >
-        <View style={styles.username}>
-          {user && (
-            <UserAvatar
-              size="xsmall"
-              source={{
-                uri: `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`,
-              }}
-            />
-          )}
-          {user && (
-            <RegularText typography="Subtitle">@{user.username}</RegularText>
-          )}
-        </View>
+        <Pressable 
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1,
+          })}
+          onPress={() => router.push({pathname: "home/othersProfile", params: { userId: user.userId }})}>
+          <View style={styles.username}>
+            {user && (
+              <UserAvatar
+                size="xsmall"
+                source={{
+                  uri: `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`,
+                }}
+              />
+            )}
+            {user && (
+              <RegularText typography="Subtitle">@{user.username}</RegularText>
+            )}
+          </View>
+        </Pressable>
 
         {rental.status === "UPCOMING" && (
           <View>
