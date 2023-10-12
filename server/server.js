@@ -1395,3 +1395,63 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+app.put("/api/v1/rental/rentalId/:rentalId/handoverChecklist", async (req, res) => {
+  console.log("Request recieved for submit handover checklist");
+  const rentalId = req.params.rentalId;
+  const {
+    checklistFormType,
+    checklist,
+    existingDamages,
+    newDamages,
+    images,
+  } = req.body;
+
+  
+  try {
+    if (checklistFormType == "Start Rental") {
+      //add checklist to startRentalCheckList, add existingDamages to startRentalDamages, add images to startRentalImages
+      const rental = await rentaldb.submitStartRentalChecklist(
+        rentalId,
+        checklist,
+        existingDamages,
+        images
+      );
+  
+      if (rental) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            rental: rental,
+          },
+        });
+      } else {
+        // Handle the case where the rental request is not found
+        res.status(404).json({ error: "Rental Request not found" });
+      }
+    } else if (checklistFormType == "End Rental") {
+      //add checklist to endRentalCheckList, add newDamages to endRentalDamages, add images to endRentalImages
+      const rental = await rentaldb.submitEndRentalChecklist(
+        rentalId,
+        checklist,
+        newDamages,
+        images,
+      );
+  
+      if (rental) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            rental: rental,
+          },
+        });
+      } else {
+        // Handle the case where the rental request is not found
+        res.status(404).json({ error: "Rental Request not found" });
+      }
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});

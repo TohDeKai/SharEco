@@ -612,7 +612,7 @@ const Content = ({ activeTab }) => {
                         type={"Borrowing"}
                       />
                       {/* DEKAI REFACTOR THIS */}
-                      <Pressable onPress={() => router.push({pathname: "activity/submitChecklist", params: { rental: rental, checklistFormType: "End Rental" }})}>
+                      <Pressable onPress={() => router.push({pathname: "activity/submitChecklist", params: { rentalId: rental.rentalId, checklistFormType: "End Rental" }})}>
                         <RegularText>Press me to see end rental checklist</RegularText>
                       </Pressable>
                     </>
