@@ -25,6 +25,7 @@ import Carousel, { Pagination } from "react-native-snap-carousel";
 import {
   DisabledButton,
   SecondaryButton,
+  PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
@@ -112,6 +113,10 @@ const ItemInformation = () => {
         </View>
 
         <View style={style.textContainer}>
+          <PrimaryButton typography="H4" color={white} onPress={()=>{router.push("profile/spotlight")}}>
+            Spotlight
+          </PrimaryButton>
+
           <View style={style.title}>
             <RegularText typography="H1">{itemTitle}</RegularText>
           </View>
