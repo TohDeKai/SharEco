@@ -6,6 +6,7 @@ const userdb = require("./queries/user");
 const admindb = require("./queries/admin");
 const listingdb = require("./queries/listing");
 const rentaldb = require("./queries/rental");
+const reviewdb = require("./queries/review");
 const businessdb = require("./queries/businessVerifications");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
@@ -1124,7 +1125,7 @@ app.put("/api/v1/rental/rentalId/:rentalId", async (req, res) => {
       req.params.rentalId,
       req.body.collectionLocation,
       req.body.additionalRequest,
-      req.body.status,
+      req.body.status
     );
 
     if (rental) {
@@ -1332,7 +1333,7 @@ app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
   }
 });
 
-//Get daily rental availability by listing Id 
+//Get daily rental availability by listing Id
 app.get("/api/v1/item/unavailability/:itemId", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
@@ -1379,7 +1380,10 @@ app.get("/api/v1/item/unavailability/fullDay/:itemId", async (req, res) => {
 app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
-    const booking = await rentaldb.getNextRentalByItemIdAndDate(req.params.itemId, req.params.date);
+    const booking = await rentaldb.getNextRentalByItemIdAndDate(
+      req.params.itemId,
+      req.params.date
+    );
     if (booking) {
       res.status(200).json({
         status: "success",
@@ -1451,6 +1455,138 @@ app.put("/api/v1/rental/rentalId/:rentalId/handoverChecklist", async (req, res) 
       }
     }
   } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Update Rental Upon Being Reviewed By Lender
+app.patch(
+  "/api/v1/rental/lenderReview/:rentalId/:reviewId",
+  async (req, res) => {
+    try {
+      const { rentalId, reviewId } = req.params;
+      const review = rentaldb.updateRentalUponLenderReview(reviewId, rentalId);
+
+      if (review) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            review: review,
+          },
+        });
+      } else {
+        // Handle the case where the review is not found
+        res.status(404).json({ error: "Review was not found" });
+      }
+    } catch (error) {
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
+// Update Rental Upon Being Reviewed By Borrower
+app.patch(
+  "/api/v1/rental/borrowerReview/:rentalId/:reviewId",
+  async (req, res) => {
+    try {
+      const { rentalId, reviewId } = req.params;
+      const review = rentaldb.updateRentalUponBorrowerReview(
+        reviewId,
+        rentalId
+      );
+
+      if (review) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            review: review,
+          },
+        });
+      } else {
+        // Handle the case where the review is not found
+        res.status(404).json({ error: "Review was not found" });
+      }
+    } catch (error) {
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
+/**********************          Review Routes             **************************/
+// Get all Reviews
+app.get("/api/v1/reviews", async (req, res) => {
+  try {
+    const reviews = await reviewdb.getAllReviews();
+    res.status(200).json({
+      status: "success",
+      data: {
+        reviews: reviews,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Create a Review
+app.post("/api/v1/reviews", async (req, res) => {
+  const {
+    rating,
+    comments,
+    revieweeIsLender,
+    reviewerId,
+    revieweeId,
+    rentalId,
+  } = req.body;
+
+  try {
+    const review = await reviewdb.createReview(
+      rating,
+      comments,
+      revieweeIsLender,
+      reviewerId,
+      revieweeId,
+      rentalId
+    );
+
+    // Send the newly created review as the response
+    res.status(201).json({
+      status: "success",
+      data: {
+        review: review,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Delete Review by review Id
+app.delete("/api/v1/reviews/:reviewId", async (req, res) => {
+  const reviewId = req.params.reviewId;
+  try {
+    const review = await reviewdb.deleteReview(reviewId);
+
+    if (review) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          review: review,
+        },
+      });
+    } else {
+      // Handle the case where the review was not found
+      res.status(404).json({ error: "Review was not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
     console.log(err);
     res.status(500).json({ error: "Database error" });
   }
