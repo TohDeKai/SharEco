@@ -113,9 +113,26 @@ const ItemInformation = () => {
         </View>
 
         <View style={style.textContainer}>
-          <PrimaryButton typography="H4" color={white} onPress={()=>{router.push("profile/spotlight")}}>
-            Spotlight
-          </PrimaryButton>
+          <View style={{marginTop: -viewportHeightInPixels(10), marginBottom: viewportHeightInPixels(2)}}>
+          <PrimaryButton
+              typography="H4"
+              color={white}
+              onPress={() => {
+                router.push({
+                  pathname: "profile/spotlight",
+                  params: { itemId: itemId },
+                });
+              }}
+              style={{
+                width: viewportWidthInPixels(30),
+                alignSelf: "flex-end",
+                
+              }}
+            >
+              Spotlight
+            </PrimaryButton>
+          </View>
+            
 
           <View style={style.title}>
             <RegularText typography="H1">{itemTitle}</RegularText>
@@ -172,7 +189,12 @@ const ItemInformation = () => {
             </RegularText>
             <View style={style.seller}>
               <View style={style.avatarContainer}>
-                <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
+                <UserAvatar
+                  size="medium"
+                  source={{
+                    uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
+                  }}
+                />
               </View>
               <View style={style.profile}>
                 <RegularText typography="H3">{user.displayName}</RegularText>

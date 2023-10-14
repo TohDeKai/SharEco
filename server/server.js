@@ -7,6 +7,7 @@ const admindb = require("./queries/admin");
 const listingdb = require("./queries/listing");
 const rentaldb = require("./queries/rental");
 const businessdb = require("./queries/businessVerifications");
+const spotlightdb = require("./queries/spotlight");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -1124,7 +1125,7 @@ app.put("/api/v1/rental/rentalId/:rentalId", async (req, res) => {
       req.params.rentalId,
       req.body.collectionLocation,
       req.body.additionalRequest,
-      req.body.status,
+      req.body.status
     );
 
     if (rental) {
@@ -1332,7 +1333,7 @@ app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
   }
 });
 
-//Get daily rental availability by listing Id 
+//Get daily rental availability by listing Id
 app.get("/api/v1/item/unavailability/:itemId", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
@@ -1379,7 +1380,10 @@ app.get("/api/v1/item/unavailability/fullDay/:itemId", async (req, res) => {
 app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
-    const booking = await rentaldb.getNextRentalByItemIdAndDate(req.params.itemId, req.params.date);
+    const booking = await rentaldb.getNextRentalByItemIdAndDate(
+      req.params.itemId,
+      req.params.date
+    );
     if (booking) {
       res.status(200).json({
         status: "success",
@@ -1391,6 +1395,32 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
       res.status(404).json({ error: "Listing not found" });
     }
   } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//SPOTLIGHT
+// Creating new spotlight
+app.post("/api/v1/spotlight", async (req, res) => {
+  const { duration, price, itemId } = req.body;
+
+  try {
+    const spotlight = await spotlightdb.createSpotlight(
+      duration,
+      price,
+      itemId
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        spotlight: spotlight,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
     console.log(err);
     res.status(500).json({ error: "Database error" });
   }

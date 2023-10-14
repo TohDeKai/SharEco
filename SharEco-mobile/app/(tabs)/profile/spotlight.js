@@ -7,13 +7,15 @@ import {
   Dimensions,
 } from "react-native";
 import { React, useState } from "react";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import Header from "../../../components/Header";
 import RegularText from "../../../components/text/RegularText";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import { colours } from "../../../components/ColourPalette";
 const { primary, white, black, inputbackground } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportWidthInPixels = (percentage) => {
   const screenWidth = Dimensions.get("window").width;
@@ -81,12 +83,39 @@ const SpotlightButtons = ({
 };
 
 const Footer = ({ activeButton, spotlightDetails }) => {
-  const handleSpotlight = () => {
-    console.log("button pressed");
-    //router.push({ pathname: "home/rentalRequest", params: { itemId: data, tab: tab } }); //to update path name
+  const details = spotlightDetails.find((detail) => detail.id === activeButton);
+  const params = useLocalSearchParams();
+  const { itemId } = params;
+
+  const handleSpotlight = async () => {
+    try {
+      const spotlightData = {
+        duration: details.duration,
+        price: details.price,
+        itemId: itemId, //stub
+      };
+
+      const response = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/spotlight`,
+        spotlightData
+      );
+
+      if (response.status === 200) {
+        console.log("Spotlight created successfully");
+        router.replace("/profile");
+      } else {
+        //shouldnt come here
+        console.log("Spotlight creation unsuccessful");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 500) {
+        console.log("Internal server error");
+      } else {
+        console.log("Error during item creation: ", error.message);
+      }
+    }
   };
 
-  const details = spotlightDetails.find((detail) => detail.id === activeButton);
   return (
     <View style={styles.nav}>
       <View style={styles.buttonContainer}>
@@ -123,7 +152,7 @@ const Content = () => {
   };
 
   return (
-    <View style={{height:viewportHeightInPixels(79),}}>
+    <View style={{ height: viewportHeightInPixels(79) }}>
       <Header title="Spotlight" action="back" onPress={handleBack} />
       <View style={{ marginVertical: 30 }}>
         <RegularText
