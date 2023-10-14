@@ -24,7 +24,7 @@ const createRentalRequest = async (
   borrowerId,
   lenderId,
   totalFee,
-  isHourly,
+  isHourly
 ) => {
   try {
     const result = await pool.query(
@@ -60,7 +60,7 @@ const editRentalRequest = async (
   rentalId,
   collectionLocation,
   additionalRequest,
-  status,
+  status
 ) => {
   try {
     const result = await pool.query(
@@ -104,6 +104,7 @@ const updateRentalStatus = async (status, rentalId) => {
   }
 };
 
+// Update Rental Status to Cancel
 const updateRentalStatusToCancel = async (
   status,
   rentalId,
@@ -117,6 +118,38 @@ const updateRentalStatusToCancel = async (
           WHERE "rentalId" = $3
           RETURNING *`,
       [status, cancellationReason, rentalId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Update Rental Upon Being Reviewed By Lender
+const updateRentalUponLenderReview = async (reviewId, rentalId) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."rental" 
+          SET "reviewIdByLender" = $1,
+          WHERE "rentalId" = $2
+          RETURNING *`,
+      [reviewId, rentalId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Update Rental Upon Being Reviewed By Borrower
+const updateRentalUponBorrowerReview = async (reviewId, rentalId) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."rental" 
+          SET "reviewIdByBorrower" = $1,
+          WHERE "rentalId" = $2
+          RETURNING *`,
+      [reviewId, rentalId]
     );
     return result.rows[0];
   } catch (err) {
@@ -272,7 +305,7 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
         });
         console.log("booking starts on selected and ends after selected date");
 
-//booking starts before selected and ends after selected date
+        //booking starts before selected and ends after selected date
       } else if (
         bookingStart.getDate() < currentDate.getDate() &&
         bookingEnd.getDate() > currentDate.getDate()
@@ -345,7 +378,7 @@ const getAvailByRentalIdAndDate = async (itemId, date) => {
       });
       console.log(sortedUnavail);
 
-for (const slot of sortedUnavail) {
+      for (const slot of sortedUnavail) {
         const nextStartString = nextStart.toLocaleString("en-GB", {
           timeZone: singaporeTimeZone,
           day: "2-digit",
@@ -834,4 +867,6 @@ module.exports = {
   getFullDayUnavailability,
   getNextRentalByItemIdAndDate,
   updateRentalStatusToCancel,
+  updateRentalUponLenderReview,
+  updateRentalUponBorrowerReview,
 };
