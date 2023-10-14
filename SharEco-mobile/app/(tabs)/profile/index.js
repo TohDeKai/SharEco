@@ -82,7 +82,7 @@ const ProfileHeader = () => {
     router.push("profile/editProfile");
   };
   const toBizDashboard = () => {
-    router.push("profile/editProfile"); //edit
+    router.push("profile/bizDashboard");
   };
 
   return (

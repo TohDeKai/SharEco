@@ -23,6 +23,7 @@ import ListingCard from "../../../components/ListingCard";
 import Header from "../../../components/Header";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import axios from "axios";
+import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -36,82 +37,113 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-const adPills = ["Pending", "Approved", "Active", "Past", "Rejected"];
-
-const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
-  return (
-    <View style={styles.pillContainer}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {pillItems.map((pill) => (
-          <Pressable
-            key={pill}
-            onPress={() => handlePillPress(pill)}
-            style={({ pressed }) => [
-              { opacity: pressed ? 0.5 : 1 },
-              styles.pill,
-              activeLendingPill === pill && styles.activePill,
-            ]}
-          >
-            <RegularText
-              typography="B1"
-              color={activeLendingPill === pill ? primary : dark}
-            >
-              {pill}
-            </RegularText>
-          </Pressable>
-        ))}
-      </ScrollView>
-    </View>
-  );
-};
-
 const adPeriod = () => {
   const today = new Date();
-  const daysUntilSunday = 7 - today.getDay() + 1;
+  const daysUntilSunday = 7 - today.getDay();
   const startSunday = new Date(today);
   startSunday.setDate(today.getDate() + daysUntilSunday);
   startSunday.setHours(0, 0, 0, 0);
-  const startString = startSunday.toLocaleStr
   const endSaturday = new Date(today);
   endSaturday.setDate(startSunday.getDate() + 6);
-  endSaturday.setHours(0,0,0,0);
+  endSaturday.setHours(0, 0, 0, 0);
 
-  return `${startSunday} - ${endSaturday}`;
+  const startString = startSunday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const endString = endSaturday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+  return `${startString} - ${endString}`;
 };
 
 const biddingPeriod = () => {
+  const today = new Date();
+  const daysUntilSunday = 7 - today.getDay();
+  const startSunday = new Date(today);
+  startSunday.setDate(today.getDate() + daysUntilSunday);
+  startSunday.setHours(0, 0, 0, 0);
+  const endSaturday = new Date(today);
+  endSaturday.setDate(startSunday.getDate() + 6);
+  endSaturday.setHours(0, 0, 0, 0);
 
-}
+  const startString = startSunday.toISOString().split("T")[0];
+  const endString = endSaturday.toISOString().split("T")[0];
+
+  return `${startString} - ${endString}`;
+};
 
 const Dashboard = () => {
+  const adPills = ["Pending", "Approved", "Active", "Past", "Rejected"];
+  const [activeAdPill, setActiveAdPill] = useState("Pending");
+
+  const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
+    return (
+      <View style={styles.pillContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {pillItems.map((pill) => (
+            <Pressable
+              key={pill}
+              onPress={() => handlePillPress(pill)}
+              style={({ pressed }) => [
+                { opacity: pressed ? 0.5 : 1 },
+                styles.pill,
+                activeAdPill === pill && styles.activePill,
+              ]}
+            >
+              <RegularText
+                typography="B1"
+                color={activeAdPill === pill ? primary : dark}
+              >
+                {pill}
+              </RegularText>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   const handleBack = () => {
     router.back();
   };
+  const handlePillPress = (pill) => {
+    setActiveAdPill(pill);
+    console.log("Active pill: " + pill);
+  };
+  const handleCreateAd = () => {
+    router.push("profile/createAd");
+  }
 
   return (
-    <View style={styles.container}>
-      <Header title="Business Dashboard" action="back" onPress={handleBack} />
-      <View style={styles.analytics}>
-        <RegularText typography="H4">Analytics coming to you soon!</RegularText>
-      </View>
-      <View style={styles.adHeader}>
-        <RegularText typography="H3">Advertisement</RegularText>
-        <View>
-          <PrimaryButton>
-            <Ionicons name="plus" color={white} size={25} />
-            Create ad
-          </PrimaryButton>
+    <SafeAreaContainer>
+      <View>
+        <Header title="Business Dashboard" action="back" onPress={handleBack} />
+        <View style={styles.container}>
+          <View style={styles.analytics}>
+            <RegularText typography="B2">
+              Analytics are coming to you soon!
+            </RegularText>
+          </View>
+          <View style={styles.adHeader}>
+            <View><RegularText typography="H1">Advertisement</RegularText></View>
+            <View>
+              <PrimaryButton style={styles.button} onPress={handleCreateAd}>
+                <Ionicons name="add" color={white} size={25}/>
+                <View style={{paddingTop: 3, paddingRight: 5}}>
+                <RegularText typography="H3" color={white}>Create ad</RegularText></View>
+              </PrimaryButton>
+            </View>
+          </View>
+          <View style={styles.bidWeek}>
+            <Ionicons name="calendar" size={17} style={{ marginRight: 10 }}/>
+            <RegularText typography="B2">Bidding opened for </RegularText>
+            <RegularText typography="H4">{adPeriod()}</RegularText>
+          </View>
+          <Pills
+            pillItems={adPills}
+            setActiveAdPill={activeAdPill}
+            handlePillPress={handlePillPress}
+          />
         </View>
       </View>
-      <View>
-        <RegularText typography="B2">Bidding for </RegularText>
-      </View>
-      <Pills
-        pillItems={lendingPill}
-        activeLendingPill={activeLendingPill}
-        handlePillPress={handlePillPress}
-      />
-    </View>
+    </SafeAreaContainer>
   );
 };
 
@@ -119,15 +151,36 @@ export default Dashboard;
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: viewportHeightInPixels(5),
+    marginVertical: 20,
+    marginHorizontal: viewportWidthInPixels(5),
   },
   analytics: {
     height: 100,
     width: viewportWidthInPixels(90),
     justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: inputbackground,
   },
   adHeader: {
+    alignItems: "center",
+    flexDirection: "row",
     justifyContent: "space-between",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  button: {
+    width: 120,
+    height: 40,
+    paddingVertical: 3,
+  },
+  bidWeek: {
+    backgroundColor: inputbackground,
+    paddingVertical: 6,
+    paddingHorizontal: 17,
+    borderRadius: 7,
+    flexDirection: "row",
+    height: 40,
+    alignItems: "center"
   },
   pillContainer: {
     paddingTop: 18,
