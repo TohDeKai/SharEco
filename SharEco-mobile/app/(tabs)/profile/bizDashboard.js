@@ -69,9 +69,37 @@ const biddingPeriod = () => {
   return `${startString} - ${endString}`;
 };
 
-const Dashboard = () => {
+const dashboard = () => {
+  const { getUserData } = useAuth();
   const adPills = ["Pending", "Approved", "Active", "Past", "Rejected"];
   const [activeAdPill, setActiveAdPill] = useState("Pending");
+  const [userAds, setUserAds] = useState([])
+  const [userId, setUserId] = useState();
+
+  //Get user ads
+  useEffect(() => {
+    async function fetchUserAds() {
+      try {
+        const userData = await getUserData();
+        const userId = userData.userId;
+        setUserId(userId);
+        try {
+          const response = await axios.get(`http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`);
+          if (response.status === 200) {
+            const ads = response.data.data.ads;
+            setUserAds(ads);
+          } else {
+            console.log("Failed to retrieve ads");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchUserAds();
+  }, [])
 
   const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
     return (
@@ -107,8 +135,12 @@ const Dashboard = () => {
     setActiveAdPill(pill);
     console.log("Active pill: " + pill);
   };
-  const handleCreateAd = () => {
-    router.push("profile/createAd");
+  const handleCreateNewAd = () => {
+    router.push("profile/createAd"); //Error here, doesnt redirect. Failed:
+    //router.push("createAd")
+    //router.replace("createAd")
+    //router.push("profile/createAd")
+    //router.replace("profile/createAd")
   }
 
   return (
@@ -124,7 +156,7 @@ const Dashboard = () => {
           <View style={styles.adHeader}>
             <View><RegularText typography="H1">Advertisement</RegularText></View>
             <View>
-              <PrimaryButton style={styles.button} onPress={handleCreateAd}>
+              <PrimaryButton style={styles.button} onPress={handleCreateNewAd}>
                 <Ionicons name="add" color={white} size={25}/>
                 <View style={{paddingTop: 3, paddingRight: 5}}>
                 <RegularText typography="H3" color={white}>Create ad</RegularText></View>
@@ -147,7 +179,7 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default dashboard;
 
 const styles = StyleSheet.create({
   container: {

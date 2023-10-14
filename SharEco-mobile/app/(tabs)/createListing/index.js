@@ -310,7 +310,7 @@ const createListing = () => {
               if (
                 values.title == "" ||
                 values.originalPrice == 0.0 ||
-                //values.depositFee == 0.0 ||
+                images == [null, null, null, null, null] ||
                 values.description == "" ||
                 category == "" ||
                 //if both per hour and per day rental not specified
