@@ -1533,6 +1533,28 @@ app.get("/api/v1/reviews", async (req, res) => {
   }
 });
 
+// Get Review by reviewId
+app.get("/api/v1/reviews/reviewId/:reviewId", async (req, res) => {
+  try {
+    const review = await reviewdb.getReviewByReviewId(req.params.reviewId);
+    if (review.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          review: review,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Review  not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Create a Review
 app.post("/api/v1/reviews", async (req, res) => {
   const {

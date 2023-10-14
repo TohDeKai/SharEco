@@ -478,20 +478,22 @@ const ActivityCard = ({ rental, type }) => {
                   //check if there is already an existing review
                   if (revieweeIsLender) {
                     if (rental.reviewIdByBorrower != null) {
-                      //break
+                      //show existing review as borrower
+                      router.push({pathname: "activity/viewRating", params: {reviewId : rental.reviewIdByBorrower, revieweeIsLender: revieweeIsLender, itemId: item.itemId}});
                     } else {
                       router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}});
                     }
                   } else {
                     if (rental.reviewIdByLender != null) {
-                      //break
+                      //show existing review as lender
+                      router.push({pathname: "activity/viewRating", params: {reviewId : rental.reviewIdByLender, revieweeIsLender: revieweeIsLender, itemId: item.itemId}});
                     } else {
                       router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}});
                     }
                   }
                 }}
               >
-                Rate
+                {(type === "Borrowing" && rental.reviewIdByBorrower!= null) || (type === "Lending" && rental.reviewIdByLender!= null) ? "View Rating" : "Rate"}
               </PrimaryButton>
             </View>
             {item.checklistCriteria && (

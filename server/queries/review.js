@@ -73,8 +73,23 @@ const getAllReviews = async () => {
   }
 };
 
+//Get Review by  ReviewId
+const getReviewByReviewId = async (reviewId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."review" 
+            WHERE "reviewId" = $1`,
+      [reviewId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createReview,
   deleteReview,
   getAllReviews,
+  getReviewByReviewId,
 };

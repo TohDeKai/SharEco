@@ -129,7 +129,7 @@ const rateUser = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title="Submit Review" action="close" onPress={handleBack} />
+      <Header title="Submit Rating" action="close" onPress={handleBack} />
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
