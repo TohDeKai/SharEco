@@ -6,7 +6,10 @@ import {
   View,
   Button,
   Dimensions,
+  Pressable,
 } from "react-native";
+import { router } from "expo-router";
+
 import { PrimaryButton, SecondaryButton } from "./buttons/RegularButton";
 import { colours } from "./ColourPalette";
 import RegularText from "./text/RegularText";
@@ -123,6 +126,15 @@ const RentalDetailsModal = ({
               </View>
             </View>
             {isLending && (
+              <Pressable 
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                })}
+                onPress={() => {
+                  onClose();
+                  router.push({pathname: "home/othersProfile", params: { userId: borrower.userId }})}
+                }
+              >
               <View>
                 {/* <RegularText typography="H4" style={{ marginVertical: 10}}>Lender Profile</RegularText> */}
                 <View style={[styles.seller]}>
@@ -151,8 +163,18 @@ const RentalDetailsModal = ({
                   </View>
                 </View>
               </View>
+              </Pressable>
             )}
             {!isLending && (
+              <Pressable 
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                })}
+                onPress={() => {
+                  onClose();
+                  router.push({pathname: "home/othersProfile", params: { userId: lender.userId }})}
+                }
+              >
               <View>
                 {/* <RegularText typography="H4" style={{ marginVertical: 10}}>Lender Profile</RegularText> */}
                 <View style={[styles.seller]}>
@@ -181,6 +203,7 @@ const RentalDetailsModal = ({
                   </View>
                 </View>
               </View>
+              </Pressable>
             )}
             <View style={styles.perDayContainer}>
               <RegularText

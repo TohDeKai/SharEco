@@ -76,7 +76,9 @@ const submitChecklist = () => {
         );
         if (itemResponse.status === 200) {
           const itemData = itemResponse.data.data.item;
+          const numOfCheckboxes = itemData.checklistCriteria.length;
           setItem(itemData);
+          setCheckboxValues(new Array(numOfCheckboxes).fill(false));
         }
       } catch (error) {
         console.log(error.message);
@@ -191,12 +193,15 @@ const submitChecklist = () => {
 
   const handleSubmitHandoverForm = async (values) => {
     try {
+      //handle upload all images and returns the array of uris
+      const uploadedURIs = await uploadImageFiles(imagesResult, checklistFormType);
+
       const itemData = {
         checklistFormType: checklistFormType,
-        checklist: values.checklist,
+        checklist: checkboxValues,
         existingDamages: values.existingDamages,
         newDamages: values.newDamages,
-        images: images, //will later be updated with the aws keys
+        images: uploadedURIs,
       };
 
       const response = await axios.put(
@@ -204,25 +209,26 @@ const submitChecklist = () => {
         itemData
       );
 
-      if (response.status === 201) {
-        //handle upload all images and returns the array of uris
-        const uploadedURIs = await uploadImageFiles(imagesResult, checklistFormType);
+      if (response.status === 200) {
+        console.log("Handover form submitted successfully");
 
-        //update images column in db
-        const updateImagesResponse = await axios.put(
-          `http://${BASE_URL}:4000/api/v1/rental/rentalId/${rentalId}/images`,
-          { images: uploadedURIs, checklistFormType: checklistFormType }
+        const nextRentalStatus = checklistFormType == "Start Rental" ? "ONGOING" : "COMPLETED";
+
+        newStatus = {
+          status: nextRentalStatus,
+        };
+
+        const statusResponse = await axios.patch(
+          `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
+          newStatus
         );
 
-        if (updateImagesResponse.status === 200) {
-          console.log("Handover form submitted successfully");
+        if (statusResponse.status === 200) {
+          console.log(`Status changed to ${nextRentalStatus}`);
           setImages([null, null, null, null, null]);
           setImagesResult([null, null, null, null, null]);
-          router.replace("/activity");
-        } else {
-          //shouldnt come here
-          console.log("Error updating item images");
-        }
+          router.back();
+        }        
       } else {
         //shouldnt come here
         console.log("Handover form submission unsuccessful");
@@ -243,20 +249,12 @@ const submitChecklist = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
             initialValues={{
-              checklist: "",
               existingDamages: "",
               newDamages: "",
             }}
             onSubmit={(values, actions) => {
-              if (
-                values.checklist == "" 
-              ) {
-                setMessage("Please fill in all fields");
-                setIsSuccessMessage(false);
-              } else {
-                handleSubmitHandoverForm(values);
-                actions.resetForm();
-              }
+              handleSubmitHandoverForm(values);
+              actions.resetForm();
             }}
           >
             {({ handleChange, handleBlur, handleSubmit, values }) => (
@@ -333,8 +331,6 @@ const submitChecklist = () => {
                   </View>
                 )}
 
-                
-             
                 <MessageBox
                   style={{ marginTop: 10 }}
                   success={isSuccessMessage}

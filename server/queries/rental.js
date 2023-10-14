@@ -852,6 +852,84 @@ const getNextRentalByItemIdAndDate = async (itemId, date) => {
   }
 };
 
+const submitStartRentalChecklist = async (
+  rentalId,
+  checklist,
+  existingDamages,
+  images
+) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."rental" 
+          SET 
+          "startRentalChecklist" = $1,
+          "startRentalDamages" = $2,
+          "startRentalImages" = $3
+          WHERE "rentalId" = $4
+          RETURNING *`,
+      [
+        checklist,
+        existingDamages,
+        images,
+        rentalId,
+      ]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+const submitEndRentalChecklist = async (
+  rentalId,
+  checklist,
+  newDamages,
+  images
+) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."rental" 
+          SET 
+          "endRentalChecklist" = $1,
+          "endRentalDamages" = $2,
+          "endRentalImages" = $3
+          WHERE "rentalId" = $4
+          RETURNING *`,
+      [
+        checklist,
+        newDamages,
+        images,
+        rentalId,
+      ]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Update start or end rental images when submitting checklist
+const updateItemImages = async (itemId, images, checklistFormType) => {
+  try {
+    //if (checklistFormType == "Start Rental")
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."item" 
+        SET images = $1
+        WHERE "itemId" = $2
+        RETURNING images`,
+      [images, itemId]
+    );
+
+    if (result.rows.length > 0) {
+      return result.rows[0].images;
+    } else {
+      return null; // Return null if the item is not found or the update fails
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -867,6 +945,8 @@ module.exports = {
   getFullDayUnavailability,
   getNextRentalByItemIdAndDate,
   updateRentalStatusToCancel,
+  submitStartRentalChecklist,
+  submitEndRentalChecklist,
   updateRentalUponLenderReview,
   updateRentalUponBorrowerReview,
 };
