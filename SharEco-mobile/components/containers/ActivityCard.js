@@ -474,8 +474,22 @@ const ActivityCard = ({ rental, type }) => {
                   } else if (type === "Lending") {
                     revieweeIsLender = false;
                   }
-                  router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}})}
-                }
+
+                  //check if there is already an existing review
+                  if (revieweeIsLender) {
+                    if (rental.reviewIdByBorrower != null) {
+                      //break
+                    } else {
+                      router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}});
+                    }
+                  } else {
+                    if (rental.reviewIdByLender != null) {
+                      //break
+                    } else {
+                      router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}});
+                    }
+                  }
+                }}
               >
                 Rate
               </PrimaryButton>
