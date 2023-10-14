@@ -8,6 +8,7 @@ const listingdb = require("./queries/listing");
 const rentaldb = require("./queries/rental");
 const reviewdb = require("./queries/review");
 const businessdb = require("./queries/businessVerifications");
+const spotlightdb = require("./queries/spotlight");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -1395,6 +1396,32 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
       res.status(404).json({ error: "Listing not found" });
     }
   } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//SPOTLIGHT
+// Creating new spotlight
+app.post("/api/v1/spotlight", async (req, res) => {
+  const { duration, price, itemId } = req.body;
+
+  try {
+    const spotlight = await spotlightdb.createSpotlight(
+      duration,
+      price,
+      itemId
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        spotlight: spotlight,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
     console.log(err);
     res.status(500).json({ error: "Database error" });
   }
