@@ -81,10 +81,36 @@ const ProfileHeader = () => {
   const toEditProfile = () => {
     router.push("profile/editProfile");
   };
+  const toBizDashboard = () => {
+    router.push("profile/editProfile"); //edit
+  };
 
   return (
     <View style={styles.header}>
       <View style={styles.headerGreen}>
+        <Pressable
+          onPress={toBizDashboard}
+          style={[
+            ({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            }),
+            styles.bizButton,
+          ]}
+        >
+          <Ionicons
+            name="briefcase"
+            color={primary}
+            size={20}
+            style={styles.headerIcon}
+          />
+          <RegularText
+            color={primary}
+            typography="B1"
+            style={{ paddingHorizontal: 5 }}
+          >
+            Manage Biz
+          </RegularText>
+        </Pressable>
         <Pressable
           onPress={toEditProfile}
           style={({ pressed }) => ({
@@ -261,7 +287,6 @@ const Content = ({ navigation, activeTab }) => {
     fetchUserData();
   }, []);
 
-  
   return (
     <View style={{ flex: 1 }}>
       {activeTab == "Listings" && (userItems ? userItems.length : 0) === 0 && (
@@ -418,5 +443,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     marginTop: "20%",
+  },
+  bizButton: {
+    backgroundColor: white,
+    flexDirection: "row",
+    paddingVertical: 3,
+    paddingHorizontal: 4,
+    borderRadius: 10,
+    alignItems: "center",
+    marginRight: 4,
   },
 });
