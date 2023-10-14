@@ -465,7 +465,18 @@ const ActivityCard = ({ rental, type }) => {
         {rental.status === "COMPLETED" && (
           <View style={styles.buttons}>
             <View style={styles.buttonContainer}>
-              <PrimaryButton typography="B3" color={white}>
+              <PrimaryButton typography="B3" color={white} 
+                onPress={() => {
+                  var revieweeIsLender = false; 
+                  //if somebody is the renter ie is borrowing, the person being reviewed ie reviewee is therefore the lender
+                  if (type === "Borrowing") {
+                    revieweeIsLender = true;
+                  } else if (type === "Lending") {
+                    revieweeIsLender = false;
+                  }
+                  router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}})}
+                }
+              >
                 Rate
               </PrimaryButton>
             </View>
