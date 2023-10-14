@@ -1402,11 +1402,11 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
 
 //ADVERTISEMENT FUNCTIONALITIES
 //Create a new ad request
-app.post("/api/v1/advertisement", async (req, res) => {
+app.post("/api/v1/createAd", async (req, res) => {
   const { image, description, bidPrice, bizId } = req.body;
 
   try {
-    const advertisement = await advertisementdb.createAd(
+    const ad = await advertisementdb.createAd(
       image,
       description,
       bidPrice,
@@ -1416,9 +1416,117 @@ app.post("/api/v1/advertisement", async (req, res) => {
     res.status(200).json({
       status: "success",
       data: {
-        advertisement: advertisement,
+        ad: ad,
       },
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Edit ad
+app.put("/api/v1/editAd/adId/:adId", async (req, res) => {
+  try {
+    const ad = await advertisementdb.editAd(
+      req.params.adId,
+      req.body.image,
+      req.body.description,
+      req.body.bidPrice
+    );
+
+    if (ad) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ad: ad,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Advertisement not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Cancel ad
+app.delete("/api/v1/cancelAd/adId/:adId", async (req, res) => {
+  const adId = req.params.adId;
+  try {
+    const ad = await advertisementdb.deleteAd(adId);
+
+    if (ad) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ad: ad,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Ad not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get ad by adId
+app.get("/api/v1/ad/adId/:adId", async (req, res) => {
+  try {
+    const ad = await advertisementdb.getAdByAdId(req.params.adId);
+    if (ad.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ad: ad,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Ad not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get ads by bizId
+app.get("/api/v1/ads/bizId/:bizId", async (req, res) => {
+  try {
+    const ads = await advertisementdb.getAdsByBizId(req.params.bizId);
+    if (ads && ads.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ads: ads,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Business user not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get ads for the week
+app.get("/api/v1/weekAds/startDate/:startDate", async (req, res) => {
+  try {
+    const ads = await advertisementdb.getWeekAdsByStartDate(req.params.startDate);
+    if (ads && ads.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ads: ads,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Weekly ads not found" });
+    }
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Database error" });
