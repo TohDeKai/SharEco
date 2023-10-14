@@ -130,7 +130,7 @@ const updateRentalUponLenderReview = async (reviewId, rentalId) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."rental" 
-          SET "reviewIdByLender" = $1,
+          SET "reviewIdByLender" = $1
           WHERE "rentalId" = $2
           RETURNING *`,
       [reviewId, rentalId]
@@ -146,7 +146,7 @@ const updateRentalUponBorrowerReview = async (reviewId, rentalId) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."rental" 
-          SET "reviewIdByBorrower" = $1,
+          SET "reviewIdByBorrower" = $1
           WHERE "rentalId" = $2
           RETURNING *`,
       [reviewId, rentalId]
