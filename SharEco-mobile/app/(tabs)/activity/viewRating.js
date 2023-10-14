@@ -9,33 +9,18 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { Rating } from 'react-native-stock-star-rating';
 import axios from "axios";
-
-// AWS Amplify
-import { Amplify, Storage } from "aws-amplify";
-import awsconfig from "../../../src/aws-exports";
-Amplify.configure(awsconfig);
 
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import Header from "../../../components/Header";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
+import ReviewsCard from "../../../components/containers/ReviewsCard";
 const { white, yellow } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-const viewportWidthInPixels = (percentage) => {
-  const screenWidth = Dimensions.get("window").width;
-  return (percentage / 100) * screenWidth;
-};
-
-const viewportHeightInPixels = (percentage) => {
-  const screenWidth = Dimensions.get("window").height;
-  return (percentage / 100) * screenWidth;
-};
-
-const rateUser = () => {
+const viewRating = () => {
   const params = useLocalSearchParams();
   const { reviewId, revieweeIsLender, itemId } = params;
   const revieweeIsLenderBoolean = revieweeIsLender === "true";
@@ -86,31 +71,7 @@ const rateUser = () => {
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={{ width: "85%" }}>
-            <View style={styles.rowContainer}>
-              <Rating stars={review.rating} size={15} color={yellow} />
-              <RegularText typography="Subtitle2">{revieweeIsLenderBoolean ? "Review as borrower" : "Review as lender"}</RegularText>
-            </View>
-            <RegularText typography="Subtitle">
-              {review.comments}
-            </RegularText>
-            
-            <View style={styles.cardDetailsContainer}>
-              <View style={styles.rentalDetailsWithoutLocation}>
-                <View style={styles.rentalDetails}>
-                  <Image
-                    style={styles.image}
-                    source={{
-                      uri: item && item.images && item.images[0],
-                    }}
-                  />
-                  <View style={styles.rentalDetailsText}>
-                    {item && (
-                      <RegularText typography="B2">{item.itemTitle}</RegularText>
-                    )}
-                  </View>
-                </View>
-              </View>
-            </View>
+            <ReviewsCard review={review} preRenderedItem={item} revieweeIsLender={revieweeIsLenderBoolean}/>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -118,7 +79,7 @@ const rateUser = () => {
   );
 };
 
-export default rateUser;
+export default viewRating;
 
 const styles = StyleSheet.create({
   container: {
