@@ -370,7 +370,7 @@ const ConfirmationModal = ({
           </Modal>
         </View>
       )}
-      {/* Confirmation modal for updating rental status */}
+      {/* Confirmation modal for updating rental status as ONGOING */}
       {type === "Update" && (
         <View style={[styles.centeredView]}>
           <Modal visible={isVisible} animationType="slide" transparent={false}>
@@ -391,6 +391,44 @@ const ConfirmationModal = ({
                       onPress={onConfirm}
                     >
                       Update
+                    </PrimaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onClose}
+                    >
+                      Cancel
+                    </SecondaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      {/* Confirmation modal for completing rental status */}
+      {type === "Complete" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  Complete rental? This action cannot be reversed.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onConfirm}
+                    >
+                      Complete
                     </PrimaryButton>
                   </View>
                   <View style={styles.buttonContainer}>
