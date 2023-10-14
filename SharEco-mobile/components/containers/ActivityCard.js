@@ -178,19 +178,25 @@ const ActivityCard = ({ rental, type }) => {
             : styles.cardHeaderUsernameOnly,
         ]}
       >
-        <View style={styles.username}>
-          {user && (
-            <UserAvatar
-              size="xsmall"
-              source={{
-                uri: `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`,
-              }}
-            />
-          )}
-          {user && (
-            <RegularText typography="Subtitle">@{user.username}</RegularText>
-          )}
-        </View>
+        <Pressable 
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1,
+          })}
+          onPress={() => router.push({pathname: "home/othersProfile", params: { userId: user.userId }})}>
+          <View style={styles.username}>
+            {user && (
+              <UserAvatar
+                size="xsmall"
+                source={{
+                  uri: `${AWS_GETFILE_URL}${user.userPhotoUrl}.jpeg`,
+                }}
+              />
+            )}
+            {user && (
+              <RegularText typography="Subtitle">@{user.username}</RegularText>
+            )}
+          </View>
+        </Pressable>
 
         {rental.status === "UPCOMING" && (
           <View>
@@ -457,10 +463,44 @@ const ActivityCard = ({ rental, type }) => {
         )}
 
         {rental.status === "COMPLETED" && (
-          <View style={styles.buttonContainer}>
-            <PrimaryButton typography="B3" color={white}>
-              Rate
-            </PrimaryButton>
+          <View style={styles.buttons}>
+            <View style={styles.buttonContainer}>
+              <PrimaryButton typography="B3" color={white} 
+                onPress={() => {
+                  var revieweeIsLender = false; 
+                  //if somebody is the renter ie is borrowing, the person being reviewed ie reviewee is therefore the lender
+                  if (type === "Borrowing") {
+                    revieweeIsLender = true;
+                  } else if (type === "Lending") {
+                    revieweeIsLender = false;
+                  }
+
+                  //check if there is already an existing review
+                  if (revieweeIsLender) {
+                    if (rental.reviewIdByBorrower != null) {
+                      //break
+                    } else {
+                      router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}});
+                    }
+                  } else {
+                    if (rental.reviewIdByLender != null) {
+                      //break
+                    } else {
+                      router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}});
+                    }
+                  }
+                }}
+              >
+                Rate
+              </PrimaryButton>
+            </View>
+            {item.checklistCriteria && (
+            <View style={styles.buttonContainer}>
+              <PrimaryButton typography="B3" color={white} onPress={() => router.push({pathname: "activity/reviewChecklist", params: {rentalId : rental.rentalId}})}>
+                Checklist
+              </PrimaryButton>
+            </View>
+            )}
           </View>
         )}
 
