@@ -577,10 +577,6 @@ const Content = ({ activeTab }) => {
                         rental={rental}
                         type={"Borrowing"}
                       />
-                      {/* DEKAI REFACTOR THIS */}
-                      <Pressable onPress={() => router.push({pathname: "activity/submitChecklist", params: { rentalId: rental.rentalId, checklistFormType: "Start Rental" }})}>
-                        <RegularText>Press me to see start rental checklist</RegularText>
-                      </Pressable>
                     </>
                   ))
                 ) : (
@@ -611,16 +607,11 @@ const Content = ({ activeTab }) => {
                         rental={rental}
                         type={"Borrowing"}
                       />
-                      {/* DEKAI REFACTOR THIS */}
-                      <Pressable onPress={() => router.push({pathname: "activity/submitChecklist", params: { rentalId: rental.rentalId, checklistFormType: "End Rental" }})}>
-                        <RegularText>Press me to see end rental checklist</RegularText>
-                      </Pressable>
                     </>
                   ))
                 ) : (
                   <NoRental rentalStatus={activeBorrowingPill} />
                 )}
-                
               </ScrollView>
             </View>
           )}

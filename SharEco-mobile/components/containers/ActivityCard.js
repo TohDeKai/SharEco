@@ -41,8 +41,6 @@ const ActivityCard = ({ rental, type }) => {
   const [item, setItem] = useState({});
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
 
   const { getUserData } = useAuth();
 
@@ -59,18 +57,24 @@ const ActivityCard = ({ rental, type }) => {
     setShowCancelModal(false);
   };
 
-  const handleShowUpdateModal = () => {
-    setShowUpdateModal(true);
-  };
-  const handleCloseUpdateModal = () => {
-    setShowUpdateModal(false);
+  const handleStart = () => {
+    router.push({
+      pathname: "activity/submitChecklist",
+      params: {
+        rentalId: rental.rentalId,
+        checklistFormType: "Start Rental",
+      },
+    });
   };
 
-  const handleShowCompleteModal = () => {
-    setShowCompleteModal(true);
-  };
-  const handleCloseCompleteModal = () => {
-    setShowCompleteModal(false);
+  const handleReturn = () => {
+    router.push({
+      pathname: "activity/submitChecklist",
+      params: {
+        rentalId: rental.rentalId,
+        checklistFormType: "End Rental",
+      },
+    });
   };
 
   useEffect(() => {
@@ -461,21 +465,11 @@ const ActivityCard = ({ rental, type }) => {
                 <PrimaryButton
                   typography="B3"
                   color={white}
-                  onPress={handleShowUpdateModal}
+                  onPress={handleStart}
                 >
                   Update
                 </PrimaryButton>
               </View>
-            )}
-            {showUpdateModal && (
-              <ConfirmationModal
-                isVisible={showUpdateModal}
-                onConfirm={() => handleStatus("Update", rental.rentalId)}
-                onClose={handleCloseUpdateModal}
-                style={{ flex: 0 }}
-                type="Update"
-                rental={rental}
-              />
             )}
             {showCancelModal && (
               <ConfirmationModal
@@ -519,22 +513,11 @@ const ActivityCard = ({ rental, type }) => {
                 <PrimaryButton
                   typography="B3"
                   color={white}
-                  onPress={handleShowCompleteModal}
+                  onPress={handleReturn}
                 >
                   Return
                 </PrimaryButton>
               </View>
-            )}
-            {/* Popup modal to confirm if user wants to complete rental */}
-            {handleShowCompleteModal && (
-              <ConfirmationModal
-                isVisible={showCompleteModal}
-                onConfirm={() => handleStatus("Complete", rental.rentalId)}
-                onClose={handleCloseCompleteModal}
-                style={{ flex: 0 }}
-                type="Complete"
-                rental={rental}
-              />
             )}
           </View>
         )}
