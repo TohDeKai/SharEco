@@ -247,10 +247,10 @@ const NoReviews = ({ activePill }) => {
 };
 
 const Content = ({ navigation, activeTab }) => {
-  const [userItems, setUserItems] = useState();
-  const [userReviews, setUserReviews] = useState();
-  const [userReviewsByLender, setUserReviewsByLender] = useState();
-  const [userReviewsByBorrower, setUserReviewsByBorrower] = useState();
+  const [userItems, setUserItems] = useState([]);
+  const [userReviews, setUserReviews] = useState([]);
+  const userReviewsByLender = [];
+  const userReviewsByBorrower = [];
 
   const [refreshing, setRefreshing] = useState(false);
   const { getUserData } = useAuth();
@@ -288,21 +288,6 @@ const Content = ({ navigation, activeTab }) => {
           const { items, reviews } = data;
           setUserItems(items);     
           setUserReviews(reviews);
-
-          const reviewsByLender = [];
-          const reviewsByBorrower = [];
-          reviews.forEach((review) => {
-            console.log(typeof review.revieweeIsLender);
-            console.log(review.revieweeIsLender);
-
-            if (!review.revieweeIsLender) {
-              reviewsByLender.push(review);
-            } else {
-              reviewsByBorrower.push(review);
-            }
-          });
-          setUserReviewsByLender(reviewsByLender);
-          setUserReviewsByBorrower(reviewsByBorrower);
         }
       }
     } catch (error) {
@@ -314,6 +299,14 @@ const Content = ({ navigation, activeTab }) => {
   useEffect(() => {
     handleRefresh();
   }, []);
+
+  for (const review of userReviews) {
+    if (!review.revieweeIsLender) {
+      userReviewsByLender.push(review);
+    } else {
+      userReviewsByBorrower.push(review);
+    }
+  }
 
   const [activePill, setActivePill] = useState("All");
   const pill = ["All", "By Lender", "By Borrower"];
