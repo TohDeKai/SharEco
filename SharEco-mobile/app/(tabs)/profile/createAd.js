@@ -45,7 +45,7 @@ const viewportHeightInPixels = (percentage) => {
 
 const createAd = () => {
   const [message, setMessage] = useState("");
-  const [isSuccessMessage, setIsSuccessMessage] = useState("false");
+  const [isSuccessMessage, setIsSuccessMessage] = useState("true");
   const [image, setImage] = useState(null);
   const [imageResult, setImageResult] = useState(null);
 //   const [userId, setUser] = useState("");
@@ -89,7 +89,7 @@ const userId = 87;
       );
       console.log(response.data);
       if (response.status === 201) {
-        router.back();
+        router.push("profile");
       }
     } catch (error) {
       console.log(error.message);
@@ -101,7 +101,7 @@ const userId = 87;
       <Header
         title="Create Advertisement"
         action="close"
-        onPress={handleBack()}
+        onPress={handleBack}
       />
       <View style={styles.container}>
         <Formik
