@@ -433,8 +433,8 @@ const Content = ({ navigation, activeTab }) => {
             </ScrollView>
           </View>
         )}
-
       </View>
+      
       )}
     </View>
   );

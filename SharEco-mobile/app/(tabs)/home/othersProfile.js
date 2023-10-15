@@ -18,6 +18,7 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
 import ListingCard from "../../../components/ListingCard";
+import ReviewsCard from "../../../components/containers/ReviewsCard";
 import axios from "axios";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -181,87 +182,126 @@ const Tabs = ({ activeTab, handleTabPress }) => {
   );
 };
 
+const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
+  return (
+    <View style={styles.pillContainer}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {pillItems.map((pill) => (
+          <Pressable
+            key={pill}
+            onPress={() => handlePillPress(pill)}
+            style={({ pressed }) => [
+              { opacity: pressed ? 0.5 : 1 },
+              styles.pill,
+              activeLendingPill === pill && styles.activePill,
+            ]}
+          >
+            <RegularText
+              typography="B1"
+              color={activeLendingPill === pill ? primary : dark}
+            >
+              {pill}
+            </RegularText>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
+
+const NoReviews = ({ activePill }) => {
+  let message;
+  switch (activePill) {
+    case "All":
+      message = "No reviews at the moment! Make a rental as lender or borrower to review user!";
+      break;
+    case "By Lender":
+      message = "No reviews at the moment! Rent something from user first to review user!";
+      break;
+    case "By Borrower":
+      message = "No reviews at the moment! Lend something to user first to review user!";
+      break;
+  }
+
+  return (
+    <View style={{ marginTop: 100, paddingHorizontal: 30 }}>
+      <RegularText
+        typography="H3"
+        style={{ marginBottom: 5, textAlign: "center" }}
+      >
+        {message}
+      </RegularText>
+    </View>
+  );
+};
+
 const Content = ({ navigation, activeTab }) => {
   const params = useLocalSearchParams();
   const { userId } = params;
-  const [userItems, setUserItems] = useState();
+  const [userItems, setUserItems] = useState([]);
+  const [userReviews, setUserReviews] = useState([]);
+  const userReviewsByLender = [];
+  const userReviewsByBorrower = [];
+
   const [refreshing, setRefreshing] = useState(false);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-
+  const fetchData = async (userId) => {
     try {
-      const userResponse = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/users/userId/${userId}`
-      );
-
-      if (userResponse.status === 200) {
-        const userData = userResponse.data.data.user;
-        const userId = userData.userId;
-        
-        try {
-          const response = await axios.get(
-            `http://${BASE_URL}:4000/api/v1/items/${userId}`
-          );
-          console.log(response.status);
-          if (response.status === 200) {
-            const items = response.data.data.items;
-            const sortByNewest = items.reverse();
-            setUserItems(sortByNewest);
-          } else {
-            // Handle the error condition appropriately
-            console.log("Failed to retrieve user's items");
-          }
-        } catch (error) {
-          // Handle the axios request error appropriately
-          console.log("Error:", error);
+      const itemResponse = await axios.get(`http://${BASE_URL}:4000/api/v1/items/${userId}`);
+      const reviewResponse = await axios.get(`http://${BASE_URL}:4000/api/v1/reviews/revieweeId/${userId}`);
+  
+      if (itemResponse.status === 200) {
+        const items = itemResponse.data.data.items.reverse();
+        if (reviewResponse.status === 200) {
+          const reviews = reviewResponse.data.data.reviews.reverse();
+          return { items, reviews };
+        } else if (reviewResponse.status === 404) {
+          return { items, reviews: [] }; // Return empty array if there are no reviews
         }
       }
     } catch (error) {
-      // Handle the getUserData error appropriately
+      console.log(error);
+    }
+  
+    return null;
+  };
+  
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const data = await fetchData(userId);
+
+      if (data) {
+        const { items, reviews } = data;
+        setUserItems(items);     
+        setUserReviews(reviews);
+      }
+    } catch (error) {
       console.log(error.message);
     }
-
-    // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
   };
-
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const userResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/users/userId/${userId}`
-        );
   
-        if (userResponse.status === 200) {
-          const userData = userResponse.data.data.user;
-          const userId = userData.userId;
-          
-          try {
-            const response = await axios.get(
-              `http://${BASE_URL}:4000/api/v1/items/${userId}`
-            );
-            console.log(response.status);
-            if (response.status === 200) {
-              const items = response.data.data.items;
-              const sortByNewest = items.reverse();
-              setUserItems(sortByNewest);
-            } else {
-              //Shouldn't come here
-              console.log("Failed to retrieve user's items");
-            }
-          } catch (error) {
-            console.log("Error");
-          }
-        }
-      } catch (error) {
-        console.log(error.message);
-      }
-    }
-    fetchUserData();
+  useEffect(() => {
+    handleRefresh();
   }, []);
 
-  
+  for (const review of userReviews) {
+    if (!review.revieweeIsLender) {
+      userReviewsByLender.push(review);
+    } else {
+      userReviewsByBorrower.push(review);
+    }
+  }
+
+  const [activePill, setActivePill] = useState("All");
+  const pill = ["All", "By Lender", "By Borrower"];
+
+  const handlePillPress = (pill) => {
+    activeTab == "Reviews" && setActivePill(pill);
+    console.log("Active pill: " + pill);
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {activeTab == "Listings" && (userItems ? userItems.length : 0) === 0 && (
@@ -277,27 +317,7 @@ const Content = ({ navigation, activeTab }) => {
           </RegularText>
         </View>
       )}
-      {activeTab == "Reviews" && (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Ionicons
-            name="construct"
-            color={primary}
-            size={30}
-            style={{ marginBottom: 20, alignItems: "center" }}
-          />
-          <RegularText
-            typography="B2"
-            style={{ marginBottom: 5, textAlign: "center" }}
-          >
-            We are still working on this,
-          </RegularText>
-          <RegularText typography="H3" style={{ textAlign: "center" }}>
-            hang on tight!
-          </RegularText>
-        </View>
-      )}
+      
       {activeTab == "Listings" && (
         <FlatList
           data={userItems}
@@ -309,6 +329,98 @@ const Content = ({ navigation, activeTab }) => {
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
         />
+      )}
+
+      {activeTab == "Reviews" && (
+        <View style={{ flex: 1 }}>
+        <Pills
+          pillItems={pill}
+          activeLendingPill={activePill}
+          handlePillPress={handlePillPress}
+        /> 
+
+        {activePill == "All" && (
+          <View style={{ alignItems: "center", flex: 1 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.activityCardContainer}
+              contentContainerStyle={{ flexGrow: 1 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
+            >
+              {userReviews && userReviews.length > 0 ? (
+                userReviews.map((review) => (
+                  <ReviewsCard
+                    review={review}
+                    showReviewerDetails={true}
+                  />
+                ))
+              ) : (
+                <NoReviews activePill={activePill}/>
+              )}
+            </ScrollView>
+          </View>
+        )}
+
+        {activePill == "By Lender" && (
+          <View style={{ alignItems: "center", flex: 1 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.activityCardContainer}
+              contentContainerStyle={{ flexGrow: 1 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
+            >
+              {userReviewsByLender && userReviewsByLender.length > 0 ? (
+                userReviewsByLender.map((review) => (
+                  <ReviewsCard
+                    review={review}
+                    showReviewerDetails={true}
+                  />
+                ))
+              ) : (
+                <NoReviews activePill={activePill}/>
+              )}
+            </ScrollView>
+          </View>
+        )}
+
+        {activePill == "By Borrower" && (
+          <View style={{ alignItems: "center", flex: 1 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.activityCardContainer}
+              contentContainerStyle={{ flexGrow: 1 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
+            >
+              {userReviewsByBorrower && userReviewsByBorrower.length > 0 ? (
+                userReviewsByBorrower.map((review) => (
+                  <ReviewsCard
+                    review={review}
+                    showReviewerDetails={true}
+                  />
+                ))
+              ) : (
+                <NoReviews activePill={activePill}/>
+              )}
+            </ScrollView>
+          </View>
+        )}
+        </View>
+
       )}
     </View>
   );
@@ -418,5 +530,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     marginTop: "20%",
+  },
+  pillContainer: {
+    paddingTop: 18,
+    paddingBottom: 25,
+  },
+  pill: {
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: inputbackground,
+    marginLeft: 13,
+  },
+  activePill: {
+    backgroundColor: white,
+    borderColor: primary,
+    borderWidth: 1,
+  },
+  activityCardContainer: {
+    width: Dimensions.get("window").width - 46,
   },
 });
