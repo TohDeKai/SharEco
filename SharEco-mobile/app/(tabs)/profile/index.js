@@ -40,8 +40,7 @@ const ProfileHeader = () => {
   const [profileUri, setProfileUri] = useState();
   const { getUserData } = useAuth();
   const [business, setBusiness] = useState({});
-  const [averageRating, setAverageRating] = useState(0);
-  const [numberOfRatings, setNumberOfRatings] = useState(0);
+  const [ratings, setRatings] = useState({});
 
   useEffect(() => {
     async function fetchUserData() {
@@ -57,8 +56,7 @@ const ProfileHeader = () => {
             `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
           )
           if (ratingsResponse.status === 200) {
-            setAverageRating(ratingsResponse.data.data.averageRating);
-            setNumberOfRatings(ratingsResponse.data.data.numberOfRatings);
+            setRatings(ratingsResponse.data.data);
           }
         }
       } catch (error) {
@@ -154,9 +152,9 @@ const ProfileHeader = () => {
         )}
       </View>
       <View style={styles.ratingsContainer}>
-        <RegularText typography="B1">{averageRating}</RegularText>
-        <Rating stars={averageRating} size={20} color={yellow} />
-        <RegularText typography="B1">({numberOfRatings})</RegularText>
+        <RegularText typography="B1">{ratings.averageRating}</RegularText>
+        <Rating stars={ratings.starsToDisplay} size={20} color={yellow} />
+        <RegularText typography="B1">({ratings.numberOfRatings})</RegularText>
       </View>
     </View>
   );

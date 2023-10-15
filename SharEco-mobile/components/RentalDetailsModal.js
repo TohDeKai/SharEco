@@ -34,6 +34,9 @@ const RentalDetailsModal = ({
 }) => {
   const [lender, setLender] = useState({});
   const [borrower, setBorrower] = useState({});
+  const [lenderRatings, setLenderRatings] = useState({});
+  const [borrowerRatings, setBorrowerRatings] = useState({});
+
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -43,6 +46,13 @@ const RentalDetailsModal = ({
         if (userResponse.status === 200) {
           const userData = userResponse.data.data.user;
           setLender(userData);
+
+          const ratingsResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
+          )
+          if (ratingsResponse.status === 200) {
+            setLenderRatings(ratingsResponse.data.data);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -54,6 +64,13 @@ const RentalDetailsModal = ({
         if (userResponse.status === 200) {
           const userData = userResponse.data.data.user;
           setBorrower(userData);
+
+          const ratingsResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
+          )
+          if (ratingsResponse.status === 200) {
+            setBorrowerRatings(ratingsResponse.data.data);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -156,9 +173,9 @@ const RentalDetailsModal = ({
                       </RegularText>
                     </RegularText>
                     <View style={styles.ratingsContainer}>
-                      <RegularText typography="Subtitle">0.0</RegularText>
-                      <Rating stars={0} size={18} color={yellow} />
-                      <RegularText typography="Subtitle">(0)</RegularText>
+                      <RegularText typography="Subtitle">{borrowerRatings.averageRating}</RegularText>
+                      <Rating stars={borrowerRatings.starsToDisplay} size={18} color={yellow} />
+                      <RegularText typography="Subtitle">({borrowerRatings.numberOfRatings})</RegularText>
                     </View>
                   </View>
                 </View>
@@ -196,9 +213,9 @@ const RentalDetailsModal = ({
                       </RegularText>
                     </RegularText>
                     <View style={styles.ratingsContainer}>
-                      <RegularText typography="Subtitle">0.0</RegularText>
-                      <Rating stars={0} size={18} color={yellow} />
-                      <RegularText typography="Subtitle">(0)</RegularText>
+                      <RegularText typography="Subtitle">{lenderRatings.averageRating}</RegularText>
+                      <Rating stars={lenderRatings.starsToDisplay} size={18} color={yellow} />
+                      <RegularText typography="Subtitle">({lenderRatings.numberOfRatings})</RegularText>
                     </View>
                   </View>
                 </View>

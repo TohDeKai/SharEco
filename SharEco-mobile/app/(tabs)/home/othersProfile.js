@@ -38,6 +38,7 @@ const ProfileHeader = () => {
   const { userId } = params;
   const [user, setUser] = useState("");
   const [profileUri, setProfileUri] = useState();
+  const [ratings, setRatings] = useState({});
   const [business, setBusiness] = useState({});
 
   useEffect(() => {
@@ -53,6 +54,13 @@ const ProfileHeader = () => {
           setProfileUri(
             `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${userData.userPhotoUrl}.jpeg`
           );
+
+          const ratingsResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
+          )
+          if (ratingsResponse.status === 200) {
+            setRatings(ratingsResponse.data.data);
+          }
         } else {
           console.log("Failed to retrieve user");
         }
@@ -133,9 +141,9 @@ const ProfileHeader = () => {
         )}
       </View>
       <View style={styles.ratingsContainer}>
-        <RegularText typography="B1">0.0</RegularText>
-        <Rating stars={0} size={20} color={yellow} />
-        <RegularText typography="B1">(0)</RegularText>
+        <RegularText typography="B1">{ratings.averageRating}</RegularText>
+        <Rating stars={ratings.starsToDisplay} size={20} color={yellow} />
+        <RegularText typography="B1">({ratings.numberOfRatings})</RegularText>
       </View>
     </View>
   );

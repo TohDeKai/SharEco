@@ -1645,12 +1645,13 @@ app.get("/api/v1/ratings/userId/:userId", async (req, res) => {
         status: "success",
         data: {
           averageRating: averageRating.toFixed(1), //formats to 1dp
+          starsToDisplay: Math.round(averageRating), //rounds to nearest whole star (eg 4.4 round to 4, 4.5 round to 5)
           numberOfRatings: numberOfRatings,
         },
       });
     } else {
-      // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Cannot calculate rating" });
+      // Handle the case where the user has no ratings
+      return { averageRating: 0, starsToDisplay: 0, numberOfRatings: 0 };
     }
   } catch (err) {
     // Handle the error here if needed

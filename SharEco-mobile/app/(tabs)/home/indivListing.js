@@ -46,9 +46,11 @@ const viewportWidthInPixels = (percentage) => {
 const ItemInformation = () => {
   const [listingItem, setListingItem] = useState({});
   const [user, setUser] = useState("");
+  const [ratings, setRatings] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
   const { itemId } = params;
+
   const handleBack = () => {
     router.back();
   };
@@ -71,8 +73,15 @@ const ItemInformation = () => {
           );
   
           if (userResponse.status === 200) {
-            const user = userResponse.data.data.user;
-            setUser(user);
+            const userData = userResponse.data.data.user;
+            setUser(userData);
+
+            const ratingsResponse = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
+            )
+            if (ratingsResponse.status === 200) {
+              setRatings(ratingsResponse.data.data);
+            }
           } else {
             console.log("Failed to retrieve user");
           }
@@ -103,8 +112,15 @@ const ItemInformation = () => {
           );
   
           if (userResponse.status === 200) {
-            const user = userResponse.data.data.user;
-            setUser(user);
+            const userData = userResponse.data.data.user;
+            setUser(userData);
+
+            const ratingsResponse = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
+            )
+            if (ratingsResponse.status === 200) {
+              setRatings(ratingsResponse.data.data);
+            }
           } else {
             console.log("Failed to retrieve user");
           }
@@ -237,9 +253,9 @@ const ItemInformation = () => {
                     @{user.username}
                   </RegularText>
                   <View style={style.ratingsContainer}>
-                    <RegularText typography="Subtitle">0.0</RegularText>
-                    <Rating stars={0} size={18} color={yellow} />
-                    <RegularText typography="Subtitle">(0)</RegularText>
+                    <RegularText typography="Subtitle">{ratings.averageRating}</RegularText>
+                    <Rating stars={ratings.starsToDisplay} size={18} color={yellow} />
+                    <RegularText typography="Subtitle">({ratings.numberOfRatings})</RegularText>
                   </View>
                 </View>
               </View>

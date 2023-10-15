@@ -110,7 +110,8 @@ const getRatingByUserId = async (userId) => {
       [userId]
     );
 
-    if (result.rowCount === 0) {
+    //THIS DOESNT WORK FOR SOME REASON
+    if (!result || result.rows.length === 0) {
       // Handle the case when there are no reviews
       return { averageRating: 0, numberOfRatings: 0 };
     }
