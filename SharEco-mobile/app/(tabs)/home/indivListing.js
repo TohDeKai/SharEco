@@ -253,9 +253,9 @@ const ItemInformation = () => {
                     @{user.username}
                   </RegularText>
                   <View style={style.ratingsContainer}>
-                    <RegularText typography="Subtitle">{ratings.averageRating}</RegularText>
-                    <Rating stars={ratings.starsToDisplay} size={18} color={yellow} />
-                    <RegularText typography="Subtitle">({ratings.numberOfRatings})</RegularText>
+                    <RegularText typography="Subtitle">{ratings.averageRating || 0}</RegularText>
+                    <Rating stars={ratings.starsToDisplay || 0} size={18} color={yellow} />
+                    <RegularText typography="Subtitle">({ratings.numberOfRatings || 0})</RegularText>
                   </View>
                 </View>
               </View>

@@ -1651,7 +1651,7 @@ app.get("/api/v1/ratings/userId/:userId", async (req, res) => {
       });
     } else {
       // Handle the case where the user has no ratings
-      return { averageRating: 0, starsToDisplay: 0, numberOfRatings: 0 };
+      res.status(404).json({ error: "Cannot calculate rating" });
     }
   } catch (err) {
     // Handle the error here if needed

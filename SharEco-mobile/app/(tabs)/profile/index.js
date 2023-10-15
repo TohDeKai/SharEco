@@ -51,19 +51,28 @@ const ProfileHeader = () => {
           setProfileUri(
             `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`
           );
-
-          const ratingsResponse = await axios.get(
-            `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
-          )
-          if (ratingsResponse.status === 200) {
-            setRatings(ratingsResponse.data.data);
-          }
         }
       } catch (error) {
         console.log(error.message);
       }
     }
     fetchUserData();
+  }, [user.userId]);
+
+  useEffect(() => {
+    async function fetchRatingsData() {
+      try {
+        const ratingsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/ratings/userId/${user.userId}`
+        )
+        if (ratingsResponse.status === 200) {
+          setRatings(ratingsResponse.data.data);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchRatingsData();
   }, [user]);
 
   useEffect(() => {
