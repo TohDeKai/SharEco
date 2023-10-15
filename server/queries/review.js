@@ -87,6 +87,7 @@ const getReviewByReviewId = async (reviewId) => {
   }
 };
 
+//Get Reviews by RevieweeId
 const getReviewsByRevieweeId = async (revieweeId) => {
   try {
     const result = await pool.query(
@@ -100,10 +101,34 @@ const getReviewsByRevieweeId = async (revieweeId) => {
   }
 }
 
+//Gets star rating by userId
+const getRatingByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT "rating" FROM "sharEco-schema"."review" 
+        WHERE "revieweeId" = $1`,
+      [userId]
+    );
+
+    if (result.rowCount === 0) {
+      // Handle the case when there are no reviews
+      return { averageRating: 0, numberOfRatings: 0 };
+    }
+
+    const totalRating = result.rows.reduce((acc, review) => acc + review.rating, 0);
+    const averageRating = totalRating / result.rowCount; 
+    return { averageRating, numberOfRatings: result.rowCount};
+
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   createReview,
   deleteReview,
   getAllReviews,
   getReviewByReviewId,
   getReviewsByRevieweeId,
+  getRatingByUserId,
 };

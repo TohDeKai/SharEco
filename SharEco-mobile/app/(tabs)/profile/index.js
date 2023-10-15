@@ -40,6 +40,8 @@ const ProfileHeader = () => {
   const [profileUri, setProfileUri] = useState();
   const { getUserData } = useAuth();
   const [business, setBusiness] = useState({});
+  const [averageRating, setAverageRating] = useState(0);
+  const [numberOfRatings, setNumberOfRatings] = useState(0);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -50,6 +52,14 @@ const ProfileHeader = () => {
           setProfileUri(
             `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`
           );
+
+          const ratingsResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
+          )
+          if (ratingsResponse.status === 200) {
+            setAverageRating(ratingsResponse.data.data.averageRating);
+            setNumberOfRatings(ratingsResponse.data.data.numberOfRatings);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -144,9 +154,9 @@ const ProfileHeader = () => {
         )}
       </View>
       <View style={styles.ratingsContainer}>
-        <RegularText typography="B1">0.0</RegularText>
-        <Rating stars={0} size={20} color={yellow} />
-        <RegularText typography="B1">(0)</RegularText>
+        <RegularText typography="B1">{averageRating}</RegularText>
+        <Rating stars={averageRating} size={20} color={yellow} />
+        <RegularText typography="B1">({numberOfRatings})</RegularText>
       </View>
     </View>
   );
@@ -434,7 +444,7 @@ const Content = ({ navigation, activeTab }) => {
           </View>
         )}
       </View>
-      
+
       )}
     </View>
   );

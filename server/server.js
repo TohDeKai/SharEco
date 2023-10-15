@@ -1635,3 +1635,26 @@ app.delete("/api/v1/reviews/:reviewId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// Get average rating by userId
+app.get("/api/v1/ratings/userId/:userId", async (req, res) => {
+  try {
+    const { averageRating, numberOfRatings } = await reviewdb.getRatingByUserId(req.params.userId);
+    if (averageRating) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          averageRating: averageRating.toFixed(1), //formats to 1dp
+          numberOfRatings: numberOfRatings,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Cannot calculate rating" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
