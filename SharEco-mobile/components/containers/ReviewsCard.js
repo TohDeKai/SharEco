@@ -18,7 +18,7 @@ import { colours } from "../ColourPalette";
 const { white, yellow } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-const reviewsCard = ({review, preRenderedItem, revieweeIsLender}) => {
+const ReviewsCard = ({review, preRenderedItem}) => {
   const {rentalId} = review; 
   const [item, setItem] = useState({});
   const dateObject = new Date(review.reviewDate);
@@ -55,7 +55,7 @@ const reviewsCard = ({review, preRenderedItem, revieweeIsLender}) => {
     <View>
       <View style={styles.rowContainer}>
         <Rating stars={review.rating} size={15} color={yellow} />
-        <RegularText typography="Subtitle2">{revieweeIsLender ? "Review as borrower" : "Review as lender"}</RegularText>
+        <RegularText typography="Subtitle2">{review.revieweeIsLender ? "Review as borrower" : "Review as lender"}</RegularText>
         <RegularText typography="Subtitle2" style={{position: "absolute", right: 0}}>{formattedDate}</RegularText>
       </View>
       <RegularText typography="Subtitle">
@@ -85,7 +85,7 @@ const reviewsCard = ({review, preRenderedItem, revieweeIsLender}) => {
   )
 }
 
-export default reviewsCard;
+export default ReviewsCard;
 
 const styles = StyleSheet.create({
   rowContainer: {

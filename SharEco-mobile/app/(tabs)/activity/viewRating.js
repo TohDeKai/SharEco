@@ -71,7 +71,7 @@ const viewRating = () => {
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={{ width: "85%" }}>
-            <ReviewsCard review={review} preRenderedItem={item} revieweeIsLender={revieweeIsLenderBoolean}/>
+            <ReviewsCard review={review} preRenderedItem={item}/>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
