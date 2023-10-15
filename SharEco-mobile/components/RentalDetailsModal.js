@@ -173,9 +173,9 @@ const RentalDetailsModal = ({
                       </RegularText>
                     </RegularText>
                     <View style={styles.ratingsContainer}>
-                      <RegularText typography="Subtitle">{borrowerRatings.averageRating}</RegularText>
-                      <Rating stars={borrowerRatings.starsToDisplay} size={18} color={yellow} />
-                      <RegularText typography="Subtitle">({borrowerRatings.numberOfRatings})</RegularText>
+                      <RegularText typography="Subtitle">{borrowerRatings.averageRating || 0}</RegularText>
+                      <Rating stars={borrowerRatings.starsToDisplay || 0} size={18} color={yellow} />
+                      <RegularText typography="Subtitle">({borrowerRatings.numberOfRatings || 0})</RegularText>
                     </View>
                   </View>
                 </View>

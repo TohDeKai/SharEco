@@ -141,9 +141,9 @@ const ProfileHeader = () => {
         )}
       </View>
       <View style={styles.ratingsContainer}>
-        <RegularText typography="B1">{ratings.averageRating}</RegularText>
-        <Rating stars={ratings.starsToDisplay} size={20} color={yellow} />
-        <RegularText typography="B1">({ratings.numberOfRatings})</RegularText>
+        <RegularText typography="B1">{ratings.averageRating || 0}</RegularText>
+        <Rating stars={ratings.starsToDisplay || 0} size={20} color={yellow} />
+        <RegularText typography="B1">({ratings.numberOfRatings || 0})</RegularText>
       </View>
     </View>
   );
