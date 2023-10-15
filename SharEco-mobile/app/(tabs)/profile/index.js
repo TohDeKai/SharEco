@@ -377,6 +377,7 @@ const Content = ({ navigation, activeTab }) => {
                 userReviews.map((review) => (
                   <ReviewsCard
                     review={review}
+                    showReviewerDetails={true}
                   />
                 ))
               ) : (
@@ -403,6 +404,7 @@ const Content = ({ navigation, activeTab }) => {
                 userReviewsByLender.map((review) => (
                   <ReviewsCard
                     review={review}
+                    showReviewerDetails={true}
                   />
                 ))
               ) : (
@@ -429,6 +431,7 @@ const Content = ({ navigation, activeTab }) => {
                 userReviewsByBorrower.map((review) => (
                   <ReviewsCard
                     review={review}
+                    showReviewerDetails={true}
                   />
                 ))
               ) : (

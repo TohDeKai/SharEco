@@ -10,6 +10,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Rating } from 'react-native-stock-star-rating';
+import UserAvatar from "../UserAvatar";
 import axios from "axios";
 
 //components
@@ -17,10 +18,14 @@ import RegularText from "../text/RegularText";
 import { colours } from "../ColourPalette";
 const { white, yellow } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+const AWS_GETFILE_URL =
+  "https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/";
 
-const ReviewsCard = ({review, preRenderedItem}) => {
+const ReviewsCard = ({review, preRenderedItem, showReviewerDetails}) => {
   const {rentalId} = review; 
   const [item, setItem] = useState({});
+  const [reviewer, setReviewer] = useState({});
+
   const dateObject = new Date(review.reviewDate);
   const formattedDate = dateObject.toLocaleDateString();
 
@@ -40,6 +45,14 @@ const ReviewsCard = ({review, preRenderedItem}) => {
             const itemData = itemResponse.data.data.item;
             setItem(itemData);
           }
+
+          const reviewerResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${review.reviewerId}`
+          );
+          if (reviewerResponse.status === 200) {
+            const reviewerData = reviewerResponse.data.data.user;
+            setReviewer(reviewerData);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -53,6 +66,29 @@ const ReviewsCard = ({review, preRenderedItem}) => {
 
   return (
     <View>
+      {showReviewerDetails && (
+        <Pressable 
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.5 : 1,
+        })}
+        onPress={() => router.push({pathname: "home/othersProfile", params: { userId: reviewer.userId }})}>
+        
+        <View style={styles.username}>
+          {reviewer && (
+            <UserAvatar
+              size="xsmall"
+              source={{
+                uri: `${AWS_GETFILE_URL}${reviewer.userPhotoUrl}.jpeg`,
+              }}
+            />
+          )}
+          {reviewer && (
+            <RegularText typography="Subtitle">@{reviewer.username}</RegularText>
+          )}
+        </View>
+      </Pressable>
+      )}
+      
       <View style={styles.rowContainer}>
         <Rating stars={review.rating} size={15} color={yellow} />
         <RegularText typography="Subtitle2">{review.revieweeIsLender ? "Review as borrower" : "Review as lender"}</RegularText>
@@ -119,5 +155,10 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     width: 200,
     gap: 4,
+  },
+  username: {
+    gap: 7,
+    alignItems: "center",
+    flexDirection: "row",
   },
 });
