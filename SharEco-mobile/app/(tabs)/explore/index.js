@@ -1,129 +1,110 @@
-import { View, Text, SafeAreaView, StyleSheet, Button, Alert } from "react-native";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  Button,
+  Alert,
+  Pressable,
+  Dimensions
+} from "react-native";
 import React from "react";
-import { Ionicons } from "@expo/vector-icons";
-import { StripeProvider } from "@stripe/stripe-react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
-import { useStripe } from "@stripe/stripe-react-native";
+import { router } from "expo-router";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
-const { white, primary } = colours;
+import Header from "../../../components/Header";
+const { white, primary, secondary } = colours;
+const viewportHeightInPixels = (percentage) => {
+  const screenHeight = Dimensions.get("window").height;
+  return (percentage / 100) * screenHeight;
+};
 
+const viewportWidthInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").width;
+  return (percentage / 100) * screenWidth;
+};
 
 const explore = () => {
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const [loading, setLoading] = useState(false);
-
-  const fetchPaymentSheetParams = async () => {
-    const response = await fetch(`http://${BASE_URL}:4000/api/v1/payment-sheet`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const { paymentIntent, ephemeralKey, customer } = await response.json();
-
-    return {
-      paymentIntent,
-      ephemeralKey,
-      customer,
-    };
+  const handleBack = () => {
+    router.back();
   };
 
-  const initializePaymentSheet = async () => {
-    const { paymentIntent, ephemeralKey, customer, publishableKey } =
-      await fetchPaymentSheetParams();
+  const toTopUp =() =>{
+    console.log("top up button being pressed")
+    router.push("explore/CheckoutScreen");
+  }
 
-    const { error } = await initPaymentSheet({
-      merchantDisplayName: "Example, Inc.",
-      customerId: customer,
-      customerEphemeralKeySecret: ephemeralKey,
-      paymentIntentClientSecret: paymentIntent,
-      // Set `allowsDelayedPaymentMethods` to true if your business can handle payment
-      //methods that complete payment after a delay, like SEPA Debit and Sofort.
-      allowsDelayedPaymentMethods: false,
-      defaultBillingDetails: {
-        name: "Jane Doe",
-      },
-    });
-    if (!error) {
-      setLoading(true);
-    }
-  };
-
-  const openPaymentSheet = async () => {
-    const { error } = await presentPaymentSheet();
-
-    if (error) {
-      Alert.alert(`Error code: ${error.code}`, error.message);
-    } else {
-      Alert.alert("Success", "Your order is confirmed!");
-    }
-  };
-
-  useEffect(() => {
-    initializePaymentSheet();
-  }, []);
   return (
-    <StripeProvider
-      publishableKey="pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH"      
-    >
-      <SafeAreaContainer>
-      <Button
-        variant="primary"
-        disabled={!loading}
-        title="Checkout"
-        onPress={openPaymentSheet}
-      />
-        {/* <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: white,
-            marginHorizontal: "10%",
-          }}
-        >
-          <Ionicons
-            name="construct"
-            color={primary}
-            size={30}
-            style={{ marginBottom: 20 }}
-          />
-
-          <RegularText
-            typography="H1"
-            style={{
-              textAlign: "center",
-            }}
-          >
-            We are still working
-          </RegularText>
-          <RegularText
-            typography="H1"
-            style={{
-              textAlign: "center",
-              marginBottom: 20,
-            }}
-          >
-            on this feature
-          </RegularText>
-
-          <RegularText
-            typography="B2"
-            color=""
-            style={{
-              textAlign: "center",
-            }}
-          >
-            Stay tuned for updates on this feature!
-          </RegularText>
-        </View> */}
-      </SafeAreaContainer>
-    </StripeProvider>
+    <SafeAreaContainer>
+      <Header title="EcoWallet" action="back" onPress={handleBack} />
+      <View style={styles.greenHeader}>
+        <RegularText typography="B2" color={white}>
+          Balance Amount
+        </RegularText>
+        <RegularText typography="EcoWallet" color={white}>
+          $100 {/*ecowallet amount*/}
+        </RegularText>
+        <View style={styles.buttonContainer}>
+          <Pressable>
+            <Ionicons name="send" size={24} color={secondary} style={{alignSelf: "center",}} />
+            <RegularText typography="B2" color={secondary}>
+              Transfer
+            </RegularText>
+          </Pressable>
+          <Pressable onPress={toTopUp} style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1,
+          })}>
+            <Ionicons name="add-circle" size={24} color={secondary} style={{alignSelf: "center",}}/>
+            <RegularText typography="B2" color={secondary}>
+              Top-Up
+            </RegularText>
+          </Pressable>
+          <Pressable>
+          <MaterialCommunityIcons name="bank-outline" size={24} color={secondary} style={{alignSelf: "center",}}/>
+            <RegularText typography="B2" color={secondary}>
+              Withdraw
+            </RegularText>
+          </Pressable>
+        </View>
+      </View>
+    </SafeAreaContainer>
   );
 };
 
 export default explore;
+
+const styles = StyleSheet.create({
+  greenHeader: {
+    maxHeight:viewportHeightInPixels(20),
+    paddingVertical:viewportHeightInPixels(2.5),
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: secondary,
+  },
+  buttonContainer: {
+    borderRadius:15,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.25,
+    top:viewportHeightInPixels(3),
+    maxHeight:viewportHeightInPixels(10),
+    width: viewportWidthInPixels(75),
+    paddingHorizontal:viewportWidthInPixels(5),
+    paddingVertical:viewportHeightInPixels(0),
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: white,
+  },
+});

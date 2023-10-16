@@ -1,10 +1,18 @@
-import { View, Text, Screen, Button, Alert } from "react-native";
+import { View, Text, SafeAreaView, StyleSheet, Button, Alert } from "react-native";
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { StripeProvider } from "@stripe/stripe-react-native";
 import { useState, useEffect } from "react";
 import { useStripe } from "@stripe/stripe-react-native";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-export default function CheckoutScreen() {
+import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
+import RegularText from "../../../components/text/RegularText";
+import { colours } from "../../../components/ColourPalette";
+const { white, primary } = colours;
+
+
+const CheckoutScreen = () => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
 
@@ -58,15 +66,64 @@ export default function CheckoutScreen() {
   useEffect(() => {
     initializePaymentSheet();
   }, []);
-
   return (
-    <Screen>
+    <StripeProvider
+      publishableKey="pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH"      
+    >
+      <SafeAreaContainer>
       <Button
         variant="primary"
         disabled={!loading}
         title="Checkout"
         onPress={openPaymentSheet}
       />
-    </Screen>
+        {/* <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: white,
+            marginHorizontal: "10%",
+          }}
+        >
+          <Ionicons
+            name="construct"
+            color={primary}
+            size={30}
+            style={{ marginBottom: 20 }}
+          />
+
+          <RegularText
+            typography="H1"
+            style={{
+              textAlign: "center",
+            }}
+          >
+            We are still working
+          </RegularText>
+          <RegularText
+            typography="H1"
+            style={{
+              textAlign: "center",
+              marginBottom: 20,
+            }}
+          >
+            on this feature
+          </RegularText>
+
+          <RegularText
+            typography="B2"
+            color=""
+            style={{
+              textAlign: "center",
+            }}
+          >
+            Stay tuned for updates on this feature!
+          </RegularText>
+        </View> */}
+      </SafeAreaContainer>
+    </StripeProvider>
   );
-}
+};
+
+export default CheckoutScreen;
