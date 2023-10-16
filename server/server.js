@@ -19,6 +19,9 @@ const axios = require("axios");
 
 const multer = require("multer");
 const fs = require("fs");
+const stripe = require("stripe")(
+  "sk_test_51O18L3H2N8GaqjXUCdY2UTSePPVKWxSltauacIasCcfiHk22yXCzMxv4YrMO3qO8idVDHyVSLwGysdV7OCjRnSpz006623c5ON"
+);
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -1427,65 +1430,67 @@ app.post("/api/v1/spotlight", async (req, res) => {
   }
 });
 
-app.put("/api/v1/rental/rentalId/:rentalId/handoverChecklist", async (req, res) => {
-  console.log("Request recieved for submit handover checklist");
-  const rentalId = req.params.rentalId;
-  const {
-    checklistFormType,
-    checklist,
-    existingDamages,
-    newDamages,
-    images,
-  } = req.body;
+app.put(
+  "/api/v1/rental/rentalId/:rentalId/handoverChecklist",
+  async (req, res) => {
+    console.log("Request recieved for submit handover checklist");
+    const rentalId = req.params.rentalId;
+    const {
+      checklistFormType,
+      checklist,
+      existingDamages,
+      newDamages,
+      images,
+    } = req.body;
 
-  
-  try {
-    if (checklistFormType == "Start Rental") {
-      //add checklist to startRentalCheckList, add existingDamages to startRentalDamages, add images to startRentalImages
-      const rental = await rentaldb.submitStartRentalChecklist(
-        rentalId,
-        checklist,
-        existingDamages,
-        images
-      );
-  
-      if (rental) {
-        res.status(200).json({
-          status: "success",
-          data: {
-            rental: rental,
-          },
-        });
-      } else {
-        // Handle the case where the rental request is not found
-        res.status(404).json({ error: "Rental Request not found" });
+    try {
+      if (checklistFormType == "Start Rental") {
+        //add checklist to startRentalCheckList, add existingDamages to startRentalDamages, add images to startRentalImages
+        const rental = await rentaldb.submitStartRentalChecklist(
+          rentalId,
+          checklist,
+          existingDamages,
+          images
+        );
+
+        if (rental) {
+          res.status(200).json({
+            status: "success",
+            data: {
+              rental: rental,
+            },
+          });
+        } else {
+          // Handle the case where the rental request is not found
+          res.status(404).json({ error: "Rental Request not found" });
+        }
+      } else if (checklistFormType == "End Rental") {
+        //add checklist to endRentalCheckList, add newDamages to endRentalDamages, add images to endRentalImages
+        const rental = await rentaldb.submitEndRentalChecklist(
+          rentalId,
+          checklist,
+          newDamages,
+          images
+        );
+
+        if (rental) {
+          res.status(200).json({
+            status: "success",
+            data: {
+              rental: rental,
+            },
+          });
+        } else {
+          // Handle the case where the rental request is not found
+          res.status(404).json({ error: "Rental Request not found" });
+        }
       }
-    } else if (checklistFormType == "End Rental") {
-      //add checklist to endRentalCheckList, add newDamages to endRentalDamages, add images to endRentalImages
-      const rental = await rentaldb.submitEndRentalChecklist(
-        rentalId,
-        checklist,
-        newDamages,
-        images,
-      );
-  
-      if (rental) {
-        res.status(200).json({
-          status: "success",
-          data: {
-            rental: rental,
-          },
-        });
-      } else {
-        // Handle the case where the rental request is not found
-        res.status(404).json({ error: "Rental Request not found" });
-      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
     }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Database error" });
   }
-});
+);
 
 // Update Rental Upon Being Reviewed By Lender
 app.patch(
@@ -1617,4 +1622,31 @@ app.delete("/api/v1/reviews/:reviewId", async (req, res) => {
     console.log(err);
     res.status(500).json({ error: "Database error" });
   }
+});
+
+//STRIPE TEST
+app.post("/api/v1/payment-sheet", async (req, res) => {
+  // Use an existing Customer ID if this is a returning customer.
+  const customer = await stripe.customers.create();
+  const ephemeralKey = await stripe.ephemeralKeys.create(
+    { customer: customer.id },
+    { apiVersion: "2023-08-16" }
+  );
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: 1099,
+    currency: "eur",
+    customer: customer.id,
+    // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  });
+
+  res.json({
+    paymentIntent: paymentIntent.client_secret,
+    ephemeralKey: ephemeralKey.secret,
+    customer: customer.id,
+    publishableKey:
+      "pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH",
+  });
 });
