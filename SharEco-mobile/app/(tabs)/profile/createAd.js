@@ -16,9 +16,9 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
 // AWS Amplify
-// import { Amplify, Storage } from "aws-amplify";
-// import awsconfig from "../../../src/aws-exports";
-// Amplify.configure(awsconfig);
+import { Amplify, Storage } from "aws-amplify";
+import awsconfig from "../../../src/aws-exports";
+Amplify.configure(awsconfig);
 
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -46,11 +46,11 @@ const viewportHeightInPixels = (percentage) => {
 const createAd = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("true");
-  const [image, setImage] = useState(null);
-  const [imageResult, setImageResult] = useState(null);
-//   const [userId, setUser] = useState("");
-//   const { getUserData } = useAuth();
-const userId = 87;
+  const [image, setImage] = useState();
+  const [imageResult, setImageResult] = useState();
+  //   const [userId, setUser] = useState("");
+  //   const { getUserData } = useAuth();
+  const userId = 87;
 
   const handleOpenGallery = () => {
     console.log("Opening gallery");
@@ -61,22 +61,63 @@ const userId = 87;
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [16, 9],
       quality: 1,
     });
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
       setImageResult(result);
+      console.log("Image has been set");
     }
+
+    console.log("Image set to: ", image);
+  };
+
+  // upload image
+  const fetchImageUri = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return blob;
+  };
+
+  const uploadImageFile = async (file) => {
+    const img = await fetchImageUri(file.uri);
+    return Storage.put(`userId-${user.userId}.jpeg`, img, {
+      level: "public",
+      contentType: file.type,
+      progressCallback(uploadProgress) {
+        console.log(
+          "PROGRESS--",
+          uploadProgress.loaded + "/" + uploadProgress.total
+        );
+      },
+    })
+      .then((res) => {
+        Storage.get(res.key)
+          .then((result) => {
+            let awsImageUri = result.substring(0, result.indexOf("?"));
+            console.log(awsImageUri);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 
   const handleBack = () => {
     router.back();
-  }
+  };
 
   const handleCreateAd = async (values) => {
     try {
+        // save image to S3
+      if (imageResult) {
+        uploadImageFile(imageResult);
+      }
       const reqData = {
         bizId: userId,
         image: image,
@@ -128,15 +169,37 @@ const userId = 87;
               <View style={styles.textMargin}>
                 <RegularText typography="H3">Ad Banner Image</RegularText>
               </View>
-              <Pressable
-                onPress={handleOpenGallery}
-                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-              >
-                <View style={styles.uploadContainer}>
-                  <Ionicons name="add" color={primary} size={20} />
-                  <RegularText typography="B2">Upload a photo</RegularText>
+              {image && (
+                <View>
+                  <View style={styles.uploadedImage}>
+                    <Image style={{ flex: 1 }} source={image} />
+                  </View>
+                  <Pressable
+                    onPress={handleOpenGallery}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                  >
+                    <View style={styles.reuploadContainer}>
+                      <Ionicons name="add" color={primary} size={20} />
+                      <RegularText typography="B1" color={primary}>
+                        Reupload an image
+                      </RegularText>
+                    </View>
+                  </Pressable>
                 </View>
-              </Pressable>
+              )}
+              {!image && (
+                <Pressable
+                  onPress={handleOpenGallery}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                >
+                  <View style={styles.uploadContainer}>
+                    <Ionicons name="add" color={primary} size={20} />
+                    <RegularText typography="B1" color={primary}>
+                      Upload a photo
+                    </RegularText>
+                  </View>
+                </Pressable>
+              )}
 
               <View style={styles.textMargin}>
                 <RegularText typography="H3">Description</RegularText>
@@ -156,7 +219,7 @@ const userId = 87;
                   <RegularText typography="H3">Bid Price</RegularText>
                 </View>
                 <View>
-                <StyledTextInput
+                  <StyledTextInput
                     value={values.bidPrice.toString()}
                     onChangeText={handleChange("bidPrice")}
                     placeholder="0.00"
@@ -191,12 +254,30 @@ const styles = StyleSheet.create({
   },
   textMargin: {
     marginTop: 25,
-    marginBottom: 15,
+  },
+  uploadedImage: {
+    width: viewportWidthInPixels(90),
+    height: viewportWidthInPixels(30),
+    marginTop: 15,
+  },
+  reuploadContainer: {
+    width: viewportWidthInPixels(90),
+    backgroundColor: inputbackground,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    height: 40,
+    marginTop: 15,
   },
   uploadContainer: {
     width: viewportWidthInPixels(90),
     backgroundColor: inputbackground,
     justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    height: 130,
+    marginTop: 15,
   },
   bidPrice: {
     marginTop: 25,
