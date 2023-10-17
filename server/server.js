@@ -1425,6 +1425,31 @@ app.post("/api/v1/createAd", async (req, res) => {
   }
 });
 
+//update item images only
+app.put("/api/v1/ad/adId/:adId/image", async (req, res) => {
+  try {
+    const adId = req.params.adId;
+    const image = req.body.image;
+
+    // Update the images associated with the item using the itemId and the new images array
+    const updatedImage = await advertisementdb.updateAdImage(adId, image);
+
+    if (updatedImage) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          image: updatedImage,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Ad not found or image update failed" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Edit ad
 app.put("/api/v1/editAd/adId/:adId", async (req, res) => {
   try {

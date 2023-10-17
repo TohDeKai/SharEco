@@ -81,31 +81,31 @@ const createAd = () => {
     return blob;
   };
 
-  const uploadImageFile = async (file) => {
-    const img = await fetchImageUri(file.uri);
-    return Storage.put(`userId-${user.userId}.jpeg`, img, {
-      level: "public",
-      contentType: file.type,
-      progressCallback(uploadProgress) {
-        console.log(
-          "PROGRESS--",
-          uploadProgress.loaded + "/" + uploadProgress.total
-        );
-      },
-    })
-      .then((res) => {
-        Storage.get(res.key)
-          .then((result) => {
-            let awsImageUri = result.substring(0, result.indexOf("?"));
-            console.log(awsImageUri);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      })
-      .catch((e) => {
-        console.log(e);
+  const uploadImageFile = async (file, adId) => {
+    try {
+      const img = await fetchImageUri(file.uri);
+  
+      // Upload the image with the unique key
+      await Storage.put(`adId-${adId}.jpeg`, img, {
+        level: "public",
+        contentType: file.type,
+        progressCallback(uploadProgress) {
+          console.log(
+            `PROGRESS-- ${uploadProgress.loaded}/${uploadProgress.total}`
+          );
+        },
       });
+  
+      // Retrieve the uploaded image URI
+      const result = await Storage.get(`adId-${adId}.jpeg`);
+      const awsImageUri = result.substring(0, result.indexOf("?"));
+  
+      console.log("Image uploaded");
+      return awsImageUri;
+    } catch (error) {
+      console.log("Error uploading ad image:", error);
+      throw error; // Rethrow the error so the calling function can handle it
+    }
   };
 
   const handleBack = () => {
@@ -114,26 +114,45 @@ const createAd = () => {
 
   const handleCreateAd = async (values) => {
     try {
-        // save image to S3
-      if (imageResult) {
-        uploadImageFile(imageResult);
-      }
       const reqData = {
         bizId: userId,
         image: image,
-        description: description,
-        bidPrice: bidPrice,
+        description: values.description,
+        bidPrice: values.bidPrice,
       };
+
       const response = await axios.post(
         `http://${BASE_URL}:4000/api/v1/createAd`,
         reqData
       );
+
+      // save image to S3
       console.log(response.data);
-      if (response.status === 201) {
-        router.push("profile");
+      if (response.status === 200) {
+        const adId = response.data.data.ad.advertisementId;
+        console.log("adId: ", adId);
+        const uploadedImage = await uploadImageFile(imageResult, adId);
+
+        const updateAdImage = await axios.put(
+          `http://${BASE_URL}:4000/api/v1/ad/adId/${adId}/image`,
+          { image: uploadedImage }
+        );
+        console.log("UpdateAdImage: ", updateAdImage.data.image);
+        if (updateAdImage.status === 200) {
+          console.log("Image created successfully");
+          router.back();
+        } else {
+          console.log("Error updating ad image");
+        }
+      } else {
+        console.log("Ad creation unsuccessful");
       }
     } catch (error) {
-      console.log(error.message);
+      if (error.response && error.response.status === 500) {
+        console.log("Internal server error");
+      } else {
+        console.log("Error during ad creation: ", error.message);
+      }
     }
   };
 
@@ -144,103 +163,116 @@ const createAd = () => {
         action="close"
         onPress={handleBack}
       />
-      <View style={styles.container}>
-        <Formik
-          initialValues={{
-            description: "",
-            bidPrice: 20.0,
-          }}
-          onSubmit={(values, actions) => {
-            if (
-              values.description == "" ||
-              values.bidPrice < 20 ||
-              image == null
-            ) {
-              setMessage("Please complete all fields");
-              setIsSuccessMessage(false);
-            } else {
-              handleCreateAd(values);
-              actions.resetForm();
-            }
-          }}
-        >
-          {({ handleChange, handleSubmit, values }) => (
-            <View>
-              <View style={styles.textMargin}>
-                <RegularText typography="H3">Ad Banner Image</RegularText>
-              </View>
-              {image && (
+      <KeyboardAvoidingView behavior="padding">
+        <ScrollView>
+          <View style={styles.container}>
+            <Formik
+              initialValues={{
+                description: "",
+                bidPrice: 20.0,
+              }}
+              onSubmit={(values, actions) => {
+                if (
+                  values.description == "" ||
+                  values.bidPrice < 20 ||
+                  image == null
+                ) {
+                  setMessage("Please complete all fields");
+                  setIsSuccessMessage(false);
+                } else {
+                  handleCreateAd(values);
+                  actions.resetForm();
+                }
+              }}
+            >
+              {({ handleChange, handleSubmit, values }) => (
                 <View>
-                  <View style={styles.uploadedImage}>
-                    <Image style={{ flex: 1 }} source={image} />
+                  <View style={styles.textMargin}>
+                    <RegularText typography="H3">Ad Banner Image</RegularText>
                   </View>
-                  <Pressable
-                    onPress={handleOpenGallery}
-                    style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-                  >
-                    <View style={styles.reuploadContainer}>
-                      <Ionicons name="add" color={primary} size={20} />
-                      <RegularText typography="B1" color={primary}>
-                        Reupload an image
-                      </RegularText>
+                  {image && (
+                    <View>
+                      <View style={styles.uploadedImage}>
+                        <Image style={{ flex: 1 }} source={image} />
+                      </View>
+                      <Pressable
+                        onPress={handleOpenGallery}
+                        style={({ pressed }) => ({
+                          opacity: pressed ? 0.5 : 1,
+                        })}
+                      >
+                        <View style={styles.reuploadContainer}>
+                          <Ionicons name="add" color={primary} size={20} />
+                          <RegularText typography="B1" color={primary}>
+                            Reupload an image
+                          </RegularText>
+                        </View>
+                      </Pressable>
                     </View>
-                  </Pressable>
-                </View>
-              )}
-              {!image && (
-                <Pressable
-                  onPress={handleOpenGallery}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-                >
-                  <View style={styles.uploadContainer}>
-                    <Ionicons name="add" color={primary} size={20} />
-                    <RegularText typography="B1" color={primary}>
-                      Upload a photo
-                    </RegularText>
+                  )}
+                  {!image && (
+                    <Pressable
+                      onPress={handleOpenGallery}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                    >
+                      <View style={styles.uploadContainer}>
+                        <Ionicons name="add" color={primary} size={20} />
+                        <RegularText typography="B1" color={primary}>
+                          Upload a photo
+                        </RegularText>
+                      </View>
+                    </Pressable>
+                  )}
+
+                  <View style={styles.textMargin}>
+                    <RegularText typography="H3">Description</RegularText>
                   </View>
-                </Pressable>
-              )}
-
-              <View style={styles.textMargin}>
-                <RegularText typography="H3">Description</RegularText>
-              </View>
-              <StyledTextInput
-                placeholder="A brief description about the purpose of your ad"
-                value={values.description}
-                onChangeText={handleChange("description")}
-                maxLength={300}
-                multiline={true}
-                scrollEnabled={false}
-                minHeight={80}
-              />
-
-              <View style={styles.bidPrice}>
-                <View>
-                  <RegularText typography="H3">Bid Price</RegularText>
-                </View>
-                <View>
                   <StyledTextInput
-                    value={values.bidPrice.toString()}
-                    onChangeText={handleChange("bidPrice")}
-                    placeholder="0.00"
-                    keyboardType="decimal-pad"
-                    style={styles.perDayInputBox}
+                    placeholder="A brief description about the purpose of your ad"
+                    value={values.description}
+                    onChangeText={handleChange("description")}
+                    maxLength={200}
+                    multiline={true}
+                    scrollEnabled={false}
+                    minHeight={80}
                   />
-                </View>
-              </View>
 
-              <RoundedButton
-                typography={"B1"}
-                color={white}
-                onPress={handleSubmit}
-                style={{ marginBottom: viewportHeightInPixels(3) }}
-              >
-                Create Ad
-              </RoundedButton>
-            </View>
-          )}
-        </Formik>
-      </View>
+                  <View style={styles.bidPrice}>
+                    <View>
+                      <RegularText typography="H3">Bid Price</RegularText>
+                    </View>
+                    <View>
+                      <StyledTextInput
+                        value={values.bidPrice.toString()}
+                        onChangeText={handleChange("bidPrice")}
+                        placeholder="0.00"
+                        keyboardType="decimal-pad"
+                        style={styles.perDayInputBox}
+                      />
+                    </View>
+                  </View>
+
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message || " "}
+                  </MessageBox>
+
+                  <RoundedButton
+                    typography={"B1"}
+                    color={white}
+                    onPress={handleSubmit}
+                    style={{ marginBottom: viewportHeightInPixels(3) }}
+                  >
+                    Create Ad
+                  </RoundedButton>
+                </View>
+              )}
+            </Formik>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaContainer>
   );
 };

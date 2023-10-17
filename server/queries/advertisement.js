@@ -26,6 +26,27 @@ const createAd = async (image, description, bidPrice, bizId) => {
   }
 };
 
+// Update images for an ad
+const updateAdImage = async (adId, image) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."advertisement" 
+        SET image = $1
+        WHERE "advertisementId" = $2
+        RETURNING image`,
+      [image, adId]
+    );
+
+    if (result) {
+      return result.rows[0].image;
+    } else {
+      return null; // Return null if the item is not found or the update fails
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 const getStartBidDate = () => {
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -114,6 +135,7 @@ const getWeekAdsByStartDate = async (startDate) => {
 
 module.exports = {
   createAd,
+  updateAdImage,
   editAd,
   deleteAd,
   getAdByAdId,
