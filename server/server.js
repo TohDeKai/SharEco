@@ -1403,14 +1403,16 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
 //ADVERTISEMENT FUNCTIONALITIES
 //Create a new ad request
 app.post("/api/v1/createAd", async (req, res) => {
-  const { image, description, bidPrice, bizId } = req.body;
+  const { image, title, description, bidPrice, bizId, link } = req.body;
 
   try {
     const ad = await advertisementdb.createAd(
       image,
+      title,
       description,
       bidPrice,
-      bizId
+      bizId, 
+      link
     );
 
     res.status(200).json({
@@ -1456,8 +1458,10 @@ app.put("/api/v1/editAd/adId/:adId", async (req, res) => {
     const ad = await advertisementdb.editAd(
       req.params.adId,
       req.body.image,
+      req.body.title,
       req.body.description,
-      req.body.bidPrice
+      req.body.bidPrice,
+      req.body.link,
     );
 
     if (ad) {

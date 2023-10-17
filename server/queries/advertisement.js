@@ -10,15 +10,15 @@ const pool = new Pool({
 });
 
 // Create Advertisement
-const createAd = async (image, description, bidPrice, bizId) => {
+const createAd = async (image, title, description, bidPrice, bizId, link) => {
   try {
     const startDate = getStartBidDate();
     const endDate = getStartBidDate();
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."advertisement" 
-         ("startDate", "endDate", "image", "description", "bidPrice", "status", "bizId") 
-                values ($1, $2, $3, $4, $5, $6, $7) returning *`,
-      [startDate, endDate, image, description, bidPrice, "PENDING", bizId]
+         ("startDate", "endDate", "image", "title", "description", "bidPrice", "status", "bizId", "link") 
+                values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
+      [startDate, endDate, image, title, description, bidPrice, "PENDING", bizId, link]
     );
     return result.rows[0];
   } catch (err) {
@@ -58,16 +58,18 @@ const getStartBidDate = () => {
   return nextSunday;
 };
 
-const editAd = async (adId, image, description, bidPrice) => {
+const editAd = async (adId, image, title, description, bidPrice, link) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."advertisement" 
         SET "image" = $1, 
-        "description" = $2,
-        "bidPrice" = $3
-        WHERE "advertisementId" = $4
+        "title" = $2
+        "description" = $3,
+        "bidPrice" = $4,
+        "link" = $6
+        WHERE "advertisementId" = $5
         RETURNING *`,
-      [image, description, bidPrice, adId]
+      [image, title, description, bidPrice, adId, link]
     );
     return result.rows[0];
   } catch (err) {

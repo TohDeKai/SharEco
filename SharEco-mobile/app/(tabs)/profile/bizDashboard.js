@@ -109,7 +109,7 @@ const dashboard = () => {
       }
     }
     fetchUserAds();
-  }, []);
+  }, [userId]);
 
   //Refresh
   const handleRefresh = async () => {
@@ -121,9 +121,8 @@ const dashboard = () => {
       );
       console.log(response.status);
       if (response.status === 200) {
-        const items = response.data.data.items;
-        const sortByNewest = items.reverse();
-        setUserItems(sortByNewest);
+        const ads = response.data.data.ads;
+        setUserAds(ads);
       } else {
         // Handle the error condition appropriately
         console.log("Failed to retrieve user's items");
@@ -222,6 +221,7 @@ const dashboard = () => {
                 onRefresh={handleRefresh}
               />
             }
+            style={{ height: viewportHeightInPixels(44.5), paddingBottom: 15 }}
           />
         </View>
       </View>

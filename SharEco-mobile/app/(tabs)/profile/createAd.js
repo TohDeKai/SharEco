@@ -84,7 +84,7 @@ const createAd = () => {
   const uploadImageFile = async (file, adId) => {
     try {
       const img = await fetchImageUri(file.uri);
-  
+
       // Upload the image with the unique key
       await Storage.put(`adId-${adId}.jpeg`, img, {
         level: "public",
@@ -95,11 +95,11 @@ const createAd = () => {
           );
         },
       });
-  
+
       // Retrieve the uploaded image URI
       const result = await Storage.get(`adId-${adId}.jpeg`);
       const awsImageUri = result.substring(0, result.indexOf("?"));
-  
+
       console.log("Image uploaded");
       return awsImageUri;
     } catch (error) {
@@ -116,9 +116,11 @@ const createAd = () => {
     try {
       const reqData = {
         bizId: userId,
+        title: values.title,
         image: image,
         description: values.description,
         bidPrice: values.bidPrice,
+        link: values.link,
       };
 
       const response = await axios.post(
@@ -168,11 +170,16 @@ const createAd = () => {
           <View style={styles.container}>
             <Formik
               initialValues={{
+                title: "",
                 description: "",
+                link: "",
                 bidPrice: 20.0,
               }}
               onSubmit={(values, actions) => {
-                if (
+                if (values.bidPrice < 20) {
+                  setMessage("Minimum bid is $20");
+                } else if (
+                  values.title == "" ||
                   values.description == "" ||
                   values.bidPrice < 20 ||
                   image == null
@@ -187,6 +194,16 @@ const createAd = () => {
             >
               {({ handleChange, handleSubmit, values }) => (
                 <View>
+                  <View style={styles.textMargin}>
+                    <RegularText typography="H3">Title</RegularText>
+                  </View>
+                  <StyledTextInput
+                    placeholder="Title of advertisement"
+                    value={values.title}
+                    onChangeText={handleChange("title")}
+                    maxLength={40}
+                    scrollEnabled={false}
+                  />
                   <View style={styles.textMargin}>
                     <RegularText typography="H3">Ad Banner Image</RegularText>
                   </View>
@@ -228,7 +245,7 @@ const createAd = () => {
                     <RegularText typography="H3">Description</RegularText>
                   </View>
                   <StyledTextInput
-                    placeholder="A brief description about the purpose of your ad"
+                    placeholder="Help us better understand the purpose of your advertisement"
                     value={values.description}
                     onChangeText={handleChange("description")}
                     maxLength={200}
@@ -237,23 +254,35 @@ const createAd = () => {
                     minHeight={80}
                   />
 
+                  <View style={styles.textMargin}>
+                    <View style={{ marginBottom: 10 }}>
+                      <RegularText typography="H3">External Link</RegularText>
+                    </View>
+                    <RegularText typography="Subtitle">
+                      When users click on your ad, we will redirect them to this
+                      link or your profile (if no link is provided)
+                    </RegularText>
+                  </View>
+                  <StyledTextInput
+                    placeholder="Insert link here (optional)"
+                    value={values.link}
+                    onChangeText={handleChange("link")}
+                    scrollEnabled={false}
+                  />
+
                   <View style={styles.bidPrice}>
-                    <View>
-                      <RegularText typography="H3">Bid Price</RegularText>
-                    </View>
-                    <View>
-                      <StyledTextInput
-                        value={values.bidPrice.toString()}
-                        onChangeText={handleChange("bidPrice")}
-                        placeholder="0.00"
-                        keyboardType="decimal-pad"
-                        style={styles.perDayInputBox}
-                      />
-                    </View>
+                    <RegularText typography="H3">Bid Price ($)</RegularText>
+                    <StyledTextInput
+                      value={values.bidPrice.toString()}
+                      onChangeText={handleChange("bidPrice")}
+                      placeholder="0"
+                      keyboardType="decimal-pad"
+                      style={styles.perDayInputBox}
+                    />
                   </View>
 
                   <MessageBox
-                    style={{ marginTop: 10 }}
+                    style={{ marginTop: 7 }}
                     success={isSuccessMessage}
                   >
                     {message || " "}
@@ -263,7 +292,7 @@ const createAd = () => {
                     typography={"B1"}
                     color={white}
                     onPress={handleSubmit}
-                    style={{ marginBottom: viewportHeightInPixels(3) }}
+                    style={{ marginBottom: viewportHeightInPixels(6) }}
                   >
                     Create Ad
                   </RoundedButton>
@@ -318,7 +347,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   perDayInputBox: {
-    justifyContent: "flex-end",
+    marginTop: -20,
     width: viewportWidthInPixels(35),
   },
 });

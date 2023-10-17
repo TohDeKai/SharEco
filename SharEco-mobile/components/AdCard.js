@@ -28,32 +28,85 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 export default function AdCard({ ad }) {
-  const { image, description, bidPrice } = ad.item;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { image, title, description, bidPrice, link } = ad.item;
+
+  const toggleCollapse = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   return (
-    <View>
-      <View style={styles.card}>
-        <Image
-          source={{uri: image}}
-          style={styles.image}
-        />
-      </View>
+    <View style={styles.container}>
+      <Pressable style={styles.card} onPress={toggleCollapse}>
+        <View style={{ flexDirection: "row" }}>
+          <Image source={{ uri: image }} style={styles.image} />
+          <View style={styles.details}>
+            <RegularText
+              typography="B1"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={styles.title}
+            >
+              {title}
+            </RegularText>
+            <RegularText typography="B3">Bid: {bidPrice}</RegularText>
+          </View>
+        </View>
+        {isExpanded ? (
+          <Ionicons
+            style={styles.chevron}
+            name="chevron-up"
+            size={23}
+            color={dark}
+          />
+        ) : (
+          <Ionicons
+            style={styles.chevron}
+            name="chevron-down"
+            size={23}
+            color={dark}
+          />
+        )}
+      </Pressable>
+      {isExpanded && (
+        <View style={styles.expanded}>
+          <RegularText typography="B1">Description</RegularText>
+          <RegularText typography="Subtitle" style={styles.textMargin}>
+            {description}
+          </RegularText>
+          <RegularText typography="B1" style={styles.headerMargin}>
+            Link
+          </RegularText>
+          {link ? (
+            <RegularText typography="Subtitle" color={primary} style={styles.textMargin}>
+              {link}
+            </RegularText>
+          ) : (
+            <RegularText typography="Subtitle" style={styles.textMargin}>
+              No link provided, we will redirect users to your profile
+            </RegularText>
+          )}
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: viewportWidthInPixels(5),
-  },
-  card: {
-    backgroundColor: inputbackground,
-    width: viewportWidthInPixels(90),
-    marginBottom: 15,
     borderBottomColor: inputbackground,
     borderBottomWidth: 1,
+  },
+  card: {
+    // backgroundColor: inputbackground,
+    width: viewportWidthInPixels(90),
     paddingVertical: 15,
-    paddingHorizontal: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  details: {
+    justifyContent: "center",
   },
   image: {
     height: viewportWidthInPixels(12),
@@ -61,5 +114,20 @@ const styles = StyleSheet.create({
     backgroundColor: dark,
     alignItems: "center",
     justifyContent: "center",
+    marginRight: viewportWidthInPixels(3),
   },
+  title: {
+    textOverflow: "ellipsis",
+    maxWidth: viewportWidthInPixels(45),
+    marginBottom: viewportWidthInPixels(1),
+  },
+  headerMargin: {
+    marginTop: 14,
+  },
+  textMargin: {
+    marginTop: 8,
+  },
+  expanded: {
+    paddingBottom: 15,
+  }
 });
