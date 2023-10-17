@@ -6,7 +6,7 @@ import {
   Button,
   Alert,
   Pressable,
-  Dimensions
+  Dimensions,
 } from "react-native";
 import React from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -18,7 +18,7 @@ import SafeAreaContainer from "../../../components/containers/SafeAreaContainer"
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import Header from "../../../components/Header";
-const { white, primary, secondary } = colours;
+const { white, primary, secondary, black } = colours;
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
   return (percentage / 100) * screenHeight;
@@ -34,10 +34,10 @@ const explore = () => {
     router.back();
   };
 
-  const toTopUp =() =>{
-    console.log("top up button being pressed")
+  const toTopUp = () => {
+    console.log("top up button being pressed");
     router.push("explore/CheckoutScreen");
-  }
+  };
 
   return (
     <SafeAreaContainer>
@@ -50,27 +50,58 @@ const explore = () => {
           $100 {/*ecowallet amount*/}
         </RegularText>
         <View style={styles.buttonContainer}>
-          <Pressable>
-            <Ionicons name="send" size={24} color={secondary} style={{alignSelf: "center",}} />
+          <Pressable
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <Ionicons
+              name="send"
+              size={24}
+              color={secondary}
+              style={{ alignSelf: "center" }}
+            />
             <RegularText typography="B2" color={secondary}>
               Transfer
             </RegularText>
           </Pressable>
-          <Pressable onPress={toTopUp} style={({ pressed }) => ({
-            opacity: pressed ? 0.5 : 1,
-          })}>
-            <Ionicons name="add-circle" size={24} color={secondary} style={{alignSelf: "center",}}/>
+          <Pressable
+            onPress={toTopUp}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <Ionicons
+              name="add-circle"
+              size={24}
+              color={secondary}
+              style={{ alignSelf: "center" }}
+            />
             <RegularText typography="B2" color={secondary}>
               Top-Up
             </RegularText>
           </Pressable>
-          <Pressable>
-          <MaterialCommunityIcons name="bank-outline" size={24} color={secondary} style={{alignSelf: "center",}}/>
+          <Pressable
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <MaterialCommunityIcons
+              name="bank-outline"
+              size={24}
+              color={secondary}
+              style={{ alignSelf: "center" }}
+            />
             <RegularText typography="B2" color={secondary}>
               Withdraw
             </RegularText>
           </Pressable>
         </View>
+      </View>
+      <View style={styles.body}>
+        <RegularText typography="H3" color={black}>
+          Transaction History
+        </RegularText>
       </View>
     </SafeAreaContainer>
   );
@@ -80,8 +111,8 @@ export default explore;
 
 const styles = StyleSheet.create({
   greenHeader: {
-    maxHeight:viewportHeightInPixels(20),
-    paddingVertical:viewportHeightInPixels(2.5),
+    maxHeight: viewportHeightInPixels(20),
+    paddingVertical: viewportHeightInPixels(2.5),
     flex: 1,
     flexDirection: "column",
     justifyContent: "space-between",
@@ -89,22 +120,26 @@ const styles = StyleSheet.create({
     backgroundColor: secondary,
   },
   buttonContainer: {
-    borderRadius:15,
+    borderRadius: 15,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 5,
     },
     shadowOpacity: 0.25,
-    top:viewportHeightInPixels(3),
-    maxHeight:viewportHeightInPixels(10),
+    top: viewportHeightInPixels(3),
+    maxHeight: viewportHeightInPixels(10),
     width: viewportWidthInPixels(75),
-    paddingHorizontal:viewportWidthInPixels(5),
-    paddingVertical:viewportHeightInPixels(0),
+    paddingHorizontal: viewportWidthInPixels(5),
+    paddingVertical: viewportHeightInPixels(0),
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: white,
   },
+  body:{
+    paddingHorizontal: viewportWidthInPixels(15),
+    paddingVertical: viewportHeightInPixels(3)
+  }
 });

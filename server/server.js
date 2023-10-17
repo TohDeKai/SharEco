@@ -119,6 +119,104 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
   }
 });
 
+//Get Wallet ID by user ID
+app.get("/api/v1/users/walletId/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const walletId = await userdb.getWalletIdByUserId(userId);
+
+    if (walletId) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          walletId: walletId,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "walletId not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get Wallet Balance by user ID
+app.get("/api/v1/users/walletBalance/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const walletBalance = await userdb.getWalletBalanceByUserId(userId);
+
+    if (walletBalance) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          walletBalance: walletBalance,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "walletBalance not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//add wallet ID to user
+app.put("/api/v1/users/walletId/:userId", async (req, res) => {
+  try {
+    const user = await userdb.addWalletIdToUser(
+      req.params.userId,
+      req.body.walletId
+    );
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//update wallet Balance to user
+app.put("/api/v1/users/walletBalance/:userId", async (req, res) => {
+  try {
+    const user = await userdb.updateUserWalletBalance(
+      req.params.userId,
+      req.body.walletBalance
+    );
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Updating user based on userId
 app.put("/api/v1/users/:userId", async (req, res) => {
   try {
@@ -1627,14 +1725,21 @@ app.delete("/api/v1/reviews/:reviewId", async (req, res) => {
 //STRIPE TEST
 app.post("/api/v1/payment-sheet", async (req, res) => {
   // Use an existing Customer ID if this is a returning customer.
-  const customer = await stripe.customers.create();
+  const walletId = req.body.walletId;
+  const amount = req.body.amount;
+  console.log(walletId);
+  console.log(amount);
+  const customer =
+    walletId != null
+      ? await stripe.customers.retrieve(walletId)
+      : await stripe.customers.create();
   const ephemeralKey = await stripe.ephemeralKeys.create(
     { customer: customer.id },
     { apiVersion: "2023-08-16" }
   );
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: 1099,
-    currency: "eur",
+    amount: amount != null ? amount : 20000,
+    currency: "sgd",
     customer: customer.id,
     // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
     automatic_payment_methods: {

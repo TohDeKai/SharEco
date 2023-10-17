@@ -196,6 +196,70 @@ const addVerificationToUser = async (userId, businessVerificationId) => {
   }
 };
 
+// Add wallet ID to user
+const addWalletIdToUser = async (userId, walletId) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."user" 
+    SET "walletId" = $1
+    WHERE "userId" = $2
+    RETURNING *`,
+      [walletId, userId]
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// get wallet ID by user ID
+const getWalletIdByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT "walletId" FROM "sharEco-schema"."user" 
+    WHERE "userId" = $1`,
+      [userId]
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// get wallet balance by user ID
+const getWalletBalanceByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT "walletBalance" FROM "sharEco-schema"."user" 
+    WHERE "userId" = $1`,
+      [userId]
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// update user wallet balance
+const updateUserWalletBalance = async (userId, walletBalance) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."user" 
+    SET "walletBalance" = $1
+    WHERE "userId" = $2
+    RETURNING *`,
+      [walletBalance, userId]
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   getUsers,
   getUserById,
@@ -206,4 +270,8 @@ module.exports = {
   updateAccountUser,
   getUserByUsername,
   addVerificationToUser,
+  addWalletIdToUser,
+  getWalletIdByUserId,
+  updateUserWalletBalance,
+  getWalletBalanceByUserId
 };
