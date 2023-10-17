@@ -264,7 +264,7 @@ const createAd = () => {
                     </RegularText>
                   </View>
                   <StyledTextInput
-                    placeholder="Insert link here (optional)"
+                    placeholder="Insert https:// link here"
                     value={values.link}
                     onChangeText={handleChange("link")}
                     scrollEnabled={false}

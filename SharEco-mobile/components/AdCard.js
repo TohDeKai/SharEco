@@ -79,7 +79,7 @@ export default function AdCard({ ad }) {
           </RegularText>
           {link ? (
             <RegularText typography="Subtitle" color={primary} style={styles.textMargin}>
-              {link}
+              <Link href={link}>{link}</Link>
             </RegularText>
           ) : (
             <RegularText typography="Subtitle" style={styles.textMargin}>
