@@ -24,6 +24,7 @@ import Header from "../../../components/Header";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
+import AdCard from "../../../components/AdCard";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -47,8 +48,14 @@ const adPeriod = () => {
   endSaturday.setDate(startSunday.getDate() + 6);
   endSaturday.setHours(0, 0, 0, 0);
 
-  const startString = startSunday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  const endString = endSaturday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const startString = startSunday.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
+  const endString = endSaturday.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
 
   return `${startString} - ${endString}`;
 };
@@ -71,10 +78,11 @@ const biddingPeriod = () => {
 
 const dashboard = () => {
   const { getUserData } = useAuth();
-  const adPills = ["Pending", "Approved", "Active", "Past", "Rejected"];
+  const adPills = ["Pending", "Active", "Past", "Rejected", "Cancelled"];
   const [activeAdPill, setActiveAdPill] = useState("Pending");
-  const [userAds, setUserAds] = useState([])
+  const [userAds, setUserAds] = useState([]);
   const [userId, setUserId] = useState();
+  const [refreshing, setRefreshing] = useState(false);
 
   //Get user ads
   useEffect(() => {
@@ -84,7 +92,9 @@ const dashboard = () => {
         const userId = userData.userId;
         setUserId(userId);
         try {
-          const response = await axios.get(`http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`);
+          const response = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`
+          );
           if (response.status === 200) {
             const ads = response.data.data.ads;
             setUserAds(ads);
@@ -99,7 +109,33 @@ const dashboard = () => {
       }
     }
     fetchUserAds();
-  }, [])
+  }, []);
+
+  //Refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`
+      );
+      console.log(response.status);
+      if (response.status === 200) {
+        const items = response.data.data.items;
+        const sortByNewest = items.reverse();
+        setUserItems(sortByNewest);
+      } else {
+        // Handle the error condition appropriately
+        console.log("Failed to retrieve user's items");
+      }
+    } catch (error) {
+      // Handle the axios request error appropriately
+      console.log("Error:", error);
+    }
+
+    // After all the data fetching and updating, set refreshing to false
+    setRefreshing(false);
+  };
 
   const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
     return (
@@ -136,12 +172,8 @@ const dashboard = () => {
     console.log("Active pill: " + pill);
   };
   const handleCreateNewAd = () => {
-    router.push("profile/createAd"); //Error here, doesnt redirect. Failed:
-    //router.push("createAd")
-    //router.replace("createAd")
-    //router.push("profile/createAd")
-    //router.replace("profile/createAd")
-  }
+    router.push("profile/createAd");
+  };
 
   return (
     <SafeAreaContainer>
@@ -154,17 +186,22 @@ const dashboard = () => {
             </RegularText>
           </View>
           <View style={styles.adHeader}>
-            <View><RegularText typography="H1">Advertisement</RegularText></View>
+            <View>
+              <RegularText typography="H1">Advertisement</RegularText>
+            </View>
             <View>
               <PrimaryButton style={styles.button} onPress={handleCreateNewAd}>
-                <Ionicons name="add" color={white} size={25}/>
-                <View style={{paddingTop: 3, paddingRight: 5}}>
-                <RegularText typography="H3" color={white}>Create ad</RegularText></View>
+                <Ionicons name="add" color={white} size={25} />
+                <View style={{ paddingTop: 3, paddingRight: 5 }}>
+                  <RegularText typography="H3" color={white}>
+                    Create ad
+                  </RegularText>
+                </View>
               </PrimaryButton>
             </View>
           </View>
           <View style={styles.bidWeek}>
-            <Ionicons name="calendar" size={17} style={{ marginRight: 10 }}/>
+            <Ionicons name="calendar" size={17} style={{ marginRight: 10 }} />
             <RegularText typography="B2">Bidding opened for </RegularText>
             <RegularText typography="H4">{adPeriod()}</RegularText>
           </View>
@@ -172,6 +209,19 @@ const dashboard = () => {
             pillItems={adPills}
             setActiveAdPill={activeAdPill}
             handlePillPress={handlePillPress}
+          />
+          <FlatList
+            data={userAds}
+            numColumns={1}
+            scrollsToTop={false}
+            showsVerticalScrollIndicator={false}
+            renderItem={(ad) => <AdCard ad={ad} />}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+              />
+            }
           />
         </View>
       </View>
@@ -212,7 +262,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     flexDirection: "row",
     height: 40,
-    alignItems: "center"
+    alignItems: "center",
   },
   pillContainer: {
     paddingTop: 18,
