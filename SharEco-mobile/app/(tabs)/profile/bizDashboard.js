@@ -174,6 +174,12 @@ const dashboard = () => {
     router.push("profile/createAd");
   };
 
+  const pendingAds = userAds.filter((ad) => ad.status === "PENDING");
+  const activeAds = userAds.filter((ad) => ad.status === "ACTIVE");
+  const pastAds = userAds.filter((ad) => ad.status === "PAST");
+  const rejectedAds = userAds.filter((ad) => ad.status === "REJECTED");
+  const cancelledAds = userAds.filter((ad) => ad.status === "CANCELLED");
+
   return (
     <SafeAreaContainer>
       <View>
@@ -209,20 +215,141 @@ const dashboard = () => {
             setActiveAdPill={activeAdPill}
             handlePillPress={handlePillPress}
           />
-          <FlatList
-            data={userAds}
-            numColumns={1}
-            scrollsToTop={false}
-            showsVerticalScrollIndicator={false}
-            renderItem={(ad) => <AdCard ad={ad} />}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-              />
-            }
-            style={{ height: viewportHeightInPixels(44.5), paddingBottom: 15 }}
-          />
+          {activeAdPill === "Pending" && (
+            <View>
+              {pendingAds.length > 0 ? (
+                <FlatList
+                  data={pendingAds}
+                  numColumns={1}
+                  scrollsToTop={false}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(ad) => <AdCard ad={ad} />}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
+                    />
+                  }
+                  style={{
+                    height: viewportHeightInPixels(44.5),
+                    paddingBottom: 15,
+                  }}
+                />
+              ) : (
+                <View style={styles.centeredText}>
+                 <RegularText typography="H4">No pending advertisements found!</RegularText>
+                </View>
+              )}
+            </View>
+          )}
+          {activeAdPill === "Active" && (
+            <View>
+              {activeAds.length > 0 ? (
+                <FlatList
+                  data={activeAds}
+                  numColumns={1}
+                  scrollsToTop={false}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(ad) => <AdCard ad={ad} />}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
+                    />
+                  }
+                  style={{
+                    height: viewportHeightInPixels(44.5),
+                    paddingBottom: 15,
+                  }}
+                />
+              ) : (
+                <View style={styles.centeredText}>
+                 <RegularText typography="H4">No active advertisements found!</RegularText>
+                </View>
+              )}
+            </View>
+          )}
+          {activeAdPill === "Past" && (
+            <View>
+              {activeAds.length > 0 ? (
+                <FlatList
+                  data={pastAds}
+                  numColumns={1}
+                  scrollsToTop={false}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(ad) => <AdCard ad={ad} />}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
+                    />
+                  }
+                  style={{
+                    height: viewportHeightInPixels(44.5),
+                    paddingBottom: 15,
+                  }}
+                />
+              ) : (
+                <View style={styles.centeredText}>
+                 <RegularText typography="H4">No past advertisements found!</RegularText>
+                </View>
+              )}
+            </View>
+          )}
+          {activeAdPill === "Rejected" && (
+            <View>
+              {activeAds.length > 0 ? (
+                <FlatList
+                  data={rejectedAds}
+                  numColumns={1}
+                  scrollsToTop={false}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(ad) => <AdCard ad={ad} />}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
+                    />
+                  }
+                  style={{
+                    height: viewportHeightInPixels(44.5),
+                    paddingBottom: 15,
+                  }}
+                />
+              ) : (
+                <View style={styles.centeredText}>
+                 <RegularText typography="H4">No rejected advertisements found!</RegularText>
+                </View>
+              )}
+            </View>
+          )}
+          {activeAdPill === "Cancelled" && (
+            <View>
+              {activeAds.length > 0 ? (
+                <FlatList
+                  data={cancelledAds}
+                  numColumns={1}
+                  scrollsToTop={false}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(ad) => <AdCard ad={ad} />}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
+                    />
+                  }
+                  style={{
+                    height: viewportHeightInPixels(44.5),
+                    paddingBottom: 15,
+                  }}
+                />
+              ) : (
+                <View style={styles.centeredText}>
+                 <RegularText typography="H4">No cancelled advertisements found!</RegularText>
+                </View>
+              )}
+            </View>
+          )}
         </View>
       </View>
     </SafeAreaContainer>
@@ -279,5 +406,10 @@ const styles = StyleSheet.create({
     backgroundColor: white,
     borderColor: primary,
     borderWidth: 1,
+  },
+  centeredText: {
+    marginTop: 30,
+    width: viewportWidthInPixels(90),
+    alignItems: "center",
   },
 });
