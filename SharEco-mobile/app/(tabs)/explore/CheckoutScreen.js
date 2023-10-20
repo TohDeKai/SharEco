@@ -78,15 +78,11 @@ const CheckoutScreen = () => {
       if (!error) {
         setLoading(true);
       }
-    };
-    initializePaymentSheet();
 
-    const openPaymentSheet = async () => {
-      try {
-        const { error } = await presentPaymentSheet();
+      const { error2 } = await presentPaymentSheet();
 
-        if (error) {
-          Alert.alert(`Error code: ${error.code}`, error.message);
+        if (error2) {
+          Alert.alert(`Error code: ${error2.code}`, error2.message);
         } else {
           const updatedBalance =
             parseFloat(walletBalance.replace("$", "")) + amountInCents / 100;
@@ -101,13 +97,36 @@ const CheckoutScreen = () => {
             `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
           );
         }
-      } catch (error) {
-        console.error(error);
-      }
     };
-    if (fetchedPayment) {
-      openPaymentSheet();
-    }
+    initializePaymentSheet();
+
+    // const openPaymentSheet = async () => {
+    //   try {
+    //     const { error } = await presentPaymentSheet();
+
+    //     if (error) {
+    //       Alert.alert(`Error code: ${error.code}`, error.message);
+    //     } else {
+    //       const updatedBalance =
+    //         parseFloat(walletBalance.replace("$", "")) + amountInCents / 100;
+    //       console.log(updatedBalance);
+    //       const walletUpdateResponse = axios.put(
+    //         `http://${BASE_URL}:4000/api/v1/users/walletBalance/${userId}`,
+    //         { walletBalance: updatedBalance }
+    //       );
+    //       router.replace("explore");
+    //       Alert.alert(
+    //         "Success",
+    //         `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
+    //       );
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
+    // if (fetchedPayment) {
+    //   openPaymentSheet();
+    // }
   };
 
   useEffect(() => {
