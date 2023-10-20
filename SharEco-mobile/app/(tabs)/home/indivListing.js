@@ -13,6 +13,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
 import { Link, useLocalSearchParams } from "expo-router";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 //components
 import { Rating } from "react-native-stock-star-rating";
@@ -29,7 +30,7 @@ import {
   SecondaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const { white, yellow, red, black, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
 
@@ -313,12 +314,144 @@ const CustomPaging = ({ data, activeSlide }) => {
 };
 
 const ListingNav = ({ data, tab }) => {
+  const itemId = data;
+
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, [user]);
+
   const toRentalRequest = () => {
-    router.push({ pathname: "home/rentalRequest", params: { itemId: data, tab: tab } }); //to update path name
+    router.push({ pathname: "home/rentalRequest", params: { itemId: itemId, tab: tab } }); //to update path name
   };
+
+  const [isWishlist, setIsWishlist] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [reload, setReload] = useState(false);
+
+  useEffect(() => {
+    async function checkWishlist() {
+      try {
+        console.log("checking wishlist")
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/wishlist/itemId/${itemId}/userId/${user.userId}`
+        );
+
+        if (response.status === 200) {
+          console.log("Item is in wishlist")
+          setIsWishlist(true);
+        } else {
+          console.log("Item is not in wishlist");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    if (user.userId) {
+      checkWishlist();
+    }
+  }, [user.userId])
+
+  // fetch wishlist related to the item and count the number of wishlist to get wishlist count
+  async function fetchWishlistByItemId() {
+    try {
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/wishlist/itemId/${itemId}`
+      );
+
+      if (response.status === 200) {
+        const wishlist = response.data.data.wishlist;
+        setWishlistCount(wishlist.length);
+      } else if (response.status === 404) {
+        console.log("There is no wishlist related to this item")
+        setWishlistCount(0);
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  useEffect(() => {
+    fetchWishlistByItemId();
+  }, [])
+
+  const handleWishlistPress = async () => {
+    // check if isWishlist, if yes, remove from wishlist
+    if (isWishlist) {
+      try {
+        console.log("itemId userId", itemId, user.userId);
+        const response = await axios.delete(
+          `http://${BASE_URL}:4000/api/v1/wishlist/itemId/${itemId}/userId/${user.userId}`
+        );
+        
+        if (response.status === 200) {
+          console.log("Wishlist item removed successfully");
+          setIsWishlist(false);
+        } else if (response.status === 404) {
+          console.log("Wishlist item not found");
+        } else  {
+          console.log("Error removing wishlist item");
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    } else {
+      // if not wishlist, add to wishlist
+      try {
+        const response = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/wishlist/`,
+          {
+            itemId: itemId,
+            userId: user.userId,
+          }
+        );
+        
+        if (response.status === 201) {
+          console.log("Item added to wishlist successfully");
+          setIsWishlist(true);
+        } else  {
+          console.log("Error adding item to wishlist");
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchWishlistByItemId();
+  }
+
   return (
     <View>
       <View style={style.nav}>
+        <View style={style.wishlist}>
+          <Pressable 
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+            onPress={handleWishlistPress}
+          >
+            {isWishlist ? (
+              <Ionicons name='heart' size={30} color={red} />
+            ) : (
+              <Ionicons name='heart-outline' size={30} color={black} />
+            )}
+          </Pressable>
+          <RegularText typography="H2" color={black}>
+            {wishlistCount}
+          </RegularText>
+        </View>
         <View style={style.buttonContainer}>
           <DisabledButton typography={"H3"} color={white}>
             Chat
@@ -447,6 +580,12 @@ const style = StyleSheet.create({
     borderTopColor: inputbackground,
     borderTopWidth: 1,
     paddingHorizontal: 5,
+  },
+  wishlist: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginHorizontal: 10,
+    gap: 5,
   },
   buttonContainer: {
     flex: 0.5,

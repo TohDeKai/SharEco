@@ -12,6 +12,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
 import { Link, useLocalSearchParams } from "expo-router";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 //components
 import { Rating } from "react-native-stock-star-rating";
@@ -28,7 +29,7 @@ import {
   PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const { primary, placeholder, white, yellow, black, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
 
@@ -264,9 +265,39 @@ const ListingNav = ({ data }) => {
   const toEditListing = () => {
     router.push({ pathname: "profile/editListing", params: { itemId: data } });
   };
+
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchWishlistByItemId() {
+      try {
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/wishlist/itemId/${data}`
+        );
+  
+        if (response.status === 200) {
+          const wishlist = response.data.data.wishlist;
+          setWishlistCount(wishlist.length);
+        } else if (response.status === 404) {
+          console.log("There is no wishlist related to this item")
+          setWishlistCount(0);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchWishlistByItemId();
+  }, [])
+
   return (
     <View>
       <View style={style.nav}>
+        <View style={style.wishlist}>
+          <Ionicons name='heart' size={30} color={placeholder} />
+          <RegularText typography="H2" color={black}>
+            {wishlistCount}
+          </RegularText>
+        </View>
         <View style={style.buttonContainer}>
           <SecondaryButton
             typography={"H3"}
@@ -395,6 +426,12 @@ const style = StyleSheet.create({
     borderTopColor: inputbackground,
     borderTopWidth: 1,
     paddingHorizontal: 5,
+  },
+  wishlist: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginHorizontal: 10,
+    gap: 5,
   },
   buttonContainer: {
     flex: 0.5,

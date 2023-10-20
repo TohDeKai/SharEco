@@ -9,4 +9,5 @@ export const colours = {
   yellow: "#F6BE2C",
   success: "green",
   fail: "red",
+  red: "#E53131",
 }
