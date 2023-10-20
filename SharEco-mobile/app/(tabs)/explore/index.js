@@ -18,7 +18,9 @@ import SafeAreaContainer from "../../../components/containers/SafeAreaContainer"
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import Header from "../../../components/Header";
+import { useAuth } from "../../../context/auth";
 const { white, primary, secondary, black } = colours;
+
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
   return (percentage / 100) * screenHeight;
@@ -30,13 +32,37 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const explore = () => {
+  const [walletId, setWalletId] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setWalletId(userData.walletId);
+          setUserId(userData.userId);
+          setWalletBalance(userData.walletBalance);
+          }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchData();
+    return () => {
+      fetchData();
+    };
+  }, []);
+
   const handleBack = () => {
     router.back();
   };
 
   const toTopUp = () => {
-    console.log("top up button being pressed");
-    router.push("explore/CheckoutScreen");
+    console.log("top up button being pressed", walletId);
+    router.push({pathname:"explore/CheckoutScreen", params:{walletId: walletId , userId: userId, walletBalance: walletBalance}});
   };
 
   return (
@@ -47,7 +73,7 @@ const explore = () => {
           Balance Amount
         </RegularText>
         <RegularText typography="EcoWallet" color={white}>
-          $100 {/*ecowallet amount*/}
+          {walletBalance}
         </RegularText>
         <View style={styles.buttonContainer}>
           <Pressable
