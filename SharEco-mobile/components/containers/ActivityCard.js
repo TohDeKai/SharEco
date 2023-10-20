@@ -41,6 +41,7 @@ const ActivityCard = ({ rental, type }) => {
   const [item, setItem] = useState({});
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+
   const { getUserData } = useAuth();
 
   const handleShowDetailsModal = () => {
@@ -54,6 +55,26 @@ const ActivityCard = ({ rental, type }) => {
   };
   const handleCloseCancelModal = () => {
     setShowCancelModal(false);
+  };
+
+  const handleStart = () => {
+    router.push({
+      pathname: "activity/submitChecklist",
+      params: {
+        rentalId: rental.rentalId,
+        checklistFormType: "Start Rental",
+      },
+    });
+  };
+
+  const handleReturn = () => {
+    router.push({
+      pathname: "activity/submitChecklist",
+      params: {
+        rentalId: rental.rentalId,
+        checklistFormType: "End Rental",
+      },
+    });
   };
 
   useEffect(() => {
@@ -114,6 +135,17 @@ const ActivityCard = ({ rental, type }) => {
           status: "CANCELLED",
           cancellationReason: cancellationReason,
         };
+        handleCloseCancelModal();
+      } else if (action === "Update") {
+        newStatus = {
+          status: "ONGOING",
+        };
+        handleCloseUpdateModal();
+      } else if (action === "Complete") {
+        newStatus = {
+          status: "COMPLETED",
+        };
+        handleCloseCompleteModal();
       }
       // else if (action === "Reject") {
       //   newStatus = {
@@ -129,8 +161,6 @@ const ActivityCard = ({ rental, type }) => {
         `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
         newStatus
       );
-
-      handleCloseCancelModal();
     } catch (error) {
       console.log(error.message);
     }
@@ -178,11 +208,17 @@ const ActivityCard = ({ rental, type }) => {
             : styles.cardHeaderUsernameOnly,
         ]}
       >
-        <Pressable 
+        <Pressable
           style={({ pressed }) => ({
             opacity: pressed ? 0.5 : 1,
           })}
-          onPress={() => router.push({pathname: "home/othersProfile", params: { userId: user.userId }})}>
+          onPress={() =>
+            router.push({
+              pathname: "home/othersProfile",
+              params: { userId: user.userId },
+            })
+          }
+        >
           <View style={styles.username}>
             {user && (
               <UserAvatar
@@ -320,6 +356,15 @@ const ActivityCard = ({ rental, type }) => {
         params: { rentalId: rentalId, itemId: item },
       });
     };
+
+    const handleUpdateRental = () => {
+      const rentalId = rental.rentalId;
+      const item = rental.itemId;
+      router.push({
+        pathname: "activity/editRentalRequest",
+        params: { rentalId: rentalId, itemId: item },
+      });
+    };
     return (
       <View>
         {(rental.status === "PENDING" || rental.status === "UPDATED") &&
@@ -415,6 +460,17 @@ const ActivityCard = ({ rental, type }) => {
                 </PrimaryButton>
               </View>
             )}
+            {type === "Borrowing" && (
+              <View style={styles.buttonContainer}>
+                <PrimaryButton
+                  typography="B3"
+                  color={white}
+                  onPress={handleStart}
+                >
+                  Update
+                </PrimaryButton>
+              </View>
+            )}
             {showCancelModal && (
               <ConfirmationModal
                 isVisible={showCancelModal}
@@ -454,7 +510,11 @@ const ActivityCard = ({ rental, type }) => {
             )}
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
-                <PrimaryButton typography="B3" color={white}>
+                <PrimaryButton
+                  typography="B3"
+                  color={white}
+                  onPress={handleReturn}
+                >
                   Return
                 </PrimaryButton>
               </View>
@@ -465,9 +525,11 @@ const ActivityCard = ({ rental, type }) => {
         {rental.status === "COMPLETED" && (
           <View style={styles.buttons}>
             <View style={styles.buttonContainer}>
-              <PrimaryButton typography="B3" color={white} 
+              <PrimaryButton
+                typography="B3"
+                color={white}
                 onPress={() => {
-                  var revieweeIsLender = false; 
+                  var revieweeIsLender = false;
                   //if somebody is the renter ie is borrowing, the person being reviewed ie reviewee is therefore the lender
                   if (type === "Borrowing") {
                     revieweeIsLender = true;
@@ -481,14 +543,26 @@ const ActivityCard = ({ rental, type }) => {
                       //show existing review as borrower
                       router.push({pathname: "activity/viewRating", params: {reviewId : rental.reviewIdByBorrower, revieweeIsLender: revieweeIsLender, itemId: item.itemId}});
                     } else {
-                      router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}});
+                      router.push({
+                        pathname: "activity/rateUser",
+                        params: {
+                          rentalId: rental.rentalId,
+                          revieweeIsLender: revieweeIsLender,
+                        },
+                      });
                     }
                   } else {
                     if (rental.reviewIdByLender != null) {
                       //show existing review as lender
                       router.push({pathname: "activity/viewRating", params: {reviewId : rental.reviewIdByLender, revieweeIsLender: revieweeIsLender, itemId: item.itemId}});
                     } else {
-                      router.push({pathname: "activity/rateUser", params: {rentalId : rental.rentalId, revieweeIsLender: revieweeIsLender}});
+                      router.push({
+                        pathname: "activity/rateUser",
+                        params: {
+                          rentalId: rental.rentalId,
+                          revieweeIsLender: revieweeIsLender,
+                        },
+                      });
                     }
                   }
                 }}
@@ -496,13 +570,22 @@ const ActivityCard = ({ rental, type }) => {
                 {(type === "Borrowing" && rental.reviewIdByBorrower!= null) || (type === "Lending" && rental.reviewIdByLender!= null) ? "View Rating" : "Rate"}
               </PrimaryButton>
             </View>
-            {item.checklistCriteria && (
-            <View style={styles.buttonContainer}>
-              <PrimaryButton typography="B3" color={white} onPress={() => router.push({pathname: "activity/reviewChecklist", params: {rentalId : rental.rentalId}})}>
-                Checklist
-              </PrimaryButton>
-            </View>
-            )}
+            {
+              <View style={styles.buttonContainer}>
+                <PrimaryButton
+                  typography="B3"
+                  color={white}
+                  onPress={() =>
+                    router.push({
+                      pathname: "activity/reviewChecklist",
+                      params: { rentalId: rental.rentalId },
+                    })
+                  }
+                >
+                  Checklist
+                </PrimaryButton>
+              </View>
+            }
           </View>
         )}
 
