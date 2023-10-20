@@ -568,7 +568,7 @@ const ActivityCard = ({ rental, type }) => {
                 Rate
               </PrimaryButton>
             </View>
-            {item.checklistCriteria && (
+            {
               <View style={styles.buttonContainer}>
                 <PrimaryButton
                   typography="B3"
@@ -583,7 +583,7 @@ const ActivityCard = ({ rental, type }) => {
                   Checklist
                 </PrimaryButton>
               </View>
-            )}
+            }
           </View>
         )}
 
