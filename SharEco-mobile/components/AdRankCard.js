@@ -8,7 +8,7 @@ import { Link, router } from "expo-router";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
 import axios from "axios";
-const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const { primary, black, white, yellow, dark, inputbackground } = colours;
 import UserAvatar from "./UserAvatar";
 import { PrimaryButton, SecondaryButton } from "./buttons/RegularButton";
 import ConfirmationModal from "./ConfirmationModal";
@@ -66,7 +66,7 @@ export default function AdCard({ ad, rank }) {
           <Image source={{ uri: image }} style={styles.image} />
           <View style={styles.details}>
             {userId == user.userId ? (
-              <RegularText typography="H4" style={styles.title}>
+              <RegularText typography="H4" style={styles.title} color={white}>
                 Me
               </RegularText>
             ) : (
@@ -79,7 +79,7 @@ export default function AdCard({ ad, rank }) {
                 @{user.username}
               </RegularText>
             )}
-            <RegularText typography="B3">Bid: {bidPrice}</RegularText>
+            <RegularText typography="B3" color={userId == user.userId ? white : black}>Bid: {bidPrice}</RegularText>
           </View>
         </View>
         <View style={rank > 10 ? styles.lowRank : styles.highRank}>
@@ -104,12 +104,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    color: white,
     paddingHorizontal: viewportWidthInPixels(5),
   },
   card: {
     // backgroundColor: inputbackground,
-    width: viewportWidthInPixels(90),
+    width: viewportWidthInPixels(100),
     paddingHorizontal: viewportWidthInPixels(5),
     paddingVertical: 15,
     flexDirection: "row",
