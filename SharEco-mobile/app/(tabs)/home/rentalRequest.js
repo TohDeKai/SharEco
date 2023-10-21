@@ -31,7 +31,6 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black, dark, fail } = colours;
 import { useAuth } from "../../../context/auth";
-import Calendar from "../../../components/DatePicker";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import {
   SelectList,

@@ -136,6 +136,18 @@ const getWeekAdsByStartDate = async (startDate) => {
   }
 };
 
+const rankWeekAds = async () => {
+  try {
+    const startDate = getStartBidDate();
+    const ads = await getWeekAdsByStartDate(startDate);
+    ads.sort((ad1, ad2) => ad2.bidPrice - ad1.bidPrice);
+    console.log(ads);
+    return ads;
+  } catch (err) {
+    throw err
+  }
+}
+
 module.exports = {
   createAd,
   updateAdImage,
@@ -144,4 +156,5 @@ module.exports = {
   getAdByAdId,
   getAdsByBizId,
   getWeekAdsByStartDate,
+  rankWeekAds,
 };

@@ -1561,3 +1561,23 @@ app.get("/api/v1/weekAds/startDate/:startDate", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+//Get ranked week ads
+app.get("/api/v1/rankedWeekAds", async (req, res) => {
+  try {
+    const ads = await advertisementdb.rankWeekAds();
+    if (ads && ads.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ads: ads,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Weekly ads not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});

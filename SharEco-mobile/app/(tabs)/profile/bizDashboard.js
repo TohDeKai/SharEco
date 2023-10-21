@@ -173,6 +173,9 @@ const dashboard = () => {
   const handleCreateNewAd = () => {
     router.push("profile/createAd");
   };
+  const handleViewRanks = () => {
+    router.push("profile/rankings");
+  }  
 
   const pendingAds = userAds.filter((ad) => ad.status === "PENDING");
   const activeAds = userAds.filter((ad) => ad.status === "ACTIVE");
@@ -217,6 +220,21 @@ const dashboard = () => {
           />
           {activeAdPill === "Pending" && (
             <View>
+              <Pressable style={styles.ranks} onPress={handleViewRanks}>
+                <View style={{flexDirection: "row"}}>
+                  <Ionicons
+                    name="ribbon"
+                    size={17}
+                    style={{ marginRight: 10 }}
+                    color={yellow}
+                  />
+                  <RegularText typography="H4">View all rankings</RegularText>
+                </View>
+                <Ionicons
+                  name="chevron-forward-outline"
+                  size={20}
+                />
+              </Pressable>
               {pendingAds.length > 0 ? (
                 <FlatList
                   data={pendingAds}
@@ -237,7 +255,9 @@ const dashboard = () => {
                 />
               ) : (
                 <View style={styles.centeredText}>
-                 <RegularText typography="H4">No pending advertisements found!</RegularText>
+                  <RegularText typography="H4">
+                    No pending advertisements found!
+                  </RegularText>
                 </View>
               )}
             </View>
@@ -264,7 +284,9 @@ const dashboard = () => {
                 />
               ) : (
                 <View style={styles.centeredText}>
-                 <RegularText typography="H4">No active advertisements found!</RegularText>
+                  <RegularText typography="H4">
+                    No active advertisements found!
+                  </RegularText>
                 </View>
               )}
             </View>
@@ -291,7 +313,9 @@ const dashboard = () => {
                 />
               ) : (
                 <View style={styles.centeredText}>
-                 <RegularText typography="H4">No past advertisements found!</RegularText>
+                  <RegularText typography="H4">
+                    No past advertisements found!
+                  </RegularText>
                 </View>
               )}
             </View>
@@ -318,7 +342,9 @@ const dashboard = () => {
                 />
               ) : (
                 <View style={styles.centeredText}>
-                 <RegularText typography="H4">No rejected advertisements found!</RegularText>
+                  <RegularText typography="H4">
+                    No rejected advertisements found!
+                  </RegularText>
                 </View>
               )}
             </View>
@@ -345,7 +371,9 @@ const dashboard = () => {
                 />
               ) : (
                 <View style={styles.centeredText}>
-                 <RegularText typography="H4">No cancelled advertisements found!</RegularText>
+                  <RegularText typography="H4">
+                    No cancelled advertisements found!
+                  </RegularText>
                 </View>
               )}
             </View>
@@ -390,6 +418,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     height: 40,
     alignItems: "center",
+  },
+  ranks: {
+    borderBottomColor: inputbackground,
+    borderBottomWidth: 1,
+    paddingVertical: 6,
+    borderRadius: 7,
+    flexDirection: "row",
+    height: 40,
+    alignItems: "center",
+    justifyContent: "space-between"
   },
   pillContainer: {
     paddingTop: 18,
