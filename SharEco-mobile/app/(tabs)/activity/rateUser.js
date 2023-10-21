@@ -84,35 +84,39 @@ const rateUser = () => {
   const handleSubmitHandoverForm = async (values) => {
     try {
       const reviewData = {
+        rating: rating,
+        comments: values.comments,
+        revieweeIsLender: revieweeIsLenderBoolean,
         revieweeId: revieweeId,
         reviewerId: reviewerId,
-        starRating: rating,
-        comment: values.comment,
+        rentalId: rentalId,
       };
 
-      //TO REPLACE WITH CREATING A REVIEW
       const response = await axios.post(
         `http://${BASE_URL}:4000/api/v1/reviews`,
         reviewData
       );
 
-      
-      if (response.status === 200) {
-        console.log("Review submitted successfully");
+      if (response.status === 201) {
+        console.log("Review created successfully");
+        const reviewId = response.data.data.review.reviewId;
 
-        //TO REPLACE WITH UPDATING RENTAL WITH REVIEWIDBYLENDER / REVIEWIDBYBORROWER
-        const statusResponse = await axios.patch(
-          `http://${BASE_URL}:4000/api/v1/rental/status/${rentalId}`,
-          newStatus
-        );
+        var url;
+        if (revieweeIsLenderBoolean) {
+          url = `http://${BASE_URL}:4000/api/v1/rental/borrowerReview/${rentalId}/${reviewId}`
+        } else {
+          url = `http://${BASE_URL}:4000/api/v1/rental/lenderReview/${rentalId}/${reviewId}`
+        }
+        
+        const updateResponse = await axios.patch(url);
 
-        if (statusResponse.status === 200) {
-          console.log(`Status changed to ${nextRentalStatus}`);
+        if (updateResponse.status === 200) {
+          console.log("Rental updated with reviewId");
           router.back();
         }        
       } else {
         //shouldnt come here
-        console.log("Handover form submission unsuccessful");
+        console.log("Review creation unsuccessful");
       }
     } catch (error) {
       if (error.response && error.response.status === 500) {
@@ -125,19 +129,19 @@ const rateUser = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title="Submit Review" action="close" onPress={handleBack} />
+      <Header title="Submit Rating" action="close" onPress={handleBack} />
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
             initialValues={{
-              comment: "",
+              comments: "",
             }}
             onSubmit={(values, actions) => {
               if (rating == 0) {
                 setMessage("Please provide a rating");
                 setIsSuccessMessage(false);
               }
-              else if (values.comment == "") {
+              else if (values.comments == "") {
                 setMessage("Please provide a review");
                 setIsSuccessMessage(false);
               } else {
@@ -168,8 +172,8 @@ const rateUser = () => {
                 </RegularText>
                 <StyledTextInput
                   placeholder={"Share more about your experiences with this rental and " + (revieweeIsLenderBoolean ? "lender" : "borrower") }
-                  value={values.comment}
-                  onChangeText={handleChange("comment")}
+                  value={values.comments}
+                  onChangeText={handleChange("comments")}
                   maxLength={300}
                   multiline={true}
                   scrollEnabled={false}

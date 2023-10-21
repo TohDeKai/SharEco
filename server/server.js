@@ -9,6 +9,7 @@ const rentaldb = require("./queries/rental");
 const reviewdb = require("./queries/review");
 const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
+const wishlistdb = require("./queries/wishlist");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -1663,6 +1664,50 @@ app.get("/api/v1/reviews", async (req, res) => {
   }
 });
 
+// Get Review by reviewId
+app.get("/api/v1/reviews/reviewId/:reviewId", async (req, res) => {
+  try {
+    const review = await reviewdb.getReviewByReviewId(req.params.reviewId);
+    if (review.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          review: review,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Review  not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get Reviews by revieweeId
+app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
+  try {
+    const reviews = await reviewdb.getReviewsByRevieweeId(req.params.revieweeId);
+    if (reviews.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          reviews: reviews,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(404).json({ error: "Reviews  not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Create a Review
 app.post("/api/v1/reviews", async (req, res) => {
   const {
@@ -1691,9 +1736,9 @@ app.post("/api/v1/reviews", async (req, res) => {
         review: review,
       },
     });
-  } catch (err) {
+  } catch (error) {
     // Handle the error here if needed
-    console.log(err);
+    console.log(error);
     res.status(500).json({ error: "Database error" });
   }
 });
@@ -1755,3 +1800,146 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
       "pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH",
   });
 });
+
+// Get average rating by userId
+app.get("/api/v1/ratings/userId/:userId", async (req, res) => {
+  try {
+    const { averageRating, numberOfRatings } = await reviewdb.getRatingByUserId(req.params.userId);
+    if (averageRating) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          averageRating: averageRating.toFixed(1), //formats to 1dp
+          starsToDisplay: Math.round(averageRating), //rounds to nearest whole star (eg 4.4 round to 4, 4.5 round to 5)
+          numberOfRatings: numberOfRatings,
+        },
+      });
+    } else {
+      // Handle the case where the user has no ratings
+      res.status(404).json({ error: "Cannot calculate rating" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+/**********************          Wishlist Routes             **************************/
+// Add to wishlist
+app.post("/api/v1/wishlist", async (req, res) => {
+  const {itemId, userId} = req.body;
+
+  try {
+    const wishlist = await wishlistdb.createWishList(itemId, userId);
+
+    // Send the newly created wishlist as response
+    res.status(201).json({
+      status: "success",
+      data: {
+        wishlist: wishlist,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Remove from wishlist
+app.delete("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
+  const itemId = req.params.itemId;
+  const userId = req.params.userId;
+
+  try {
+    const wishlist = await wishlistdb.removeWishlist(itemId, userId);
+
+    if (wishlist) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          wishlist: wishlist,
+        },
+      });
+    } else {
+      // if wishlist not found
+      res.status(404).json({ error: "Wishlist not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get wishlist by itemId
+app.get("/api/v1/wishlist/itemId/:itemId", async (req, res) => {
+  const itemId = req.params.itemId;
+
+  try {
+    const wishlist = await wishlistdb.getWishlistByItemId(itemId);
+
+    if (wishlist.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          wishlist: wishlist,
+        },
+      });
+    } else {
+      // if wishlist not found
+      res.status(404).json({ error: "Wishlist not found" })
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get items by wishlist userId
+app.get("/api/v1/wishlist/userId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const items = await wishlistdb.getItemsByWishlistUserId(userId);
+
+    if (items.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          wishlist: items,
+        },
+      });
+    } else {
+      // if items not found
+      res.status(404).json({ error: "Items not found" })
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get wishlist by itemId and userId
+app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
+  const itemId = req.params.itemId;
+  const userId = req.params.userId;
+
+  try {
+    const wishlist = await wishlistdb.getWishlistByItemIdAndUserId(itemId, userId);
+
+    if (wishlist) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          wishlist: wishlist,
+        },
+      });
+    } else {
+      // if wishlist not found
+      res.status(404).json({ error: "Wishlist not found" })
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+})

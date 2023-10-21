@@ -11,7 +11,7 @@ import React, { useState, useEffect } from "react";
 import { Formik, Field } from "formik";
 import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import Checkbox from 'expo-checkbox';
+import Checkbox from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
@@ -49,7 +49,7 @@ const submitChecklist = () => {
   const { rentalId, checklistFormType } = params;
   const [rental, setRental] = useState({});
   const [item, setItem] = useState({});
-  const [checkboxValues, setCheckboxValues] = useState([]); 
+  const [checkboxValues, setCheckboxValues] = useState([]);
 
   useEffect(() => {
     async function fetchRentalData() {
@@ -143,7 +143,9 @@ const submitChecklist = () => {
     const uploadPromises = files.map(async (file, index) => {
       try {
         const img = await fetchImageUri(file.uri);
-        const key = `rentalId-${rentalId}-${checklistFormType}-${index + 1}.jpeg`;
+        const key = `rentalId-${rentalId}-${checklistFormType}-${
+          index + 1
+        }.jpeg`;
 
         // Upload the image with the unique key
         await Storage.put(key, img, {
@@ -194,7 +196,10 @@ const submitChecklist = () => {
   const handleSubmitHandoverForm = async (values) => {
     try {
       //handle upload all images and returns the array of uris
-      const uploadedURIs = await uploadImageFiles(imagesResult, checklistFormType);
+      const uploadedURIs = await uploadImageFiles(
+        imagesResult,
+        checklistFormType
+      );
 
       const itemData = {
         checklistFormType: checklistFormType,
@@ -212,7 +217,8 @@ const submitChecklist = () => {
       if (response.status === 200) {
         console.log("Handover form submitted successfully");
 
-        const nextRentalStatus = checklistFormType == "Start Rental" ? "ONGOING" : "COMPLETED";
+        const nextRentalStatus =
+          checklistFormType == "Start Rental" ? "ONGOING" : "COMPLETED";
 
         newStatus = {
           status: nextRentalStatus,
@@ -228,7 +234,7 @@ const submitChecklist = () => {
           setImages([null, null, null, null, null]);
           setImagesResult([null, null, null, null, null]);
           router.back();
-        }        
+        }
       } else {
         //shouldnt come here
         console.log("Handover form submission unsuccessful");
@@ -244,7 +250,11 @@ const submitChecklist = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title={checklistFormType + " Checklist"} action="close" onPress={handleBack} />
+      <Header
+        title={checklistFormType + " Checklist"}
+        action="close"
+        onPress={handleBack}
+      />
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
@@ -277,7 +287,8 @@ const submitChecklist = () => {
                   Handover checklist
                 </RegularText>
                 <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
-                  Inspect the condition of the item at handover and tick the relevant boxes
+                  Inspect the condition of the item at handover and tick the
+                  relevant boxes
                 </RegularText>
 
                 {item && item.checklistCriteria ? (
@@ -285,21 +296,25 @@ const submitChecklist = () => {
                     <View key={index} style={styles.checkboxContainer}>
                       <Checkbox
                         value={checkboxValues[index] || false}
-                        onValueChange={(newValue) => handleCheckboxChange(newValue, index)}
+                        onValueChange={(newValue) =>
+                          handleCheckboxChange(newValue, index)
+                        }
                         color={primary}
                       />
                       <RegularText>{criterion}</RegularText>
                     </View>
                   ))
                 ) : (
-                  <RegularText>No checklist criteria available.</RegularText>
+                  <RegularText typography="Subtitle">
+                    No checklist criteria available.
+                  </RegularText>
                 )}
 
                 <RegularText typography="H3" style={styles.headerText}>
                   Report Damages
                 </RegularText>
 
-                {checklistFormType == "Start Rental"  ? (
+                {checklistFormType == "Start Rental" ? (
                   <View>
                     <RegularText typography="B2" style={styles.headerText}>
                       Existing Damages
