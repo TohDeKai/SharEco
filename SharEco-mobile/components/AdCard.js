@@ -14,9 +14,12 @@ import { Rating } from "react-native-stock-star-rating";
 import { Link, router } from "expo-router";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
+import axios from "axios";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 import UserAvatar from "./UserAvatar";
 import { PrimaryButton, SecondaryButton } from "./buttons/RegularButton";
+import ConfirmationModal from "./ConfirmationModal";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -30,14 +33,43 @@ const viewportWidthInPixels = (percentage) => {
 
 export default function AdCard({ ad }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { image, title, description, bidPrice, link, advertisementId } = ad.item;
+  const { image, title, description, bidPrice, link, advertisementId } =
+    ad.item;
+  const [showDeleteModal, setShowDeleteModall] = useState(false);
 
   const toggleCollapse = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const toEditAd= () => {
-    router.push({ pathname: "profile/editAd", params: { adId: advertisementId } })
+  const toEditAd = () => {
+    router.push({
+      pathname: "profile/editAd",
+      params: { adId: advertisementId },
+    });
+  };
+
+  const handleDeleteAd = async () => {
+    try {
+      const response = await axios.delete(
+        `http://${BASE_URL}:4000/api/v1/cancelAd/adId/${advertisementId}`
+      );
+
+      console.log(response.status);
+      if (response.status === 200) {
+        console.log("Ad successfully deleted");
+        handleCloseDeleteModal();
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModall(false);
+  };
+
+  const handleShowDeleteModal = () => {
+    setShowDeleteModall(true);
   }
 
   return (
@@ -100,6 +132,7 @@ export default function AdCard({ ad }) {
               typography={"B1"}
               color={primary}
               style={styles.button}
+              onPress={handleShowDeleteModal}
             >
               Delete
             </SecondaryButton>
@@ -112,6 +145,15 @@ export default function AdCard({ ad }) {
               Edit
             </PrimaryButton>
           </View>
+          {showDeleteModal && (
+            <ConfirmationModal
+              isVisible={showDeleteModal}
+              onConfirm={handleDeleteAd}
+              onClose={handleCloseDeleteModal}
+              style={{ flex: 0 }}
+              type="Delete"
+            />
+          )}
         </View>
       )}
     </View>
@@ -165,5 +207,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-  }
+  },
 });

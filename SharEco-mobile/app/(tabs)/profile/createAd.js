@@ -48,9 +48,22 @@ const createAd = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("true");
   const [image, setImage] = useState();
   const [imageResult, setImageResult] = useState();
-  //   const [userId, setUser] = useState("");
-  //   const { getUserData } = useAuth();
-  const userId = 87;
+  const [userId, setUserId] = useState("");
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUserId(userData.userId);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, []);
 
   const handleOpenGallery = () => {
     console.log("Opening gallery");
@@ -122,6 +135,8 @@ const createAd = () => {
         bidPrice: values.bidPrice,
         link: values.link,
       };
+
+      console.log("Req data: ", reqData);
 
       const response = await axios.post(
         `http://${BASE_URL}:4000/api/v1/createAd`,

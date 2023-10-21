@@ -48,12 +48,25 @@ const editAd = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("true");
   const [newImage, setNewImage] = useState();
   const [imageResult, setImageResult] = useState();
-  //   const [userId, setUser] = useState("");
-  //   const { getUserData } = useAuth();
-  const userId = 87;
+  const [userId, setUserId] = useState("");
+  const { getUserData } = useAuth();
   const params = useLocalSearchParams();
   const { adId } = params;
   const [ad, setAd] = useState({});
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUserId(userData.userId);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, []);
 
   useEffect(() => {
     async function fetchAdData() {
@@ -175,7 +188,7 @@ const editAd = () => {
             console.log("Error updating ad image");
           }
         } else {
-            router.back();
+          router.back();
         }
       } else {
         console.log("Ad editing unsuccessful");
