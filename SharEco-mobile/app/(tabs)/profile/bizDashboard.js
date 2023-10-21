@@ -198,7 +198,7 @@ const dashboard = () => {
               <PrimaryButton style={styles.button} onPress={handleCreateNewAd}>
                 <Ionicons name="add" color={white} size={25} />
                 <View style={{ paddingTop: 3, paddingRight: 5 }}>
-                  <RegularText typography="H3" color={white}>
+                  <RegularText typography="H4" color={white}>
                     Create ad
                   </RegularText>
                 </View>

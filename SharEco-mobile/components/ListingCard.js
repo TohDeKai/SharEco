@@ -50,7 +50,6 @@ export default function ListingCard({ item, mine }) {
     <Pressable onPress={mine ? toMyListing : toIndivListing}>
       <View style={style.card}>
         <Image
-          resizeMode="contain"
           source={{
             uri: images[0],
           }}
@@ -124,7 +123,10 @@ export default function ListingCard({ item, mine }) {
 const style = StyleSheet.create({
   image: {
     width: viewportWidthInPixels(40),
-    height: viewportHeightInPixels(22),
+    height: viewportWidthInPixels(40),
+    borderRadius: 3,
+    marginTop: viewportWidthInPixels(4),
+    marginBottom: viewportWidthInPixels(2),
   },
   card: {
     paddingRight: viewportWidthInPixels(5),

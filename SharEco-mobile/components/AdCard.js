@@ -16,6 +16,7 @@ import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 import UserAvatar from "./UserAvatar";
+import { PrimaryButton, SecondaryButton } from "./buttons/RegularButton";
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -29,11 +30,15 @@ const viewportWidthInPixels = (percentage) => {
 
 export default function AdCard({ ad }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { image, title, description, bidPrice, link } = ad.item;
+  const { image, title, description, bidPrice, link, advertisementId } = ad.item;
 
   const toggleCollapse = () => {
     setIsExpanded(!isExpanded);
   };
+
+  const toEditAd= () => {
+    router.push({ pathname: "profile/editAd", params: { adId: advertisementId } })
+  }
 
   return (
     <View style={styles.container}>
@@ -78,7 +83,11 @@ export default function AdCard({ ad }) {
             Link
           </RegularText>
           {link ? (
-            <RegularText typography="Subtitle" color={primary} style={styles.textMargin}>
+            <RegularText
+              typography="Subtitle"
+              color={primary}
+              style={styles.textMargin}
+            >
               <Link href={link}>{link}</Link>
             </RegularText>
           ) : (
@@ -86,6 +95,23 @@ export default function AdCard({ ad }) {
               No link provided, we will redirect users to your profile
             </RegularText>
           )}
+          <View style={styles.buttonContainer}>
+            <SecondaryButton
+              typography={"B1"}
+              color={primary}
+              style={styles.button}
+            >
+              Delete
+            </SecondaryButton>
+            <PrimaryButton
+              typography={"B1"}
+              color={white}
+              style={styles.button}
+              onPress={toEditAd}
+            >
+              Edit
+            </PrimaryButton>
+          </View>
         </View>
       )}
     </View>
@@ -115,6 +141,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: viewportWidthInPixels(3),
+    borderRadius: 3,
   },
   title: {
     textOverflow: "ellipsis",
@@ -129,5 +156,14 @@ const styles = StyleSheet.create({
   },
   expanded: {
     paddingBottom: 15,
+  },
+  button: {
+    height: 40,
+    marginTop: viewportHeightInPixels(2),
+    width: viewportWidthInPixels(44),
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   }
 });

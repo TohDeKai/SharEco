@@ -16,7 +16,7 @@ const createAd = async (image, title, description, bidPrice, bizId, link) => {
     const endDate = getStartBidDate();
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."advertisement" 
-         ("startDate", "endDate", "image", "title", "description", "bidPrice", "status", "bizId", "link") 
+         ("startDate", "endDate", "image", "title", "description", "bidPrice", "status", "bizId",) 
                 values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
       [startDate, endDate, image, title, description, bidPrice, "PENDING", bizId, link]
     );
@@ -60,10 +60,11 @@ const getStartBidDate = () => {
 
 const editAd = async (adId, image, title, description, bidPrice, link) => {
   try {
+    console.log(description, image);
     const result = await pool.query(
       `UPDATE "sharEco-schema"."advertisement" 
         SET "image" = $1, 
-        "title" = $2
+        "title" = $2,
         "description" = $3,
         "bidPrice" = $4,
         "link" = $6
