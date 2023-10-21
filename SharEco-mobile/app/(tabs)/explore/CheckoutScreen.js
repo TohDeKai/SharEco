@@ -52,6 +52,11 @@ const CheckoutScreen = () => {
         }
       );
       const { paymentIntent, ephemeralKey, customer } = await response.json();
+
+      if(walletId == ""){
+        const inputNewCustomerWalletIdResponse = axios.put(`http://${BASE_URL}:4000/api/v1/users/walletId/${userId}`,
+        { walletId: customer});
+      }
       setFetchedPayment(true);
 
       return {

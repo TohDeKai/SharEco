@@ -1730,7 +1730,7 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
   console.log(walletId);
   console.log(amount);
   const customer =
-    walletId != null
+    walletId != ""
       ? await stripe.customers.retrieve(walletId)
       : await stripe.customers.create();
   const ephemeralKey = await stripe.ephemeralKeys.create(

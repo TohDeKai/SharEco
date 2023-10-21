@@ -32,9 +32,10 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const explore = () => {
-  const [walletId, setWalletId] = useState(null);
+  const [walletId, setWalletId] = useState("");
   const [userId, setUserId] = useState(null);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [user, setUser] = useState("");
   const { getUserData } = useAuth();
 
   useEffect(() => {
@@ -42,6 +43,7 @@ const explore = () => {
       try {
         const userData = await getUserData();
         if (userData) {
+          setUser(userData);
           setWalletId(userData.walletId);
           setUserId(userData.userId);
           setWalletBalance(userData.walletBalance);
@@ -51,17 +53,13 @@ const explore = () => {
       }
     }
     fetchData();
-    return () => {
-      fetchData();
-    };
-  }, []);
+  }, [user.walletBalance]);
 
   const handleBack = () => {
     router.back();
   };
 
   const toTopUp = () => {
-    console.log("top up button being pressed", walletId);
     router.push({pathname:"explore/CheckoutScreen", params:{walletId: walletId , userId: userId, walletBalance: walletBalance}});
   };
 
