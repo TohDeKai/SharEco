@@ -203,7 +203,7 @@ const Content = ({ activeTab }) => {
           <RegularText typography="H3" style={styles.headerText}>
             End Rental Handover checklist
           </RegularText>
-          {item && item.checklistCriteria ? (
+          {item && item.checklistCriteria && item.checklistCriteria.length > 0 ? (
             item.checklistCriteria.map((criterion, index) => (
               <View key={index} style={styles.checkboxContainer}>
                 <Checkbox

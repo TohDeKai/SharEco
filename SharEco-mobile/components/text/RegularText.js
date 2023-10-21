@@ -12,6 +12,8 @@ const { white, black } = colours;
 const StyledText = styled.Text`
     font-size:  ${props => {
         switch(props.typography) {
+            case 'EcoWallet':
+                return '46px';
             case 'H1': 
                 return '26px';
             case 'H2':
@@ -38,6 +40,8 @@ const StyledText = styled.Text`
     text-align: left;
     font-family: ${props => {
         switch (props.typography) {
+            case 'EcoWallet':
+                return 'PlusJakartaSans_700Bold';
             case 'H1': 
                 return 'PlusJakartaSans_700Bold';
             case 'H2':
