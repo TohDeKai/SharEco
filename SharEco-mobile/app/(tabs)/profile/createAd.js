@@ -50,6 +50,7 @@ const createAd = () => {
   const [imageResult, setImageResult] = useState();
   const [userId, setUserId] = useState("");
   const { getUserData } = useAuth();
+  const [rankedAds, setRankedAds] = useState([]);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -63,7 +64,51 @@ const createAd = () => {
       }
     }
     fetchUserData();
+    async function fetchAdsData() {
+      try {
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/rankedWeekAds`
+        );
+
+        console.log(response.status);
+        if (response.status === 200) {
+          const ads = response.data.data.ads;
+          console.log(ads);
+          setRankedAds(ads);
+        } else {
+          console.log("Failed to retrieve ranked ads for the week");
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchAdsData();
   }, []);
+
+  const Top10BidRange = () => {
+    console.log("top 10 bid range");
+    if (rankedAds && rankedAds.length > 0) {
+      const highest = rankedAds[0].bidPrice;
+      const lowest =
+        rankedAds.length > 10
+          ? rankedAds[9].bidPrice
+          : rankedAds[rankedAds.length - 1].bidPrice;
+      console.log(highest, lowest);
+      return (
+        <View>
+          <RegularText typography="B1" color={primary} style={{ textAlign: "center", marginBottom: 15 }}>
+            Range of Top 10 Bids: {lowest} - {highest}
+          </RegularText>
+          <RegularText typography="Subtitle" style={{ textAlign: "center" }}>
+            Only 10 ads will be shown on the home page according to the bid rank
+            below. Being in the top 10 does NOT guarantee your spot, your ad
+            will still be subject to our approval.
+          </RegularText>
+        </View>
+      );
+    }
+    return null;
+  };
 
   const handleOpenGallery = () => {
     console.log("Opening gallery");
@@ -295,6 +340,7 @@ const createAd = () => {
                       style={styles.perDayInputBox}
                     />
                   </View>
+                  <Top10BidRange />
 
                   <MessageBox
                     style={{ marginTop: 7 }}
