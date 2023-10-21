@@ -10,6 +10,7 @@ const reviewdb = require("./queries/review");
 const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
+const transactiondb = require("./queries/transaction");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -1943,3 +1944,26 @@ app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 })
+
+/**********************          Transaction Routes             **************************/
+app.post("/api/v1/transaction", async (req, res) => {
+  const { senderId, receiverId, amount, transactionType } = req.body;
+
+  try {
+    const transaction = await transactiondb.createTransaction(
+      senderId, receiverId, amount, transactionType
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});

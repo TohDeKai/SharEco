@@ -6,6 +6,7 @@ import {
   Button,
   Alert,
   ScrollView,
+  Dimensions
 } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +24,11 @@ import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import MessageBox from "../../../components/text/MessageBox";
 const { white, primary, black } = colours;
+
+const viewportHeightInPixels = (percentage) => {
+    const screenHeight = Dimensions.get("window").height;
+    return (percentage / 100) * screenHeight;
+  };
 
 const CheckoutScreen = () => {
   const [amountInCents, setAmountInCents] = useState(0);
@@ -53,9 +59,11 @@ const CheckoutScreen = () => {
       );
       const { paymentIntent, ephemeralKey, customer } = await response.json();
 
-      if(walletId == ""){
-        const inputNewCustomerWalletIdResponse = axios.put(`http://${BASE_URL}:4000/api/v1/users/walletId/${userId}`,
-        { walletId: customer});
+      if (walletId == "") {
+        const inputNewCustomerWalletIdResponse = axios.put(
+          `http://${BASE_URL}:4000/api/v1/users/walletId/${userId}`,
+          { walletId: customer }
+        );
       }
       setFetchedPayment(true);
 
@@ -65,7 +73,7 @@ const CheckoutScreen = () => {
         customer,
       };
     };
-    
+
     const initializePaymentSheet = async () => {
       const { paymentIntent, ephemeralKey, customer, publishableKey } =
         await fetchPaymentSheetParams();
@@ -86,52 +94,24 @@ const CheckoutScreen = () => {
 
       const { error2 } = await presentPaymentSheet();
 
-        if (error2) {
-          Alert.alert(`Error code: ${error2.code}`, error2.message);
-        } else {
-          const updatedBalance =
-            parseFloat(walletBalance.replace("$", "")) + amountInCents / 100;
-          console.log(updatedBalance);
-          const walletUpdateResponse = axios.put(
-            `http://${BASE_URL}:4000/api/v1/users/walletBalance/${userId}`,
-            { walletBalance: updatedBalance }
-          );
-          router.replace("explore");
-          Alert.alert(
-            "Success",
-            `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
-          );
-        }
+      if (error2) {
+        Alert.alert(`Error code: ${error2.code}`, error2.message);
+      } else {
+        const updatedBalance =
+          parseFloat(walletBalance.replace("$", "")) + amountInCents / 100;
+        console.log(updatedBalance);
+        const walletUpdateResponse = axios.put(
+          `http://${BASE_URL}:4000/api/v1/users/walletBalance/${userId}`,
+          { walletBalance: updatedBalance }
+        );
+        router.replace("explore");
+        Alert.alert(
+          "Success",
+          `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
+        );
+      }
     };
     initializePaymentSheet();
-
-    // const openPaymentSheet = async () => {
-    //   try {
-    //     const { error } = await presentPaymentSheet();
-
-    //     if (error) {
-    //       Alert.alert(`Error code: ${error.code}`, error.message);
-    //     } else {
-    //       const updatedBalance =
-    //         parseFloat(walletBalance.replace("$", "")) + amountInCents / 100;
-    //       console.log(updatedBalance);
-    //       const walletUpdateResponse = axios.put(
-    //         `http://${BASE_URL}:4000/api/v1/users/walletBalance/${userId}`,
-    //         { walletBalance: updatedBalance }
-    //       );
-    //       router.replace("explore");
-    //       Alert.alert(
-    //         "Success",
-    //         `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
-    //       );
-    //     }
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-    // if (fetchedPayment) {
-    //   openPaymentSheet();
-    // }
   };
 
   useEffect(() => {
@@ -143,23 +123,23 @@ const CheckoutScreen = () => {
   //HANDLE FORMIK
   return (
     <StripeProvider publishableKey="pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH">
-      <SafeAreaContainer>
+      <SafeAreaContainer style={styles.container}>
         <Formik
           initialValues={{ amount: 0 }}
           onSubmit={(values, setSubmitting) => {
             if (parseFloat(values.amount) <= 1) {
-                console.log(values.amount);
+              console.log(values.amount);
               setMessage("Input amount cannot be less than or equal to $1.");
               setIsSuccessMessage(false);
             } else {
-                setAmountInCents((parseFloat(values.amount) * 100));
-                setInputRegistered(true);
+              setAmountInCents(parseFloat(values.amount) * 100);
+              setInputRegistered(true);
             }
           }}
         >
           {({ handleChange, handleSubmit, values }) => (
             <ScrollView>
-              <RegularText typography="H3" color={black}>
+              <RegularText typography="H1" color={black} style={{textAlign:"center", marginBottom:10}}>
                 Input Top-Up Amount ($)
               </RegularText>
               <StyledTextInput
@@ -167,16 +147,14 @@ const CheckoutScreen = () => {
                 value={values.amount}
                 onChangeText={handleChange("amount")}
                 keyboardType="numeric"
+                style={{marginBottom:10}}
               />
               <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
                 {message || " "}
               </MessageBox>
-              <Button
-                variant="primary"
-                // disabled={!loading || !inputFilled}
-                title="Confirm"
-                onPress={handleSubmit}
-              />
+              <PrimaryButton typography={"B1"} color={white} onPress={handleSubmit}>
+                Confirm
+              </PrimaryButton>
             </ScrollView>
           )}
         </Formik>
@@ -186,3 +164,12 @@ const CheckoutScreen = () => {
 };
 
 export default CheckoutScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: white,
+    alignItems: "center",
+    paddingTop: viewportHeightInPixels(35)
+  },
+});
