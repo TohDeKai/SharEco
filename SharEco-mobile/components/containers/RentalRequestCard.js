@@ -20,6 +20,7 @@ const RentalRequestCard = (props) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [item, setItem] = useState();
   const [user, setUser] = useState("");
+  const [borrowerRatings, setBorrowerRatings] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
 
@@ -89,6 +90,13 @@ const RentalRequestCard = (props) => {
         if (userResponse.status === 200) {
           const userData = userResponse.data.data.user;
           setUser(userData);
+
+          const ratingsResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
+          )
+          if (ratingsResponse.status === 200) {
+            setBorrowerRatings(ratingsResponse.data.data);
+          }
         }
       } catch (error) {
         console.log("user", error.message);
@@ -234,9 +242,9 @@ const RentalRequestCard = (props) => {
                 <RegularText typography="B1">{user.displayName}</RegularText>
                 {/* to be implemented */}
                 <View style={styles.ratingsContainer}>
-                  <RegularText typography="Subtitle">0.0</RegularText>
-                  <Rating stars={0} size={16} color={yellow} />
-                  <RegularText typography="Subtitle">(0)</RegularText>
+                  <RegularText typography="Subtitle">{borrowerRatings.averageRating || 0}</RegularText>
+                  <Rating stars={borrowerRatings.starsToDisplay || 0} size={18} color={yellow} />
+                  <RegularText typography="Subtitle">({borrowerRatings.numberOfRatings || 0})</RegularText>
                 </View>
               </View>
             </View>
