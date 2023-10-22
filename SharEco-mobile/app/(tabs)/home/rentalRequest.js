@@ -723,7 +723,21 @@ const createRentals = () => {
 
       if (response.status === 201) {
         // router.replace("/home");
-        router.back();
+        //create transaction to deduct fees from borrower ecowallet when making rental
+        const transactionData = {
+          senderId: user.userId,
+          amount: totalCost(activeTab),
+          transactionType: "RENTAL_PAYMENT"
+        };
+
+        const transactionResponse = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+          transactionData
+        )
+
+        if (transactionResponse.status === 200) {
+          router.back();
+        }
       }
     } catch (error) {
       console.log(error.message);
