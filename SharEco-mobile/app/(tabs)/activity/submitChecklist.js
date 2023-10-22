@@ -230,6 +230,46 @@ const submitChecklist = () => {
         );
 
         if (statusResponse.status === 200) {
+
+          if (checklistFormType == "End Rental") {
+            //release fees to lender ecowallet upon complete rental 
+            const platformFee = (parseFloat(rental.rentalFee.replace(/\$/g, '')) * 0.05).toFixed(2);
+            const netEarnings = (parseFloat(rental.rentalFee.replace(/\$/g, '')) - platformFee).toFixed(2);
+
+            const transactionData = {
+              receiverId: rental.lenderId,
+              amount: netEarnings,
+              transactionType: "RENTAL_INCOME"
+            };
+
+            const transactionResponse = await axios.post(
+              `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+              transactionData
+            )
+            
+            //refund deposit
+            if (parseFloat(rental.depositFee.replace(/\$/g, '')) > 0) {
+              const refundData = {
+                receiverId: rental.borrowerId,
+                amount: rental.depositFee,
+                transactionType: "RENTAL_INCOME"
+              };
+  
+              const refundResponse = await axios.post(
+                `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+                refundData
+              )
+              if (refundResponse.status === 200) {
+                console.log("Deposit refunded successfully");
+              }
+            }
+
+            if (transactionResponse.status === 200) {
+              console.log(`Rental fee released to lender`);
+            }
+          } else if (checklistFormType == "Start Rental") {
+            console.log("Rental started")
+          }
           console.log(`Status changed to ${nextRentalStatus}`);
           setImages([null, null, null, null, null]);
           setImagesResult([null, null, null, null, null]);
