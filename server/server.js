@@ -219,6 +219,30 @@ app.put("/api/v1/users/walletBalance/:userId", async (req, res) => {
   }
 });
 
+//update wallet Balance to admin
+app.put("/api/v1/users/adminWalletBalance", async (req, res) => {
+  try {
+    const user = await userdb.updateAdminWalletBalance(
+      req.body.walletBalance
+    );
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Updating user based on userId
 app.put("/api/v1/users/:userId", async (req, res) => {
   try {
@@ -1964,6 +1988,86 @@ app.post("/api/v1/transaction", async (req, res) => {
   } catch (err) {
     // Handle the error here if needed
     console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.post("/api/v1/transaction/toAdmin", async (req, res) => {
+  const { senderId, amount, transactionType } = req.body;
+
+  try {
+    const transaction = await transactiondb.transactionToAdmin(
+      senderId, amount, transactionType
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.post("/api/v1/transaction/fromAdmin", async (req, res) => {
+  const { receiverId, amount, transactionType } = req.body;
+
+  try {
+    const transaction = await transactiondb.transactionFromAdmin(
+      receiverId, amount, transactionType
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get transactions by receiverId
+app.get("/api/v1/transaction/receiverId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const transactions = await transactiondb.getTransactionsByReceiverId(userId);
+      res.status(200).json({
+        status: "success",
+        data: {
+          transactions: transactions,
+        },
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get transactions by senderId
+app.get("/api/v1/transaction/senderId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const transactions = await transactiondb.getTransactionsBySenderId(userId);
+      res.status(200).json({
+        status: "success",
+        data: {
+          transactions: transactions,
+        },
+      });
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Database error" });
   }
 });
