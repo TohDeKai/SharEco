@@ -156,6 +156,9 @@ const RentalRequestCard = (props) => {
     setIsExpanded(!isExpanded);
   };
 
+  const platformFee = (parseFloat(rental.rentalFee.replace(/\$/g, '')) * 0.05).toFixed(2);
+  const netEarnings = (parseFloat(rental.rentalFee.replace(/\$/g, '')) - platformFee).toFixed(2);
+
   return (
     <View style={styles.container}>
       <Pressable onPress={toggleCollapse}>
@@ -240,7 +243,6 @@ const RentalRequestCard = (props) => {
               />
               <View style={styles.profile}>
                 <RegularText typography="B1">{user.displayName}</RegularText>
-                {/* to be implemented */}
                 <View style={styles.ratingsContainer}>
                   <RegularText typography="Subtitle">{borrowerRatings.averageRating || 0}</RegularText>
                   <Rating stars={borrowerRatings.starsToDisplay || 0} size={18} color={yellow} />
@@ -266,13 +268,31 @@ const RentalRequestCard = (props) => {
             </View>
           )}
 
-          <View style={styles.totalEarnings}>
-            <RegularText typography="H3" color={dark}>
-              Total Earnings
-            </RegularText>
-            <RegularText typography="H3" color={dark}>
-              {rental.totalFee}
-            </RegularText>
+          <View>
+            <View style={styles.totalEarnings}>
+              <RegularText typography="H3" color={dark}>
+                Net Earnings
+              </RegularText>
+              <RegularText typography="H3" color={dark}>
+                ${netEarnings}
+              </RegularText>
+            </View>
+            <View style={styles.totalEarnings}>
+              <RegularText typography="B2" color={dark}>
+                Rental Fees
+              </RegularText>
+              <RegularText typography="B2" color={dark}>
+                {rental.rentalFee}
+              </RegularText>
+            </View>
+            <View style={styles.totalEarnings}>
+              <RegularText typography="B2" color={dark}>
+                Platform Fee
+              </RegularText>
+              <RegularText typography="B2" color={dark}>
+                ${platformFee}
+              </RegularText>
+            </View>
           </View>
 
           <View style={styles.buttonContainerWithCountdown}>
