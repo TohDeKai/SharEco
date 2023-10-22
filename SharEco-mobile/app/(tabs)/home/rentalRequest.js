@@ -746,6 +746,7 @@ const createRentals = () => {
         )
 
         if (transactionResponse.status === 200) {
+          console.log(`Rental fee held by admin`);
           router.back();
         }
       }
