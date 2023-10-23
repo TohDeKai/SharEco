@@ -487,7 +487,6 @@ const ActivityCard = ({ rental, type }) => {
 
         {rental.status === "ONGOING" && (
           <View style={styles.buttons}>
-            {/* to be implemented */}
             <Pressable>
               <Ionicons
                 name="chatbubble-outline"
@@ -495,12 +494,12 @@ const ActivityCard = ({ rental, type }) => {
                 size={35}
               />
             </Pressable>
-            {/* to be implemented */}
             <View style={styles.buttonContainer}>
               <DisabledButton typography="B3" color={white}>
                 Report
               </DisabledButton>
             </View>
+            {/*
             {type === "Lending" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
@@ -508,6 +507,7 @@ const ActivityCard = ({ rental, type }) => {
                 </PrimaryButton>
               </View>
             )}
+            */}
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton
