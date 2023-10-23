@@ -467,7 +467,7 @@ const ActivityCard = ({ rental, type }) => {
                   color={white}
                   onPress={handleStart}
                 >
-                  Update
+                  Start
                 </PrimaryButton>
               </View>
             )}
