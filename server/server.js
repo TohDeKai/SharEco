@@ -1970,6 +1970,7 @@ app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
 })
 
 /**********************          Transaction Routes             **************************/
+//create transaction without handling wallet balance
 app.post("/api/v1/transaction", async (req, res) => {
   const { senderId, receiverId, amount, transactionType } = req.body;
 
@@ -1992,6 +1993,51 @@ app.post("/api/v1/transaction", async (req, res) => {
   }
 });
 
+//create withdrawal request without handling wallet balance
+app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
+  const { receiverId, amount } = req.body;
+
+  try {
+    const transaction = await transactiondb.createWithdrawalRequest(receiverId, amount)
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//transfer money from user to user wallet balance updated
+app.post("/api/v1/transaction/transfer", async (req, res) => {
+  const { senderUsername, receiverUsername, amount } = req.body;
+
+  try {
+    const transaction = await transactiondb.transferBetweenUsers(
+      senderUsername, receiverUsername, amount 
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//transfer money from user to admin, wallet balance updated
 app.post("/api/v1/transaction/toAdmin", async (req, res) => {
   const { senderId, amount, transactionType } = req.body;
 
@@ -2014,6 +2060,7 @@ app.post("/api/v1/transaction/toAdmin", async (req, res) => {
   }
 });
 
+//transfer money from admin to user, wallet balance updated
 app.post("/api/v1/transaction/fromAdmin", async (req, res) => {
   const { receiverId, amount, transactionType } = req.body;
 

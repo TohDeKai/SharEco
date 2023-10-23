@@ -12,186 +12,233 @@ const pool = new Pool({
 
 const currentTimeStamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
-// Create Transaction
-const createTransaction = async (senderId, receiverId, amount, transactionType) => {
-    try {      
-      const result = await pool.query(
-        `INSERT INTO "sharEco-schema"."transaction" 
+// Create Transaction (No wallet balance updated)
+const createTransaction = async (
+  senderId,
+  receiverId,
+  amount,
+  transactionType
+) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO "sharEco-schema"."transaction" 
               ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
                 values ($1, $2, $3, $4, $5) returning *`,
-        [
-          currentTimeStamp,
-          senderId,
-          receiverId,
-          amount,
-          transactionType,
-        ]
-      );
-      return result.rows[0];
-    } catch (err) {
-      throw err;
+      [currentTimeStamp, senderId, receiverId, amount, transactionType]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Create Withdrawal Request (no wallet balance updated)
+const createWithdrawalRequest = async (receiverId, amount) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO "sharEco-schema"."transaction" 
+            ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
+              values ($1, $2, $3, $4, $5) returning *`,
+      [currentTimeStamp, 1, receiverId, amount, "WITHDRAW"]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+//Transfer from one user to another based on username (wallet balance updated)
+const transferBetweenUsers = async (
+  senderUsername,
+  receiverUsername,
+  amount
+) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const senderQuery =
+      'SELECT "userId", "walletBalance" FROM "sharEco-schema"."user" WHERE "username" = $1';
+    const senderResult = await client.query(senderQuery, [senderUsername]);
+
+    if (senderResult.rows.length === 0) {
+      throw new Error("Sender user not found");
     }
-  };
 
-  // const transactionToAdmin = async (senderId, amount, transactionType) => {
-  //   try {      
-  //   //   const getAdminWalletBalance = await pool.query(
-  //   //     `SELECT "walletBalance" FROM "sharEco-schema"."user" 
-  //   // WHERE "userId" = 1`,
-  //   //   )
-      
-  //   //   const updatedAdminWalletBalance = parseFloat(getAdminWalletBalance.rows[0].replace("$", "")) + amount;
+    const sender = senderResult.rows[0];
+    const senderId = sender.userId;
+    const senderWalletBalance = parseFloat(
+      sender.walletBalance.replace("$", "")
+    );
 
-  //   //   const result = await pool.query(
-  //   //     `INSERT INTO "sharEco-schema"."transaction" 
-  //   //           ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
-  //   //             values ($1, $2, $3, $4, $5) returning *`,
-  //   //     [
-  //   //       currentTimeStamp,
-  //   //       senderId,
-  //   //       1,
-  //   //       amount,
-  //   //       transactionType,
-  //   //     ]
-  //   //   );
+    const receiverQuery =
+      'SELECT "userId", "walletBalance" FROM "sharEco-schema"."user" WHERE "username" = $1';
+    const receiverResult = await client.query(receiverQuery, [
+      receiverUsername,
+    ]);
 
-  //   const result = await pool.query(
-  //     `WITH new_transaction AS (
-  //       INSERT INTO "sharEco-schema"."transaction" 
-  //         ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
-  //       VALUES ($1, $2, $3, $4, $5)
-  //       RETURNING *
-  //     )
-  //     UPDATE "sharEco-schema.user" AS sender
-  //     SET "walletBalance" = sender."walletBalance" - $4
-  //     FROM "sharEco-schema.user" AS receiver
-  //     WHERE sender."userId" = $2 AND receiver."userId" = $3
-  //     SET receiver."walletBalance" = receiver."walletBalance" + $4
-  //     RETURNING new_transaction.*, sender."walletBalance" AS sender_wallet_balance, receiver."walletBalance" AS receiver_wallet_balance`,
-  //     [
-  //       currentTimeStamp,
-  //       senderId,
-  //       1, // Specify the actual receiver's userId
-  //       amount,
-  //       transactionType,
-  //     ]
-  //   );
-  //     return result.rows[0];
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // };
-  const transactionToAdmin = async (senderId, amount, transactionType) => {
+    if (receiverResult.rows.length === 0) {
+      throw new Error("Receiver user not found");
+    }
+
+    const receiver = receiverResult.rows[0];
+    const receiverId = receiver.userId;
+    const receiverWalletBalance = parseFloat(
+      receiver.walletBalance.replace("$", "")
+    );
+
+    const insertTransactionQuery = `INSERT INTO "sharEco-schema"."transaction" 
+        ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
+        values ($1, $2, $3, $4, $5) returning *`;
+    const transactionResult = await client.query(insertTransactionQuery, [
+      currentTimeStamp,
+      senderId,
+      receiverId,
+      amount,
+      "TRANSFER",
+    ]);
+
+    const updateSenderQuery = `UPDATE "sharEco-schema"."user"
+        SET "walletBalance" = ($1 + "walletBalance")
+        WHERE "userId" = $2
+        RETURNING "walletBalance"`;
+    const updatedSenderResult = await client.query(updateSenderQuery, [
+      -amount, 
+      senderId,
+    ]);
+
+    const updateReceiverQuery = `UPDATE "sharEco-schema"."user"
+        SET "walletBalance" = ($1 + "walletBalance")
+        WHERE "userId" = $2
+        RETURNING "walletBalance"`;
+    const updatedReceiverResult = await client.query(updateReceiverQuery, [
+      amount, 
+      receiverId,
+    ]);
+
+    await client.query("COMMIT");
+
+    return {
+      transaction: transactionResult.rows[0],
+      sender_wallet_balance: updatedSenderResult.rows[0].walletBalance,
+      receiver_wallet_balance: updatedReceiverResult.rows[0].walletBalance,
+    };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+//Transfer from one user to admin (wallet balance updated)
+const transactionToAdmin = async (senderId, amount, transactionType) => {
+  try {
+    const client = await pool.connect();
     try {
-      const client = await pool.connect();
-      try {
-        await client.query('BEGIN');
-  
-        // Insert the transaction
-        const insertTransactionQuery = `INSERT INTO "sharEco-schema"."transaction" 
+      await client.query("BEGIN");
+
+      const insertTransactionQuery = `INSERT INTO "sharEco-schema"."transaction" 
           ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
           values ($1, $2, $3, $4, $5) returning *`;
-        const result = await client.query(insertTransactionQuery, [
-          currentTimeStamp,
-          senderId,
-          1, // Specify the actual receiver's userId
-          amount,
-          transactionType,
-        ]);
-  
-        // Update sender's walletBalance
-        const updateSenderQuery = `UPDATE "sharEco-schema"."user"
+      const result = await client.query(insertTransactionQuery, [
+        currentTimeStamp,
+        senderId,
+        1, 
+        amount,
+        transactionType,
+      ]);
+
+      const updateSenderQuery = `UPDATE "sharEco-schema"."user"
           SET "walletBalance" = "walletBalance" - $1
           WHERE "userId" = $2
           RETURNING "walletBalance"`;
-        const senderWalletBalance = await client.query(updateSenderQuery, [
-          amount,
-          senderId,
-        ]);
-  
-        // Update receiver's walletBalance
-        const updateReceiverQuery = `UPDATE "sharEco-schema"."user"
+      const senderWalletBalance = await client.query(updateSenderQuery, [
+        amount,
+        senderId,
+      ]);
+
+      const updateReceiverQuery = `UPDATE "sharEco-schema"."user"
           SET "walletBalance" = "walletBalance" + $1
           WHERE "userId" = $2
           RETURNING "walletBalance"`;
-        const receiverWalletBalance = await client.query(updateReceiverQuery, [
-          amount,
-          1, 
-        ]);
-  
-        await client.query('COMMIT');
-        return {
-          transaction: result.rows[0],
-          sender_wallet_balance: senderWalletBalance.rows[0].walletBalance,
-          receiver_wallet_balance: receiverWalletBalance.rows[0].walletBalance,
-        };
-      } catch (err) {
-        await client.query('ROLLBACK');
-        throw err;
-      } finally {
-        client.release();
-      }
-    } catch (err) {
-      throw err;
-    }
-  };
+      const receiverWalletBalance = await client.query(updateReceiverQuery, [
+        amount,
+        1,
+      ]);
 
-  const transactionFromAdmin = async (receiverId, amount, transactionType) => {
+      await client.query("COMMIT");
+      return {
+        transaction: result.rows[0],
+        sender_wallet_balance: senderWalletBalance.rows[0].walletBalance,
+        receiver_wallet_balance: receiverWalletBalance.rows[0].walletBalance,
+      };
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+//Transfer from admin to one user (wallet balance updated)
+const transactionFromAdmin = async (receiverId, amount, transactionType) => {
+  try {
+    const client = await pool.connect();
     try {
-      const client = await pool.connect();
-      try {
-        await client.query('BEGIN');
-  
-        // Insert the transaction
-        const insertTransactionQuery = `INSERT INTO "sharEco-schema"."transaction" 
+      await client.query("BEGIN");
+
+      const insertTransactionQuery = `INSERT INTO "sharEco-schema"."transaction" 
           ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
           values ($1, $2, $3, $4, $5) returning *`;
-        const result = await client.query(insertTransactionQuery, [
-          currentTimeStamp,
-          1,
-          receiverId,
-          amount,
-          transactionType,
-        ]);
-  
-        // Update sender's walletBalance
-        const updateSenderQuery = `UPDATE "sharEco-schema"."user"
+      const result = await client.query(insertTransactionQuery, [
+        currentTimeStamp,
+        1,
+        receiverId,
+        amount,
+        transactionType,
+      ]);
+
+      const updateSenderQuery = `UPDATE "sharEco-schema"."user"
           SET "walletBalance" = "walletBalance" - $1
           WHERE "userId" = $2
           RETURNING "walletBalance"`;
-        const senderWalletBalance = await client.query(updateSenderQuery, [
-          amount,
-          1,
-        ]);
-  
-        // Update receiver's walletBalance
-        const updateReceiverQuery = `UPDATE "sharEco-schema"."user"
+      const senderWalletBalance = await client.query(updateSenderQuery, [
+        amount,
+        1,
+      ]);
+
+      const updateReceiverQuery = `UPDATE "sharEco-schema"."user"
           SET "walletBalance" = "walletBalance" + $1
           WHERE "userId" = $2
           RETURNING "walletBalance"`;
-        const receiverWalletBalance = await client.query(updateReceiverQuery, [
-          amount,
-          receiverId, 
-        ]);
-  
-        await client.query('COMMIT');
-        return {
-          transaction: result.rows[0],
-          sender_wallet_balance: senderWalletBalance.rows[0].walletBalance,
-          receiver_wallet_balance: receiverWalletBalance.rows[0].walletBalance,
-        };
-      } catch (err) {
-        await client.query('ROLLBACK');
-        throw err;
-      } finally {
-        client.release();
-      }
-    } catch (err) {
-      throw err;
-    }
-  };
+      const receiverWalletBalance = await client.query(updateReceiverQuery, [
+        amount,
+        receiverId,
+      ]);
 
-  // get transaction as receiver
+      await client.query("COMMIT");
+      return {
+        transaction: result.rows[0],
+        sender_wallet_balance: senderWalletBalance.rows[0].walletBalance,
+        receiver_wallet_balance: receiverWalletBalance.rows[0].walletBalance,
+      };
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+// get transaction as receiver
 const getTransactionsByReceiverId = async (userId) => {
   try {
     const result = await pool.query(
@@ -205,24 +252,26 @@ const getTransactionsByReceiverId = async (userId) => {
   }
 };
 
-  // get transaction as receiver
-  const getTransactionsBySenderId = async (userId) => {
-    try {
-      const result = await pool.query(
-        `SELECT * FROM "sharEco-schema"."transaction" 
+// get transaction as receiver
+const getTransactionsBySenderId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."transaction" 
       WHERE "senderId" = $1`,
-        [userId]
-      );
-      return result.rows;
-    } catch (err) {
-      throw err;
-    }
-  };
-  
-  module.exports = {
-      createTransaction,
-      getTransactionsByReceiverId,
-      getTransactionsBySenderId,
-      transactionToAdmin,
-      transactionFromAdmin
-  };
+      [userId]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+module.exports = {
+  createTransaction,
+  getTransactionsByReceiverId,
+  getTransactionsBySenderId,
+  transactionToAdmin,
+  transactionFromAdmin,
+  transferBetweenUsers,
+  createWithdrawalRequest,
+};
