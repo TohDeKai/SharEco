@@ -488,6 +488,45 @@ const submitChecklist = () => {
                 >
                   {message || " "}
                 </MessageBox>
+                
+                {isLate && (
+                  
+                  <View style={styles.pricing}>
+                    {/* {<View style={styles.pricingRow}>
+                      <RegularText typography="Subtitle">You are {countdown} late</RegularText>
+                    </View>} */}
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="B1">Hours Late</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="B1">
+                          {hoursLate}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="B1">Late Fee Per Hour</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="B1">
+                          ${perHourlyLateFee}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="B1">Total Late Handover Fee</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="B1">
+                          ${lateFees}
+                        </RegularText>
+                      </View>
+                    </View>
+                  </View>
+                )}
                 <RoundedButton
                   typography={"B1"}
                   color={white}
@@ -496,37 +535,6 @@ const submitChecklist = () => {
                 >
                   Submit Checklist
                 </RoundedButton>
-                <View>
-
-                
-                {isLate ? (
-                  <View>
-                    <RegularText typography="Subtitle">
-                      {checklistFormType == "Start Rental" ? "Late start rental" : "Late end rental"} by{" "}
-                    </RegularText>
-                    <RegularText typography="B3">{countdown}</RegularText>
-                    <RegularText typography="Subtitle">
-                      Hours Late: {hoursLate}
-                    </RegularText>
-                    <RegularText typography="Subtitle">
-                      Late Fee Per Hour: {perHourlyLateFee}
-                    </RegularText>
-                    <RegularText typography="Subtitle">
-                      Late Handover Fee: {lateFees}
-                    </RegularText>
-                  </View>
-                  ) : (
-                    <View>
-                      <RegularText typography="Subtitle">
-                        {checklistFormType == "Start Rental" ? "Early start rental" : "Early end rental"} by 
-                      </RegularText>
-                      <RegularText typography="B3">{countdown}</RegularText>
-                    </View>
-                  )}
-                </View>
-                
-                
-
               </View>
             )}
           </Formik>
@@ -574,5 +582,17 @@ const styles = StyleSheet.create({
   perDayInputBox: {
     justifyContent: "flex-end",
     width: viewportWidthInPixels(35),
+  },
+  pricing: {
+    marginVertical: 15,
+    paddingTop: 25,
+    borderTopWidth: 2,
+    borderTopColor: inputbackground,
+  },
+  pricingRow: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
   },
 });
