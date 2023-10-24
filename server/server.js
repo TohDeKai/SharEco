@@ -10,6 +10,7 @@ const reviewdb = require("./queries/review");
 const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
+const transactiondb = require("./queries/transaction");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -198,6 +199,30 @@ app.put("/api/v1/users/walletBalance/:userId", async (req, res) => {
   try {
     const user = await userdb.updateUserWalletBalance(
       req.params.userId,
+      req.body.walletBalance
+    );
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//update wallet Balance to admin
+app.put("/api/v1/users/adminWalletBalance", async (req, res) => {
+  try {
+    const user = await userdb.updateAdminWalletBalance(
       req.body.walletBalance
     );
     if (user) {
@@ -1943,3 +1968,153 @@ app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 })
+
+/**********************          Transaction Routes             **************************/
+//create transaction without handling wallet balance
+app.post("/api/v1/transaction", async (req, res) => {
+  const { senderId, receiverId, amount, transactionType } = req.body;
+
+  try {
+    const transaction = await transactiondb.createTransaction(
+      senderId, receiverId, amount, transactionType
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//create withdrawal request without handling wallet balance
+app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
+  const { receiverId, amount } = req.body;
+
+  try {
+    const transaction = await transactiondb.createWithdrawalRequest(receiverId, amount)
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//transfer money from user to user wallet balance updated
+app.post("/api/v1/transaction/transfer", async (req, res) => {
+  const { senderUsername, receiverUsername, amount } = req.body;
+
+  try {
+    const transaction = await transactiondb.transferBetweenUsers(
+      senderUsername, receiverUsername, amount 
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//transfer money from user to admin, wallet balance updated
+app.post("/api/v1/transaction/toAdmin", async (req, res) => {
+  const { senderId, amount, transactionType } = req.body;
+
+  try {
+    const transaction = await transactiondb.transactionToAdmin(
+      senderId, amount, transactionType
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//transfer money from admin to user, wallet balance updated
+app.post("/api/v1/transaction/fromAdmin", async (req, res) => {
+  const { receiverId, amount, transactionType } = req.body;
+
+  try {
+    const transaction = await transactiondb.transactionFromAdmin(
+      receiverId, amount, transactionType
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get transactions by receiverId
+app.get("/api/v1/transaction/receiverId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const transactions = await transactiondb.getTransactionsByReceiverId(userId);
+      res.status(200).json({
+        status: "success",
+        data: {
+          transactions: transactions,
+        },
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get transactions by senderId
+app.get("/api/v1/transaction/senderId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const transactions = await transactiondb.getTransactionsBySenderId(userId);
+      res.status(200).json({
+        status: "success",
+        data: {
+          transactions: transactions,
+        },
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
