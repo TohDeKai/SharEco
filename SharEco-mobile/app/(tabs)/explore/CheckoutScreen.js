@@ -6,7 +6,7 @@ import {
   Button,
   Alert,
   ScrollView,
-  Dimensions
+  Dimensions,
 } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,13 +22,19 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
+import Header from "../../../components/Header";
 import MessageBox from "../../../components/text/MessageBox";
 const { white, primary, black } = colours;
 
 const viewportHeightInPixels = (percentage) => {
-    const screenHeight = Dimensions.get("window").height;
-    return (percentage / 100) * screenHeight;
-  };
+  const screenHeight = Dimensions.get("window").height;
+  return (percentage / 100) * screenHeight;
+};
+
+const viewportWidthInPixels = (percentage) => {
+  const screenHeight = Dimensions.get("window").width;
+  return (percentage / 100) * screenHeight;
+};
 
 const CheckoutScreen = () => {
   const [amountInCents, setAmountInCents] = useState(0);
@@ -120,44 +126,63 @@ const CheckoutScreen = () => {
     }
   }, [inputRegistered, amountInCents]);
 
+  const handleBack = () => {
+    router.back();
+  };
+
   //HANDLE FORMIK
   return (
     <StripeProvider publishableKey="pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH">
-      <SafeAreaContainer style={styles.container}>
-        <Formik
-          initialValues={{ amount: 0 }}
-          onSubmit={(values, setSubmitting) => {
-            if (parseFloat(values.amount) <= 1) {
-              console.log(values.amount);
-              setMessage("Input amount cannot be less than or equal to $1.");
-              setIsSuccessMessage(false);
-            } else {
-              setAmountInCents(parseFloat(values.amount) * 100);
-              setInputRegistered(true);
-            }
-          }}
-        >
-          {({ handleChange, handleSubmit, values }) => (
-            <ScrollView>
-              <RegularText typography="H1" color={black} style={{textAlign:"center", marginBottom:10}}>
-                Input Top-Up Amount ($)
-              </RegularText>
-              <StyledTextInput
-                placeholder="Input your top up amount"
-                value={values.amount}
-                onChangeText={handleChange("amount")}
-                keyboardType="numeric"
-                style={{marginBottom:10}}
-              />
-              <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
-                {message || " "}
-              </MessageBox>
-              <PrimaryButton typography={"B1"} color={white} onPress={handleSubmit}>
-                Confirm
-              </PrimaryButton>
-            </ScrollView>
-          )}
-        </Formik>
+      <SafeAreaContainer>
+        <Header title="Top-Up EcoWallet" action="back" onPress={handleBack} />
+        <ScrollView>
+          <Formik
+            initialValues={{ amount: 0 }}
+            onSubmit={(values, setSubmitting) => {
+              if (parseFloat(values.amount) <= 1) {
+                console.log(values.amount);
+                setMessage("Input amount cannot be less than or equal to $1.");
+                setIsSuccessMessage(false);
+              } else {
+                setAmountInCents(parseFloat(values.amount) * 100);
+                setInputRegistered(true);
+              }
+            }}
+          >
+            {({ handleChange, handleSubmit, values }) => (
+              <View style={styles.container}>
+                <RegularText
+                  typography="H1"
+                  color={black}
+                  style={{ textAlign: "center", marginBottom: 10 }}
+                >
+                  Input Top-Up Amount ($)
+                </RegularText>
+                <StyledTextInput
+                  placeholder="Input your top up amount"
+                  value={values.amount}
+                  onChangeText={handleChange("amount")}
+                  keyboardType="numeric"
+                  style={{ marginBottom: 10, width: viewportWidthInPixels(85) }}
+                />
+                <MessageBox
+                  style={{ marginTop: 10 }}
+                  success={isSuccessMessage}
+                >
+                  {message || " "}
+                </MessageBox>
+                <PrimaryButton
+                  typography={"B1"}
+                  color={white}
+                  onPress={handleSubmit}
+                  style={{width: viewportWidthInPixels(85)}}
+                >
+                  Confirm
+                </PrimaryButton>
+              </View>
+            )}
+          </Formik>
+        </ScrollView>
       </SafeAreaContainer>
     </StripeProvider>
   );
@@ -170,6 +195,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: white,
     alignItems: "center",
-    paddingTop: viewportHeightInPixels(35)
+    paddingTop: viewportHeightInPixels(28),
   },
 });
