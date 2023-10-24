@@ -1359,6 +1359,26 @@ app.get("/api/v1/rentals/lenderId/:lenderId", async (req, res) => {
   }
 });
 
+// Get Rentals by Lender Id and Item Id
+app.get("/api/v1/rentals/lenderId/:lenderId/itemId/:itemId", async (req, res) => {
+  try {
+    const rentals = await rentaldb.getRentalsByLenderAndItemId(req.params.lenderId, req.params.itemId);
+    if (rentals.length !== 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          rentals: rentals,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "No rentals found for the given lender and item" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Get Rental by Borrower Id
 app.get("/api/v1/rentals/borrowerId/:borrowerId", async (req, res) => {
   try {

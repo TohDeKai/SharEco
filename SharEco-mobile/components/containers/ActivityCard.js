@@ -381,18 +381,19 @@ const ActivityCard = ({ rental, type }) => {
               {/* to be implemented */}
               <View style={styles.buttonContainer}>
                 <DisabledButton
-                  typography="B3"
+                  typography="B2"
                   color={white}
-                  style={{ paddingVertical: 0 }}
+                  style={{ paddingVertical: 0, height: 45 }}
                 >
                   Report
                 </DisabledButton>
               </View>
               <View style={styles.buttonContainer}>
                 <SecondaryButton
-                  typography="B3"
+                  typography="B2"
                   color={primary}
                   onPress={handleShowCancelModal}
+                  style={{ height: 45 }}
                 >
                   Cancel
                 </SecondaryButton>
@@ -433,18 +434,19 @@ const ActivityCard = ({ rental, type }) => {
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
               <DisabledButton
-                typography="B3"
+                typography="H4"
                 color={white}
-                style={{ paddingVertical: 0 }}
+                style={{ paddingVertical: 0, height: 45 }}
               >
                 Report
               </DisabledButton>
             </View>
             <View style={styles.buttonContainer}>
               <SecondaryButton
-                typography="B3"
+                typography="H4"
                 color={primary}
                 onPress={handleShowCancelModal}
+                style={{ height: 45 }}
               >
                 Cancel
               </SecondaryButton>
@@ -541,7 +543,14 @@ const ActivityCard = ({ rental, type }) => {
                   if (revieweeIsLender) {
                     if (rental.reviewIdByBorrower != null) {
                       //show existing review as borrower
-                      router.push({pathname: "activity/viewRating", params: {reviewId : rental.reviewIdByBorrower, revieweeIsLender: revieweeIsLender, itemId: item.itemId}});
+                      router.push({
+                        pathname: "activity/viewRating",
+                        params: {
+                          reviewId: rental.reviewIdByBorrower,
+                          revieweeIsLender: revieweeIsLender,
+                          itemId: item.itemId,
+                        },
+                      });
                     } else {
                       router.push({
                         pathname: "activity/rateUser",
@@ -554,7 +563,14 @@ const ActivityCard = ({ rental, type }) => {
                   } else {
                     if (rental.reviewIdByLender != null) {
                       //show existing review as lender
-                      router.push({pathname: "activity/viewRating", params: {reviewId : rental.reviewIdByLender, revieweeIsLender: revieweeIsLender, itemId: item.itemId}});
+                      router.push({
+                        pathname: "activity/viewRating",
+                        params: {
+                          reviewId: rental.reviewIdByLender,
+                          revieweeIsLender: revieweeIsLender,
+                          itemId: item.itemId,
+                        },
+                      });
                     } else {
                       router.push({
                         pathname: "activity/rateUser",
@@ -567,7 +583,10 @@ const ActivityCard = ({ rental, type }) => {
                   }
                 }}
               >
-                {(type === "Borrowing" && rental.reviewIdByBorrower!= null) || (type === "Lending" && rental.reviewIdByLender!= null) ? "View Rating" : "Rate"}
+                {(type === "Borrowing" && rental.reviewIdByBorrower != null) ||
+                (type === "Lending" && rental.reviewIdByLender != null)
+                  ? "View Rating"
+                  : "Rate"}
               </PrimaryButton>
             </View>
             {

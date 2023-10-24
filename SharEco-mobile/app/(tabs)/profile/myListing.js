@@ -266,6 +266,10 @@ const ListingNav = ({ data }) => {
     router.push({ pathname: "profile/editListing", params: { itemId: data } });
   };
 
+  const toManageRentals = () => {
+    router.push({ pathname: "profile/manageRentals", params: { itemId: data } });
+  };
+
   const [wishlistCount, setWishlistCount] = useState(0);
 
   useEffect(() => {
@@ -308,9 +312,9 @@ const ListingNav = ({ data }) => {
           </SecondaryButton>
         </View>
         <View style={style.buttonContainer}>
-          <DisabledButton typography={"H3"} color={white}>
+          <PrimaryButton typography={"H3"} color={white} onPress={toManageRentals}>
             Manage Rentals
-          </DisabledButton>
+          </PrimaryButton>
         </View>
       </View>
     </View>

@@ -196,6 +196,20 @@ const getRentalsByLenderId = async (userId) => {
   }
 };
 
+//Get Rentals by Lender Id & ItemId
+const getRentalsByLenderAndItemId = async (lenderId, itemId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."rental" 
+       WHERE "lenderId" = $1 AND "itemId" = $2`,
+      [lenderId, itemId]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
 //Get Rental by Borrower Id
 const getRentalsByBorrowerId = async (userId) => {
   try {
@@ -937,6 +951,7 @@ module.exports = {
   deleteRentalRequest,
   getAllRentals,
   getRentalsByLenderId,
+  getRentalsByLenderAndItemId,
   getRentalsByBorrowerId,
   getRentalsByItemId,
   getRentalByRentalId,
