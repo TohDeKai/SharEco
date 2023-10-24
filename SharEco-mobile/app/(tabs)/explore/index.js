@@ -47,7 +47,7 @@ const explore = () => {
           setWalletId(userData.walletId);
           setUserId(userData.userId);
           setWalletBalance(userData.walletBalance);
-          }
+        }
       } catch (error) {
         console.log(error.message);
       }
@@ -60,12 +60,27 @@ const explore = () => {
   };
 
   const toTopUp = () => {
-    router.push({pathname:"explore/CheckoutScreen", params:{walletId: walletId , userId: userId, walletBalance: walletBalance}});
+    router.push({
+      pathname: "explore/CheckoutScreen",
+      params: {
+        walletId: walletId,
+        userId: userId,
+        walletBalance: walletBalance,
+      },
+    });
+  };
+
+  const toTransfer = () => {
+    router.push({ pathname: "explore/transferScreen" });
+  };
+
+  const toWithdraw = () => {
+    router.push({ pathname: "explore/withdrawScreen" });
   };
 
   return (
     <SafeAreaContainer>
-      <Header title="EcoWallet" action="back" onPress={handleBack} />
+      <Header title="EcoWallet" onPress={handleBack} />
       <View style={styles.greenHeader}>
         <RegularText typography="B2" color={white}>
           Balance Amount
@@ -75,6 +90,7 @@ const explore = () => {
         </RegularText>
         <View style={styles.buttonContainer}>
           <Pressable
+            onPress={toTransfer}
             style={({ pressed }) => ({
               opacity: pressed ? 0.5 : 1,
             })}
@@ -106,6 +122,7 @@ const explore = () => {
             </RegularText>
           </Pressable>
           <Pressable
+            onPress={toWithdraw}
             style={({ pressed }) => ({
               opacity: pressed ? 0.5 : 1,
             })}
@@ -162,8 +179,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: white,
   },
-  body:{
+  body: {
     paddingHorizontal: viewportWidthInPixels(15),
-    paddingVertical: viewportHeightInPixels(3)
-  }
+    paddingVertical: viewportHeightInPixels(3),
+  },
 });
