@@ -87,6 +87,71 @@ const submitChecklist = () => {
     fetchItemData();
   }, [rental]);
 
+  const currentDate = new Date();
+  const startDate = new Date(rental.startDate);
+  const endDate = new Date(rental.endDate);
+  let timeDifferenceMs;
+  if (rental.status === "UPCOMING") {
+    timeDifferenceMs = startDate - currentDate;
+  } else if (rental.status === "ONGOING") {
+    timeDifferenceMs = endDate - currentDate;
+  } else {
+    timeDifferenceMs = 0;
+  }
+
+  // Check if the time difference is negative
+  const isLate = timeDifferenceMs < 0;
+  let hoursLate = 0;
+  let lateFees = 0;
+  let perHourlyLateFee = 0;
+
+  if (isLate) {
+    // Make the time difference positive for calculations
+    timeDifferenceMs = -timeDifferenceMs;
+
+    let perHourlyFee = 0;
+    if (rental.isHourly && item && item.rentalRateHourly) { //waits for item to load
+      perHourlyFee = parseFloat(item.rentalRateHourly.replace(/\$/g, ''));
+      console.log("Hourly Fee: " + item.rentalRateHourly)
+    } else if (!rental.isHourly && item && item.rentalRateDaily) {
+      perHourlyFee = parseFloat(item.rentalRateDaily.replace(/\$/g, '')) / 24;
+      console.log("Prorated Hourly Fee: " + item.rentalRateDaily);
+    }
+
+    hoursLate = Math.floor(timeDifferenceMs / (1000 * 60 * 60));
+    if (timeDifferenceMs < 10 * 60 * 1000) {
+      // If under 10 mins late, set lateFees to 0
+      lateFees = 0;
+      isLate = false;
+    } else {
+      // Charge double the hourly fee per hour late
+      perHourlyLateFee = perHourlyFee * 2;
+      lateFees = hoursLate * perHourlyLateFee;
+    }
+  }
+
+  // Calculate numOfMonths, numOfDays, numOfHours, and numOfMinutes
+  const numOfMonths = Math.floor(timeDifferenceMs / (1000 * 60 * 60 * 24 * 30));
+  const numOfDays = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+  const numOfHours = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const numOfMinutes = Math.floor((timeDifferenceMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  let countdown = "";
+
+  if (numOfMonths > 0) {
+    countdown += numOfMonths + "M ";
+  }
+  if (numOfDays > 0 || numOfMonths > 0) {
+    countdown += numOfDays + "D ";
+  }
+  if (numOfHours > 0 || numOfDays > 0 || numOfMonths > 0) {
+    countdown += numOfHours + "H ";
+  }
+  countdown += numOfMinutes + "M";
+
+  // trim if any trailing whitespace
+  countdown.trim();
+
   const handleCheckboxChange = (newValue, index) => {
     // Create a copy of the checkboxValues array
     const updatedValues = [...checkboxValues];
@@ -230,6 +295,8 @@ const submitChecklist = () => {
         );
 
         if (statusResponse.status === 200) {
+          //compensates lender when borrower is late
+
 
           if (checklistFormType == "End Rental") {
             //release fees to lender ecowallet upon complete rental 
@@ -400,6 +467,37 @@ const submitChecklist = () => {
                 >
                   Submit Checklist
                 </RoundedButton>
+                <View>
+
+                
+                {isLate ? (
+                  <View>
+                    <RegularText typography="Subtitle">
+                      {checklistFormType == "Start Rental" ? "Late start rental" : "Late end rental"} by{" "}
+                    </RegularText>
+                    <RegularText typography="B3">{countdown}</RegularText>
+                    <RegularText typography="Subtitle">
+                      Hours Late: {hoursLate}
+                    </RegularText>
+                    <RegularText typography="Subtitle">
+                      Late Fee Per Hour: {perHourlyLateFee}
+                    </RegularText>
+                    <RegularText typography="Subtitle">
+                      Late Handover Fee: {lateFees}
+                    </RegularText>
+                  </View>
+                  ) : (
+                    <View>
+                      <RegularText typography="Subtitle">
+                        {checklistFormType == "Start Rental" ? "Early start rental" : "Early end rental"} by 
+                      </RegularText>
+                      <RegularText typography="B3">{countdown}</RegularText>
+                    </View>
+                  )}
+                </View>
+                
+                
+
               </View>
             )}
           </Formik>
