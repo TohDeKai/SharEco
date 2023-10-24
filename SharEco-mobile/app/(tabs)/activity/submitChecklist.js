@@ -87,6 +87,71 @@ const submitChecklist = () => {
     fetchItemData();
   }, [rental]);
 
+  const currentDate = new Date();
+  const startDate = new Date(rental.startDate);
+  const endDate = new Date(rental.endDate);
+  let timeDifferenceMs;
+  if (rental.status === "UPCOMING") {
+    timeDifferenceMs = startDate - currentDate;
+  } else if (rental.status === "ONGOING") {
+    timeDifferenceMs = endDate - currentDate;
+  } else {
+    timeDifferenceMs = 0;
+  }
+
+  // Check if the time difference is negative
+  const isLate = timeDifferenceMs < 0;
+  let hoursLate = 0;
+  let lateFees = 0;
+  let perHourlyLateFee = 0;
+
+  if (isLate) {
+    // Make the time difference positive for calculations
+    timeDifferenceMs = -timeDifferenceMs;
+
+    let perHourlyFee = 0;
+    if (rental.isHourly && item && item.rentalRateHourly) { //waits for item to load
+      perHourlyFee = parseFloat(item.rentalRateHourly.replace(/\$/g, ''));
+      console.log("Hourly Fee: " + item.rentalRateHourly)
+    } else if (!rental.isHourly && item && item.rentalRateDaily) {
+      perHourlyFee = parseFloat(item.rentalRateDaily.replace(/\$/g, '')) / 24;
+      console.log("Prorated Hourly Fee: " + item.rentalRateDaily);
+    }
+
+    hoursLate = Math.floor(timeDifferenceMs / (1000 * 60 * 60));
+    if (timeDifferenceMs < 10 * 60 * 1000) {
+      // If under 10 mins late, set lateFees to 0
+      lateFees = 0;
+      isLate = false;
+    } else {
+      // Charge double the hourly fee per hour late
+      perHourlyLateFee = perHourlyFee * 2;
+      lateFees = (hoursLate * perHourlyLateFee).toFixed(2);
+    }
+  }
+
+  // Calculate numOfMonths, numOfDays, numOfHours, and numOfMinutes
+  const numOfMonths = Math.floor(timeDifferenceMs / (1000 * 60 * 60 * 24 * 30));
+  const numOfDays = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+  const numOfHours = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const numOfMinutes = Math.floor((timeDifferenceMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  let countdown = "";
+
+  if (numOfMonths > 0) {
+    countdown += numOfMonths + "M ";
+  }
+  if (numOfDays > 0 || numOfMonths > 0) {
+    countdown += numOfDays + "D ";
+  }
+  if (numOfHours > 0 || numOfDays > 0 || numOfMonths > 0) {
+    countdown += numOfHours + "H ";
+  }
+  countdown += numOfMinutes + "M";
+
+  // trim if any trailing whitespace
+  countdown.trim();
+
   const handleCheckboxChange = (newValue, index) => {
     // Create a copy of the checkboxValues array
     const updatedValues = [...checkboxValues];
@@ -230,6 +295,77 @@ const submitChecklist = () => {
         );
 
         if (statusResponse.status === 200) {
+
+          if (isLate) {
+             //late handover fee paid from borrower to admin 
+            const lateHandoverPaymentData = {
+              senderId: rental.borrowerId,
+              amount: lateFees,
+              transactionType: "LATE_HANDOVER_PAYMENT"
+            }
+            const lateHandoverPaymentResponse = await axios.post(
+              `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+              lateHandoverPaymentData
+            )
+
+            //compensate late handover fee to lender
+            const lateHandoverRefundData = {
+              receiverId: rental.lenderId,
+              amount: (lateFees * 0.75).toFixed(2),
+              transactionType: "LATE_HANDOVER_REFUND"
+            }
+            const lateHandoverRefundResponse = await axios.post(
+              `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+              lateHandoverRefundData
+            )
+
+            if (lateHandoverPaymentResponse.status === 200) {
+              console.log("Late handover fee successfully paid to admin: " + lateFees);
+            }
+            if (lateHandoverRefundResponse.status === 200) {
+              console.log("Late handover fee reimbursed to lender: " +  (lateFees * 0.75).toFixed(2));
+            }
+          }
+
+          if (checklistFormType == "End Rental") {
+            //release fees to lender ecowallet upon complete rental 
+            const platformFee = (parseFloat(rental.rentalFee.replace(/\$/g, '')) * 0.05).toFixed(2);
+            const netEarnings = (parseFloat(rental.rentalFee.replace(/\$/g, '')) - platformFee).toFixed(2);
+
+            const transactionData = {
+              receiverId: rental.lenderId,
+              amount: netEarnings,
+              transactionType: "RENTAL_INCOME"
+            };
+
+            const transactionResponse = await axios.post(
+              `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+              transactionData
+            )
+            
+            //refund deposit
+            if (parseFloat(rental.depositFee.replace(/\$/g, '')) > 0) {
+              const refundData = {
+                receiverId: rental.borrowerId,
+                amount: rental.depositFee,
+                transactionType: "RENTAL_INCOME"
+              };
+  
+              const refundResponse = await axios.post(
+                `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+                refundData
+              )
+              if (refundResponse.status === 200) {
+                console.log("Deposit refunded successfully");
+              }
+            }
+
+            if (transactionResponse.status === 200) {
+              console.log(`Rental fee released to lender`);
+            }
+          } else if (checklistFormType == "Start Rental") {
+            console.log("Rental started")
+          }
           console.log(`Status changed to ${nextRentalStatus}`);
           setImages([null, null, null, null, null]);
           setImagesResult([null, null, null, null, null]);
@@ -352,6 +488,45 @@ const submitChecklist = () => {
                 >
                   {message || " "}
                 </MessageBox>
+                
+                {isLate && (
+                  
+                  <View style={styles.pricing}>
+                    {/* {<View style={styles.pricingRow}>
+                      <RegularText typography="Subtitle">You are {countdown} late</RegularText>
+                    </View>} */}
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="B1">Hours Late</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="B1">
+                          {hoursLate}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="B1">Late Fee Per Hour</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="B1">
+                          ${perHourlyLateFee}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="B1">Total Late Handover Fee</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="B1">
+                          ${lateFees}
+                        </RegularText>
+                      </View>
+                    </View>
+                  </View>
+                )}
                 <RoundedButton
                   typography={"B1"}
                   color={white}
@@ -407,5 +582,17 @@ const styles = StyleSheet.create({
   perDayInputBox: {
     justifyContent: "flex-end",
     width: viewportWidthInPixels(35),
+  },
+  pricing: {
+    marginVertical: 15,
+    paddingTop: 25,
+    borderTopWidth: 2,
+    borderTopColor: inputbackground,
+  },
+  pricingRow: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
   },
 });
