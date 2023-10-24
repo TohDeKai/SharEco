@@ -126,7 +126,7 @@ const submitChecklist = () => {
     } else {
       // Charge double the hourly fee per hour late
       perHourlyLateFee = perHourlyFee * 2;
-      lateFees = hoursLate * perHourlyLateFee;
+      lateFees = (hoursLate * perHourlyLateFee).toFixed(2);
     }
   }
 
@@ -295,8 +295,37 @@ const submitChecklist = () => {
         );
 
         if (statusResponse.status === 200) {
-          //compensates lender when borrower is late
 
+          if (isLate) {
+             //late handover fee paid from borrower to admin 
+            const lateHandoverPaymentData = {
+              senderId: rental.borrowerId,
+              amount: lateFees,
+              transactionType: "LATE_HANDOVER_PAYMENT"
+            }
+            const lateHandoverPaymentResponse = await axios.post(
+              `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+              lateHandoverPaymentData
+            )
+
+            //compensate late handover fee to lender
+            const lateHandoverRefundData = {
+              receiverId: rental.lenderId,
+              amount: (lateFees * 0.75).toFixed(2),
+              transactionType: "LATE_HANDOVER_REFUND"
+            }
+            const lateHandoverRefundResponse = await axios.post(
+              `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+              lateHandoverRefundData
+            )
+
+            if (lateHandoverPaymentResponse.status === 200) {
+              console.log("Late handover fee successfully paid to admin: " + lateFees);
+            }
+            if (lateHandoverRefundResponse.status === 200) {
+              console.log("Late handover fee reimbursed to lender: " +  (lateFees * 0.75).toFixed(2));
+            }
+          }
 
           if (checklistFormType == "End Rental") {
             //release fees to lender ecowallet upon complete rental 
