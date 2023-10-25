@@ -11,6 +11,7 @@ const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
 const transactiondb = require("./queries/transaction");
+const transactiondb = require("./queries/transaction");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -21,6 +22,9 @@ const axios = require("axios");
 
 const multer = require("multer");
 const fs = require("fs");
+const stripe = require("stripe")(
+  "sk_test_51O18L3H2N8GaqjXUCdY2UTSePPVKWxSltauacIasCcfiHk22yXCzMxv4YrMO3qO8idVDHyVSLwGysdV7OCjRnSpz006623c5ON"
+);
 const stripe = require("stripe")(
   "sk_test_51O18L3H2N8GaqjXUCdY2UTSePPVKWxSltauacIasCcfiHk22yXCzMxv4YrMO3qO8idVDHyVSLwGysdV7OCjRnSpz006623c5ON"
 );
@@ -1714,7 +1718,9 @@ app.get("/api/v1/reviews/reviewId/:reviewId", async (req, res) => {
 // Get Reviews by revieweeId
 app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
   try {
-    const reviews = await reviewdb.getReviewsByRevieweeId(req.params.revieweeId);
+    const reviews = await reviewdb.getReviewsByRevieweeId(
+      req.params.revieweeId
+    );
     if (reviews.length != 0) {
       res.status(200).json({
         status: "success",
@@ -1830,7 +1836,9 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
 // Get average rating by userId
 app.get("/api/v1/ratings/userId/:userId", async (req, res) => {
   try {
-    const { averageRating, numberOfRatings } = await reviewdb.getRatingByUserId(req.params.userId);
+    const { averageRating, numberOfRatings } = await reviewdb.getRatingByUserId(
+      req.params.userId
+    );
     if (averageRating) {
       res.status(200).json({
         status: "success",
@@ -1854,7 +1862,7 @@ app.get("/api/v1/ratings/userId/:userId", async (req, res) => {
 /**********************          Wishlist Routes             **************************/
 // Add to wishlist
 app.post("/api/v1/wishlist", async (req, res) => {
-  const {itemId, userId} = req.body;
+  const { itemId, userId } = req.body;
 
   try {
     const wishlist = await wishlistdb.createWishList(itemId, userId);
@@ -1873,29 +1881,32 @@ app.post("/api/v1/wishlist", async (req, res) => {
 });
 
 // Remove from wishlist
-app.delete("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
-  const itemId = req.params.itemId;
-  const userId = req.params.userId;
+app.delete(
+  "/api/v1/wishlist/itemId/:itemId/userId/:userId",
+  async (req, res) => {
+    const itemId = req.params.itemId;
+    const userId = req.params.userId;
 
-  try {
-    const wishlist = await wishlistdb.removeWishlist(itemId, userId);
+    try {
+      const wishlist = await wishlistdb.removeWishlist(itemId, userId);
 
-    if (wishlist) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          wishlist: wishlist,
-        },
-      });
-    } else {
-      // if wishlist not found
-      res.status(404).json({ error: "Wishlist not found" });
+      if (wishlist) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            wishlist: wishlist,
+          },
+        });
+      } else {
+        // if wishlist not found
+        res.status(404).json({ error: "Wishlist not found" });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Database error" });
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Database error" });
   }
-});
+);
 
 // Get wishlist by itemId
 app.get("/api/v1/wishlist/itemId/:itemId", async (req, res) => {
@@ -1913,7 +1924,7 @@ app.get("/api/v1/wishlist/itemId/:itemId", async (req, res) => {
       });
     } else {
       // if wishlist not found
-      res.status(404).json({ error: "Wishlist not found" })
+      res.status(404).json({ error: "Wishlist not found" });
     }
   } catch (error) {
     console.log(error);
@@ -1937,7 +1948,7 @@ app.get("/api/v1/wishlist/userId/:userId", async (req, res) => {
       });
     } else {
       // if items not found
-      res.status(404).json({ error: "Items not found" })
+      res.status(404).json({ error: "Items not found" });
     }
   } catch (error) {
     console.log(error);
@@ -1951,7 +1962,10 @@ app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const wishlist = await wishlistdb.getWishlistByItemIdAndUserId(itemId, userId);
+    const wishlist = await wishlistdb.getWishlistByItemIdAndUserId(
+      itemId,
+      userId
+    );
 
     if (wishlist) {
       res.status(200).json({
@@ -1962,7 +1976,7 @@ app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
       });
     } else {
       // if wishlist not found
-      res.status(404).json({ error: "Wishlist not found" })
+      res.status(404).json({ error: "Wishlist not found" });
     }
   } catch (error) {
     console.log(error);
