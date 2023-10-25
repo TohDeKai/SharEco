@@ -22,9 +22,11 @@ import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
 import Header from "../../../components/Header";
 import BlockoutCard from "../../../components/containers/BlockoutCard";
+import BlockoutCard from "../../../components/containers/BlockoutCard";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import ActivityCard from "../../../components/containers/ActivityCard";
+import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 const { primary, placeholder, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -229,19 +231,25 @@ export default function manageRentals() {
 
   const upcomingLendings = rentals
     .filter(
+      
       (rental) => rental.status === "UPCOMING" && rental.isBlockOut === false
+     && rental.isBlockOut === false
     )
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   const ongoingLendings = rentals
     .filter(
+      
       (rental) => rental.status === "ONGOING" && rental.isBlockOut === false
+     && rental.isBlockOut === false
     )
     .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
   const completedLendings = rentals
     .filter(
+      
       (rental) => rental.status === "COMPLETED" && rental.isBlockOut === false
+     && rental.isBlockOut === false
     )
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
