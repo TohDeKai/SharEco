@@ -82,12 +82,15 @@ const approveWithdrawalRequest = async (transactionId, referenceNumber) => {
       [-amount, senderId]
     );
 
+    // platform withdrawal fees of 5% added to admin wallet (capped at $10)
+    const withdrawalFees = Math.min(10, 0.05 * amount);
+
     const updatedReceiverResult = await client.query(
       `UPDATE "sharEco-schema"."user"
     SET "walletBalance" = ($1 + "walletBalance")
     WHERE "userId" = $2
     RETURNING "walletBalance"`,
-      [amount, receiverId]
+      [withdrawalFees, receiverId]
     );
 
     const updatedTransactionResult = await client.query(
