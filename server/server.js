@@ -995,6 +995,20 @@ app.post("/api/v1/admin/signUp", async (req, res) => {
 // User Auth Functionalities
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
+app.post("/email", async (req, res) => {
+  try {
+    userAuth.sendEmail();
+    res.status(200).json({
+      status: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: "Error encountered: ",
+      error,
+    });
+  }
+});
 
 // Business Verification functionalites
 

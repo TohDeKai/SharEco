@@ -2,6 +2,8 @@ const db = require("./queries/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
+// Require:
+var postmark = require("postmark");
 
 // Sign in for user portal
 const UserSignIn = async (req, res) => {
@@ -67,6 +69,24 @@ const UserSignIn = async (req, res) => {
   }
 };
 
+// Send an email:
+var client = new postmark.ServerClient(process.env.POSTMARK_API);
+
+const sendEmail = async (req, res) => {
+  try {
+    console.log(process.env.POSTMARK_API);
+    client.sendEmail({
+      From: "e0772606@u.nus.edu",
+      To: "e0772606@u.nus.edu",
+      Subject: "Hello from Postmark",
+      HtmlBody: "<strong>Hello</strong> dear Postmark user.",
+      TextBody: "Hello from Postmark!",
+      MessageStream: "outbound",
+    });
+  } catch (error) {
+    throw error;
+  }
+};
 // Sign up for user portal NOT DONE
 const UserSignUp = async (req, res) => {
   try {
@@ -98,4 +118,5 @@ const UserSignUp = async (req, res) => {
 module.exports = {
   UserSignIn,
   UserSignUp,
+  sendEmail,
 };
