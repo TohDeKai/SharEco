@@ -1357,6 +1357,34 @@ app.get("/api/v1/rentals/lenderId/:lenderId", async (req, res) => {
   }
 });
 
+// Get Rentals by Lender Id and Item Id
+app.get(
+  "/api/v1/rentals/lenderId/:lenderId/itemId/:itemId",
+  async (req, res) => {
+    try {
+      const rentals = await rentaldb.getRentalsByLenderAndItemId(
+        req.params.lenderId,
+        req.params.itemId
+      );
+      if (rentals.length !== 0) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            rentals: rentals,
+          },
+        });
+      } else {
+        res
+          .status(404)
+          .json({ error: "No rentals found for the given lender and item" });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
 // Get Rental by Borrower Id
 app.get("/api/v1/rentals/borrowerId/:borrowerId", async (req, res) => {
   try {
@@ -1525,6 +1553,61 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+//BLOCKOUT
+// Create blockout
+app.post("/api/v1/createBlockout", async (req, res) => {
+  const {
+    startDate,
+    endDate,
+    itemId,
+    lenderId,
+  } = req.body;
+
+  try {
+    const blockout = await rentaldb.createBlockout(
+      startDate,
+      endDate,
+      itemId,
+      lenderId,
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        blockout: blockout,
+      },
+    });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Delete blockout
+app.delete("/api/v1/deleteBlockout/:blockoutId", async (req, res) => {
+  const blockoutId = req.params.blockoutId;
+  try {
+    const blockout = await rentaldb.deleteBlockout(blockoutId);
+
+    if (blockout) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          blockout: blockout,
+        },
+      });
+    } else {
+      // Handle the case where the review was not found
+      res.status(404).json({ error: "Blockout was not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 
 //SPOTLIGHT
 // Creating new spotlight
