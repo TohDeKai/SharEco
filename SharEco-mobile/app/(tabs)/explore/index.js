@@ -7,11 +7,14 @@ import {
   Alert,
   Pressable,
   Dimensions,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
 import React from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { router } from "expo-router";
+import axios from "axios";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -19,7 +22,8 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import Header from "../../../components/Header";
 import { useAuth } from "../../../context/auth";
-const { white, primary, secondary, black } = colours;
+import TransactionCard from "../../../components/containers/TransactionCard";
+const { white, primary, secondary, black, inputbackground, dark } = colours;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -32,40 +36,298 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const explore = () => {
-  const [walletId, setWalletId] = useState("");
-  const [userId, setUserId] = useState(null);
-  const [walletBalance, setWalletBalance] = useState(0);
   const [user, setUser] = useState("");
+  const [walletBalance, setWalletBalance] = useState();
   const { getUserData } = useAuth();
+  const [activeTab, setActiveTab] = useState("Incoming");
+
+  const handleTabPress = (tabName) => {
+    setActiveTab(tabName);
+    console.log("Active tab: " + tabName);
+  };
 
   useEffect(() => {
     async function fetchData() {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
-          setWalletId(userData.walletId);
-          setUserId(userData.userId);
-          setWalletBalance(userData.walletBalance);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+            setWalletBalance(updatedUserData.data.data.user.walletBalance);
+          } catch (error) {
+            console.log(error.message);
           }
+        }
       } catch (error) {
         console.log(error.message);
       }
     }
     fetchData();
-  }, [user.walletBalance]);
+  }, [user.userId]);
 
   const handleBack = () => {
     router.back();
   };
 
   const toTopUp = () => {
-    router.push({pathname:"explore/CheckoutScreen", params:{walletId: walletId , userId: userId, walletBalance: walletBalance}});
+    router.push({
+      pathname: "explore/CheckoutScreen",
+    });
+    console.log(walletBalance);
+    console.log(user);
+  };
+
+  const toTransfer = () => {
+    router.push({ pathname: "explore/transferScreen" });
+  };
+
+  const toWithdraw = () => {
+    router.push({ pathname: "explore/withdrawScreen" });
+  };
+
+  const Tabs = ({ activeTab, handleTabPress }) => {
+    return (
+      <View style={styles.tabContainer}>
+        <Pressable
+          onPress={() => handleTabPress("Incoming")}
+          style={({ pressed }) => [
+            { opacity: pressed ? 0.5 : 1 },
+            styles.tab,
+            activeTab === "Incoming" && styles.activeTab,
+          ]}
+        >
+          <RegularText
+            typography="B2"
+            color={activeTab === "Incoming" ? primary : dark}
+          >
+            Incoming
+          </RegularText>
+        </Pressable>
+        <Pressable
+          onPress={() => handleTabPress("Outgoing")}
+          style={({ pressed }) => [
+            { opacity: pressed ? 0.5 : 1 },
+            styles.tab,
+            activeTab === "Outgoing" && styles.activeTab,
+          ]}
+        >
+          <RegularText
+            typography="B2"
+            color={activeTab === "Outgoing" ? primary : dark}
+          >
+            Outgoing
+          </RegularText>
+        </Pressable>
+      </View>
+    );
+  };
+
+  const TransactionsContent = ({ activeTab }) => {
+    const { getUserData } = useAuth();
+    const [incomingTransactions, setIncomingTransactions] = useState([]);
+    const [outgoingTransactions, setOutgoingTransactions] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+      setRefreshing(true);
+      try {
+        const userData = await getUserData();
+        const userId = userData.userId;
+        try {
+          const updatedUserData = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+          );
+          setUser(updatedUserData.data.data.user);
+          setWalletBalance(updatedUserData.data.data.user.walletBalance);
+        } catch (error) {
+          console.log(error.message);
+        }
+        try {
+          const response1 = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/transaction/receiverId/${userId}`
+          );
+          if (response1.status === 200) {
+            const incomings = response1.data.data.transactions;
+            incomings.sort(
+              (a, b) =>
+                new Date(b.transactionDate) - new Date(a.transactionDate)
+            );
+            setIncomingTransactions(incomings);
+          } else {
+            // Handle the error condition appropriately
+            console.log("Failed to retrieve incoming transactions");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+        try {
+          const response2 = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/transaction/senderId/${userId}`
+          );
+          if (response2.status === 200) {
+            const outgoings = response2.data.data.transactions;
+            outgoings.sort(
+              (a, b) =>
+                new Date(b.transactionDate) - new Date(a.transactionDate)
+            );
+            const filteredOutgoings = outgoings.filter((transaction) => {
+              return !(
+                transaction.transactionType === "WITHDRAW" &&
+                transaction.referenceNumber === null
+              );
+            });
+            setOutgoingTransactions(filteredOutgoings);
+          } else {
+            // Handle the error condition appropriately
+            console.log("Failed to retrieve outgoing transactions");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+
+      console.log(walletBalance);
+
+      // After all the data fetching and updating, set refreshing to false
+      setRefreshing(false);
+    };
+
+    useEffect(() => {
+      async function fetchRentals() {
+        try {
+          const userData = await getUserData();
+          const userId = userData.userId;
+          try {
+            const response1 = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/transaction/receiverId/${userId}`
+            );
+            if (response1.status === 200) {
+              const incomings = response1.data.data.transactions;
+              incomings.sort(
+                (a, b) =>
+                  new Date(b.transactionDate) - new Date(a.transactionDate)
+              );
+              setIncomingTransactions(incomings);
+            } else {
+              // Handle the error condition appropriately
+              console.log("Failed to retrieve incoming transactions");
+            }
+          } catch (error) {
+            console.log(error);
+          }
+          try {
+            const response2 = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/transaction/senderId/${userId}`
+            );
+            if (response2.status === 200) {
+              const outgoings = response2.data.data.transactions;
+              outgoings.sort(
+                (a, b) =>
+                  new Date(b.transactionDate) - new Date(a.transactionDate)
+              );
+              const filteredOutgoings = outgoings.filter((transaction) => {
+                return !(
+                  transaction.transactionType === "WITHDRAW" &&
+                  transaction.referenceNumber === null
+                );
+              });
+              setOutgoingTransactions(filteredOutgoings);
+            } else {
+              // Handle the error condition appropriately
+              console.log("Failed to retrieve outgoing transactions");
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+      fetchRentals();
+    }, []);
+
+    return (
+      <View style={{ flex: 1 }}>
+        {activeTab == "Incoming" && (
+          <View style={{ alignItems: "center", flex: 1 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.activityCardContainer}
+              contentContainerStyle={{ flexGrow: 1 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
+            >
+              {incomingTransactions.length > 0 ? (
+                incomingTransactions.map((transaction) => (
+                  <TransactionCard
+                    key={transaction.transactionId}
+                    transaction={transaction}
+                    isIncoming={true}
+                  />
+                ))
+              ) : (
+                <View style={{ marginTop: 100, paddingHorizontal: 30 }}>
+                  <RegularText
+                    typography="H3"
+                    style={{ marginBottom: 5, textAlign: "center" }}
+                  >
+                    You have no incoming transactions yet.
+                  </RegularText>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
+        {activeTab == "Outgoing" && (
+          <View style={{ alignItems: "center", flex: 1 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.activityCardContainer}
+              contentContainerStyle={{ flexGrow: 1 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
+            >
+              {outgoingTransactions.length > 0 ? (
+                outgoingTransactions.map((transaction) => (
+                  <TransactionCard
+                    key={transaction.transactionId}
+                    transaction={transaction}
+                    isIncoming={false}
+                  />
+                ))
+              ) : (
+                <View style={{ marginTop: 100, paddingHorizontal: 30 }}>
+                  <RegularText
+                    typography="H3"
+                    style={{ marginBottom: 5, textAlign: "center" }}
+                  >
+                    You have no outgoing transactions yet.
+                  </RegularText>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+    );
   };
 
   return (
     <SafeAreaContainer>
-      <Header title="EcoWallet" action="back" onPress={handleBack} />
+      <Header title="EcoWallet" onPress={handleBack} />
       <View style={styles.greenHeader}>
         <RegularText typography="B2" color={white}>
           Balance Amount
@@ -75,6 +337,7 @@ const explore = () => {
         </RegularText>
         <View style={styles.buttonContainer}>
           <Pressable
+            onPress={toTransfer}
             style={({ pressed }) => ({
               opacity: pressed ? 0.5 : 1,
             })}
@@ -106,6 +369,7 @@ const explore = () => {
             </RegularText>
           </Pressable>
           <Pressable
+            onPress={toWithdraw}
             style={({ pressed }) => ({
               opacity: pressed ? 0.5 : 1,
             })}
@@ -127,6 +391,8 @@ const explore = () => {
           Transaction History
         </RegularText>
       </View>
+      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+      <TransactionsContent activeTab={activeTab} />
     </SafeAreaContainer>
   );
 };
@@ -152,18 +418,35 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     top: viewportHeightInPixels(3),
-    maxHeight: viewportHeightInPixels(10),
-    width: viewportWidthInPixels(75),
+    maxHeight: viewportHeightInPixels(7),
+    width: viewportWidthInPixels(80),
     paddingHorizontal: viewportWidthInPixels(5),
-    paddingVertical: viewportHeightInPixels(0),
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: white,
   },
-  body:{
-    paddingHorizontal: viewportWidthInPixels(15),
-    paddingVertical: viewportHeightInPixels(3)
-  }
+  body: {
+    paddingHorizontal: viewportWidthInPixels(2),
+    paddingTop: viewportHeightInPixels(3),
+    paddingBottom: viewportHeightInPixels(2),
+  },
+  tabContainer: {
+    flexDirection: "row",
+    width: "100%",
+    paddingTop: 10,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: white,
+    borderBottomWidth: 2,
+    borderBottomColor: inputbackground,
+  },
+  activeTab: {
+    borderBottomColor: primary,
+  },
 });
