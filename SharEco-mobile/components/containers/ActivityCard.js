@@ -24,6 +24,7 @@ const AWS_GETFILE_URL =
 const ActivityCard = ({ rental, type }) => {
   const startDate = new Date(rental.startDate);
   const endDate = new Date(rental.endDate);
+  const currentTimestamp = new Date();
 
   const isLending = type === "Lending";
 
@@ -41,8 +42,6 @@ const ActivityCard = ({ rental, type }) => {
   const [item, setItem] = useState({});
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-
-  const { getUserData } = useAuth();
 
   const handleShowDetailsModal = () => {
     setShowDetailsModal(true);
@@ -75,6 +74,163 @@ const ActivityCard = ({ rental, type }) => {
         checklistFormType: "End Rental",
       },
     });
+  };
+
+  const handleCancellationPaymentsForLending = async (
+    startDate,
+    depositFee,
+    rentalFee,
+    totalFee,
+    borrowerId,
+    lenderId
+  ) => {
+    try {
+      const startDateString = new Date(startDate);
+      const timeDifference = startDateString - currentTimestamp;
+
+      const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+      let totalCancellationFee;
+      const rental = parseFloat(rentalFee.replace(/[^0-9.]/g, ""));
+      const totalRentalFee = parseFloat(totalFee.replace(/[^0-9.]/g, ""));
+
+      if (hoursDifference < 24) {
+        totalCancellationFee = 0.3 * rental; // compensation paid by lender
+
+        const paymentDataFromLenderToAdmin = {
+          senderId: lenderId,
+          amount: totalCancellationFee,
+          transactionType: "LATE_CANCELLATION_PAYMENT",
+        };
+
+        // const reimbursedCancellationFeeToSharEco = 0.25 * totalCancellationFee; // 25% of compensation paid to SharEco
+
+        const refundFeeToBorrower =
+          0.75 * totalCancellationFee + totalRentalFee; // 75% of compensation paid to Borrower
+
+        const paymentDataToBorrower = {
+          receiverId: borrowerId,
+          amount: refundFeeToBorrower,
+          transactionType: "LATE_CANCELLATION_REFUND",
+        };
+
+        const lenderPaymentToAdminResponse = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+          paymentDataFromLenderToAdmin
+        );
+        if (lenderPaymentToAdminResponse.status === 200) {
+          console.log(
+            "Cancellation payment from lender to admin is successful"
+          );
+
+          const refundPaymentsToBorrowerResponse = await axios.post(
+            `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+            paymentDataToBorrower
+          );
+
+          if (refundPaymentsToBorrowerResponse.status === 200) {
+            console.log("Refund payments to borrower is successful");
+          } else {
+            console.log("Refund payments to borrower is unsuccessful");
+          }
+        } else {
+          console.log("Cancellation payment from lender to admin failed");
+        }
+      } else {
+        const paymentData = {
+          receiverId: borrowerId,
+          amount: totalRentalFee,
+          transactionType: "CANCELLATION_REFUND",
+        };
+
+        const response = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+          paymentData
+        );
+        if (response.status === 200) {
+          console.log("Refund from admin to borrower was successful");
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const handleCancellationPaymentsForBorrowing = async (
+    startDate,
+    depositFee,
+    rentalFee,
+    totalFee,
+    borrowerId,
+    lenderId
+  ) => {
+    try {
+      const startDateString = new Date(startDate);
+      const timeDifference = startDateString - currentTimestamp;
+
+      const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+      let totalCancellationFee;
+      const rental = parseFloat(rentalFee.replace(/[^0-9.]/g, ""));
+      const deposit = parseFloat(depositFee.replace(/[^0-9.]/g, ""));
+      const totalRentalFee = parseFloat(totalFee.replace(/[^0-9.]/g, ""));
+
+      if (hoursDifference < 24) {
+        // less than 24hrs, invoke late cancellation policy (as borrower)
+        totalCancellationFee = 0.3 * rental;
+        const reimbursedCancellationFeeToLender = 0.75 * totalCancellationFee;
+
+        const refundFeeToBorrower = 0.7 * rental + deposit;
+
+        const paymentDataToBorrower = {
+          receiverId: borrowerId,
+          amount: refundFeeToBorrower,
+          transactionType: "LATE_CANCELLATION_REFUND",
+        };
+
+        const borrowerResponse = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+          paymentDataToBorrower
+        );
+        if (borrowerResponse.status === 200) {
+          console.log("Refund from admin to borrower was successful");
+        } else {
+          console.log("Refund from admin to borrower was unsuccessful");
+        }
+
+        const paymentDataToLender = {
+          receiverId: lenderId,
+          amount: reimbursedCancellationFeeToLender,
+          transactionType: "LATE_CANCELLATION_REFUND",
+        };
+
+        const lenderResponse = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+          paymentDataToLender
+        );
+        if (lenderResponse.status === 200) {
+          console.log("Refund from admin to lender was successful");
+        } else {
+          console.log("Refund from admin to lender was unsuccessful");
+        }
+      } else {
+        const paymentData = {
+          receiverId: borrowerId,
+          amount: totalRentalFee,
+          transactionType: "CANCELLATION_REFUND",
+        };
+
+        const response = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+          paymentData
+        );
+        if (response.status === 200) {
+          console.log("Refund from admin to borrower was successful");
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   useEffect(() => {
@@ -400,7 +556,17 @@ const ActivityCard = ({ rental, type }) => {
               {showCancelModal && (
                 <ConfirmationModal
                   isVisible={showCancelModal}
-                  onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+                  onConfirm={() => {
+                    handleStatus("Cancel", rental.rentalId);
+                    handleCancellationPaymentsForBorrowing(
+                      rental.startDate,
+                      rental.depositFee,
+                      rental.rentalFee,
+                      rental.totalFee,
+                      rental.borrowerId,
+                      rental.lenderId
+                    );
+                  }}
                   onClose={handleCloseCancelModal}
                   style={{ flex: 0 }}
                   type="Cancel"
@@ -440,7 +606,32 @@ const ActivityCard = ({ rental, type }) => {
                 Report
               </DisabledButton>
             </View>
-            <View style={styles.buttonContainer}>
+
+            {type === "Borrowing" && (
+              <View style={styles.buttonContainer}>
+                <SecondaryButton
+                  typography="B3"
+                  color={primary}
+                  onPress={handleShowCancelModal}
+                >
+                  Cancel
+                </SecondaryButton>
+              </View>
+            )}
+
+            {type === "Lending" && (
+              <View style={styles.buttonContainer}>
+                <SecondaryButton
+                  typography="B3"
+                  color={primary}
+                  onPress={handleShowCancelModal}
+                >
+                  Cancel
+                </SecondaryButton>
+              </View>
+            )}
+
+            {/* <View style={styles.buttonContainer}>
               <SecondaryButton
                 typography="B3"
                 color={primary}
@@ -448,7 +639,8 @@ const ActivityCard = ({ rental, type }) => {
               >
                 Cancel
               </SecondaryButton>
-            </View>
+            </View> */}
+
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton
@@ -467,14 +659,35 @@ const ActivityCard = ({ rental, type }) => {
                   color={white}
                   onPress={handleStart}
                 >
-                  Update
+                  Start
                 </PrimaryButton>
               </View>
             )}
             {showCancelModal && (
               <ConfirmationModal
                 isVisible={showCancelModal}
-                onConfirm={() => handleStatus("Cancel", rental.rentalId)}
+                onConfirm={() => {
+                  handleStatus("Cancel", rental.rentalId);
+                  if (type === "Borrowing") {
+                    handleCancellationPaymentsForBorrowing(
+                      rental.startDate,
+                      rental.depositFee,
+                      rental.rentalFee,
+                      rental.totalFee,
+                      rental.borrowerId,
+                      rental.lenderId
+                    );
+                  } else if (type === "Lending") {
+                    handleCancellationPaymentsForLending(
+                      rental.startDate,
+                      rental.depositFee,
+                      rental.rentalFee,
+                      rental.totalFee,
+                      rental.borrowerId,
+                      rental.lenderId
+                    );
+                  }
+                }}
                 onClose={handleCloseCancelModal}
                 style={{ flex: 0 }}
                 type="Cancel"
@@ -487,7 +700,6 @@ const ActivityCard = ({ rental, type }) => {
 
         {rental.status === "ONGOING" && (
           <View style={styles.buttons}>
-            {/* to be implemented */}
             <Pressable>
               <Ionicons
                 name="chatbubble-outline"
@@ -495,12 +707,12 @@ const ActivityCard = ({ rental, type }) => {
                 size={35}
               />
             </Pressable>
-            {/* to be implemented */}
             <View style={styles.buttonContainer}>
               <DisabledButton typography="B3" color={white}>
                 Report
               </DisabledButton>
             </View>
+            {/*
             {type === "Lending" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton typography="B3" color={white}>
@@ -508,6 +720,7 @@ const ActivityCard = ({ rental, type }) => {
                 </PrimaryButton>
               </View>
             )}
+            */}
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
                 <PrimaryButton
@@ -541,7 +754,14 @@ const ActivityCard = ({ rental, type }) => {
                   if (revieweeIsLender) {
                     if (rental.reviewIdByBorrower != null) {
                       //show existing review as borrower
-                      router.push({pathname: "activity/viewRating", params: {reviewId : rental.reviewIdByBorrower, revieweeIsLender: revieweeIsLender, itemId: item.itemId}});
+                      router.push({
+                        pathname: "activity/viewRating",
+                        params: {
+                          reviewId: rental.reviewIdByBorrower,
+                          revieweeIsLender: revieweeIsLender,
+                          itemId: item.itemId,
+                        },
+                      });
                     } else {
                       router.push({
                         pathname: "activity/rateUser",
@@ -554,7 +774,14 @@ const ActivityCard = ({ rental, type }) => {
                   } else {
                     if (rental.reviewIdByLender != null) {
                       //show existing review as lender
-                      router.push({pathname: "activity/viewRating", params: {reviewId : rental.reviewIdByLender, revieweeIsLender: revieweeIsLender, itemId: item.itemId}});
+                      router.push({
+                        pathname: "activity/viewRating",
+                        params: {
+                          reviewId: rental.reviewIdByLender,
+                          revieweeIsLender: revieweeIsLender,
+                          itemId: item.itemId,
+                        },
+                      });
                     } else {
                       router.push({
                         pathname: "activity/rateUser",
@@ -567,7 +794,10 @@ const ActivityCard = ({ rental, type }) => {
                   }
                 }}
               >
-                {(type === "Borrowing" && rental.reviewIdByBorrower!= null) || (type === "Lending" && rental.reviewIdByLender!= null) ? "View Rating" : "Rate"}
+                {(type === "Borrowing" && rental.reviewIdByBorrower != null) ||
+                (type === "Lending" && rental.reviewIdByLender != null)
+                  ? "View Rating"
+                  : "Rate"}
               </PrimaryButton>
             </View>
             {

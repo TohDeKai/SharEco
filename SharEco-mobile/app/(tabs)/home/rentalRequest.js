@@ -733,7 +733,22 @@ const createRentals = () => {
 
       if (response.status === 201) {
         // router.replace("/home");
-        router.back();
+        //create transaction to deduct fees from borrower ecowallet when making rental
+        const transactionData = {
+          senderId: user.userId,
+          amount: totalCost(activeTab),
+          transactionType: "RENTAL_PAYMENT"
+        };
+
+        const transactionResponse = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+          transactionData
+        )
+
+        if (transactionResponse.status === 200) {
+          console.log(`Rental fee held by admin`);
+          router.back();
+        }
       }
     } catch (error) {
       console.log(error.message);
@@ -1009,7 +1024,10 @@ const createRentals = () => {
               } else if (!validEnd || !validStart){
                 setMessage("Please select a valid rental period");
                 setIsSuccessMessage(false);
-              } 
+              } else if (parseFloat(user.walletBalance.replace(/\$/g, '')) - totalCost(activeTab) < 0) {
+                setMessage("You have insufficient balance to make a rental request. Please top up your EcoWallet");
+                setIsSuccessMessage(false);
+              }
               else {
                 handleCreateRentalRequest(values);
                 actions.resetForm();
@@ -1097,6 +1115,42 @@ const createRentals = () => {
                     </View>
                   </View>
                 </View>
+
+                {user && user.walletBalance && (
+                  <View style={styles.pricing}>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">EcoWallet Balance</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3" color={parseFloat(user.walletBalance.replace(/\$/g, '')) - totalCost(activeTab) < 0 ? fail : black}>
+                          ${parseFloat(user.walletBalance.replace(/\$/g, '')) - totalCost(activeTab)}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">Available</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          {user.walletBalance}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">Booking Total</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          ${totalCost(activeTab)}
+                        </RegularText>
+                      </View>
+                    </View>
+                  </View>
+                )}
+                
                 <RegularText
                   typography="Subtitle"
                   style={{ alignSelf: "center" }}

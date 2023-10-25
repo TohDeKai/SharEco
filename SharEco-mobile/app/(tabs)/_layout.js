@@ -25,7 +25,7 @@ export default () => {
       <Tabs.Screen 
         name="explore"
         options={{
-          tabBarIcon: ({focused, color}) => <Ionicons name={focused ? "location" : "location-outline"} size={26} color={color} focused={focused}/>
+          tabBarIcon: ({focused, color}) => <Ionicons name={focused ? "wallet" : "wallet-outline"} size={26} color={color} focused={focused}/>
         }} />
       <Tabs.Screen 
         name="createListing"

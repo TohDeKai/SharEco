@@ -17,6 +17,7 @@
     "@react-navigation/drawer": "^6.6.3",
     "@rneui/base": "^4.0.0-rc.8",
     "@rneui/themed": "^4.0.0-rc.8",
+    "@stripe/stripe-react-native": "0.28.0",
     "aws-amplify": "^5.3.11",
     "axios": "^1.5.0",
     "bcrypt": "^5.1.1",
