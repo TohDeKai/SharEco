@@ -24,6 +24,7 @@ import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import Header from "../../../components/Header";
 import MessageBox from "../../../components/text/MessageBox";
+import { useAuth } from "../../../context/auth";
 const { white, primary, black } = colours;
 
 const viewportHeightInPixels = (percentage) => {
@@ -43,10 +44,24 @@ const CheckoutScreen = () => {
   const [loading, setLoading] = useState(false);
   const [fetchedPayment, setFetchedPayment] = useState(false);
   const [inputRegistered, setInputRegistered] = useState(false);
-  const params = useLocalSearchParams();
-  const { walletId, userId, walletBalance } = params;
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchData();
+  }, [user.userId]);
 
   const handleTopUp = async () => {
     const fetchPaymentSheetParams = async () => {
@@ -58,16 +73,16 @@ const CheckoutScreen = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            walletId: walletId,
+            walletId: user.walletId,
             amount: amountInCents,
           }),
         }
       );
       const { paymentIntent, ephemeralKey, customer } = await response.json();
 
-      if (walletId == "") {
+      if (user.walletId == "") {
         const inputNewCustomerWalletIdResponse = axios.put(
-          `http://${BASE_URL}:4000/api/v1/users/walletId/${userId}`,
+          `http://${BASE_URL}:4000/api/v1/users/walletId/${user.userId}`,
           { walletId: customer }
         );
       }
@@ -103,17 +118,24 @@ const CheckoutScreen = () => {
       if (error2) {
         Alert.alert(`Error code: ${error2.code}`, error2.message);
       } else {
+        const topUpTransaction = axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction`,
+          {
+            senderId: 0,
+            receiverId: user.userId,
+            amount: amountInCents / 100,
+            transactionType: "TOP_UP",
+          }
+        );
         const updatedBalance =
-          parseFloat(walletBalance.replace("$", "")) + amountInCents / 100;
-        console.log(updatedBalance);
+          parseFloat(user.walletBalance.replace("$", "")) + amountInCents / 100;
         const walletUpdateResponse = axios.put(
-          `http://${BASE_URL}:4000/api/v1/users/walletBalance/${userId}`,
+          `http://${BASE_URL}:4000/api/v1/users/walletBalance/${user.userId}`,
           { walletBalance: updatedBalance }
         );
-        router.replace("explore");
         Alert.alert(
           "Success",
-          `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
+          `Your order is confirmed! New EcoWallet Balance ${updatedBalance}.`
         );
       }
     };
@@ -163,7 +185,7 @@ const CheckoutScreen = () => {
                   value={values.amount}
                   onChangeText={handleChange("amount")}
                   keyboardType="numeric"
-                  style={{ marginBottom: 10, width: viewportWidthInPixels(85) }}
+                  style={{ marginBottom: 10, width: viewportWidthInPixels(80) }}
                 />
                 <MessageBox
                   style={{ marginTop: 10 }}
@@ -175,7 +197,7 @@ const CheckoutScreen = () => {
                   typography={"B1"}
                   color={white}
                   onPress={handleSubmit}
-                  style={{width: viewportWidthInPixels(85)}}
+                  style={{ width: viewportWidthInPixels(80) }}
                 >
                   Confirm
                 </PrimaryButton>

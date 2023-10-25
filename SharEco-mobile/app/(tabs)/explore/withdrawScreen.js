@@ -129,7 +129,7 @@ const withdrawScreen = () => {
                 value={values.amount}
                 onChangeText={handleChange("amount")}
                 keyboardType="numeric"
-                style={{ marginBottom: 10, width: viewportWidthInPixels(85) }}
+                style={{ marginBottom: 10, width: viewportWidthInPixels(80) }}
               />
               <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
                 {message || " "}
@@ -138,7 +138,7 @@ const withdrawScreen = () => {
                 typography={"B1"}
                 color={white}
                 onPress={handleSubmit}
-                style={{ width: viewportWidthInPixels(85) }}
+                style={{ width: viewportWidthInPixels(80) }}
               >
                 Confirm
               </PrimaryButton>

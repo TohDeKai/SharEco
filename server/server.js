@@ -1879,8 +1879,6 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
   // Use an existing Customer ID if this is a returning customer.
   const walletId = req.body.walletId;
   const amount = req.body.amount;
-  console.log(walletId);
-  console.log(amount);
   const customer =
     walletId != ""
       ? await stripe.customers.retrieve(walletId)
@@ -1906,6 +1904,9 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
     publishableKey:
       "pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH",
   });
+
+  
+
 });
 
 // Get average rating by userId
@@ -2088,7 +2089,7 @@ app.post("/api/v1/transaction", async (req, res) => {
 
 //create withdrawal request without handling wallet balance
 app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
-  const { receiverId, amount } = req.body;
+  const { senderId, amount } = req.body;
 
   try {
     const transaction = await transactiondb.createWithdrawalRequest(

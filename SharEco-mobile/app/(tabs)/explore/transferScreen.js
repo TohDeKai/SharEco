@@ -78,7 +78,7 @@ const transferScreen = () => {
           if (transferResponse.status === 200) {
             Alert.alert(
               "Success",
-              `Your transfer is successful! New EcoWallet Balance $${updatedWalletBalance}.`
+              `Your transfer is successful! New EcoWallet Balance ${updatedWalletBalance}.`
             );
           } else {
             Alert.alert("Error", `Your transfer did not go through.`);
@@ -133,7 +133,7 @@ const transferScreen = () => {
                 placeholder="Input receiver's username"
                 value={values.receiverUsername}
                 onChangeText={handleChange("receiverUsername")}
-                style={{ marginBottom: 10, width: viewportWidthInPixels(85) }}
+                style={{ marginBottom: 10, width: viewportWidthInPixels(80) }}
               />
               <RegularText
                 typography="H1"
@@ -147,7 +147,7 @@ const transferScreen = () => {
                 value={values.amount}
                 onChangeText={handleChange("amount")}
                 keyboardType="numeric"
-                style={{ marginBottom: 10, width: viewportWidthInPixels(85) }}
+                style={{ marginBottom: 10, width: viewportWidthInPixels(80) }}
               />
               <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
                 {message || " "}
@@ -156,7 +156,7 @@ const transferScreen = () => {
                 typography={"B1"}
                 color={white}
                 onPress={handleSubmit}
-                style={{width: viewportWidthInPixels(85)}}
+                style={{width: viewportWidthInPixels(80)}}
               >
                 Confirm
               </PrimaryButton>
