@@ -11,7 +11,6 @@ const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
 const transactiondb = require("./queries/transaction");
-const transactiondb = require("./queries/transaction");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -22,9 +21,6 @@ const axios = require("axios");
 
 const multer = require("multer");
 const fs = require("fs");
-const stripe = require("stripe")(
-  "sk_test_51O18L3H2N8GaqjXUCdY2UTSePPVKWxSltauacIasCcfiHk22yXCzMxv4YrMO3qO8idVDHyVSLwGysdV7OCjRnSpz006623c5ON"
-);
 const stripe = require("stripe")(
   "sk_test_51O18L3H2N8GaqjXUCdY2UTSePPVKWxSltauacIasCcfiHk22yXCzMxv4YrMO3qO8idVDHyVSLwGysdV7OCjRnSpz006623c5ON"
 );
