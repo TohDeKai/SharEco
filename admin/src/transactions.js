@@ -98,65 +98,6 @@ const Home = () => {
     setDetailsOpen(false);
   };
 
-  const handleClickDetails = async (
-    transactionId,
-    UEN,
-    userId,
-    approved,
-    documents
-  ) => {
-    setselectedTransactionId(transactionId);
-    setSelectedUEN(UEN);
-    setSelectedUserId(userId);
-    setSelectedApproved(approved);
-    setSelectedDocuments(documents);
-    try {
-      console.log(selectedUserId);
-      const response = await axios.get(
-        `http://localhost:4000/api/v1/users/userId/${userId}`
-      );
-      setSelectedUsername(response.data.data.user.username);
-    } catch (err) {
-      console.log("Error getting listing username: ", err);
-    } finally {
-      setLoading(false); // Set loading state to false when the request is complete
-      setDetailsOpen(true); // Open the dialog
-    }
-  };
-
-  const handleApprove = async () => {
-    try {
-      console.log(selectedTransactionId);
-      const response = await axios.put(
-        `http://localhost:4000/api/v1/businessVerifications/approve/transactionId`,
-        {
-          transactionId: selectedTransactionId,
-          approved: true,
-        }
-      );
-      console.log(response);
-      if (response.status === 200) {
-        setSuccessSnackbarOpen(true);
-        // Update the business verification after approve
-        const updatedBusinessVerificationData = businessVerificationData.map(
-          (businessVerification) => {
-            if (businessVerification.transactionId === selectedTransactionId) {
-              businessVerification.approved = true;
-            }
-            return businessVerification;
-          }
-        );
-        setUserData(updatedBusinessVerificationData);
-        console.log("Approve verification successfully");
-      } else {
-        console.log("Approval failed");
-      }
-      handleClose();
-    } catch (error) {
-      console.error("Error approving verification:", error);
-    }
-  };
-
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
@@ -169,7 +110,7 @@ const Home = () => {
     setPage(0);
   };
 
-  const [businessVerificationData, setBusinessVerificationData] = useState([]);
+  const [transactionData, settransactionData] = useState([]);
 
   const [password, setPassword] = useState("");
   const [cfmPassword, setCfmPassword] = useState("");
@@ -187,7 +128,43 @@ const Home = () => {
     setPasswordsMatch(password === cfmPassword);
   };
 
-  const approveWithdrawalRequest = () => {};
+  const approveWithdrawalRequest = async (event) => {
+    setOpenApproveVerification(false);
+    event.preventDefault();
+
+    const referenceNumber = event.currentTarget.referenceNumber.value;
+
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/api/v1/transaction/withdrawalRequest/approve",
+        {
+          transactionId: selectedTransactionId,
+          referenceNumber: referenceNumber,
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Updated transaction successfully");
+        setSuccessSnackbarOpen(true);
+
+        const updatedTransactionData = transactionData.map(
+          (transactionData) => {
+            if (transactionData.transactionId === selectedTransactionId) {
+              transactionData.referenceNumber = referenceNumber;
+            }
+            return transactionData;
+          }
+        );
+      } else {
+        setErrorSnackbarOpen(true);
+        console.log("Update failed");
+      }
+    } catch (err) {
+      // Handle network errors or server issues
+      setErrorSnackbarOpen(true);
+      console.error("Error during withdrawal:", err);
+    }
+  };
 
   useEffect(() => {
     // Fetch user data when the component mounts
@@ -197,7 +174,7 @@ const Home = () => {
           "http://localhost:4000/api/v1/transaction/type/WITHDRAW"
         );
         const transactions = response.data.data.transactions;
-        setBusinessVerificationData(transactions);
+        settransactionData(transactions);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -242,7 +219,7 @@ const Home = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {businessVerificationData
+                  {transactionData
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
                       return (
@@ -251,15 +228,6 @@ const Home = () => {
                           role="checkbox"
                           tabIndex={-1}
                           key={row.code}
-                          onClick={() =>
-                            handleClickDetails(
-                              row.transactionId,
-                              row.UEN,
-                              row.originalUserId,
-                              row.approved,
-                              row.documents
-                            )
-                          }
                         >
                           {columns.map((column) => {
                             const value = row[column.id];
@@ -301,7 +269,7 @@ const Home = () => {
             <TablePagination
               rowsPerPageOptions={[10, 25, 100]}
               component="div"
-              count={businessVerificationData.length}
+              count={transactionData.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -327,7 +295,7 @@ const Home = () => {
               </DialogContentText>
               <Box
                 component="form"
-                id="adminCreation"
+                id="withdraw"
                 onSubmit={approveWithdrawalRequest}
                 noValidate
                 sx={{ mt: 1 }}
@@ -341,17 +309,16 @@ const Home = () => {
                   name="referenceNumber"
                   autoFocus
                 />
+                <DialogActions>
+                  <Button onClick={handleClose} color="error">
+                    Cancel
+                  </Button>
+                  <Button type="submit" form="withdraw">
+                    Confirm
+                  </Button>
+                </DialogActions>
               </Box>
             </DialogContent>
-
-            <DialogActions>
-              <Button onClick={handleClose} color="error">
-                Cancel
-              </Button>
-              <Button onClick={handleApprove} autoFocus>
-                Confirm
-              </Button>
-            </DialogActions>
           </Dialog>
 
           <Snackbar
@@ -362,6 +329,17 @@ const Home = () => {
           >
             <Alert severity="success" onClose={handleSuccessSnackbarClose}>
               Withdrawal successful!
+            </Alert>
+          </Snackbar>
+
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={errorSnackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleErrorSnackbarClose}
+          >
+            <Alert severity="error" onClose={handleErrorSnackbarClose}>
+              Unable to update withdrawal transaction satatus.
             </Alert>
           </Snackbar>
         </Box>
