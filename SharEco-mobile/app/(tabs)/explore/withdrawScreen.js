@@ -60,7 +60,7 @@ const withdrawScreen = () => {
   const handleWithdraw = async (values) => {
     try {
       const withdrawData = {
-        receiverId: user.userId,
+        senderId: user.userId,
         amount: parseFloat(values.amount.replace("$", "")),
       };
       const withdrawResponse = await axios.post(
@@ -74,7 +74,7 @@ const withdrawScreen = () => {
           `Your withdrawal request has been submitted, it will be credited through PayNow within 3 working days.`
         );
       } else {
-        Alert.alert("Error", `Your withdrawak did not go through.`);
+        Alert.alert("Error", `Your withdrawal did not go through.`);
       }
     } catch (error) {
       console.log("Username error");

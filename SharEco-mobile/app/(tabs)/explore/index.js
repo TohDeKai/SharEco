@@ -8,7 +8,7 @@ import {
   Pressable,
   Dimensions,
   ScrollView,
-  RefreshControl
+  RefreshControl,
 } from "react-native";
 import React from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -51,8 +51,15 @@ const explore = () => {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
-          setWalletBalance(userData.walletBalance);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+            setWalletBalance(updatedUserData.data.data.user.walletBalance);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -67,8 +74,10 @@ const explore = () => {
 
   const toTopUp = () => {
     router.push({
-      pathname: "explore/CheckoutScreen"
+      pathname: "explore/CheckoutScreen",
     });
+    console.log(walletBalance);
+    console.log(user);
   };
 
   const toTransfer = () => {
@@ -115,26 +124,37 @@ const explore = () => {
       </View>
     );
   };
-  
+
   const TransactionsContent = ({ activeTab }) => {
     const { getUserData } = useAuth();
     const [incomingTransactions, setIncomingTransactions] = useState([]);
     const [outgoingTransactions, setOutgoingTransactions] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
-  
+
     const handleRefresh = async () => {
       setRefreshing(true);
       try {
         const userData = await getUserData();
         const userId = userData.userId;
-        setWalletBalance(userData.walletBalance);
+        try {
+          const updatedUserData = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+          );
+          setUser(updatedUserData.data.data.user);
+          setWalletBalance(updatedUserData.data.data.user.walletBalance);
+        } catch (error) {
+          console.log(error.message);
+        }
         try {
           const response1 = await axios.get(
             `http://${BASE_URL}:4000/api/v1/transaction/receiverId/${userId}`
           );
           if (response1.status === 200) {
             const incomings = response1.data.data.transactions;
-            incomings.sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
+            incomings.sort(
+              (a, b) =>
+                new Date(b.transactionDate) - new Date(a.transactionDate)
+            );
             setIncomingTransactions(incomings);
           } else {
             // Handle the error condition appropriately
@@ -149,12 +169,16 @@ const explore = () => {
           );
           if (response2.status === 200) {
             const outgoings = response2.data.data.transactions;
-            outgoings.sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
-            const filteredOutgoings = outgoings.filter(
-              (transaction) => {
-                return !(transaction.transactionType === 'WITHDRAW' && transaction.referenceNumber === null);
-              }
+            outgoings.sort(
+              (a, b) =>
+                new Date(b.transactionDate) - new Date(a.transactionDate)
             );
+            const filteredOutgoings = outgoings.filter((transaction) => {
+              return !(
+                transaction.transactionType === "WITHDRAW" &&
+                transaction.referenceNumber === null
+              );
+            });
             setOutgoingTransactions(filteredOutgoings);
           } else {
             // Handle the error condition appropriately
@@ -167,12 +191,12 @@ const explore = () => {
         console.log(error.message);
       }
 
-      console.log(walletBalance)
-  
+      console.log(walletBalance);
+
       // After all the data fetching and updating, set refreshing to false
       setRefreshing(false);
     };
-  
+
     useEffect(() => {
       async function fetchRentals() {
         try {
@@ -184,7 +208,10 @@ const explore = () => {
             );
             if (response1.status === 200) {
               const incomings = response1.data.data.transactions;
-              incomings.sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
+              incomings.sort(
+                (a, b) =>
+                  new Date(b.transactionDate) - new Date(a.transactionDate)
+              );
               setIncomingTransactions(incomings);
             } else {
               // Handle the error condition appropriately
@@ -199,12 +226,16 @@ const explore = () => {
             );
             if (response2.status === 200) {
               const outgoings = response2.data.data.transactions;
-              outgoings.sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
-              const filteredOutgoings = outgoings.filter(
-                (transaction) => {
-                  return !(transaction.transactionType === 'WITHDRAW' && transaction.referenceNumber === null);
-                }
+              outgoings.sort(
+                (a, b) =>
+                  new Date(b.transactionDate) - new Date(a.transactionDate)
               );
+              const filteredOutgoings = outgoings.filter((transaction) => {
+                return !(
+                  transaction.transactionType === "WITHDRAW" &&
+                  transaction.referenceNumber === null
+                );
+              });
               setOutgoingTransactions(filteredOutgoings);
             } else {
               // Handle the error condition appropriately
@@ -219,7 +250,7 @@ const explore = () => {
       }
       fetchRentals();
     }, []);
-  
+
     return (
       <View style={{ flex: 1 }}>
         {activeTab == "Incoming" && (
