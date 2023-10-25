@@ -26,8 +26,6 @@ const TransactionCard = ({ transaction, isIncoming }) => {
     return regularForm;
   }
 
-
-
   return (
     <View style={styles.container}>
         {}

@@ -54,7 +54,14 @@ const CheckoutScreen = () => {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -135,7 +142,7 @@ const CheckoutScreen = () => {
         );
         Alert.alert(
           "Success",
-          `Your order is confirmed! New EcoWallet Balance ${updatedBalance}.`
+          `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
         );
       }
     };
