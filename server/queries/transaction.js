@@ -1,6 +1,5 @@
 const Pool = require("pg").Pool;
 const moment = require("moment");
-const crypto = require("crypto");
 
 // PostgreSQL connection pool configuration
 const pool = new Pool({
@@ -49,7 +48,7 @@ const createWithdrawalRequest = async (receiverId, amount) => {
 };
 
 // Approve withdrawal request (update wallet balances)
-const approveWithdrawalRequest = async (transactionId) => {
+const approveWithdrawalRequest = async (transactionId, referenceNumber) => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -91,15 +90,11 @@ const approveWithdrawalRequest = async (transactionId) => {
       [amount, receiverId]
     );
 
-    // Generating transaction reference number
-    const hash = crypto.createHash("sha256");
-    hash.update(transactionId.toString());
-    const generatedReferenceNumber = hash.digest("hex").substr(0, 8);
     const updatedTransactionResult = await client.query(
       `UPDATE "sharEco-schema"."transaction"
     SET "referenceNumber" = $1
     WHERE "transactionId" = $2`,
-      [generatedReferenceNumber, transactionId]
+      [referenceNumber, transactionId]
     );
 
     await client.query("COMMIT");
