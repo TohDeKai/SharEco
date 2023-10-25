@@ -73,18 +73,34 @@ const Home = () => {
   // Handling popup
   const [selectedTransactionId, setselectedTransactionId] = React.useState("");
 
-  const [selectedUEN, setSelectedUEN] = React.useState("");
-  const [selectedUserId, setSelectedUserId] = React.useState("");
-  const [selectedApproved, setSelectedApproved] = React.useState("");
+  const [loading, setLoading] = useState(false);
+
   const [selectedUsername, setSelectedUsername] = React.useState("");
-  const [selectedDocuments, setSelectedDocuments] = React.useState([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedContactNumber, setContactNumber] = React.useState("");
+  const [selectedWithdrawalFees, setSelectedWithdrawalFees] =
+    React.useState("");
 
-  const [userData, setUserData] = useState([]);
-
-  const handleApproveRequestClickOpen = (transactionId) => {
-    setselectedTransactionId(transactionId);
-    setOpenApproveVerification(true);
+  const handleApproveRequestClickOpen = async (
+    transactionId,
+    senderId,
+    amount
+  ) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${senderId}`
+      );
+      // Update the username state with the new data
+      setSelectedUsername(response.data.data.user.username);
+      setContactNumber(response.data.data.user.contactNumber);
+      const amountNum = parseFloat(amount.replace("$", ""));
+      setSelectedWithdrawalFees(Math.min(10, 0.05 * amountNum).toFixed(2));
+    } catch (error) {
+    } finally {
+      setselectedTransactionId(transactionId);
+      setOpenApproveVerification(true);
+      setLoading(false);
+    }
   };
 
   const handleRemoveClickOpen = (transactionId) => {
@@ -111,22 +127,6 @@ const Home = () => {
   };
 
   const [transactionData, settransactionData] = useState([]);
-
-  const [password, setPassword] = useState("");
-  const [cfmPassword, setCfmPassword] = useState("");
-  const [passwordsMatch, setPasswordsMatch] = useState(true);
-
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value);
-  };
-
-  const handleCfmPasswordChange = (event) => {
-    setCfmPassword(event.target.value);
-  };
-
-  const validatePasswords = () => {
-    setPasswordsMatch(password === cfmPassword);
-  };
 
   const approveWithdrawalRequest = async (event) => {
     setOpenApproveVerification(false);
@@ -252,7 +252,9 @@ const Home = () => {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleApproveRequestClickOpen(
-                                    row.transactionId
+                                    row.transactionId,
+                                    row.senderId,
+                                    row.amount
                                   );
                                 }}
                               >
@@ -289,9 +291,16 @@ const Home = () => {
             </DialogTitle>
             <DialogContent>
               <DialogContentText id="alert-dialog-description">
-                Withdrawal amount will be deducted from the user's ecoWallet.
-                This action cannot be reversed. Please enter PayNow transaction
-                number.
+                Withdrawal amount will be deducted from the{" "}
+                <b>{selectedUsername}</b>'s ecoWallet. This action cannot be
+                reversed.
+              </DialogContentText>
+              <DialogContentText id="alert-dialog-description">
+                Please PayNow to <b>{selectedContactNumber}</b> and enter the
+                transaction number.
+              </DialogContentText>
+              <DialogContentText id="alert-dialog-description">
+                Platform withdrawal fees earned: ${selectedWithdrawalFees}
               </DialogContentText>
               <Box
                 component="form"
