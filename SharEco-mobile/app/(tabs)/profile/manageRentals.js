@@ -78,11 +78,7 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   );
 };
 
-const Pills = ({
-  pillItems,
-  activeLendingPill: activePill,
-  handlePillPress,
-}) => {
+const Pills = ({ pillItems, activePill, handlePillPress }) => {
   return (
     <View style={styles.pillContainer}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -113,19 +109,16 @@ const NoRental = ({ rentalStatus }) => {
   let message;
   switch (rentalStatus) {
     case "Upcoming":
-      message = "No upcoming rentals scheduled yet. Keep an eye out!";
+      message = "No upcoming rentals scheduled for this listing";
       break;
     case "Ongoing":
-      message = "No ongoing rentals at the moment. Check back later!";
+      message = "No ongoing rentals at the moment for this listing";
       break;
     case "Cancelled":
-      message = "You have no cancelled rentals.";
+      message = "You have no cancelled rentals for this listing";
       break;
     case "Completed":
-      message = "No completed rentals at the moment.";
-      break;
-    case "Pending":
-      message = "You have no pending rentals. Start renting item!";
+      message = "No completed rentals for this listing";
       break;
   }
 
@@ -252,23 +245,10 @@ export default function manageRentals() {
   );
 
   return (
-    <SafeAreaContainer>
+    <SafeAreaContainer style={{ flex: 1 }}>
       <Header title="Manage Rentals" action="back" onPress={handleBack} />
       <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-      <View style={{ flex: 1, inputbackground: primary }}>
-        <RegularText>
-          {rentals ? (
-            rentals.map((rental) => (
-              <ActivityCard
-                key={rental.rentalId}
-                rental={rental}
-                type={"Lending"}
-              />
-            ))
-          ) : (
-            <NoRental rentalStatus={activePill} />
-          )}
-        </RegularText>
+      <View style={{ flex: 0.8 }}>
         {activeTab == "All rentals" && (
           <View>
             <Pills
@@ -276,40 +256,40 @@ export default function manageRentals() {
               activePill={activePill}
               handlePillPress={handlePillPress}
             />
-            {/* {activePill == "Upcoming" && ( */}
-            <View style={{ alignItems: "center", flex: 1 }}>
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                style={styles.activityCardContainer}
-                contentContainerStyle={{ flexGrow: 1 }}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                  />
-                }
-              >
-                {rentals ? (
-                  rentals.map((rental) => (
-                    <ActivityCard
-                      key={rental.rentalId}
-                      rental={rental}
-                      type={"Lending"}
-                    />
-                  ))
-                ) : (
-                  <NoRental rentalStatus={activePill} />
-                )}
-              </ScrollView>
-            </View>
-            {/* )} */}
-
-            {activePill == "Ongoing" && (
-              <View style={{ alignItems: "center", flex: 1 }}>
+            {activePill == "Upcoming" && (
+              <View style={{ alignItems: "center" }}>
                 <ScrollView
                   showsVerticalScrollIndicator={false}
                   style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
+                    />
+                  }
+                >
+                  {upcomingLendings.length > 0 ? (
+                    upcomingLendings.map((rental) => {
+                      console.log("Current Rental:", rental);
+                      return (
+                        <ActivityCard
+                          key={rental.rentalId}
+                          rental={rental}
+                          type={"Lending"}
+                        />
+                      );
+                    })
+                  ) : (
+                    <NoRental rentalStatus={"Upcoming"} />
+                  )}
+                </ScrollView>
+              </View>
+            )}
+            {activePill == "Ongoing" && (
+              <View style={{ alignItems: "center" }}>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  style={styles.activityCardContainer}
                   refreshControl={
                     <RefreshControl
                       refreshing={refreshing}
@@ -331,13 +311,11 @@ export default function manageRentals() {
                 </ScrollView>
               </View>
             )}
-
             {activePill == "Completed" && (
-              <View style={{ alignItems: "center", flex: 1 }}>
+              <View style={{ alignItems: "center" }}>
                 <ScrollView
                   showsVerticalScrollIndicator={false}
                   style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
                   refreshControl={
                     <RefreshControl
                       refreshing={refreshing}
@@ -359,13 +337,11 @@ export default function manageRentals() {
                 </ScrollView>
               </View>
             )}
-
             {activePill == "Cancelled" && (
-              <View style={{ alignItems: "center", flex: 1 }}>
+              <View style={{ alignItems: "center" }}>
                 <ScrollView
                   showsVerticalScrollIndicator={false}
                   style={styles.activityCardContainer}
-                  contentContainerStyle={{ flexGrow: 1 }}
                   refreshControl={
                     <RefreshControl
                       refreshing={refreshing}
@@ -389,12 +365,22 @@ export default function manageRentals() {
             )}
           </View>
         )}
+        {activeTab == "Blockout" && (
+          <View>
+            <RegularText>Blockout</RegularText>
+          </View>
+        )}
       </View>
     </SafeAreaContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    width: viewportWidthInPixels(100),
+    height: viewportHeightInPixels(70),
+    backgroundColor: primary,
+  },
   tabContainer: {
     flexDirection: "row",
     width: viewportWidthInPixels(100),

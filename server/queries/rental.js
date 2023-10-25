@@ -944,6 +944,43 @@ const updateItemImages = async (itemId, images, checklistFormType) => {
   }
 };
 
+// Create Blockout Period
+const createBlockout = async (
+  startDate,
+  endDate,
+  itemId,
+  lenderId,
+  isHourly
+) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO "sharEco-schema"."rental" 
+          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId", "creationDate", "isUpdated", "totalFee", "isHourly") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) returning *`,
+      [
+        startDate,
+        endDate,
+        "",
+        "PENDING",
+        "",
+        0,
+        0,
+        0,
+        itemId,
+        lenderId,
+        lenderId,
+        currentTimeStamp,
+        false,
+        0,
+        isHourly,
+      ]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -964,4 +1001,5 @@ module.exports = {
   submitEndRentalChecklist,
   updateRentalUponLenderReview,
   updateRentalUponBorrowerReview,
+  createBlockout,
 };
