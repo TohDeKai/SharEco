@@ -21,9 +21,11 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
 import Header from "../../../components/Header";
+import BlockoutCard from "../../../components/containers/BlockoutCard";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import ActivityCard from "../../../components/containers/ActivityCard";
+import { PrimaryButton } from "../../../components/buttons/RegularButton";
 const { primary, placeholder, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -218,6 +220,10 @@ export default function manageRentals() {
     router.back();
   };
 
+  const toCreateBlockout = () => {
+    router.push("profile");
+  };
+
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
     console.log("Active tab: " + tabName);
@@ -229,20 +235,29 @@ export default function manageRentals() {
   };
 
   const upcomingLendings = rentals
-    .filter((rental) => rental.status === "UPCOMING")
+    .filter(
+      (rental) => rental.status === "UPCOMING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   const ongoingLendings = rentals
-    .filter((rental) => rental.status === "ONGOING")
+    .filter(
+      (rental) => rental.status === "ONGOING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
   const completedLendings = rentals
-    .filter((rental) => rental.status === "COMPLETED")
+    .filter(
+      (rental) => rental.status === "COMPLETED" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const cancelledLendings = rentals.filter(
-    (rental) => rental.status === "CANCELLED"
+    (rental) => rental.status === "CANCELLED" && rental.isBlockOut === false
   );
+
+  const blockouts = rentals.filter((rental) => rental.isBlockOut === true);
+  console.log(blockouts ? blockouts : "NIL");
 
   return (
     <SafeAreaContainer style={{ flex: 1 }}>
@@ -269,16 +284,13 @@ export default function manageRentals() {
                   }
                 >
                   {upcomingLendings.length > 0 ? (
-                    upcomingLendings.map((rental) => {
-                      console.log("Current Rental:", rental);
-                      return (
-                        <ActivityCard
-                          key={rental.rentalId}
-                          rental={rental}
-                          type={"Lending"}
-                        />
-                      );
-                    })
+                    upcomingLendings.map((rental) => (
+                      <ActivityCard
+                        key={rental.rentalId}
+                        rental={rental}
+                        type={"Lending"}
+                      />
+                    ))
                   ) : (
                     <NoRental rentalStatus={"Upcoming"} />
                   )}
@@ -366,8 +378,38 @@ export default function manageRentals() {
           </View>
         )}
         {activeTab == "Blockout" && (
-          <View>
-            <RegularText>Blockout</RegularText>
+          <View style={{ marginHorizontal: viewportWidthInPixels(5) }}>
+            <View style={styles.title}>
+              <View style={styles.text}>
+                <RegularText typography="H1" style={{marginBottom: 6}}>Blockouts</RegularText>
+                <RegularText typography="Subtitle">
+                  Want to prevent rentals over a certain period? Create a
+                  blockout period now.
+                </RegularText>
+              </View>
+              <Pressable onPress={toCreateBlockout} style={styles.addButton}>
+                <Ionicons
+                  name="add"
+                  size={24}
+                  color={white}
+                  style={{ paddingRight: 2 }}
+                />
+                <RegularText color={white} typography="B1">Add new</RegularText>
+              </Pressable>
+            </View>
+            <FlatList
+              data={blockouts}
+              numColumns={1}
+              scrollsToTop={false}
+              showsVerticalScrollIndicator={false}
+              renderItem={(blockout) => <BlockoutCard blockout={blockout} />}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
+            />
           </View>
         )}
       </View>
@@ -379,7 +421,6 @@ const styles = StyleSheet.create({
   container: {
     width: viewportWidthInPixels(100),
     height: viewportHeightInPixels(70),
-    backgroundColor: primary,
   },
   tabContainer: {
     flexDirection: "row",
@@ -417,4 +458,23 @@ const styles = StyleSheet.create({
   activityCardContainer: {
     width: Dimensions.get("window").width - 46,
   },
+  title: {
+    marginTop: 30,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end"
+  },
+  text: {
+    width: viewportWidthInPixels(60),
+  },
+  addButton: {
+    paddingLeft: 9,
+    paddingRight: 12,
+    paddingVertical: 7,
+    backgroundColor: primary,
+    borderRadius: 30,
+    justifyContent: "centre",
+    flexDirection: "row",
+    alignItems: "center"
+  }
 });

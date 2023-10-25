@@ -8,10 +8,9 @@ import {
   Dimensions,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
-import { Formik, Field } from "formik";
+import { Formik } from "formik";
 import { router, Link, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
-import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { DatePickerModal } from "react-native-paper-dates";
 import axios from "axios";
@@ -22,7 +21,6 @@ import DropDownPicker from "react-native-dropdown-picker";
 
 //components
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
-import ImagePickerContainer from "../../../components/containers/ImagePickerContainer";
 import Header from "../../../components/Header";
 import RoundedButton from "../../../components/buttons/RoundedButton";
 import MessageBox from "../../../components/text/MessageBox";
@@ -31,12 +29,7 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black, dark, fail } = colours;
 import { useAuth } from "../../../context/auth";
-import Calendar from "../../../components/DatePicker";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
-import {
-  SelectList,
-  MultipleSelectList,
-} from "react-native-dropdown-select-list";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportWidthInPixels = (percentage) => {
@@ -148,11 +141,8 @@ const createRentals = () => {
   const {
     itemTitle,
     images,
-    itemDescription,
-    itemOriginalPrice,
     rentalRateHourly,
     rentalRateDaily,
-    collectionLocations,
     depositFee,
     userId,
   } = listingItem;
