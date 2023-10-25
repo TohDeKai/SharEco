@@ -145,36 +145,25 @@ export default function manageRentals() {
   const { itemId } = params;
   const [rentals, setRentals] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [userId, setUserId] = useState();
 
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
       const userData = await getUserData();
       const userId = userData.userId;
+      setUserId(userId);
       try {
-        const response1 = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/rentals/lenderId/${userId}`
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/rentals/lenderId/${userId}/itemId/${itemId}`
         );
-        if (response1.status === 200) {
-          const lending = response1.data.data.rental;
-          setUserLendings(lending);
+        if (response.status === 200) {
+          const rentals = response.data.data.rentals;
+          console.log(rentals);
+          setRentals(rentals);
         } else {
           // Handle the error condition appropriately
-          console.log("Failed to retrieve lendings");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-      try {
-        const response2 = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/rentals/borrowerId/${userId}`
-        );
-        if (response2.status === 200) {
-          const borrowing = response2.data.data.rental;
-          setUserBorrowings(borrowing);
-        } else {
-          // Handle the error condition appropriately
-          console.log("Failed to retrieve lendings");
+          console.log("Failed to retrieve items");
         }
       } catch (error) {
         console.log(error);
@@ -192,6 +181,7 @@ export default function manageRentals() {
       try {
         const userData = await getUserData();
         const userId = userData.userId;
+        setUserId(userId);
         try {
           const response = await axios.get(
             `http://${BASE_URL}:4000/api/v1/rentals/lenderId/${userId}/itemId/${itemId}`
@@ -221,7 +211,10 @@ export default function manageRentals() {
   };
 
   const toCreateBlockout = () => {
-    router.push("profile");
+    router.push({
+      pathname: "profile/createBlockout",
+      params: { itemId: itemId, userId: userId },
+    });
   };
 
   const handleTabPress = (tabName) => {
@@ -381,7 +374,9 @@ export default function manageRentals() {
           <View style={{ marginHorizontal: viewportWidthInPixels(5) }}>
             <View style={styles.title}>
               <View style={styles.text}>
-                <RegularText typography="H1" style={{marginBottom: 6}}>Blockouts</RegularText>
+                <RegularText typography="H1" style={{ marginBottom: 6 }}>
+                  Blockouts
+                </RegularText>
                 <RegularText typography="Subtitle">
                   Want to prevent rentals over a certain period? Create a
                   blockout period now.
@@ -394,7 +389,9 @@ export default function manageRentals() {
                   color={white}
                   style={{ paddingRight: 2 }}
                 />
-                <RegularText color={white} typography="B1">Add new</RegularText>
+                <RegularText color={white} typography="B1">
+                  Add new
+                </RegularText>
               </Pressable>
             </View>
             <FlatList
@@ -409,6 +406,7 @@ export default function manageRentals() {
                   onRefresh={handleRefresh}
                 />
               }
+              style={{ height: viewportHeightInPixels(63) }}
             />
           </View>
         )}
@@ -462,7 +460,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end"
+    alignItems: "flex-end",
   },
   text: {
     width: viewportWidthInPixels(60),
@@ -475,6 +473,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: "centre",
     flexDirection: "row",
-    alignItems: "center"
-  }
+    alignItems: "center",
+  },
 });

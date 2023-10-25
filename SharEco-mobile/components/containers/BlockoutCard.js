@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, Pressable } from "react-native";
+import { View, StyleSheet, Alert, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router, Link, useLocalSearchParams } from "expo-router";
+import axios from "axios";
 
 import RegularText from "../text/RegularText";
 import { colours } from "../ColourPalette";
 const { white, primary, inputbackground, black, dark, fail } = colours;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
 
 export default function BlockoutCard({ blockout }) {
   const startDate = new Date(blockout.item.startDate);
@@ -21,6 +25,28 @@ export default function BlockoutCard({ blockout }) {
     return `${dateStr}, ${timeStr}`;
   };
 
+  const handleDelete = async () => {
+    try {
+      console.log("handle delete blockout");
+
+      const response = await axios.delete(
+        `http://${BASE_URL}:4000/api/v1/deleteBlockout/${blockout.item.rentalId}`
+      );
+
+      console.log(response.data);
+
+      if (response.status === 200) {
+        console.log("Successfully deleted blockout");
+        Alert.alert(
+            "Success",
+            `Blockout period has been deleted, refresh to see the changes.`
+          );
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View>
@@ -33,7 +59,9 @@ export default function BlockoutCard({ blockout }) {
           <RegularText typography="H3">{formatDate(endDate)}</RegularText>
         </View>
       </View>
-      <Ionicons name="trash" size={30} color={dark} />
+      <Pressable onPress={handleDelete}>
+        <Ionicons name="trash" size={30} color={dark} />
+      </Pressable>
     </View>
   );
 }
@@ -41,7 +69,7 @@ export default function BlockoutCard({ blockout }) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: inputbackground,
-    marginVertical: 20,
+    marginTop: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
     flexDirection: "row",
