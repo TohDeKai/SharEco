@@ -2160,3 +2160,21 @@ app.get("/api/v1/transaction/senderId/:userId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// Get transactions by type
+app.get("/api/v1/transaction/type/:type", async (req, res) => {
+  const type = req.params.type;
+
+  try {
+    const transactions = await transactiondb.getTransactionsByType(type);
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
