@@ -1,5 +1,6 @@
 const Pool = require("pg").Pool;
 const moment = require("moment");
+const crypto = require("crypto");
 
 // PostgreSQL connection pool configuration
 const pool = new Pool({
@@ -44,6 +45,76 @@ const createWithdrawalRequest = async (senderId, amount) => {
     return result.rows[0];
   } catch (err) {
     throw err;
+  }
+};
+
+// Approve withdrawal request (update wallet balances)
+const approveWithdrawalRequest = async (transactionId) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Retrieve the transaction
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."transaction" 
+    WHERE "transactionId" = $1`,
+      [transactionId]
+    );
+
+    const transaction = result.rows[0];
+    const senderId = transaction.senderId;
+    const receiverId = transaction.receiverId;
+    const amount = parseFloat(transaction.amount.replace("$", ""));
+
+    const receiverResult = await client.query(
+      'SELECT "userId", "walletBalance" FROM "sharEco-schema"."user" WHERE "userId" = $1',
+      [receiverId]
+    );
+
+    if (receiverResult.rows.length === 0) {
+      throw new Error("Receiver user not found");
+    }
+
+    const updatedSenderResult = await client.query(
+      `UPDATE "sharEco-schema"."user"
+    SET "walletBalance" = ($1 + "walletBalance")
+    WHERE "userId" = $2
+    RETURNING "walletBalance"`,
+      [-amount, senderId]
+    );
+
+    const updatedReceiverResult = await client.query(
+      `UPDATE "sharEco-schema"."user"
+    SET "walletBalance" = ($1 + "walletBalance")
+    WHERE "userId" = $2
+    RETURNING "walletBalance"`,
+      [amount, receiverId]
+    );
+
+    // Generating transaction reference number
+    const hash = crypto.createHash("sha256");
+    hash.update(transactionId.toString());
+    const generatedReferenceNumber = hash.digest("hex").substr(0, 8);
+    const updatedTransactionResult = await client.query(
+      `UPDATE "sharEco-schema"."transaction"
+    SET "referenceNumber" = $1
+    WHERE "transactionId" = $2`,
+      [generatedReferenceNumber, transactionId]
+    );
+
+    await client.query("COMMIT");
+
+    return {
+      transaction: result.rows[0],
+      sender_wallet_balance: updatedSenderResult.rows[0].walletBalance,
+      receiver_wallet_balance: updatedReceiverResult.rows[0].walletBalance,
+      reference_number: updatedTransactionResult.rows[0],
+    };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
   }
 };
 
@@ -104,7 +175,7 @@ const transferBetweenUsers = async (
         WHERE "userId" = $2
         RETURNING "walletBalance"`;
     const updatedSenderResult = await client.query(updateSenderQuery, [
-      -amount, 
+      -amount,
       senderId,
     ]);
 
@@ -113,7 +184,7 @@ const transferBetweenUsers = async (
         WHERE "userId" = $2
         RETURNING "walletBalance"`;
     const updatedReceiverResult = await client.query(updateReceiverQuery, [
-      amount, 
+      amount,
       receiverId,
     ]);
 
@@ -145,7 +216,7 @@ const transactionToAdmin = async (senderId, amount, transactionType) => {
       const result = await client.query(insertTransactionQuery, [
         new Date(),
         senderId,
-        1, 
+        1,
         amount,
         transactionType,
       ]);
@@ -260,7 +331,7 @@ const getTransactionsBySenderId = async (userId) => {
       WHERE "senderId" = $1`,
       [userId]
     );
-    return result.rows;
+    return result;
   } catch (err) {
     throw err;
   }
@@ -274,4 +345,5 @@ module.exports = {
   transactionFromAdmin,
   transferBetweenUsers,
   createWithdrawalRequest,
+  approveWithdrawalRequest,
 };

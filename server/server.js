@@ -2111,6 +2111,26 @@ app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
   }
 });
 
+// approve withdrawal request and handle wallet balance
+app.post("/api/v1/transaction/withdrawalRequest/approve", async (req, res) => {
+  const transactionId = req.body.transactionId;
+  console.log(transactionId);
+  try {
+    const transactions = await transactiondb.approveWithdrawalRequest(
+      transactionId
+    );
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //transfer money from user to user wallet balance updated
 app.post("/api/v1/transaction/transfer", async (req, res) => {
   const { senderUsername, receiverUsername, amount } = req.body;
