@@ -29,7 +29,7 @@ import {
   PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { primary, placeholder, white, yellow, black, inputbackground } = colours;
+const { primary, placeholder, white, yellow, dark, black, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
 
@@ -86,6 +86,7 @@ const ItemInformation = () => {
     rentalRateHourly,
     rentalRateDaily,
     collectionLocations,
+    depositFee,
     usersLikedCount,
     userId,
   } = listingItem;
@@ -127,7 +128,8 @@ const ItemInformation = () => {
               style={{
                 width: viewportWidthInPixels(30),
                 alignSelf: "flex-end",
-                
+                height: 40,
+                backgroundColor: dark,
               }}
             >
               Spotlight
@@ -172,6 +174,15 @@ const ItemInformation = () => {
             </RegularText>
             <RegularText typography="B2" style={style.content}>
               {itemOriginalPrice}
+            </RegularText>
+          </View>
+
+          <View>
+            <RegularText typography="H3" style={style.topic}>
+              Deposit Fee
+            </RegularText>
+            <RegularText typography="B2" style={style.content}>
+              {depositFee}
             </RegularText>
           </View>
 
@@ -266,6 +277,10 @@ const ListingNav = ({ data }) => {
     router.push({ pathname: "profile/editListing", params: { itemId: data } });
   };
 
+  const toManageRentals = () => {
+    router.push({ pathname: "profile/manageRentals", params: { itemId: data } });
+  };
+
   const [wishlistCount, setWishlistCount] = useState(0);
 
   useEffect(() => {
@@ -308,9 +323,9 @@ const ListingNav = ({ data }) => {
           </SecondaryButton>
         </View>
         <View style={style.buttonContainer}>
-          <DisabledButton typography={"H3"} color={white}>
+          <PrimaryButton typography={"H3"} color={white} onPress={toManageRentals}>
             Manage Rentals
-          </DisabledButton>
+          </PrimaryButton>
         </View>
       </View>
     </View>
@@ -353,6 +368,7 @@ const style = StyleSheet.create({
     paddingVertical: 30,
   },
   title: {
+    marginTop: 15,
     paddingBottom: 15,
   },
   rates: {
