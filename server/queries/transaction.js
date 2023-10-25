@@ -47,6 +47,75 @@ const createWithdrawalRequest = async (receiverId, amount) => {
   }
 };
 
+// Approve withdrawal request (update wallet balances)
+const approveWithdrawalRequest = async (transactionId, referenceNumber) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Retrieve the transaction
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."transaction" 
+    WHERE "transactionId" = $1`,
+      [transactionId]
+    );
+
+    const transaction = result.rows[0];
+    const senderId = transaction.senderId;
+    const receiverId = transaction.receiverId;
+    const amount = parseFloat(transaction.amount.replace("$", ""));
+
+    const receiverResult = await client.query(
+      'SELECT "userId", "walletBalance" FROM "sharEco-schema"."user" WHERE "userId" = $1',
+      [receiverId]
+    );
+
+    if (receiverResult.rows.length === 0) {
+      throw new Error("Receiver user not found");
+    }
+
+    const updatedSenderResult = await client.query(
+      `UPDATE "sharEco-schema"."user"
+    SET "walletBalance" = ($1 + "walletBalance")
+    WHERE "userId" = $2
+    RETURNING "walletBalance"`,
+      [-amount, senderId]
+    );
+
+    // platform withdrawal fees of 5% added to admin wallet (capped at $10)
+    const withdrawalFees = Math.min(10, 0.05 * amount);
+
+    const updatedReceiverResult = await client.query(
+      `UPDATE "sharEco-schema"."user"
+    SET "walletBalance" = ($1 + "walletBalance")
+    WHERE "userId" = $2
+    RETURNING "walletBalance"`,
+      [withdrawalFees, receiverId]
+    );
+
+    const updatedTransactionResult = await client.query(
+      `UPDATE "sharEco-schema"."transaction"
+    SET "referenceNumber" = $1
+    WHERE "transactionId" = $2`,
+      [referenceNumber, transactionId]
+    );
+
+    await client.query("COMMIT");
+
+    return {
+      transaction: result.rows[0],
+      sender_wallet_balance: updatedSenderResult.rows[0].walletBalance,
+      receiver_wallet_balance: updatedReceiverResult.rows[0].walletBalance,
+      reference_number: updatedTransactionResult.rows[0],
+    };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
 //Transfer from one user to another based on username (wallet balance updated)
 const transferBetweenUsers = async (
   senderUsername,
@@ -104,7 +173,7 @@ const transferBetweenUsers = async (
         WHERE "userId" = $2
         RETURNING "walletBalance"`;
     const updatedSenderResult = await client.query(updateSenderQuery, [
-      -amount, 
+      -amount,
       senderId,
     ]);
 
@@ -113,7 +182,7 @@ const transferBetweenUsers = async (
         WHERE "userId" = $2
         RETURNING "walletBalance"`;
     const updatedReceiverResult = await client.query(updateReceiverQuery, [
-      amount, 
+      amount,
       receiverId,
     ]);
 
@@ -145,7 +214,7 @@ const transactionToAdmin = async (senderId, amount, transactionType) => {
       const result = await client.query(insertTransactionQuery, [
         currentTimeStamp,
         senderId,
-        1, 
+        1,
         amount,
         transactionType,
       ]);
@@ -260,6 +329,20 @@ const getTransactionsBySenderId = async (userId) => {
       WHERE "senderId" = $1`,
       [userId]
     );
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// get transaction by type
+const getTransactionsByType = async (type) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."transaction" 
+      WHERE "transactionType" = $1`,
+      [type]
+    );
     return result.rows;
   } catch (err) {
     throw err;
@@ -274,4 +357,6 @@ module.exports = {
   transactionFromAdmin,
   transferBetweenUsers,
   createWithdrawalRequest,
+  approveWithdrawalRequest,
+  getTransactionsByType,
 };
