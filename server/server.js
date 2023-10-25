@@ -2114,10 +2114,12 @@ app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
 // approve withdrawal request and handle wallet balance
 app.post("/api/v1/transaction/withdrawalRequest/approve", async (req, res) => {
   const transactionId = req.body.transactionId;
+  const referenceNumber = req.body.referenceNumber;
   console.log(transactionId);
   try {
     const transactions = await transactiondb.approveWithdrawalRequest(
-      transactionId
+      transactionId,
+      referenceNumber
     );
     res.status(200).json({
       status: "success",
