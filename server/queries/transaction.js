@@ -337,6 +337,20 @@ const getTransactionsBySenderId = async (userId) => {
   }
 };
 
+// get transaction by type
+const getTransactionsByType = async (type) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."transaction" 
+      WHERE "transactionType" = $1`,
+      [type]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createTransaction,
   getTransactionsByReceiverId,
@@ -346,4 +360,5 @@ module.exports = {
   transferBetweenUsers,
   createWithdrawalRequest,
   approveWithdrawalRequest,
+  getTransactionsByType,
 };
