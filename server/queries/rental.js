@@ -950,32 +950,46 @@ const createBlockout = async (
   endDate,
   itemId,
   lenderId,
-  isHourly
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."rental" 
-          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", "itemId", "borrowerId", "lenderId", "creationDate", "isUpdated", "totalFee", "isHourly") 
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) returning *`,
+          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", 
+          "itemId", "borrowerId", "lenderId", "creationDate", "isUpdated", "totalFee", "isHourly", "isBlockOut") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning *`,
       [
         startDate,
         endDate,
         "",
-        "PENDING",
+        "UPCOMING",
         "",
         0,
         0,
         0,
         itemId,
-        lenderId,
+        0,
         lenderId,
         currentTimeStamp,
         false,
         0,
-        isHourly,
+        true,
+        true,
       ]
     );
     return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Delete Blockout Period
+const deleteBlockout = async (blockoutId) => {
+  try {
+    const result = await pool.query(
+      `DELETE FROM "sharEco-schema"."rental" WHERE "rentalId" = $1`,
+      [blockoutId]
+    );
+    return result;
   } catch (err) {
     throw err;
   }
@@ -1002,4 +1016,5 @@ module.exports = {
   updateRentalUponLenderReview,
   updateRentalUponBorrowerReview,
   createBlockout,
+  deleteBlockout,
 };
