@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import axios from "axios";
 
+import { useAuth } from "../../context/auth";
 import SafeAreaContainer from "./SafeAreaContainer";
 import UserAvatar from "../UserAvatar";
 import { Rating } from "react-native-stock-star-rating";
@@ -17,6 +18,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const RentalRequestCard = (props) => {
   const rental = props.rental;
+  const { getUserData } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [item, setItem] = useState();
   const [user, setUser] = useState("");
@@ -103,6 +105,17 @@ const RentalRequestCard = (props) => {
       }
     }
 
+    async function fetchSessionUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setSessionUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
     async function fetchItemData() {
       try {
         const itemResponse = await axios.get(
@@ -117,9 +130,10 @@ const RentalRequestCard = (props) => {
       }
     }
 
+    fetchSessionUserData();
     fetchUserData();
     fetchItemData();
-  }, [rental.borrowerId, rental.status]);
+  }, [rental.borrowerId, rental.status, sessionUser.userId]);
 
   const handleShowModal = (type) => {
     setShowModal(true);
@@ -147,6 +161,26 @@ const RentalRequestCard = (props) => {
 
       handleCloseModal();
       props.handleRefresh();
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const handleRejectPaymentFromAdmin = async (borrowerId, amount) => {
+    try {
+      const paymentData = {
+        receiverId: borrowerId,
+        amount: amount,
+        transactionType: "REFUND",
+      };
+
+      const response = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+        paymentData
+      );
+      if (response.status === 200) {
+        console.log("Refund from admin to borrower was successful");
+      }
     } catch (error) {
       console.log(error.message);
     }
@@ -324,19 +358,31 @@ const RentalRequestCard = (props) => {
                 <PrimaryButton
                   typography="B3"
                   color={white}
-                  onPress={() => handleShowModal("Accept")}
+                  onPress={() =>
+                    parseFloat(
+                      sessionUser.walletBalance.replace(/[^\d.-]/g, "")
+                    ) < 0
+                      ? handleShowModal("NegativeWalletBalance")
+                      : handleShowModal("Accept")
+                  }
                 >
                   Accept
                 </PrimaryButton>
               </View>
               <ConfirmationModal
                 isVisible={showModal}
-                onConfirm={() =>
+                onConfirm={() => {
                   handleStatus(
                     modalType == "Accept" ? "Accept" : "Reject",
                     rental.rentalId
-                  )
-                }
+                  );
+                  if (modalType == "Reject") {
+                    handleRejectPaymentFromAdmin(
+                      rental.borrowerId,
+                      rental.totalFee
+                    );
+                  }
+                }}
                 onClose={handleCloseModal}
                 type={modalType}
                 rental={rental}
