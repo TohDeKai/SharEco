@@ -3,7 +3,7 @@ import { StyleSheet, Modal, Text, View, Button, TextInput } from "react-native";
 import { PrimaryButton, SecondaryButton } from "./buttons/RegularButton";
 import { colours } from "./ColourPalette";
 import RegularText from "./text/RegularText";
-const { primary, white, black, secondary } = colours;
+const { primary, white, black, secondary, red } = colours;
 import StyledTextInput from "../components/inputs/LoginTextInputs";
 import MessageBox from "../components/text/MessageBox";
 import { Formik } from "formik";
@@ -325,6 +325,44 @@ const ConfirmationModal = ({
                       onPress={onConfirm}
                     >
                       Confirm
+                    </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      {/* Notifying modal if user's wallet balance is negative*/}
+      {type === "NegativeWalletBalance" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  Please clear outstanding balance in EcoWallet
+                </RegularText>
+                <View style={styles.nav}>
+                  {/* <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View> */}
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Close
                     </PrimaryButton>
                   </View>
                 </View>
