@@ -296,6 +296,19 @@ verifyUser = async (username) => {
   }
 };
 
+getUserByEmail = async (email) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."user" 
+    WHERE "email" = $1`,
+      [email]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   getUsers,
   getUserById,
@@ -312,4 +325,5 @@ module.exports = {
   getWalletBalanceByUserId,
   updateAdminWalletBalance,
   verifyUser,
+  getUserByEmail,
 };

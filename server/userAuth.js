@@ -148,8 +148,56 @@ const UserVerify = async (req, res) => {
   }
 };
 
+const ResendEmail = async (req, res) => {
+  try {
+    const email = req.body.email;
+
+    const user = await db.getUserByEmail(email);
+
+    if (user) {
+      if (user.verification == "VERIFIED") {
+        res.status(403).json({
+          status: "error",
+          message: "User already verified",
+        });
+      } else {
+        client.sendEmailWithTemplate({
+          TemplateId: 33604267,
+          TemplateModel: {
+            name: user.displayName,
+            product_name: "SharEco",
+            signup_code: user.verification,
+          },
+          TemplateAlias: "welcome",
+          From: "e0772606@u.nus.edu",
+          To: req.body.email,
+          MessageStream: "outbound",
+        });
+        res.status(200).json({
+          status: "success",
+          message: "Email sent successfully",
+          data: user,
+        });
+      }
+    } else {
+      res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+  } catch (error) {
+    console.error(err);
+    // Handle other errors (e.g., database connection issues) with a 500 response
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   UserSignIn,
   UserSignUp,
   UserVerify,
+  ResendEmail,
 };
