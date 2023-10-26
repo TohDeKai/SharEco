@@ -128,7 +128,7 @@ const CheckoutScreen = () => {
         const topUpTransaction = axios.post(
           `http://${BASE_URL}:4000/api/v1/transaction`,
           {
-            senderId: 0,
+            senderId: 1,
             receiverId: user.userId,
             amount: amountInCents / 100,
             transactionType: "TOP_UP",
