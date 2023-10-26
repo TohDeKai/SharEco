@@ -749,7 +749,7 @@ const ActivityCard = ({ rental, type }) => {
                     })
                   }
                 >
-                  Checklist
+                  View Checklist
                 </SecondaryButton>
               </View>
             }
