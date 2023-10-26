@@ -42,18 +42,29 @@ const ActivityCard = ({ rental, type }) => {
   const [item, setItem] = useState({});
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [modalType, setModalType] = useState("");
 
   const handleShowDetailsModal = () => {
     setShowDetailsModal(true);
   };
+
   const handleCloseDetailsModal = () => {
     setShowDetailsModal(false);
   };
-  const handleShowCancelModal = () => {
-    setShowCancelModal(true);
-  };
+
   const handleCloseCancelModal = () => {
     setShowCancelModal(false);
+  };
+
+  const handleShowCancelModal = (type, startDate) => {
+    if (type === "Borrowing" && isCancellationLate(startDate)) {
+      setModalType("BorrowerLateCancellation");
+    } else if (type === "Lending" && isCancellationLate(startDate)) {
+      setModalType("LenderLateCancellation");
+    } else {
+      setModalType("Cancel");
+    }
+    setShowCancelModal(true);
   };
 
   const handleStart = () => {
@@ -64,6 +75,19 @@ const ActivityCard = ({ rental, type }) => {
         checklistFormType: "Start Rental",
       },
     });
+  };
+
+  const isCancellationLate = (startDate) => {
+    const startDateString = new Date(startDate);
+    const timeDifference = startDateString - currentTimestamp;
+
+    const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+    if (hoursDifference < 24) {
+      return true;
+    } else {
+      return false;
+    }
   };
 
   const handleReturn = () => {
@@ -612,7 +636,9 @@ const ActivityCard = ({ rental, type }) => {
                 <SecondaryButton
                   typography="B3"
                   color={primary}
-                  onPress={handleShowCancelModal}
+                  onPress={() =>
+                    handleShowCancelModal("Borrowing", rental.startDate)
+                  }
                 >
                   Cancel
                 </SecondaryButton>
@@ -624,7 +650,9 @@ const ActivityCard = ({ rental, type }) => {
                 <SecondaryButton
                   typography="B3"
                   color={primary}
-                  onPress={handleShowCancelModal}
+                  onPress={() =>
+                    handleShowCancelModal("Lending", rental.startDate)
+                  }
                 >
                   Cancel
                 </SecondaryButton>
@@ -690,7 +718,7 @@ const ActivityCard = ({ rental, type }) => {
                 }}
                 onClose={handleCloseCancelModal}
                 style={{ flex: 0 }}
-                type="Cancel"
+                type={modalType}
                 forCancellationData={handleCancellationData}
                 rental={rental}
               />
