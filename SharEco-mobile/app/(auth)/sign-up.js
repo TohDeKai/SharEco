@@ -44,12 +44,6 @@ export default function SignIn() {
   };
 
   const handleSignup = async (credentials) => {
-    console.log(
-      "Calling auth with username: " +
-        credentials.username +
-        " and password: " +
-        credentials.password
-    );
     try {
       const userData = {
         username: credentials.username,
@@ -67,7 +61,10 @@ export default function SignIn() {
 
       if (response.status === 200) {
         console.log("User successfully signed up");
-        router.push("/sign-in");
+        router.push({
+          pathname: "/verification",
+          params: { username: credentials.username },
+        });
       } else {
         //shouldnt come here
         console.log("User sign up unsuccessful");
@@ -179,7 +176,8 @@ export default function SignIn() {
                       alignSelf: "center",
                     })}
                   >
-                    <RegularText typography="Subtitle"
+                    <RegularText
+                      typography="Subtitle"
                       style={{
                         color: primary,
                         textDecorationLine: "underline",

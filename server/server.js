@@ -121,6 +121,29 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
   }
 });
 
+app.get("/api/v1/users/email/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const user = await userdb.getUserByEmail(email);
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Get Wallet ID by user ID
 app.get("/api/v1/users/walletId/:userId", async (req, res) => {
   try {
@@ -222,9 +245,7 @@ app.put("/api/v1/users/walletBalance/:userId", async (req, res) => {
 //update wallet Balance to admin
 app.put("/api/v1/users/adminWalletBalance", async (req, res) => {
   try {
-    const user = await userdb.updateAdminWalletBalance(
-      req.body.walletBalance
-    );
+    const user = await userdb.updateAdminWalletBalance(req.body.walletBalance);
     if (user) {
       res.status(200).json({
         status: "success",
@@ -997,6 +1018,8 @@ app.post("/api/v1/admin/signUp", async (req, res) => {
 // User Auth Functionalities
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
+app.post("/api/v1/user/verify", userAuth.UserVerify);
+app.post("/api/v1/user/resendemail", userAuth.ResendEmail);
 
 // Business Verification functionalites
 
@@ -1359,6 +1382,34 @@ app.get("/api/v1/rentals/lenderId/:lenderId", async (req, res) => {
   }
 });
 
+// Get Rentals by Lender Id and Item Id
+app.get(
+  "/api/v1/rentals/lenderId/:lenderId/itemId/:itemId",
+  async (req, res) => {
+    try {
+      const rentals = await rentaldb.getRentalsByLenderAndItemId(
+        req.params.lenderId,
+        req.params.itemId
+      );
+      if (rentals.length !== 0) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            rentals: rentals,
+          },
+        });
+      } else {
+        res
+          .status(404)
+          .json({ error: "No rentals found for the given lender and item" });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
 // Get Rental by Borrower Id
 app.get("/api/v1/rentals/borrowerId/:borrowerId", async (req, res) => {
   try {
@@ -1527,6 +1578,61 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+//BLOCKOUT
+// Create blockout
+app.post("/api/v1/createBlockout", async (req, res) => {
+  const {
+    startDate,
+    endDate,
+    itemId,
+    lenderId,
+  } = req.body;
+
+  try {
+    const blockout = await rentaldb.createBlockout(
+      startDate,
+      endDate,
+      itemId,
+      lenderId,
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        blockout: blockout,
+      },
+    });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Delete blockout
+app.delete("/api/v1/deleteBlockout/:blockoutId", async (req, res) => {
+  const blockoutId = req.params.blockoutId;
+  try {
+    const blockout = await rentaldb.deleteBlockout(blockoutId);
+
+    if (blockout) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          blockout: blockout,
+        },
+      });
+    } else {
+      // Handle the case where the review was not found
+      res.status(404).json({ error: "Blockout was not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 
 //SPOTLIGHT
 // Creating new spotlight
@@ -1714,7 +1820,9 @@ app.get("/api/v1/reviews/reviewId/:reviewId", async (req, res) => {
 // Get Reviews by revieweeId
 app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
   try {
-    const reviews = await reviewdb.getReviewsByRevieweeId(req.params.revieweeId);
+    const reviews = await reviewdb.getReviewsByRevieweeId(
+      req.params.revieweeId
+    );
     if (reviews.length != 0) {
       res.status(200).json({
         status: "success",
@@ -1797,8 +1905,6 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
   // Use an existing Customer ID if this is a returning customer.
   const walletId = req.body.walletId;
   const amount = req.body.amount;
-  console.log(walletId);
-  console.log(amount);
   const customer =
     walletId != ""
       ? await stripe.customers.retrieve(walletId)
@@ -1824,12 +1930,17 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
     publishableKey:
       "pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH",
   });
+
+  
+
 });
 
 // Get average rating by userId
 app.get("/api/v1/ratings/userId/:userId", async (req, res) => {
   try {
-    const { averageRating, numberOfRatings } = await reviewdb.getRatingByUserId(req.params.userId);
+    const { averageRating, numberOfRatings } = await reviewdb.getRatingByUserId(
+      req.params.userId
+    );
     if (averageRating) {
       res.status(200).json({
         status: "success",
@@ -1853,7 +1964,7 @@ app.get("/api/v1/ratings/userId/:userId", async (req, res) => {
 /**********************          Wishlist Routes             **************************/
 // Add to wishlist
 app.post("/api/v1/wishlist", async (req, res) => {
-  const {itemId, userId} = req.body;
+  const { itemId, userId } = req.body;
 
   try {
     const wishlist = await wishlistdb.createWishList(itemId, userId);
@@ -1872,29 +1983,32 @@ app.post("/api/v1/wishlist", async (req, res) => {
 });
 
 // Remove from wishlist
-app.delete("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
-  const itemId = req.params.itemId;
-  const userId = req.params.userId;
+app.delete(
+  "/api/v1/wishlist/itemId/:itemId/userId/:userId",
+  async (req, res) => {
+    const itemId = req.params.itemId;
+    const userId = req.params.userId;
 
-  try {
-    const wishlist = await wishlistdb.removeWishlist(itemId, userId);
+    try {
+      const wishlist = await wishlistdb.removeWishlist(itemId, userId);
 
-    if (wishlist) {
-      res.status(200).json({
-        status: "success",
-        data: {
-          wishlist: wishlist,
-        },
-      });
-    } else {
-      // if wishlist not found
-      res.status(404).json({ error: "Wishlist not found" });
+      if (wishlist) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            wishlist: wishlist,
+          },
+        });
+      } else {
+        // if wishlist not found
+        res.status(404).json({ error: "Wishlist not found" });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Database error" });
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Database error" });
   }
-});
+);
 
 // Get wishlist by itemId
 app.get("/api/v1/wishlist/itemId/:itemId", async (req, res) => {
@@ -1912,7 +2026,7 @@ app.get("/api/v1/wishlist/itemId/:itemId", async (req, res) => {
       });
     } else {
       // if wishlist not found
-      res.status(404).json({ error: "Wishlist not found" })
+      res.status(404).json({ error: "Wishlist not found" });
     }
   } catch (error) {
     console.log(error);
@@ -1936,7 +2050,7 @@ app.get("/api/v1/wishlist/userId/:userId", async (req, res) => {
       });
     } else {
       // if items not found
-      res.status(404).json({ error: "Items not found" })
+      res.status(404).json({ error: "Items not found" });
     }
   } catch (error) {
     console.log(error);
@@ -1950,7 +2064,10 @@ app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const wishlist = await wishlistdb.getWishlistByItemIdAndUserId(itemId, userId);
+    const wishlist = await wishlistdb.getWishlistByItemIdAndUserId(
+      itemId,
+      userId
+    );
 
     if (wishlist) {
       res.status(200).json({
@@ -1961,21 +2078,25 @@ app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
       });
     } else {
       // if wishlist not found
-      res.status(404).json({ error: "Wishlist not found" })
+      res.status(404).json({ error: "Wishlist not found" });
     }
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Database error" });
   }
-})
+});
 
 /**********************          Transaction Routes             **************************/
+//create transaction without handling wallet balance
 app.post("/api/v1/transaction", async (req, res) => {
   const { senderId, receiverId, amount, transactionType } = req.body;
 
   try {
     const transaction = await transactiondb.createTransaction(
-      senderId, receiverId, amount, transactionType
+      senderId,
+      receiverId,
+      amount,
+      transactionType
     );
 
     // Send the newly created user as the response
@@ -1992,12 +2113,83 @@ app.post("/api/v1/transaction", async (req, res) => {
   }
 });
 
+//create withdrawal request without handling wallet balance
+app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
+  const { senderId, amount } = req.body;
+
+  try {
+    const transaction = await transactiondb.createWithdrawalRequest(senderId, amount)
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// approve withdrawal request and handle wallet balance
+app.post("/api/v1/transaction/withdrawalRequest/approve", async (req, res) => {
+  const transactionId = req.body.transactionId;
+  const referenceNumber = req.body.referenceNumber;
+  console.log(transactionId);
+  try {
+    const transactions = await transactiondb.approveWithdrawalRequest(
+      transactionId,
+      referenceNumber
+    );
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//transfer money from user to user wallet balance updated
+app.post("/api/v1/transaction/transfer", async (req, res) => {
+  const { senderUsername, receiverUsername, amount } = req.body;
+
+  try {
+    const transaction = await transactiondb.transferBetweenUsers(
+      senderUsername,
+      receiverUsername,
+      amount
+    );
+
+    // Send the newly created user as the response
+    res.status(200).json({
+      status: "success",
+      data: {
+        transaction: transaction,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//transfer money from user to admin, wallet balance updated
 app.post("/api/v1/transaction/toAdmin", async (req, res) => {
   const { senderId, amount, transactionType } = req.body;
 
   try {
     const transaction = await transactiondb.transactionToAdmin(
-      senderId, amount, transactionType
+      senderId,
+      amount,
+      transactionType
     );
 
     // Send the newly created user as the response
@@ -2014,12 +2206,15 @@ app.post("/api/v1/transaction/toAdmin", async (req, res) => {
   }
 });
 
+//transfer money from admin to user, wallet balance updated
 app.post("/api/v1/transaction/fromAdmin", async (req, res) => {
   const { receiverId, amount, transactionType } = req.body;
 
   try {
     const transaction = await transactiondb.transactionFromAdmin(
-      receiverId, amount, transactionType
+      receiverId,
+      amount,
+      transactionType
     );
 
     // Send the newly created user as the response
@@ -2041,13 +2236,15 @@ app.get("/api/v1/transaction/receiverId/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const transactions = await transactiondb.getTransactionsByReceiverId(userId);
-      res.status(200).json({
-        status: "success",
-        data: {
-          transactions: transactions,
-        },
-      });
+    const transactions = await transactiondb.getTransactionsByReceiverId(
+      userId
+    );
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Database error" });
@@ -2060,12 +2257,30 @@ app.get("/api/v1/transaction/senderId/:userId", async (req, res) => {
 
   try {
     const transactions = await transactiondb.getTransactionsBySenderId(userId);
-      res.status(200).json({
-        status: "success",
-        data: {
-          transactions: transactions,
-        },
-      });
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get transactions by type
+app.get("/api/v1/transaction/type/:type", async (req, res) => {
+  const type = req.params.type;
+
+  try {
+    const transactions = await transactiondb.getTransactionsByType(type);
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Database error" });
