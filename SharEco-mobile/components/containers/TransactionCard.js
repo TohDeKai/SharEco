@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical:10,
     justifyContent: "space-between",
-    width:400,
+    width: viewportWidthInPixels(90),
   },
   amount: {
     alignSelf: "flex-end",
