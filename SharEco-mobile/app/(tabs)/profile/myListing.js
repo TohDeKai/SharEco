@@ -29,7 +29,8 @@ import {
   PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { primary, placeholder, white, yellow, dark, black, inputbackground } = colours;
+const { primary, placeholder, white, yellow, dark, black, inputbackground } =
+  colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
 
@@ -115,8 +116,13 @@ const ItemInformation = () => {
         </View>
 
         <View style={style.textContainer}>
-          <View style={{marginTop: -viewportHeightInPixels(10), marginBottom: viewportHeightInPixels(2)}}>
-          <PrimaryButton
+          <View
+            style={{
+              marginTop: -viewportHeightInPixels(10),
+              marginBottom: viewportHeightInPixels(2),
+            }}
+          >
+            <PrimaryButton
               typography="H4"
               color={white}
               onPress={() => {
@@ -135,7 +141,6 @@ const ItemInformation = () => {
               Spotlight
             </PrimaryButton>
           </View>
-            
 
           <View style={style.title}>
             <RegularText typography="H1">{itemTitle}</RegularText>
@@ -154,9 +159,11 @@ const ItemInformation = () => {
             </View>
           )}
           {rentalRateHourly == "$0.00" && rentalRateDaily != "0.00" && (
-            <View style={style.pricing}>
-              <RegularText typography="H2">{rentalRateDaily}</RegularText>
-              <RegularText typography="Subtitle">/ day</RegularText>
+            <View style={style.rates}>
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/ day</RegularText>
+              </View>
             </View>
           )}
           {rentalRateHourly != "$0.00" && rentalRateDaily == "$0.00" && (
@@ -278,7 +285,10 @@ const ListingNav = ({ data }) => {
   };
 
   const toManageRentals = () => {
-    router.push({ pathname: "profile/manageRentals", params: { itemId: data } });
+    router.push({
+      pathname: "profile/manageRentals",
+      params: { itemId: data },
+    });
   };
 
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -289,12 +299,12 @@ const ListingNav = ({ data }) => {
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/wishlist/itemId/${data}`
         );
-  
+
         if (response.status === 200) {
           const wishlist = response.data.data.wishlist;
           setWishlistCount(wishlist.length);
         } else if (response.status === 404) {
-          console.log("There is no wishlist related to this item")
+          console.log("There is no wishlist related to this item");
           setWishlistCount(0);
         }
       } catch (error) {
@@ -302,13 +312,13 @@ const ListingNav = ({ data }) => {
       }
     }
     fetchWishlistByItemId();
-  }, [])
+  }, []);
 
   return (
     <View>
       <View style={style.nav}>
         <View style={style.wishlist}>
-          <Ionicons name='heart' size={30} color={placeholder} />
+          <Ionicons name="heart" size={30} color={placeholder} />
           <RegularText typography="H2" color={black}>
             {wishlistCount}
           </RegularText>
@@ -323,7 +333,11 @@ const ListingNav = ({ data }) => {
           </SecondaryButton>
         </View>
         <View style={style.buttonContainer}>
-          <PrimaryButton typography={"H3"} color={white} onPress={toManageRentals}>
+          <PrimaryButton
+            typography={"H3"}
+            color={white}
+            onPress={toManageRentals}
+          >
             Manage Rentals
           </PrimaryButton>
         </View>
