@@ -61,7 +61,6 @@ const transferScreen = () => {
         `http://${BASE_URL}:4000/api/v1/users/username/${values.receiverUsername}`
       );
       if (receiverResponse.status === 200) {
-        console.log("running outside try");
         try {
           const transferData = {
             senderUsername: user.username,
@@ -91,7 +90,8 @@ const transferScreen = () => {
         setIsSuccessMessage(false);
       }
     } catch (error) {
-      console.log("Username error");
+      setMessage("Receiver username does not exist.");
+        setIsSuccessMessage(false);
     }
   };
 
@@ -106,7 +106,10 @@ const transferScreen = () => {
         <Formik
           initialValues={{ receiverUsername: "", amount: 0 }}
           onSubmit={(values, setSubmitting) => {
-            if (values.amount == "") {
+            if (parseFloat(user.walletBalance.replace("$", "")) <= 0) {
+              setMessage("Please top up your EcoWallet before transferring.");
+              setIsSuccessMessage(false);
+            } else if (values.amount == "") {
               setMessage("Input amount cannot be empty.");
               setIsSuccessMessage(false);
             } else if (parseFloat(values.amount) <= 1) {
