@@ -280,6 +280,22 @@ updateAdminWalletBalance = async (walletBalance) => {
   }
 };
 
+verifyUser = async (username) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."user" 
+    SET "verification" = $1
+    WHERE "username" = $2
+    RETURNING *`,
+      ["VERIFIED", username]
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   getUsers,
   getUserById,
@@ -295,4 +311,5 @@ module.exports = {
   updateUserWalletBalance,
   getWalletBalanceByUserId,
   updateAdminWalletBalance,
+  verifyUser,
 };

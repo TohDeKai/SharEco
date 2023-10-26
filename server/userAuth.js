@@ -72,36 +72,23 @@ const UserSignIn = async (req, res) => {
 // Send an email:
 var client = new postmark.ServerClient(process.env.POSTMARK_API);
 
-const sendEmail = async (req, res) => {
-  try {
-    console.log(process.env.POSTMARK_API);
-    client.sendEmail({
-      From: "e0772606@u.nus.edu",
-      To: "e0772606@u.nus.edu",
-      Subject: "Hello from Postmark",
-      HtmlBody: "<strong>Hello</strong> dear Postmark user.",
-      TextBody: "Hello from Postmark!",
-      MessageStream: "outbound",
-    });
-  } catch (error) {
-    throw error;
-  }
-};
 // Sign up for user portal NOT DONE
 const UserSignUp = async (req, res) => {
   try {
     const hashed = bcrypt.hashSync(req.body.password, saltRounds);
+    // Generating a random 6 number code
+    const verificationCode = Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(6, "0");
     const user = db.createUser(
       hashed,
       req.body.email,
       req.body.contactNumber,
       req.body.displayName,
-      req.body.username
+      req.body.username,
+      verificationCode
     );
-    // Generating a random 6 number code
-    const verificationCode = Math.floor(Math.random() * 1000000)
-      .toString()
-      .padStart(6, "0");
+
     if (user) {
       client.sendEmailWithTemplate({
         TemplateId: 33604267,
@@ -131,8 +118,38 @@ const UserSignUp = async (req, res) => {
   }
 };
 
+// Verifying user using verification code
+const UserVerify = async (req, res) => {
+  const username = req.body.username;
+  const verification = req.body.verification;
+
+  const user = await db.getUserByUsername(username);
+
+  if (user.verification == verification) {
+    db.verifyUser(username);
+    res.status(200).json({
+      status: "success",
+      message: "User verified successfully",
+    });
+  } else {
+    res.status(400).json({
+      status: "error",
+      message: "Incorrect verification code",
+    });
+  }
+  try {
+  } catch (error) {
+    console.error(err);
+    // Handle other errors (e.g., database connection issues) with a 500 response
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   UserSignIn,
   UserSignUp,
-  sendEmail,
+  UserVerify,
 };
