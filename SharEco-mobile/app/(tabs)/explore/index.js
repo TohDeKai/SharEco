@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: viewportWidthInPixels(5),
-    paddingTop: 50,
+    paddingTop: 40,
     paddingBottom: viewportHeightInPixels(2),
   },
   tabContainer: {
