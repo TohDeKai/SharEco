@@ -671,13 +671,13 @@ const ActivityCard = ({ rental, type }) => {
 
             {type === "Borrowing" && (
               <View style={styles.buttonContainer}>
-                <PrimaryButton
+                <SecondaryButton
                   typography="B3"
-                  color={white}
+                  color={primary}
                   onPress={handleEditRental}
                 >
                   Edit
-                </PrimaryButton>
+                </SecondaryButton>
               </View>
             )}
             {type === "Borrowing" && (
@@ -765,6 +765,22 @@ const ActivityCard = ({ rental, type }) => {
 
         {rental.status === "COMPLETED" && (
           <View style={styles.buttons}>
+            {
+              <View style={styles.buttonContainer}>
+                <SecondaryButton
+                  typography="B3"
+                  color={primary}
+                  onPress={() =>
+                    router.push({
+                      pathname: "activity/reviewChecklist",
+                      params: { rentalId: rental.rentalId },
+                    })
+                  }
+                >
+                  View Checklist
+                </SecondaryButton>
+              </View>
+            }
             <View style={styles.buttonContainer}>
               <PrimaryButton
                 typography="B3"
@@ -828,22 +844,6 @@ const ActivityCard = ({ rental, type }) => {
                   : "Rate"}
               </PrimaryButton>
             </View>
-            {
-              <View style={styles.buttonContainer}>
-                <PrimaryButton
-                  typography="B3"
-                  color={white}
-                  onPress={() =>
-                    router.push({
-                      pathname: "activity/reviewChecklist",
-                      params: { rentalId: rental.rentalId },
-                    })
-                  }
-                >
-                  Checklist
-                </PrimaryButton>
-              </View>
-            }
           </View>
         )}
 
