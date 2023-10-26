@@ -76,7 +76,11 @@ const submitChecklist = () => {
         );
         if (itemResponse.status === 200) {
           const itemData = itemResponse.data.data.item;
-          const numOfCheckboxes = itemData.checklistCriteria.length;
+          const numOfCheckboxes = 0;
+          
+          if (itemData.checkListCriteria && itemData.checklistCriteria.length > 0) {
+            numOfCheckboxes = itemData.checklistCriteria.length;
+          } 
           setItem(itemData);
           setCheckboxValues(new Array(numOfCheckboxes).fill(false));
         }
@@ -422,22 +426,25 @@ const submitChecklist = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Handover checklist
                 </RegularText>
-                <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
-                  Inspect the condition of the item at handover and tick the
-                  relevant boxes
-                </RegularText>
+                
 
                 {item && item.checklistCriteria ? (
                   item.checklistCriteria.map((criterion, index) => (
-                    <View key={index} style={styles.checkboxContainer}>
-                      <Checkbox
-                        value={checkboxValues[index] || false}
-                        onValueChange={(newValue) =>
-                          handleCheckboxChange(newValue, index)
-                        }
-                        color={primary}
-                      />
-                      <RegularText>{criterion}</RegularText>
+                    <View>
+                      <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
+                        Inspect the condition of the item at handover and tick the
+                        relevant boxes
+                      </RegularText>
+                      <View key={index} style={styles.checkboxContainer}>
+                        <Checkbox
+                          value={checkboxValues[index] || false}
+                          onValueChange={(newValue) =>
+                            handleCheckboxChange(newValue, index)
+                          }
+                          color={primary}
+                        />
+                        <RegularText>{criterion}</RegularText>
+                      </View>
                     </View>
                   ))
                 ) : (
@@ -501,7 +508,7 @@ const submitChecklist = () => {
                       </View>
                       <View>
                         <RegularText typography="B1">
-                          {hoursLate}
+                          {hoursLate} Hours
                         </RegularText>
                       </View>
                     </View>
@@ -511,7 +518,7 @@ const submitChecklist = () => {
                       </View>
                       <View>
                         <RegularText typography="B1">
-                          ${perHourlyLateFee}
+                          ${perHourlyLateFee.toFixed(2)}
                         </RegularText>
                       </View>
                     </View>
