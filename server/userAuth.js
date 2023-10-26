@@ -22,14 +22,6 @@ const UserSignIn = async (req, res) => {
       });
     }
 
-    if (user.isBanned) {
-      // If the user is banned, send a 403 response
-      return res.status(403).json({
-        status: "error",
-        message: "User is banned",
-      });
-    }
-
     if (bcrypt.compareSync(password, user.password)) {
       // If the passwords match, send a success response
       const jwtToken = jwt.sign(
@@ -39,17 +31,24 @@ const UserSignIn = async (req, res) => {
         },
         process.env.JWT_SECRET
       );
+
       //if user is banned, cannot log in
-      if (!user.isBanned) {
+      if (user.isBanned) {
+        res.status(403).json({
+          status: "error",
+          message: "User is banned",
+        });
+      } // if user is not verified, cannot log in
+      else if (user.verification != "VERIFIED") {
+        res.status(403).json({
+          status: "error",
+          message: "User is not verified",
+        });
+      } else {
         res.status(200).json({
           status: "success",
           message: "Logged in successfully",
           token: jwtToken,
-        });
-      } else {
-        res.status(403).json({
-          status: "error",
-          message: "User is banned",
         });
       }
     } else {
