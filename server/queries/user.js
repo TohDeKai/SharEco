@@ -68,12 +68,13 @@ const createUser = async (
   email,
   contactNumber,
   displayName,
-  username
+  username,
+  verification
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."user" 
-        (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName", "aboutMe", "walletBalance", "walletId") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) returning *`,
+        (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName", "aboutMe", "walletBalance", "walletId","verification") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`,
       [
         username,
         password,
@@ -87,6 +88,7 @@ const createUser = async (
         "",
         0,
         "",
+        verification,
       ]
     );
     return result.rows[0];
@@ -276,7 +278,7 @@ updateAdminWalletBalance = async (walletBalance) => {
   } catch (err) {
     throw err;
   }
-}
+};
 
 module.exports = {
   getUsers,
@@ -292,5 +294,5 @@ module.exports = {
   getWalletIdByUserId,
   updateUserWalletBalance,
   getWalletBalanceByUserId,
-  updateAdminWalletBalance
+  updateAdminWalletBalance,
 };

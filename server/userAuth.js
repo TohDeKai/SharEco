@@ -98,7 +98,23 @@ const UserSignUp = async (req, res) => {
       req.body.displayName,
       req.body.username
     );
+    // Generating a random 6 number code
+    const verificationCode = Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(6, "0");
     if (user) {
+      client.sendEmailWithTemplate({
+        TemplateId: 33604267,
+        TemplateModel: {
+          name: req.body.displayName,
+          product_name: "SharEco",
+          signup_code: verificationCode,
+        },
+        TemplateAlias: "welcome",
+        From: "e0772606@u.nus.edu",
+        To: req.body.email,
+        MessageStream: "outbound",
+      });
       res.status(200).json({
         status: "success",
         message: "Signed up successfully",
