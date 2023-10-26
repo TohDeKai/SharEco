@@ -9,7 +9,7 @@ import SafeAreaContainer from "../../components/containers/SafeAreaContainer";
 import StyledTextInput from "../../components/inputs/LoginTextInputs";
 import RoundedButton from "../../components/buttons/RoundedButton";
 import MessageBox from "../../components/text/MessageBox";
-import { Link, router } from "expo-router";
+import { useLocalSearchParams, Link, router } from "expo-router";
 import RegularText from "../../components/text/RegularText";
 import { colours } from "../../components/ColourPalette";
 const { primary, white } = colours;
@@ -20,19 +20,31 @@ const viewportHeightInPixels = (percentage) => {
   return (percentage / 100) * screenHeight;
 };
 
-export default function SignIn() {
+export default function Verify() {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
+  const localSearchParams = useLocalSearchParams();
 
-  const handleVerify = async (credentials) => {
+  const username = localSearchParams.username;
+
+  const handleVerify = async (values) => {
     try {
       const response = await axios.post(
-        `http://${BASE_URL}:4000/api/v1/user/signIn`,
+        `http://${BASE_URL}:4000/api/v1/user/verify`,
         {
-          username,
-          password,
+          username: username,
+          verification: values.verification,
         }
       );
+      if (response.status === 200) {
+        console.log("User successfully verified");
+        router.push({
+          pathname: "/sign-in",
+        });
+      } else {
+        // Handle other HTTP status codes as needed
+        console.log("User verification unsuccessful");
+      }
     } catch (error) {
       if (error.response && error.response.status === 400) {
         console.log("Verification code is wrong");

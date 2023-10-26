@@ -124,7 +124,8 @@ const UserVerify = async (req, res) => {
   const verification = req.body.verification;
 
   const user = await db.getUserByUsername(username);
-
+  console.log(user);
+  console.log(verification);
   if (user.verification == verification) {
     db.verifyUser(username);
     res.status(200).json({
