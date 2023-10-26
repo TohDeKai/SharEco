@@ -121,6 +121,29 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
   }
 });
 
+app.get("/api/v1/users/email/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const user = await userdb.getUserByEmail(email);
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Get Wallet ID by user ID
 app.get("/api/v1/users/walletId/:userId", async (req, res) => {
   try {
@@ -995,6 +1018,8 @@ app.post("/api/v1/admin/signUp", async (req, res) => {
 // User Auth Functionalities
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
+app.post("/api/v1/user/verify", userAuth.UserVerify);
+app.post("/api/v1/user/resendemail", userAuth.ResendEmail);
 
 // Business Verification functionalites
 
