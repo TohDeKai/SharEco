@@ -329,7 +329,7 @@ const getTransactionsBySenderId = async (userId) => {
       WHERE "senderId" = $1`,
       [userId]
     );
-    return result;
+    return result.rows;
   } catch (err) {
     throw err;
   }

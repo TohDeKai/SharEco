@@ -967,7 +967,7 @@ const createBlockout = async (
         0,
         0,
         itemId,
-        0,
+        lenderId,
         lenderId,
         currentTimeStamp,
         false,

@@ -25,7 +25,8 @@ import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import Header from "../../../components/Header";
 import { useAuth } from "../../../context/auth";
 import MessageBox from "../../../components/text/MessageBox";
-const { white, primary, black } = colours;
+import RoundedButton from "../../../components/buttons/RoundedButton";
+const { white, secondary, primary, black } = colours;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -48,7 +49,14 @@ const withdrawScreen = () => {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -69,6 +77,7 @@ const withdrawScreen = () => {
       );
 
       if (withdrawResponse.status === 200) {
+        router.push("explore");
         Alert.alert(
           "Success",
           `Your withdrawal request has been submitted, it will be credited through PayNow within 3 working days.`
@@ -87,7 +96,29 @@ const withdrawScreen = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title="Withdraw Money" action="back" onPress={handleBack} />
+      <Header action="back" onPress={handleBack} />
+      <View style={styles.header}>
+        <RegularText typography="H1" color={secondary} style={{ fontSize: 45 }}>
+          Withdraw
+        </RegularText>
+        <View style={styles.subtitle}>
+          <RegularText
+            typography="B3"
+            color={black}
+            style={{ marginBottom: 10 }}
+          >
+            A withdrawal fee of 5% will be charged (capped at $10).
+          </RegularText>
+          <RegularText
+            typography="B3"
+            color={black}
+            style={{ marginBottom: 10 }}
+          >
+            Please ensure that your SharEco-linked phone number is your PayNow
+            registered phone number.
+          </RegularText>
+        </View>
+      </View>
       <ScrollView>
         <Formik
           initialValues={{ amount: 0 }}
@@ -95,53 +126,49 @@ const withdrawScreen = () => {
             if (parseFloat(values.amount) <= 1) {
               setMessage("Input amount cannot be less than or equal to $1.");
               setIsSuccessMessage(false);
+            } else if (
+              parseFloat(values.amount) >
+              parseFloat(user.walletBalance.replace("$", ""))
+            ) {
+              setMessage(
+                "Withdrawal amount cannot be greater than wallet balance.."
+              );
+              setIsSuccessMessage(false);
             } else {
               handleWithdraw(values);
             }
           }}
         >
           {({ handleChange, handleSubmit, values }) => (
-            <View style={[styles.container]}>
-              <RegularText
-                typography="H1"
-                color={black}
-                style={{ textAlign: "center", marginBottom: 6 }}
-              >
-                Input Withdrawal Amount ($)
+            <View style={styles.container}>
+              <RegularText typography="H3" style={{ marginBottom: 25 }}>
+                Account Balance:{" "}
+                <RegularText typography="H3" color={secondary}>
+                  {user.walletBalance}
+                </RegularText>
               </RegularText>
-              <RegularText
-                typography="Subtitle"
-                color={black}
-                style={{ textAlign: "center", marginBottom: 6, paddingHorizontal: 6, }}
-              >
-                A withdrawal fee of 5% will be charged (capped at $10).
+
+              <RegularText typography="H3" color={black}>
+                Withdrawal Amount ($)
               </RegularText>
-              <RegularText
-                typography="Subtitle"
-                color={black}
-                style={{ textAlign: "center", marginBottom: 6, paddingHorizontal: 6, }}
-              >
-                Please ensure that your SharEco-linked phone number is your PayNow registered phone number.
-              </RegularText>
-              
+
               <StyledTextInput
                 placeholder="Input your withdrawal amount"
                 value={values.amount}
                 onChangeText={handleChange("amount")}
                 keyboardType="numeric"
-                style={{ marginBottom: 10, width: viewportWidthInPixels(80) }}
+                style={{ marginBottom: 10 }}
               />
               <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
                 {message || " "}
               </MessageBox>
-              <PrimaryButton
+              <RoundedButton
                 typography={"B1"}
                 color={white}
                 onPress={handleSubmit}
-                style={{ width: viewportWidthInPixels(80) }}
               >
                 Confirm
-              </PrimaryButton>
+              </RoundedButton>
             </View>
           )}
         </Formik>
@@ -154,9 +181,17 @@ export default withdrawScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: white,
-    alignItems: "center",
-    paddingTop: viewportHeightInPixels(28),
+    marginHorizontal: viewportWidthInPixels(7),
+    width: viewportWidthInPixels(86),
+    marginTop: 120,
+  },
+  header: {
+    height: 60,
+    marginHorizontal: viewportWidthInPixels(7),
+    marginTop: 40,
+    width: viewportWidthInPixels(86),
+  },
+  subtitle: {
+    marginTop: 20,
   },
 });
