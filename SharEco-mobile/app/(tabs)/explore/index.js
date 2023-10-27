@@ -257,7 +257,7 @@ const explore = () => {
           <View style={{ alignItems: "center", flex: 1 }}>
             <ScrollView
               showsVerticalScrollIndicator={false}
-              style={styles.activityCardContainer}
+              style={styles.txtContainer}
               contentContainerStyle={{ flexGrow: 1 }}
               refreshControl={
                 <RefreshControl
@@ -272,6 +272,7 @@ const explore = () => {
                     key={transaction.transactionId}
                     transaction={transaction}
                     isIncoming={true}
+                    style={{width: viewportWidthInPixels(90)}}
                   />
                 ))
               ) : (
@@ -327,7 +328,9 @@ const explore = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title="EcoWallet" onPress={handleBack} />
+      <View style={styles.header}>
+        <RegularText typography="H1" color={secondary}>EcoWallet</RegularText>
+      </View>
       <View style={styles.greenHeader}>
         <RegularText typography="B2" color={white}>
           Balance Amount
@@ -387,7 +390,7 @@ const explore = () => {
         </View>
       </View>
       <View style={styles.body}>
-        <RegularText typography="H3" color={black}>
+        <RegularText typography="H2" color={black}>
           Transaction History
         </RegularText>
       </View>
@@ -400,14 +403,22 @@ const explore = () => {
 export default explore;
 
 const styles = StyleSheet.create({
+  header: {
+    height: 60,
+    paddingHorizontal: viewportWidthInPixels(5),
+    paddingTop: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    width: viewportWidthInPixels(100),
+  },
   greenHeader: {
-    maxHeight: viewportHeightInPixels(20),
-    paddingVertical: viewportHeightInPixels(2.5),
-    flex: 1,
+    height: 150,
+    paddingVertical: 30,
     flexDirection: "column",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: secondary,
+    marginBottom: 30,
   },
   buttonContainer: {
     borderRadius: 15,
@@ -418,24 +429,22 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     top: viewportHeightInPixels(3),
-    maxHeight: viewportHeightInPixels(7),
     width: viewportWidthInPixels(80),
     paddingHorizontal: viewportWidthInPixels(5),
-    flex: 1,
+    paddingVertical: 15,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: white,
   },
   body: {
-    paddingHorizontal: viewportWidthInPixels(2),
-    paddingTop: viewportHeightInPixels(3),
+    paddingHorizontal: viewportWidthInPixels(5),
+    paddingTop: 40,
     paddingBottom: viewportHeightInPixels(2),
   },
   tabContainer: {
     flexDirection: "row",
     width: "100%",
-    paddingTop: 10,
   },
   tab: {
     flex: 1,
@@ -449,4 +458,7 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomColor: primary,
   },
+  txtContainer: {
+    marginHorizontal: viewportWidthInPixels(3),
+  }
 });

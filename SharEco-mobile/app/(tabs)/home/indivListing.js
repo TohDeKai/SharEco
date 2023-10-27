@@ -60,38 +60,38 @@ const ItemInformation = () => {
     setRefreshing(true);
 
     try {
-        const itemResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
-        );
-  
-        if (itemResponse.status === 200) {
-          const item = itemResponse.data.data.item;
-          setListingItem(item);
-  
-          // Now that listingItem is set, fetch user data
-          const userResponse = await axios.get(
-            `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
-          );
-  
-          if (userResponse.status === 200) {
-            const userData = userResponse.data.data.user;
-            setUser(userData);
+      const itemResponse = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+      );
 
-            const ratingsResponse = await axios.get(
-              `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
-            )
-            if (ratingsResponse.status === 200) {
-              setRatings(ratingsResponse.data.data);
-            }
-          } else {
-            console.log("Failed to retrieve user");
+      if (itemResponse.status === 200) {
+        const item = itemResponse.data.data.item;
+        setListingItem(item);
+
+        // Now that listingItem is set, fetch user data
+        const userResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
+        );
+
+        if (userResponse.status === 200) {
+          const userData = userResponse.data.data.user;
+          setUser(userData);
+
+          const ratingsResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
+          );
+          if (ratingsResponse.status === 200) {
+            setRatings(ratingsResponse.data.data);
           }
         } else {
-          console.log("Failed to retrieve item");
+          console.log("Failed to retrieve user");
         }
-      } catch (error) {
-        console.error(error.message);
+      } else {
+        console.log("Failed to retrieve item");
       }
+    } catch (error) {
+      console.error(error.message);
+    }
 
     setRefreshing(false);
   };
@@ -102,23 +102,23 @@ const ItemInformation = () => {
         const itemResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
         );
-  
+
         if (itemResponse.status === 200) {
           const item = itemResponse.data.data.item;
           setListingItem(item);
-  
+
           // Now that listingItem is set, fetch user data
           const userResponse = await axios.get(
             `http://${BASE_URL}:4000/api/v1/users/userId/${item.userId}`
           );
-  
+
           if (userResponse.status === 200) {
             const userData = userResponse.data.data.user;
             setUser(userData);
 
             const ratingsResponse = await axios.get(
               `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
-            )
+            );
             if (ratingsResponse.status === 200) {
               setRatings(ratingsResponse.data.data);
             }
@@ -132,11 +132,9 @@ const ItemInformation = () => {
         console.error(error.message);
       }
     }
-  
-    fetchData(); 
-  
+
+    fetchData();
   }, [itemId, BASE_URL]);
-  
 
   const {
     itemTitle,
@@ -161,11 +159,8 @@ const ItemInformation = () => {
         showsVerticalScrollIndicator={false}
         style={{ marginBottom: 50 }}
         refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-            />
-          }
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
         <View style={style.imgContainer}>
           <View style={style.header}>
@@ -194,9 +189,11 @@ const ItemInformation = () => {
             </View>
           )}
           {rentalRateHourly == "$0.00" && rentalRateDaily != "0.00" && (
-            <View style={style.pricing}>
-              <RegularText typography="H2">{rentalRateDaily}</RegularText>
-              <RegularText typography="Subtitle">/ day</RegularText>
+            <View style={style.rates}>
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/ day</RegularText>
+              </View>
             </View>
           )}
           {rentalRateHourly != "$0.00" && rentalRateDaily == "$0.00" && (
@@ -239,14 +236,25 @@ const ItemInformation = () => {
             <RegularText typography="H3" style={style.topic}>
               Meet the owner
             </RegularText>
-            <Pressable 
+            <Pressable
               style={({ pressed }) => ({
                 opacity: pressed ? 0.5 : 1,
               })}
-              onPress={() => router.push({pathname: "home/othersProfile", params: { userId: user.userId }})}>
+              onPress={() =>
+                router.push({
+                  pathname: "home/othersProfile",
+                  params: { userId: user.userId },
+                })
+              }
+            >
               <View style={style.seller}>
                 <View style={style.avatarContainer}>
-                  <UserAvatar size="medium" source={{ uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg` }} />
+                  <UserAvatar
+                    size="medium"
+                    source={{
+                      uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
+                    }}
+                  />
                 </View>
                 <View style={style.profile}>
                   <RegularText typography="H3">{user.displayName}</RegularText>
@@ -254,9 +262,17 @@ const ItemInformation = () => {
                     @{user.username}
                   </RegularText>
                   <View style={style.ratingsContainer}>
-                    <RegularText typography="Subtitle">{ratings.averageRating || 0}</RegularText>
-                    <Rating stars={ratings.starsToDisplay || 0} size={18} color={yellow} />
-                    <RegularText typography="Subtitle">({ratings.numberOfRatings || 0})</RegularText>
+                    <RegularText typography="Subtitle">
+                      {ratings.averageRating || 0}
+                    </RegularText>
+                    <Rating
+                      stars={ratings.starsToDisplay || 0}
+                      size={18}
+                      color={yellow}
+                    />
+                    <RegularText typography="Subtitle">
+                      ({ratings.numberOfRatings || 0})
+                    </RegularText>
                   </View>
                 </View>
               </View>
@@ -273,7 +289,10 @@ const ItemInformation = () => {
           </View>
         </View>
       </ScrollView>
-      <ListingNav data={itemId} tab={rentalRateHourly == "$0.00" ? "Daily" : "Hourly"} />
+      <ListingNav
+        data={itemId}
+        tab={rentalRateHourly == "$0.00" ? "Daily" : "Hourly"}
+      />
     </View>
   );
 };
@@ -334,7 +353,10 @@ const ListingNav = ({ data, tab }) => {
   }, [user]);
 
   const toRentalRequest = () => {
-    router.push({ pathname: "home/rentalRequest", params: { itemId: itemId, tab: tab } }); //to update path name
+    router.push({
+      pathname: "home/rentalRequest",
+      params: { itemId: itemId, tab: tab },
+    }); //to update path name
   };
 
   const [isWishlist, setIsWishlist] = useState(false);
@@ -344,13 +366,13 @@ const ListingNav = ({ data, tab }) => {
   useEffect(() => {
     async function checkWishlist() {
       try {
-        console.log("checking wishlist")
+        console.log("checking wishlist");
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/wishlist/itemId/${itemId}/userId/${user.userId}`
         );
 
         if (response.status === 200) {
-          console.log("Item is in wishlist")
+          console.log("Item is in wishlist");
           setIsWishlist(true);
         } else {
           console.log("Item is not in wishlist");
@@ -363,7 +385,7 @@ const ListingNav = ({ data, tab }) => {
     if (user.userId) {
       checkWishlist();
     }
-  }, [user.userId])
+  }, [user.userId]);
 
   // fetch wishlist related to the item and count the number of wishlist to get wishlist count
   async function fetchWishlistByItemId() {
@@ -376,7 +398,7 @@ const ListingNav = ({ data, tab }) => {
         const wishlist = response.data.data.wishlist;
         setWishlistCount(wishlist.length);
       } else if (response.status === 404) {
-        console.log("There is no wishlist related to this item")
+        console.log("There is no wishlist related to this item");
         setWishlistCount(0);
       }
     } catch (error) {
@@ -386,7 +408,7 @@ const ListingNav = ({ data, tab }) => {
 
   useEffect(() => {
     fetchWishlistByItemId();
-  }, [])
+  }, []);
 
   const handleWishlistPress = async () => {
     // check if isWishlist, if yes, remove from wishlist
@@ -396,13 +418,13 @@ const ListingNav = ({ data, tab }) => {
         const response = await axios.delete(
           `http://${BASE_URL}:4000/api/v1/wishlist/itemId/${itemId}/userId/${user.userId}`
         );
-        
+
         if (response.status === 200) {
           console.log("Wishlist item removed successfully");
           setIsWishlist(false);
         } else if (response.status === 404) {
           console.log("Wishlist item not found");
-        } else  {
+        } else {
           console.log("Error removing wishlist item");
         }
       } catch (error) {
@@ -418,11 +440,11 @@ const ListingNav = ({ data, tab }) => {
             userId: user.userId,
           }
         );
-        
+
         if (response.status === 201) {
           console.log("Item added to wishlist successfully");
           setIsWishlist(true);
-        } else  {
+        } else {
           console.log("Error adding item to wishlist");
         }
       } catch (error) {
@@ -430,22 +452,22 @@ const ListingNav = ({ data, tab }) => {
       }
     }
     fetchWishlistByItemId();
-  }
+  };
 
   return (
     <View>
       <View style={style.nav}>
         <View style={style.wishlist}>
-          <Pressable 
+          <Pressable
             style={({ pressed }) => ({
               opacity: pressed ? 0.5 : 1,
             })}
             onPress={handleWishlistPress}
           >
             {isWishlist ? (
-              <Ionicons name='heart' size={30} color={red} />
+              <Ionicons name="heart" size={30} color={red} />
             ) : (
-              <Ionicons name='heart-outline' size={30} color={black} />
+              <Ionicons name="heart-outline" size={30} color={black} />
             )}
           </Pressable>
           <RegularText typography="H2" color={black}>
