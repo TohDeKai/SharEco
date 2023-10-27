@@ -222,9 +222,7 @@ app.put("/api/v1/users/walletBalance/:userId", async (req, res) => {
 //update wallet Balance to admin
 app.put("/api/v1/users/adminWalletBalance", async (req, res) => {
   try {
-    const user = await userdb.updateAdminWalletBalance(
-      req.body.walletBalance
-    );
+    const user = await userdb.updateAdminWalletBalance(req.body.walletBalance);
     if (user) {
       res.status(200).json({
         status: "success",
@@ -1978,7 +1976,7 @@ app.get("/api/v1/wishlist/itemId/:itemId/userId/:userId", async (req, res) => {
     console.log(error);
     res.status(500).json({ error: "Database error" });
   }
-})
+});
 
 /**********************          Transaction Routes             **************************/
 //create transaction without handling wallet balance
@@ -1987,7 +1985,10 @@ app.post("/api/v1/transaction", async (req, res) => {
 
   try {
     const transaction = await transactiondb.createTransaction(
-      senderId, receiverId, amount, transactionType
+      senderId,
+      receiverId,
+      amount,
+      transactionType
     );
 
     // Send the newly created user as the response
@@ -2025,13 +2026,37 @@ app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
   }
 });
 
+// approve withdrawal request and handle wallet balance
+app.post("/api/v1/transaction/withdrawalRequest/approve", async (req, res) => {
+  const transactionId = req.body.transactionId;
+  const referenceNumber = req.body.referenceNumber;
+  console.log(transactionId);
+  try {
+    const transactions = await transactiondb.approveWithdrawalRequest(
+      transactionId,
+      referenceNumber
+    );
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //transfer money from user to user wallet balance updated
 app.post("/api/v1/transaction/transfer", async (req, res) => {
   const { senderUsername, receiverUsername, amount } = req.body;
 
   try {
     const transaction = await transactiondb.transferBetweenUsers(
-      senderUsername, receiverUsername, amount 
+      senderUsername,
+      receiverUsername,
+      amount
     );
 
     // Send the newly created user as the response
@@ -2054,7 +2079,9 @@ app.post("/api/v1/transaction/toAdmin", async (req, res) => {
 
   try {
     const transaction = await transactiondb.transactionToAdmin(
-      senderId, amount, transactionType
+      senderId,
+      amount,
+      transactionType
     );
 
     // Send the newly created user as the response
@@ -2077,7 +2104,9 @@ app.post("/api/v1/transaction/fromAdmin", async (req, res) => {
 
   try {
     const transaction = await transactiondb.transactionFromAdmin(
-      receiverId, amount, transactionType
+      receiverId,
+      amount,
+      transactionType
     );
 
     // Send the newly created user as the response
@@ -2099,13 +2128,15 @@ app.get("/api/v1/transaction/receiverId/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const transactions = await transactiondb.getTransactionsByReceiverId(userId);
-      res.status(200).json({
-        status: "success",
-        data: {
-          transactions: transactions,
-        },
-      });
+    const transactions = await transactiondb.getTransactionsByReceiverId(
+      userId
+    );
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Database error" });
@@ -2118,12 +2149,30 @@ app.get("/api/v1/transaction/senderId/:userId", async (req, res) => {
 
   try {
     const transactions = await transactiondb.getTransactionsBySenderId(userId);
-      res.status(200).json({
-        status: "success",
-        data: {
-          transactions: transactions,
-        },
-      });
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get transactions by type
+app.get("/api/v1/transaction/type/:type", async (req, res) => {
+  const type = req.params.type;
+
+  try {
+    const transactions = await transactiondb.getTransactionsByType(type);
+    res.status(200).json({
+      status: "success",
+      data: {
+        transactions: transactions,
+      },
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Database error" });
