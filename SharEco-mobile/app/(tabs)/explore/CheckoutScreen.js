@@ -25,7 +25,8 @@ import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import Header from "../../../components/Header";
 import MessageBox from "../../../components/text/MessageBox";
 import { useAuth } from "../../../context/auth";
-const { white, primary, black } = colours;
+import RoundedButton from "../../../components/buttons/RoundedButton";
+const { white, secondary, black } = colours;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -105,7 +106,7 @@ const CheckoutScreen = () => {
     const initializePaymentSheet = async () => {
       const { paymentIntent, ephemeralKey, customer, publishableKey } =
         await fetchPaymentSheetParams();
-      console.log("FETCH PAYMENT SHEET PARAMS: " + paymentIntent)
+      console.log("FETCH PAYMENT SHEET PARAMS: " + paymentIntent);
 
       const { error } = await initPaymentSheet({
         merchantDisplayName: "SharEco",
@@ -117,13 +118,13 @@ const CheckoutScreen = () => {
           name: "Jane Doe",
         },
       });
-      console.log("ERROR: " + error)
+      console.log("ERROR: " + error);
     };
     initializePaymentSheet();
 
     const openPaymentSheet = async () => {
       const { error2 } = await presentPaymentSheet();
-      console.log("TYPE OF " + typeof error2)
+      console.log("TYPE OF " + typeof error2);
       console.log("ERROR 2 " + error2);
 
       if (error2) {
@@ -168,7 +169,25 @@ const CheckoutScreen = () => {
   return (
     <StripeProvider publishableKey="pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH">
       <SafeAreaContainer>
-        <Header title="Top-Up EcoWallet" action="back" onPress={handleBack} />
+        <Header action="back" onPress={handleBack} />
+        <View style={styles.header}>
+          <RegularText
+            typography="H1"
+            color={secondary}
+            style={{ fontSize: 45 }}
+          >
+            Top up
+          </RegularText>
+          <View style={styles.subtitle}>
+            <RegularText
+              typography="B3"
+              color={black}
+              style={{ marginBottom: 10 }}
+            >
+              Top up money into your EcoWallet.
+            </RegularText>
+          </View>
+        </View>
         <ScrollView>
           <Formik
             initialValues={{ amount: 0 }}
@@ -185,19 +204,23 @@ const CheckoutScreen = () => {
           >
             {({ handleChange, handleSubmit, values }) => (
               <View style={styles.container}>
-                <RegularText
-                  typography="H1"
-                  color={black}
-                  style={{ textAlign: "center", marginBottom: 10 }}
-                >
-                  Input Top-Up Amount ($)
+                <RegularText typography="H3" style={{ marginBottom: 25 }}>
+                  Account Balance:{" "}
+                  <RegularText typography="H3" color={secondary}>
+                    {user.walletBalance}
+                  </RegularText>
                 </RegularText>
+
+                <RegularText typography="H3" color={black}>
+                  Top Up Amount ($)
+                </RegularText>
+
                 <StyledTextInput
                   placeholder="Input your top up amount"
                   value={values.amount}
                   onChangeText={handleChange("amount")}
                   keyboardType="numeric"
-                  style={{ marginBottom: 10, width: viewportWidthInPixels(80) }}
+                  style={{ marginBottom: 10 }}
                 />
                 <MessageBox
                   style={{ marginTop: 10 }}
@@ -205,14 +228,13 @@ const CheckoutScreen = () => {
                 >
                   {message || " "}
                 </MessageBox>
-                <PrimaryButton
+                <RoundedButton
                   typography={"B1"}
                   color={white}
                   onPress={handleSubmit}
-                  style={{ width: viewportWidthInPixels(80) }}
                 >
                   Confirm
-                </PrimaryButton>
+                </RoundedButton>
               </View>
             )}
           </Formik>
@@ -226,9 +248,17 @@ export default CheckoutScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: white,
-    alignItems: "center",
-    paddingTop: viewportHeightInPixels(28),
+    marginHorizontal: viewportWidthInPixels(7),
+    width: viewportWidthInPixels(86),
+    marginTop: 120,
+  },
+  header: {
+    height: 60,
+    marginHorizontal: viewportWidthInPixels(7),
+    marginTop: 40,
+    width: viewportWidthInPixels(86),
+  },
+  subtitle: {
+    marginTop: 20,
   },
 });
