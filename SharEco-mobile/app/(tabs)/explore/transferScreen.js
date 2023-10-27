@@ -23,7 +23,8 @@ import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import { useAuth } from "../../../context/auth";
 import MessageBox from "../../../components/text/MessageBox";
-const { white, primary, black } = colours;
+import RoundedButton from "../../../components/buttons/RoundedButton";
+const { white, primary, black, secondary } = colours;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -91,7 +92,7 @@ const transferScreen = () => {
       }
     } catch (error) {
       setMessage("Receiver username does not exist.");
-        setIsSuccessMessage(false);
+      setIsSuccessMessage(false);
     }
   };
 
@@ -101,7 +102,21 @@ const transferScreen = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title="Transfer Money" action="back" onPress={handleBack} />
+      <Header action="back" onPress={handleBack} />
+      <View style={styles.header}>
+        <RegularText typography="H1" color={secondary} style={{ fontSize: 45 }}>
+          Transfer
+        </RegularText>
+        <View style={styles.subtitle}>
+          <RegularText
+            typography="B3"
+            color={black}
+            style={{ marginBottom: 10 }}
+          >
+            Transfer to another EcoWallet.
+          </RegularText>
+        </View>
+      </View>
       <ScrollView>
         <Formik
           initialValues={{ receiverUsername: "", amount: 0 }}
@@ -118,51 +133,63 @@ const transferScreen = () => {
             } else if (values.receiverUsername == "") {
               setMessage("Please key in a receiver username.");
               setIsSuccessMessage(false);
+            } else if (
+              parseFloat(values.amount) >
+              parseFloat(user.walletBalance.replace("$", ""))
+            ) {
+              setMessage(
+                "Withdrawal amount cannot be greater than wallet balance.."
+              );
+              setIsSuccessMessage(false);
             } else {
               handleTransfer(values);
             }
           }}
         >
           {({ handleChange, handleSubmit, values }) => (
-            <View style={[styles.container,{ paddingTop: viewportHeightInPixels(24) }]}>
-              <RegularText
-                typography="H1"
-                color={black}
-                style={{ textAlign: "center", marginBottom: 6 }}
-              >
-                Input Username of Receiver
+            <View style={styles.container}>
+              <RegularText typography="H3" style={{ marginBottom: 25 }}>
+                Account Balance:{" "}
+                <RegularText typography="H3" color={secondary}>
+                  {user.walletBalance}
+                </RegularText>
+              </RegularText>
+
+              <RegularText typography="H3" color={black}>
+                Receiver username
               </RegularText>
               <StyledTextInput
                 placeholder="Input receiver's username"
                 value={values.receiverUsername}
                 onChangeText={handleChange("receiverUsername")}
-                style={{ marginBottom: 10, width: viewportWidthInPixels(80) }}
+                style={{ marginBottom: 10 }}
               />
+
               <RegularText
-                typography="H1"
+                typography="H3"
                 color={black}
-                style={{ textAlign: "center", marginBottom: 6 }}
+                style={{ marginTop: 20 }}
               >
-                Input Transfer Amount ($)
+                Transfer Amount ($)
               </RegularText>
               <StyledTextInput
                 placeholder="Input your transfer amount"
                 value={values.amount}
                 onChangeText={handleChange("amount")}
                 keyboardType="numeric"
-                style={{ marginBottom: 10, width: viewportWidthInPixels(80) }}
+                style={{ marginBottom: 10 }}
               />
+
               <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
                 {message || " "}
               </MessageBox>
-              <PrimaryButton
+              <RoundedButton
                 typography={"B1"}
                 color={white}
                 onPress={handleSubmit}
-                style={{width: viewportWidthInPixels(80)}}
               >
                 Confirm
-              </PrimaryButton>
+              </RoundedButton>
             </View>
           )}
         </Formik>
@@ -175,8 +202,17 @@ export default transferScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: white,
-    alignItems: "center",
+    marginHorizontal: viewportWidthInPixels(7),
+    width: viewportWidthInPixels(86),
+    marginTop: 80,
+  },
+  header: {
+    height: 60,
+    marginHorizontal: viewportWidthInPixels(7),
+    marginTop: 40,
+    width: viewportWidthInPixels(86),
+  },
+  subtitle: {
+    marginTop: 20,
   },
 });
