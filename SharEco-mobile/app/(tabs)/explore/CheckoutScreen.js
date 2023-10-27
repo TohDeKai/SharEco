@@ -105,6 +105,7 @@ const CheckoutScreen = () => {
     const initializePaymentSheet = async () => {
       const { paymentIntent, ephemeralKey, customer, publishableKey } =
         await fetchPaymentSheetParams();
+      console.log("FETCH PAYMENT SHEET PARAMS: " + paymentIntent)
 
       const { error } = await initPaymentSheet({
         merchantDisplayName: "SharEco",
@@ -116,11 +117,14 @@ const CheckoutScreen = () => {
           name: "Jane Doe",
         },
       });
-      if (!error) {
-        setLoading(true);
-      }
+      console.log("ERROR: " + error)
+    };
+    initializePaymentSheet();
 
+    const openPaymentSheet = async () => {
       const { error2 } = await presentPaymentSheet();
+      console.log("TYPE OF " + typeof error2)
+      console.log("ERROR 2 " + error2);
 
       if (error2) {
         Alert.alert(`Error code: ${error2.code}`, error2.message);
@@ -146,7 +150,8 @@ const CheckoutScreen = () => {
         );
       }
     };
-    initializePaymentSheet();
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    openPaymentSheet();
   };
 
   useEffect(() => {
