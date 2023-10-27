@@ -81,7 +81,14 @@ const createRentals = () => {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
         try {
           const itemResponse = await axios.get(
