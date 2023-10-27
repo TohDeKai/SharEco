@@ -145,6 +145,7 @@ const CheckoutScreen = () => {
           `http://${BASE_URL}:4000/api/v1/users/walletBalance/${user.userId}`,
           { walletBalance: updatedBalance }
         );
+        router.push("explore");
         Alert.alert(
           "Success",
           `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
