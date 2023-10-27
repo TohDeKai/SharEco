@@ -47,7 +47,14 @@ const transferScreen = () => {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -76,6 +83,7 @@ const transferScreen = () => {
           const updatedWalletBalance =
             transferResponse.data.data.transaction.sender_wallet_balance;
           if (transferResponse.status === 200) {
+            router.push("explore");
             Alert.alert(
               "Success",
               `Your transfer is successful! New EcoWallet Balance ${updatedWalletBalance}.`
