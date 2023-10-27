@@ -8,7 +8,7 @@ import {
   RefreshControl,
   LogBox,
   Dimensions,
-  Modal,
+  Image,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Link, router, Drawer } from "expo-router";
@@ -23,7 +23,8 @@ import ListingCard from "../../../components/ListingCard";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import CarouselItem from "../../../components/CarouselItem";
 import { colours } from "../../../components/ColourPalette";
-const { white, primary, inputbackground, dark, black } = colours;
+import BadgeIcon from "../../../components/BadgeIcon";
+const { white, primary, inputbackground, dark, black, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const { width } = Dimensions.get("window");
@@ -311,7 +312,7 @@ const home = () => {
         reset={true}
       />
       <View style={{ flex: 1 }}>
-        <View style={styles.advertisementAndWalletContainer}>
+        <View style={styles.advertisementAndAchievementContainer}>
           <View style={styles.advertisementCarousell}>
             <CustomSlider
               data={[
@@ -320,6 +321,17 @@ const home = () => {
                 "https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png",
               ]}
             />
+          </View>
+        </View>
+
+        <View style={styles.achievement}>
+          <View style={styles.badgesContainer}>
+            <RegularText typography="Subtitle2">
+              Badges
+            </RegularText>
+            <View style={styles.badges}>
+              <Image source={'../../components/badges/borrower-bronze.png'} style={{width: '21.09', height: '29.72'}} />
+            </View>
           </View>
         </View>
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
@@ -350,7 +362,7 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomColor: primary,
   },
-  advertisementAndWalletContainer: {
+  advertisementAndAchievementContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -364,6 +376,32 @@ const styles = StyleSheet.create({
     width: "100%",
     borderWidth: 1,
     borderColor: black,
+  },
+  achievement: {
+    flex: 1,
+    marginHorizontal: 23,
+    marginVertical: 10,
+    borderRadius: 7,
+    shadowColor: inputbackground,
+    // shadowOffset: {
+    //   width: 2,
+    //   height: 4,
+    // },
+    // shadowRadius: 2,
+    // shadowOpacity: 0.1,
+    elevation: 1,
+  },
+  badgesContainer: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  badges: {
+    flex: 1,
+    flexDirection: "row",
+    gap: 6,
+    borderColor: inputbackground,
+    borderWidth: 1,
   },
   contentContainer: {
     flex: 4,
