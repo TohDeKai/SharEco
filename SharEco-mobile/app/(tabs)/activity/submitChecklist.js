@@ -352,7 +352,7 @@ const submitChecklist = () => {
               const refundData = {
                 receiverId: rental.borrowerId,
                 amount: rental.depositFee,
-                transactionType: "RENTAL_INCOME"
+                transactionType: "DEPOSIT_REFUND"
               };
   
               const refundResponse = await axios.post(
@@ -423,18 +423,24 @@ const submitChecklist = () => {
                   {imageContainers}
                 </ScrollView>
 
-                <RegularText typography="H3" style={styles.headerText}>
-                  Handover checklist
-                </RegularText>
+                {item && item.checkListCriteria ? (
+                  <View>
+                    <RegularText typography="H3" style={styles.headerText}>
+                      Handover checklist
+                    </RegularText>
+                    <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
+                      Inspect the condition of the item at handover and tick the
+                      relevant boxes
+                    </RegularText>
+                  </View>
+                  ) : ""
+                }
                 
 
                 {item && item.checklistCriteria ? (
                   item.checklistCriteria.map((criterion, index) => (
                     <View>
-                      <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
-                        Inspect the condition of the item at handover and tick the
-                        relevant boxes
-                      </RegularText>
+                      
                       <View key={index} style={styles.checkboxContainer}>
                         <Checkbox
                           value={checkboxValues[index] || false}
@@ -448,9 +454,7 @@ const submitChecklist = () => {
                     </View>
                   ))
                 ) : (
-                  <RegularText typography="Subtitle">
-                    No checklist criteria available.
-                  </RegularText>
+                  ""
                 )}
 
                 <RegularText typography="H3" style={styles.headerText}>

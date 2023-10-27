@@ -1832,7 +1832,11 @@ app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
       });
     } else {
       // Handle the case where the rental request is not found
-      res.status(404).json({ error: "Reviews  not found" });
+      res.status(200).json({ 
+        data: {
+          reviews: [],
+        } 
+      });
     }
   } catch (err) {
     // Handle the error here if needed
