@@ -196,6 +196,20 @@ const getRentalsByLenderId = async (userId) => {
   }
 };
 
+//Get Rentals by Lender Id & ItemId
+const getRentalsByLenderAndItemId = async (lenderId, itemId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."rental" 
+       WHERE "lenderId" = $1 AND "itemId" = $2`,
+      [lenderId, itemId]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
 //Get Rental by Borrower Id
 const getRentalsByBorrowerId = async (userId) => {
   try {
@@ -930,6 +944,57 @@ const updateItemImages = async (itemId, images, checklistFormType) => {
   }
 };
 
+// Create Blockout Period
+const createBlockout = async (
+  startDate,
+  endDate,
+  itemId,
+  lenderId,
+) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO "sharEco-schema"."rental" 
+          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", 
+          "itemId", "borrowerId", "lenderId", "creationDate", "isUpdated", "totalFee", "isHourly", "isBlockOut") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning *`,
+      [
+        startDate,
+        endDate,
+        "",
+        "UPCOMING",
+        "",
+        0,
+        0,
+        0,
+        itemId,
+        lenderId,
+        lenderId,
+        currentTimeStamp,
+        false,
+        0,
+        true,
+        true,
+      ]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Delete Blockout Period
+const deleteBlockout = async (blockoutId) => {
+  try {
+    const result = await pool.query(
+      `DELETE FROM "sharEco-schema"."rental" WHERE "rentalId" = $1`,
+      [blockoutId]
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -937,6 +1002,7 @@ module.exports = {
   deleteRentalRequest,
   getAllRentals,
   getRentalsByLenderId,
+  getRentalsByLenderAndItemId,
   getRentalsByBorrowerId,
   getRentalsByItemId,
   getRentalByRentalId,
@@ -949,4 +1015,6 @@ module.exports = {
   submitEndRentalChecklist,
   updateRentalUponLenderReview,
   updateRentalUponBorrowerReview,
+  createBlockout,
+  deleteBlockout,
 };

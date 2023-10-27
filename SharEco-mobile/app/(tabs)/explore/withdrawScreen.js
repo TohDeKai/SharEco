@@ -9,7 +9,9 @@ import {
   Dimensions,
 } from "react-native";
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Formik } from "formik";
+import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
 import { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import axios from "axios";
@@ -18,13 +20,13 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
-import Header from "../../../components/Header";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
+import Header from "../../../components/Header";
 import { useAuth } from "../../../context/auth";
 import MessageBox from "../../../components/text/MessageBox";
 import RoundedButton from "../../../components/buttons/RoundedButton";
-const { white, primary, black, secondary } = colours;
+const { white, secondary, primary, black } = colours;
 
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
@@ -36,7 +38,7 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenHeight;
 };
 
-const transferScreen = () => {
+const withdrawScreen = () => {
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
   const [message, setMessage] = useState("");
@@ -56,43 +58,27 @@ const transferScreen = () => {
     fetchData();
   }, [user.userId]);
 
-  const handleTransfer = async (values) => {
+  const handleWithdraw = async (values) => {
     try {
-      const receiverResponse = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/users/username/${values.receiverUsername}`
+      const withdrawData = {
+        senderId: user.userId,
+        amount: parseFloat(values.amount.replace("$", "")),
+      };
+      const withdrawResponse = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/transaction/withdrawalRequest`,
+        withdrawData
       );
-      if (receiverResponse.status === 200) {
-        try {
-          const transferData = {
-            senderUsername: user.username,
-            receiverUsername: values.receiverUsername,
-            amount: parseFloat(values.amount.replace("$", "")),
-          };
-          const transferResponse = await axios.post(
-            `http://${BASE_URL}:4000/api/v1/transaction/transfer`,
-            transferData
-          );
 
-          const updatedWalletBalance =
-            transferResponse.data.data.transaction.sender_wallet_balance;
-          if (transferResponse.status === 200) {
-            Alert.alert(
-              "Success",
-              `Your transfer is successful! New EcoWallet Balance ${updatedWalletBalance}.`
-            );
-          } else {
-            Alert.alert("Error", `Your transfer did not go through.`);
-          }
-        } catch (error) {
-          console.log("Transfer error");
-        }
+      if (withdrawResponse.status === 200) {
+        Alert.alert(
+          "Success",
+          `Your withdrawal request has been submitted, it will be credited through PayNow within 3 working days.`
+        );
       } else {
-        setMessage("Receiver username does not exist.");
-        setIsSuccessMessage(false);
+        Alert.alert("Error", `Your withdrawal did not go through.`);
       }
     } catch (error) {
-      setMessage("Receiver username does not exist.");
-      setIsSuccessMessage(false);
+      console.log("Username error");
     }
   };
 
@@ -105,7 +91,7 @@ const transferScreen = () => {
       <Header action="back" onPress={handleBack} />
       <View style={styles.header}>
         <RegularText typography="H1" color={secondary} style={{ fontSize: 45 }}>
-          Transfer
+          Withdraw
         </RegularText>
         <View style={styles.subtitle}>
           <RegularText
@@ -113,36 +99,31 @@ const transferScreen = () => {
             color={black}
             style={{ marginBottom: 10 }}
           >
-            Transfer to another EcoWallet.
+            A withdrawal fee of 5% will be charged (capped at $10).
+          </RegularText>
+          <RegularText
+            typography="B3"
+            color={black}
+            style={{ marginBottom: 10 }}
+          >
+            Please ensure that your SharEco-linked phone number is your PayNow
+            registered phone number.
           </RegularText>
         </View>
       </View>
       <ScrollView>
         <Formik
-          initialValues={{ receiverUsername: "", amount: 0 }}
+          initialValues={{ amount: 0 }}
           onSubmit={(values, setSubmitting) => {
-            if (parseFloat(user.walletBalance.replace("$", "")) <= 0) {
-              setMessage("Please top up your EcoWallet before transferring.");
-              setIsSuccessMessage(false);
-            } else if (values.amount == "") {
-              setMessage("Input amount cannot be empty.");
-              setIsSuccessMessage(false);
-            } else if (parseFloat(values.amount) <= 1) {
+            if (parseFloat(values.amount) <= 1) {
               setMessage("Input amount cannot be less than or equal to $1.");
               setIsSuccessMessage(false);
-            } else if (values.receiverUsername == "") {
-              setMessage("Please key in a receiver username.");
+            } else if (parseFloat(values.amount) > parseFloat(user.walletBalance.replace("$",""))) {
+              setMessage("Withdrawal amount cannot be greater than wallet balance..");
               setIsSuccessMessage(false);
-            } else if (
-              parseFloat(values.amount) >
-              parseFloat(user.walletBalance.replace("$", ""))
-            ) {
-              setMessage(
-                "Withdrawal amount cannot be greater than wallet balance.."
-              );
-              setIsSuccessMessage(false);
-            } else {
-              handleTransfer(values);
+            }
+             else {
+              handleWithdraw(values);
             }
           }}
         >
@@ -156,30 +137,16 @@ const transferScreen = () => {
               </RegularText>
 
               <RegularText typography="H3" color={black}>
-                Receiver username
+                Withdrawal Amount ($)
               </RegularText>
-              <StyledTextInput
-                placeholder="Input receiver's username"
-                value={values.receiverUsername}
-                onChangeText={handleChange("receiverUsername")}
-                style={{ marginBottom: 10 }}
-              />
 
-              <RegularText
-                typography="H3"
-                color={black}
-                style={{ marginTop: 20 }}
-              >
-                Transfer Amount ($)
-              </RegularText>
               <StyledTextInput
-                placeholder="Input your transfer amount"
+                placeholder="Input your withdrawal amount"
                 value={values.amount}
                 onChangeText={handleChange("amount")}
                 keyboardType="numeric"
                 style={{ marginBottom: 10 }}
               />
-
               <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
                 {message || " "}
               </MessageBox>
@@ -198,13 +165,13 @@ const transferScreen = () => {
   );
 };
 
-export default transferScreen;
+export default withdrawScreen;
 
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: viewportWidthInPixels(7),
     width: viewportWidthInPixels(86),
-    marginTop: 80,
+    marginTop: 120,
   },
   header: {
     height: 60,

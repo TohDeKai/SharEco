@@ -9,7 +9,7 @@ import SafeAreaContainer from "../../components/containers/SafeAreaContainer";
 import StyledTextInput from "../../components/inputs/LoginTextInputs";
 import RoundedButton from "../../components/buttons/RoundedButton";
 import MessageBox from "../../components/text/MessageBox";
-import { Link, router } from "expo-router";
+import { useLocalSearchParams, Link, router } from "expo-router";
 import RegularText from "../../components/text/RegularText";
 import { colours } from "../../components/ColourPalette";
 const { primary, white } = colours;
@@ -20,64 +20,48 @@ const viewportHeightInPixels = (percentage) => {
   return (percentage / 100) * screenHeight;
 };
 
-export default function SignIn() {
+export default function Verify() {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
-  const { signIn } = useAuth();
+  const localSearchParams = useLocalSearchParams();
 
-  const handleSignIn = async (credentials) => {
-    const username = credentials.username;
-    const password = credentials.password;
-    console.log(username + " " + password);
-
+  const handleVerify = async (values) => {
     try {
       const response = await axios.post(
-        `http://${BASE_URL}:4000/api/v1/user/signIn`,
+        `http://${BASE_URL}:4000/api/v1/user/resendemail`,
         {
-          username,
-          password,
+          email: values.email,
         }
       );
-      console.log(response.status);
-      if (response.status == 200) {
-        const userDataResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/users/username/${username}`
-        );
-        if (userDataResponse.status === 200) {
-          // Successfully retrieved user data, useAuth to signIn with this user
-          const userData = userDataResponse.data.data.user;
-          console.log("User object: ", userData);
-          signIn(userData); // Update the user object in the state
-        } else {
-          //shouldnt come here
-          console.log("Failed to retrieve user data");
-        }
+
+      const data = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/users/email/${values.email}`
+      );
+
+      console.log(data.data.data);
+      if (response.status === 200) {
+        router.push({
+          pathname: "/verification",
+          params: { username: data.data.data.user.username },
+        });
+      } else {
+        // Handle other HTTP status codes as needed
+        console.log("User verification unsuccessful");
       }
     } catch (error) {
-      if (error.response && error.response.status === 404) {
-        // User not found
-        console.log("User not found");
-        setMessage("Invalid username");
-        setIsSuccessMessage(false);
-      } else if (error.response && error.response.status === 400) {
-        // Wrong password
-        console.log("Wrong password");
-        setMessage("Invalid password");
+      if (error.response && error.response.status === 400) {
+        setMessage("Email not registered! Please sign up first");
         setIsSuccessMessage(false);
       } else if (error.response && error.response.status === 403) {
-        console.log(error.response.data.message);
-        // User is banned
-        console.log("User is banned");
-        setMessage(error.response.data.message);
+        setMessage("Email already verified");
         setIsSuccessMessage(false);
       } else {
-        console.error("Error during login:", error);
+        console.error("Error during resending of email:", error);
         setMessage("Error: " + error);
         setIsSuccessMessage(false);
       }
     }
   };
-
   return (
     <SafeAreaContainer>
       <View style={styles.container}>
@@ -85,31 +69,29 @@ export default function SignIn() {
           source={require("../../assets/logo-light.png")} // Replace with your logo file path
           style={{ width: "50%", height: 100 }} // Adjust the width and height as needed
         />
+        <RegularText style={{ marginTop: 10, marginBottom: 10 }}>
+          Please enter the email you signed up with!
+        </RegularText>
         <Formik
-          initialValues={{ username: "", password: "" }}
+          initialValues={{ email: "" }}
           onSubmit={(values) => {
-            if (values.email == "" || values.password == "") {
-              setMessage("Please fill in all fields");
+            if (values.email == "") {
+              setMessage("Please enter a valid email");
               setIsSuccessMessage(false);
             } else {
-              handleSignIn(values);
+              handleVerify(values);
             }
           }}
         >
           {({ handleChange, handleBlur, handleSubmit, values }) => (
             <View style={{ width: "85%" }}>
               <StyledTextInput
-                placeholder="Username"
-                value={values.username}
-                onChangeText={handleChange("username")}
+                placeholder="Email"
+                keyboardType="email-address"
+                value={values.email}
+                onChangeText={handleChange("email")}
               />
-              <StyledTextInput
-                placeholder="Password"
-                secureTextEntry
-                isPassword={true}
-                value={values.password}
-                onChangeText={handleChange("password")}
-              />
+
               <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
                 {message || " "}
               </MessageBox>
@@ -118,7 +100,7 @@ export default function SignIn() {
                 color={white}
                 onPress={handleSubmit}
               >
-                Log In
+                Next
               </RoundedButton>
             </View>
           )}
@@ -126,20 +108,9 @@ export default function SignIn() {
       </View>
       <View style={styles.bottomContainer}>
         <RegularText typography="B2">
-          Don't have an account?{" "}
-          <Link href="/sign-up">
+          <Link href="/sign-in">
             <Text style={{ color: primary, textDecorationLine: "underline" }}>
-              Sign up
-            </Text>
-          </Link>
-        </RegularText>
-      </View>
-      <View style={styles.bottomContainer}>
-        <RegularText typography="B2">
-          Have not verified your account?{" "}
-          <Link href="/verificationResend">
-            <Text style={{ color: primary, textDecorationLine: "underline" }}>
-              Verify
+              Back to log in
             </Text>
           </Link>
         </RegularText>

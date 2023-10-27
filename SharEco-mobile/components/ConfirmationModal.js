@@ -16,26 +16,6 @@ const ConfirmationModal = ({
   type,
   ...props
 }) => {
-  // const [message, setMessage] = useState("");
-  // const [isSuccessMessage, setIsSuccessMessage] = useState("false");
-
-  // const handleCancel = async (reason) => {
-  //   await props.forCancellationData(reason);
-  // };
-
-  // const [cancellationReason, setCancellationReason] = useState(
-  //   "Rented the wrong item"
-  // );
-  // const cancellationReasonRef = useRef();
-
-  // const handleConfirm = () => {
-  //   const text = cancellationReasonRef.current.value;
-  //   console.log("HANDLE CONFIRM", text);
-  //   setCancellationReason(text);
-  //   props.forCancellationData(text);
-  //   onConfirm();
-  // };
-
   const [reasons, setReasons] = useState([
     { label: "Scheduling Conflict", value: "Scheduling Conflict" },
     {
@@ -58,6 +38,10 @@ const ConfirmationModal = ({
 
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
+
+  let totalCancellationFee;
+  const rentalFee = parseFloat(props.rental.rentalFee.replace(/[^0-9.]/g, ""));
+  totalCancellationFee = 0.3 * rentalFee;
 
   let formattedStartDate;
   let formattedEndDate;
@@ -356,6 +340,84 @@ const ConfirmationModal = ({
                       Confirm
                     </SecondaryButton>
                   </View> */}
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Close
+                    </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      {/* Notifying modal if LENDER is doing a late cancellation*/}
+      {type === "LenderLateCancellation" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  As this is a late cancellation, a ${totalCancellationFee}{" "}
+                  cancellation fee will apply.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Close
+                    </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      {/* Notifying modal if BORROWER is doing a late cancellation*/}
+      {type === "BorrowerLateCancellation" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  As this is a late cancellation, a ${totalCancellationFee}{" "}
+                  cancellation fee will apply.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View>
                   <View style={styles.buttonContainer}>
                     <PrimaryButton
                       typography="H3"

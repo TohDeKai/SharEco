@@ -24,7 +24,7 @@ const createTransaction = async (
       `INSERT INTO "sharEco-schema"."transaction" 
               ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
                 values ($1, $2, $3, $4, $5) returning *`,
-      [currentTimeStamp, senderId, receiverId, amount, transactionType]
+      [new Date(), senderId, receiverId, amount, transactionType]
     );
     return result.rows[0];
   } catch (err) {
@@ -33,13 +33,13 @@ const createTransaction = async (
 };
 
 // Create Withdrawal Request (no wallet balance updated)
-const createWithdrawalRequest = async (receiverId, amount) => {
+const createWithdrawalRequest = async (senderId, amount) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."transaction" 
             ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
               values ($1, $2, $3, $4, $5) returning *`,
-      [currentTimeStamp, 1, receiverId, amount, "WITHDRAW"]
+      [new Date(), senderId, 1, amount, "WITHDRAW"]
     );
     return result.rows[0];
   } catch (err) {
@@ -161,7 +161,7 @@ const transferBetweenUsers = async (
         ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
         values ($1, $2, $3, $4, $5) returning *`;
     const transactionResult = await client.query(insertTransactionQuery, [
-      currentTimeStamp,
+      new Date(),
       senderId,
       receiverId,
       amount,
@@ -212,7 +212,7 @@ const transactionToAdmin = async (senderId, amount, transactionType) => {
           ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
           values ($1, $2, $3, $4, $5) returning *`;
       const result = await client.query(insertTransactionQuery, [
-        currentTimeStamp,
+        new Date(),
         senderId,
         1,
         amount,
@@ -265,7 +265,7 @@ const transactionFromAdmin = async (receiverId, amount, transactionType) => {
           ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
           values ($1, $2, $3, $4, $5) returning *`;
       const result = await client.query(insertTransactionQuery, [
-        currentTimeStamp,
+        new Date(),
         1,
         receiverId,
         amount,
@@ -329,7 +329,7 @@ const getTransactionsBySenderId = async (userId) => {
       WHERE "senderId" = $1`,
       [userId]
     );
-    return result;
+    return result.rows;
   } catch (err) {
     throw err;
   }

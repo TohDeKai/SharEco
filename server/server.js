@@ -121,6 +121,29 @@ app.get("/api/v1/users/username/:username", async (req, res) => {
   }
 });
 
+app.get("/api/v1/users/email/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const user = await userdb.getUserByEmail(email);
+
+    if (user) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          user: user,
+        },
+      });
+    } else {
+      // Handle the case where the user is not found
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Get Wallet ID by user ID
 app.get("/api/v1/users/walletId/:userId", async (req, res) => {
   try {
@@ -995,6 +1018,8 @@ app.post("/api/v1/admin/signUp", async (req, res) => {
 // User Auth Functionalities
 app.post("/api/v1/user/signIn", userAuth.UserSignIn);
 app.post("/api/v1/user/signUp", userAuth.UserSignUp);
+app.post("/api/v1/user/verify", userAuth.UserVerify);
+app.post("/api/v1/user/resendemail", userAuth.ResendEmail);
 
 // Business Verification functionalites
 
@@ -1357,6 +1382,34 @@ app.get("/api/v1/rentals/lenderId/:lenderId", async (req, res) => {
   }
 });
 
+// Get Rentals by Lender Id and Item Id
+app.get(
+  "/api/v1/rentals/lenderId/:lenderId/itemId/:itemId",
+  async (req, res) => {
+    try {
+      const rentals = await rentaldb.getRentalsByLenderAndItemId(
+        req.params.lenderId,
+        req.params.itemId
+      );
+      if (rentals.length !== 0) {
+        res.status(200).json({
+          status: "success",
+          data: {
+            rentals: rentals,
+          },
+        });
+      } else {
+        res
+          .status(404)
+          .json({ error: "No rentals found for the given lender and item" });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  }
+);
+
 // Get Rental by Borrower Id
 app.get("/api/v1/rentals/borrowerId/:borrowerId", async (req, res) => {
   try {
@@ -1525,6 +1578,61 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+//BLOCKOUT
+// Create blockout
+app.post("/api/v1/createBlockout", async (req, res) => {
+  const {
+    startDate,
+    endDate,
+    itemId,
+    lenderId,
+  } = req.body;
+
+  try {
+    const blockout = await rentaldb.createBlockout(
+      startDate,
+      endDate,
+      itemId,
+      lenderId,
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        blockout: blockout,
+      },
+    });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Delete blockout
+app.delete("/api/v1/deleteBlockout/:blockoutId", async (req, res) => {
+  const blockoutId = req.params.blockoutId;
+  try {
+    const blockout = await rentaldb.deleteBlockout(blockoutId);
+
+    if (blockout) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          blockout: blockout,
+        },
+      });
+    } else {
+      // Handle the case where the review was not found
+      res.status(404).json({ error: "Blockout was not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 
 //SPOTLIGHT
 // Creating new spotlight
@@ -1797,8 +1905,6 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
   // Use an existing Customer ID if this is a returning customer.
   const walletId = req.body.walletId;
   const amount = req.body.amount;
-  console.log(walletId);
-  console.log(amount);
   const customer =
     walletId != ""
       ? await stripe.customers.retrieve(walletId)
@@ -1824,6 +1930,9 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
     publishableKey:
       "pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH",
   });
+
+  
+
 });
 
 // Get average rating by userId
@@ -2006,13 +2115,10 @@ app.post("/api/v1/transaction", async (req, res) => {
 
 //create withdrawal request without handling wallet balance
 app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
-  const { receiverId, amount } = req.body;
+  const { senderId, amount } = req.body;
 
   try {
-    const transaction = await transactiondb.createWithdrawalRequest(
-      receiverId,
-      amount
-    );
+    const transaction = await transactiondb.createWithdrawalRequest(senderId, amount)
 
     // Send the newly created user as the response
     res.status(200).json({
