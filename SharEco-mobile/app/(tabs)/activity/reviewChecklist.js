@@ -153,9 +153,12 @@ const Content = ({ activeTab }) => {
             {startRentalImageContainers}
           </ScrollView>
 
-          <RegularText typography="H3" style={styles.headerText}>
-            Start Rental Handover checklist
-          </RegularText>
+          {item && item.checklistCriteria && (
+            <RegularText typography="H3" style={styles.headerText}>
+              Start Rental Handover checklist
+            </RegularText>
+          )}
+
           {item && item.checklistCriteria ? (
             item.checklistCriteria.map((criterion, index) => (
               <View key={index} style={styles.checkboxContainer}>
@@ -167,9 +170,7 @@ const Content = ({ activeTab }) => {
               </View>
             ))
           ) : (
-            <RegularText typography="Subtitle">
-              No checklist criteria available.
-            </RegularText>
+            ""
           )}
 
           <RegularText typography="H3" style={styles.headerText}>
@@ -200,9 +201,12 @@ const Content = ({ activeTab }) => {
             {endRentalImageContainers}
           </ScrollView>
 
-          <RegularText typography="H3" style={styles.headerText}>
-            End Rental Handover checklist
-          </RegularText>
+          {item && item.checklistCriteria && (
+            <RegularText typography="H3" style={styles.headerText}>
+              End Rental Handover checklist
+            </RegularText>
+          )}
+          
           {item && item.checklistCriteria && item.checklistCriteria.length > 0 ? (
             item.checklistCriteria.map((criterion, index) => (
               <View key={index} style={styles.checkboxContainer}>
@@ -214,7 +218,7 @@ const Content = ({ activeTab }) => {
               </View>
             ))
           ) : (
-            <RegularText>No checklist criteria available.</RegularText>
+            ""
           )}
 
           <RegularText typography="H3" style={styles.headerText}>

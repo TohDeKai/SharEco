@@ -49,7 +49,14 @@ const withdrawScreen = () => {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -70,6 +77,7 @@ const withdrawScreen = () => {
       );
 
       if (withdrawResponse.status === 200) {
+        router.push("explore");
         Alert.alert(
           "Success",
           `Your withdrawal request has been submitted, it will be credited through PayNow within 3 working days.`
@@ -118,11 +126,15 @@ const withdrawScreen = () => {
             if (parseFloat(values.amount) <= 1) {
               setMessage("Input amount cannot be less than or equal to $1.");
               setIsSuccessMessage(false);
-            } else if (parseFloat(values.amount) > parseFloat(user.walletBalance.replace("$",""))) {
-              setMessage("Withdrawal amount cannot be greater than wallet balance..");
+            } else if (
+              parseFloat(values.amount) >
+              parseFloat(user.walletBalance.replace("$", ""))
+            ) {
+              setMessage(
+                "Withdrawal amount cannot be greater than wallet balance.."
+              );
               setIsSuccessMessage(false);
-            }
-             else {
+            } else {
               handleWithdraw(values);
             }
           }}

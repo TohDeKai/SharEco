@@ -79,7 +79,10 @@ const Home = () => {
   const [selectedContactNumber, setContactNumber] = React.useState("");
   const [selectedWithdrawalFees, setSelectedWithdrawalFees] =
     React.useState("");
-
+  const [selectedWalletBalance, setSelectedWalletBalance] = React.useState("");
+  const [selectedEnoughBoolean, setSelectedEnoughBoolean] =
+    React.useState(Boolean);
+  const [selectedAmount, setSelectedAmount] = React.useState("");
   const handleApproveRequestClickOpen = async (
     transactionId,
     senderId,
@@ -93,8 +96,14 @@ const Home = () => {
       // Update the username state with the new data
       setSelectedUsername(response.data.data.user.username);
       setContactNumber(response.data.data.user.contactNumber);
+      setSelectedWalletBalance(response.data.data.user.walletBalance);
       const amountNum = parseFloat(amount.replace("$", ""));
+      setSelectedAmount(amountNum);
       setSelectedWithdrawalFees(Math.min(10, 0.05 * amountNum).toFixed(2));
+      setSelectedEnoughBoolean(
+        parseFloat(response.data.data.user.walletBalance.replace("$", "")) >=
+          amountNum
+      );
     } catch (error) {
     } finally {
       setselectedTransactionId(transactionId);
@@ -296,12 +305,33 @@ const Home = () => {
                 reversed.
               </DialogContentText>
               <DialogContentText id="alert-dialog-description">
-                Please PayNow to <b>{selectedContactNumber}</b> and enter the
-                transaction number.
+                Please PayNow <b>${selectedAmount}</b> to{" "}
+                <b>{selectedContactNumber}</b> and enter the transaction number.
               </DialogContentText>
               <DialogContentText id="alert-dialog-description">
                 Platform withdrawal fees earned: ${selectedWithdrawalFees}
               </DialogContentText>
+              <DialogContentText id="alert-dialog-description">
+                {selectedUsername}'s wallet balance: ${selectedWalletBalance}
+              </DialogContentText>
+
+              {selectedEnoughBoolean ? (
+                <DialogContentText
+                  id="alert-dialog-description"
+                  style={{ color: "green" }}
+                >
+                  {selectedUsername} has enough wallet balance to withdraw
+                </DialogContentText>
+              ) : (
+                <DialogContentText
+                  id="alert-dialog-description"
+                  style={{ color: "red" }}
+                >
+                  {" "}
+                  {selectedUsername} does not have enough wallet balance to
+                  withdraw{" "}
+                </DialogContentText>
+              )}
               <Box
                 component="form"
                 id="withdraw"
@@ -322,9 +352,13 @@ const Home = () => {
                   <Button onClick={handleClose} color="error">
                     Cancel
                   </Button>
-                  <Button type="submit" form="withdraw">
-                    Confirm
-                  </Button>
+                  {selectedEnoughBoolean ? (
+                    <Button type="submit" form="withdraw">
+                      Confirm
+                    </Button>
+                  ) : (
+                    <Button disabled>Confirm</Button>
+                  )}
                 </DialogActions>
               </Box>
             </DialogContent>
