@@ -352,9 +352,13 @@ const Home = () => {
                   <Button onClick={handleClose} color="error">
                     Cancel
                   </Button>
-                  <Button type="submit" form="withdraw">
-                    Confirm
-                  </Button>
+                  {selectedEnoughBoolean ? (
+                    <Button type="submit" form="withdraw">
+                      Confirm
+                    </Button>
+                  ) : (
+                    <Button disabled>Confirm</Button>
+                  )}
                 </DialogActions>
               </Box>
             </DialogContent>
