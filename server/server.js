@@ -1582,19 +1582,14 @@ app.get("/api/v1/item/nextBooking/:itemId/:date", async (req, res) => {
 //BLOCKOUT
 // Create blockout
 app.post("/api/v1/createBlockout", async (req, res) => {
-  const {
-    startDate,
-    endDate,
-    itemId,
-    lenderId,
-  } = req.body;
+  const { startDate, endDate, itemId, lenderId } = req.body;
 
   try {
     const blockout = await rentaldb.createBlockout(
       startDate,
       endDate,
       itemId,
-      lenderId,
+      lenderId
     );
 
     res.status(200).json({
@@ -1632,7 +1627,6 @@ app.delete("/api/v1/deleteBlockout/:blockoutId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-
 
 //SPOTLIGHT
 // Creating new spotlight
@@ -1930,9 +1924,6 @@ app.post("/api/v1/payment-sheet", async (req, res) => {
     publishableKey:
       "pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH",
   });
-
-  
-
 });
 
 // Get average rating by userId
@@ -2050,7 +2041,12 @@ app.get("/api/v1/wishlist/userId/:userId", async (req, res) => {
       });
     } else {
       // if items not found
-      res.status(404).json({ error: "Items not found" });
+      res.status(200).json({
+        status: "success",
+        data: {
+          wishlist: [],
+        },
+      });
     }
   } catch (error) {
     console.log(error);
@@ -2118,7 +2114,10 @@ app.post("/api/v1/transaction/withdrawalRequest", async (req, res) => {
   const { senderId, amount } = req.body;
 
   try {
-    const transaction = await transactiondb.createWithdrawalRequest(senderId, amount)
+    const transaction = await transactiondb.createWithdrawalRequest(
+      senderId,
+      amount
+    );
 
     // Send the newly created user as the response
     res.status(200).json({
