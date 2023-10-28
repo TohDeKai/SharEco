@@ -59,6 +59,23 @@ const newRentalRequests = () => {
     setRefreshing(true);
   };
 
+  function shouldAcceptRental(rental) {
+    const createdDate = new Date(rental.creationDate);
+    const startDate = new Date(rental.startDate);
+    const currentDate = new Date();
+  
+    // Calculate the threshold date
+    const thresholdDate = new Date(createdDate);
+    thresholdDate.setDate(createdDate.getDate() + 3);
+  
+    // Check if the rental is within the threshold
+    if (currentDate <= thresholdDate || currentDate <= startDate) {
+      return true;
+    }
+  
+    return false;
+  }  
+
   const newRentalRequests = userLendings
     .filter((rental) => rental.status === "PENDING")
     .sort((a, b) => new Date(a.creationDate) - new Date(b.creationDate));
