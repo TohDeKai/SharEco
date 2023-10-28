@@ -1750,7 +1750,12 @@ app.get("/api/v1/wishlist/itemId/:itemId", async (req, res) => {
       });
     } else {
       // if wishlist not found
-      res.status(404).json({ error: "Wishlist not found" })
+      res.status(200).json({
+        status: "success",
+        data: {
+          wishlist: [],
+        },
+      });
     }
   } catch (error) {
     console.log(error);
@@ -1774,7 +1779,12 @@ app.get("/api/v1/wishlist/userId/:userId", async (req, res) => {
       });
     } else {
       // if items not found
-      res.status(404).json({ error: "Items not found" })
+      res.status(200).json({
+        status: "success",
+        data: {
+          wishlist: [],
+        },
+      });
     }
   } catch (error) {
     console.log(error);
