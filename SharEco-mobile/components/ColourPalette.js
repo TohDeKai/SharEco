@@ -8,6 +8,6 @@ export const colours = {
   dark: "#2E3E33",
   yellow: "#F6BE2C",
   success: "green",
-  fail: "red",
+  fail: "#E3242B",
   red: "#E53131",
 }

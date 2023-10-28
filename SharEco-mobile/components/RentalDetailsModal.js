@@ -213,9 +213,9 @@ const RentalDetailsModal = ({
                       </RegularText>
                     </RegularText>
                     <View style={styles.ratingsContainer}>
-                      <RegularText typography="Subtitle">{lenderRatings.averageRating}</RegularText>
-                      <Rating stars={lenderRatings.starsToDisplay} size={18} color={yellow} />
-                      <RegularText typography="Subtitle">({lenderRatings.numberOfRatings})</RegularText>
+                    <RegularText typography="Subtitle">{lenderRatings.averageRating || 0}</RegularText>
+                      <Rating stars={lenderRatings.starsToDisplay || 0} size={18} color={yellow} />
+                      <RegularText typography="Subtitle">({lenderRatings.numberOfRatings || 0})</RegularText>
                     </View>
                   </View>
                 </View>
@@ -452,6 +452,7 @@ const styles = StyleSheet.create({
   seller: {
     display: "flex",
     flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "white",
     backgroundColor: inputbackground,
     borderRadius: 10,

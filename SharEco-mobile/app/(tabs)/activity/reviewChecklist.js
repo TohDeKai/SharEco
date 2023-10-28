@@ -11,7 +11,7 @@ import React, { useState, useEffect } from "react";
 import { Formik, Field } from "formik";
 import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import Checkbox from 'expo-checkbox';
+import Checkbox from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
@@ -97,7 +97,7 @@ const Content = ({ activeTab }) => {
           const rentalData = rentalResponse.data.data.rental;
           setRental(rentalData);
           setStartRentalImages(rentalData.startRentalImages);
-          setEndRentalImages(rentalData.endRentalImages)
+          setEndRentalImages(rentalData.endRentalImages);
         }
       } catch (error) {
         console.log(error.message);
@@ -124,28 +124,22 @@ const Content = ({ activeTab }) => {
   }, [rental]);
 
   // Render the Start Rental Images
-  const startRentalImageContainers = startRentalImages.map((imageSource, index) => (
-    imageSource ? (
-    <ImagePickerContainer
-      key={index}
-      imageSource={imageSource}
-    />
-    ) : null //render nothing if imagesource is null
-  ));
+  const startRentalImageContainers = startRentalImages.map(
+    (imageSource, index) =>
+      imageSource ? (
+        <ImagePickerContainer key={index} imageSource={imageSource} />
+      ) : null //render nothing if imagesource is null
+  );
 
   // Render the End Rental Images
-  const endRentalImageContainers = endRentalImages.map((imageSource, index) => (
+  const endRentalImageContainers = endRentalImages.map((imageSource, index) =>
     imageSource ? (
-    <ImagePickerContainer
-      key={index}
-      imageSource={imageSource}
-    />
+      <ImagePickerContainer key={index} imageSource={imageSource} />
     ) : null //render nothing if imagesource is null
-  ));
+  );
 
   return (
     <View style={{ flex: 1 }}>
-     
       {activeTab == "Start" && (
         <View>
           <RegularText typography="H3" style={styles.headerText}>
@@ -159,9 +153,12 @@ const Content = ({ activeTab }) => {
             {startRentalImageContainers}
           </ScrollView>
 
-          <RegularText typography="H3" style={styles.headerText}>
-            Start Rental Handover checklist
-          </RegularText>
+          {item && item.checklistCriteria && (
+            <RegularText typography="H3" style={styles.headerText}>
+              Start Rental Handover checklist
+            </RegularText>
+          )}
+
           {item && item.checklistCriteria ? (
             item.checklistCriteria.map((criterion, index) => (
               <View key={index} style={styles.checkboxContainer}>
@@ -173,16 +170,20 @@ const Content = ({ activeTab }) => {
               </View>
             ))
           ) : (
-            <RegularText>No checklist criteria available.</RegularText>
+            ""
           )}
 
           <RegularText typography="H3" style={styles.headerText}>
             Existing Damages
           </RegularText>
           {rental.startRentalDamages ? (
-            <RegularText typography="B3">{rental.startRentalDamages}</RegularText>
+            <RegularText typography="B3">
+              {rental.startRentalDamages}
+            </RegularText>
           ) : (
-            <RegularText typography="B3">No damages reported at the start of rental</RegularText>
+            <RegularText typography="B3">
+              No damages reported at the start of rental
+            </RegularText>
           )}
         </View>
       )}
@@ -200,10 +201,13 @@ const Content = ({ activeTab }) => {
             {endRentalImageContainers}
           </ScrollView>
 
-          <RegularText typography="H3" style={styles.headerText}>
-            End Rental Handover checklist
-          </RegularText>
-          {item && item.checklistCriteria ? (
+          {item && item.checklistCriteria && (
+            <RegularText typography="H3" style={styles.headerText}>
+              End Rental Handover checklist
+            </RegularText>
+          )}
+          
+          {item && item.checklistCriteria && item.checklistCriteria.length > 0 ? (
             item.checklistCriteria.map((criterion, index) => (
               <View key={index} style={styles.checkboxContainer}>
                 <Checkbox
@@ -214,7 +218,7 @@ const Content = ({ activeTab }) => {
               </View>
             ))
           ) : (
-            <RegularText>No checklist criteria available.</RegularText>
+            ""
           )}
 
           <RegularText typography="H3" style={styles.headerText}>
@@ -223,10 +227,12 @@ const Content = ({ activeTab }) => {
           {rental.endRentalDamages ? (
             <RegularText typography="B3">{rental.endRentalDamages}</RegularText>
           ) : (
-            <RegularText typography="B3">No damages reported at the end of rental</RegularText>
+            <RegularText typography="B3">
+              No damages reported at the end of rental
+            </RegularText>
           )}
         </View>
-        )}
+      )}
     </View>
   );
 };

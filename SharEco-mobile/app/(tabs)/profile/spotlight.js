@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   nav: {
-    bottom: -70,
+    bottom: -53,
     width: "100%",
     position: "absolute",
     height: 70,

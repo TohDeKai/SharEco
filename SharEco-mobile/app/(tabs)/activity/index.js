@@ -334,25 +334,25 @@ const Content = ({ activeTab }) => {
   ];
 
   const upcomingLendings = userLendings
-    .filter((rental) => rental.status === "UPCOMING")
+    .filter((rental) => rental.status === "UPCOMING" && rental.isBlockOut === false)
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   const ongoingLendings = userLendings
-    .filter((rental) => rental.status === "ONGOING")
+    .filter((rental) => rental.status === "ONGOING" && rental.isBlockOut === false)
     .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
   const completedLendings = userLendings
-    .filter((rental) => rental.status === "COMPLETED")
+    .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false)
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const cancelledLendings = userLendings.filter(
-    (rental) => rental.status === "CANCELLED"
+    (rental) => rental.status === "CANCELLED" && rental.isBlockOut === false
   );
   const pendingLendings = userLendings.filter(
-    (rental) => rental.status === "PENDING"
+    (rental) => rental.status === "PENDING" && rental.isBlockOut === false
   );
   const updatedLendings = userLendings.filter(
-    (rental) => rental.status === "UPDATED"
+    (rental) => rental.status === "UPDATED" && rental.isBlockOut === false
   );
 
   const pendingBorrowings = userBorrowings
@@ -362,23 +362,23 @@ const Content = ({ activeTab }) => {
     .sort((a, b) => new Date(b.creationDate) - new Date(a.creationDate));
 
   const ongoingBorrowings = userBorrowings
-    .filter((rental) => rental.status === "ONGOING")
+    .filter((rental) => rental.status === "ONGOING" && rental.isBlockOut === false)
     .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
   const upcomingBorrowings = userBorrowings
-    .filter((rental) => rental.status === "UPCOMING")
+    .filter((rental) => rental.status === "UPCOMING" && rental.isBlockOut === false)
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   const completedBorrowings = userBorrowings
-    .filter((rental) => rental.status === "COMPLETED")
+    .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false)
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const rejectedBorrowings = userBorrowings
-    .filter((rental) => rental.status === "REJECTED")
+    .filter((rental) => rental.status === "REJECTED" && rental.isBlockOut === false)
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const cancelledBorrowings = userBorrowings.filter(
-    (rental) => rental.status === "CANCELLED"
+    (rental) => rental.status === "CANCELLED" && rental.isBlockOut === false
   );
 
   // to include activeBorrowingPill
@@ -577,10 +577,6 @@ const Content = ({ activeTab }) => {
                         rental={rental}
                         type={"Borrowing"}
                       />
-                      {/* DEKAI REFACTOR THIS */}
-                      <Pressable onPress={() => router.push({pathname: "activity/submitChecklist", params: { rentalId: rental.rentalId, checklistFormType: "Start Rental" }})}>
-                        <RegularText>Press me to see start rental checklist</RegularText>
-                      </Pressable>
                     </>
                   ))
                 ) : (
@@ -611,16 +607,11 @@ const Content = ({ activeTab }) => {
                         rental={rental}
                         type={"Borrowing"}
                       />
-                      {/* DEKAI REFACTOR THIS */}
-                      <Pressable onPress={() => router.push({pathname: "activity/submitChecklist", params: { rentalId: rental.rentalId, checklistFormType: "End Rental" }})}>
-                        <RegularText>Press me to see end rental checklist</RegularText>
-                      </Pressable>
                     </>
                   ))
                 ) : (
                   <NoRental rentalStatus={activeBorrowingPill} />
                 )}
-                
               </ScrollView>
             </View>
           )}

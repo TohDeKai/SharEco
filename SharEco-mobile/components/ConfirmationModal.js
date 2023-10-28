@@ -3,7 +3,7 @@ import { StyleSheet, Modal, Text, View, Button, TextInput } from "react-native";
 import { PrimaryButton, SecondaryButton } from "./buttons/RegularButton";
 import { colours } from "./ColourPalette";
 import RegularText from "./text/RegularText";
-const { primary, white, black, secondary } = colours;
+const { primary, white, black, secondary, red } = colours;
 import StyledTextInput from "../components/inputs/LoginTextInputs";
 import MessageBox from "../components/text/MessageBox";
 import { Formik } from "formik";
@@ -16,26 +16,6 @@ const ConfirmationModal = ({
   type,
   ...props
 }) => {
-  // const [message, setMessage] = useState("");
-  // const [isSuccessMessage, setIsSuccessMessage] = useState("false");
-
-  // const handleCancel = async (reason) => {
-  //   await props.forCancellationData(reason);
-  // };
-
-  // const [cancellationReason, setCancellationReason] = useState(
-  //   "Rented the wrong item"
-  // );
-  // const cancellationReasonRef = useRef();
-
-  // const handleConfirm = () => {
-  //   const text = cancellationReasonRef.current.value;
-  //   console.log("HANDLE CONFIRM", text);
-  //   setCancellationReason(text);
-  //   props.forCancellationData(text);
-  //   onConfirm();
-  // };
-
   const [reasons, setReasons] = useState([
     { label: "Scheduling Conflict", value: "Scheduling Conflict" },
     {
@@ -58,6 +38,10 @@ const ConfirmationModal = ({
 
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
+
+  let totalCancellationFee;
+  const rentalFee = parseFloat(props.rental.rentalFee.replace(/[^0-9.]/g, ""));
+  totalCancellationFee = 0.3 * rentalFee;
 
   let formattedStartDate;
   let formattedEndDate;
@@ -333,6 +317,122 @@ const ConfirmationModal = ({
           </Modal>
         </View>
       )}
+      {/* Notifying modal if user's wallet balance is negative*/}
+      {type === "NegativeWalletBalance" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  Please clear outstanding balance in EcoWallet
+                </RegularText>
+                <View style={styles.nav}>
+                  {/* <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View> */}
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Close
+                    </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      {/* Notifying modal if LENDER is doing a late cancellation*/}
+      {type === "LenderLateCancellation" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  As this is a late cancellation, a ${totalCancellationFee}{" "}
+                  cancellation fee will apply.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Close
+                    </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      {/* Notifying modal if BORROWER is doing a late cancellation*/}
+      {type === "BorrowerLateCancellation" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  As this is a late cancellation, a ${totalCancellationFee}{" "}
+                  cancellation fee will apply.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onConfirm}
+                    >
+                      Confirm
+                    </SecondaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onClose}
+                    >
+                      Close
+                    </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
       {type === "Reject" && (
         <View style={[styles.centeredView]}>
           <Modal visible={isVisible} animationType="slide" transparent={false}>
@@ -363,6 +463,82 @@ const ConfirmationModal = ({
                     >
                       Cancel
                     </PrimaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      {/* Confirmation modal for updating rental status as ONGOING */}
+      {type === "Update" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  Update status as ongoing? This action cannot be reversed.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onConfirm}
+                    >
+                      Update
+                    </PrimaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onClose}
+                    >
+                      Cancel
+                    </SecondaryButton>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      {/* Confirmation modal for completing rental status */}
+      {type === "Complete" && (
+        <View style={[styles.centeredView]}>
+          <Modal visible={isVisible} animationType="slide" transparent={false}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <RegularText
+                  typography="H4"
+                  color={black}
+                  style={styles.modalStyle}
+                >
+                  Complete rental? This action cannot be reversed.
+                </RegularText>
+                <View style={styles.nav}>
+                  <View style={styles.buttonContainer}>
+                    <PrimaryButton
+                      typography="H3"
+                      color={white}
+                      onPress={onConfirm}
+                    >
+                      Complete
+                    </PrimaryButton>
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <SecondaryButton
+                      typography="H3"
+                      color={primary}
+                      onPress={onClose}
+                    >
+                      Cancel
+                    </SecondaryButton>
                   </View>
                 </View>
               </View>

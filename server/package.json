@@ -24,6 +24,8 @@
     "multer": "^1.4.5-lts.1",
     "nodemon": "^3.0.1",
     "pg": "^8.11.3",
-    "react-native-snap-carousel": "^3.9.1"
+    "postmark": "^3.1.1",
+    "react-native-snap-carousel": "^3.9.1",
+    "stripe": "^13.10.0"
   }
 }
