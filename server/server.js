@@ -2021,7 +2021,12 @@ app.get("/api/v1/wishlist/itemId/:itemId", async (req, res) => {
       });
     } else {
       // if wishlist not found
-      res.status(404).json({ error: "Wishlist not found" });
+      res.status(200).json({
+        status: "success",
+        data: {
+          wishlist: [],
+        },
+      });
     }
   } catch (error) {
     console.log(error);
