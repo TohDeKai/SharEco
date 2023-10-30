@@ -49,7 +49,7 @@ export default function Verify() {
         console.log("User verification unsuccessful");
       }
     } catch (error) {
-      if (error.response && error.response.status === 400) {
+      if (error.response && error.response.status === 404) {
         setMessage("Email not registered! Please sign up first");
         setIsSuccessMessage(false);
       } else if (error.response && error.response.status === 403) {
