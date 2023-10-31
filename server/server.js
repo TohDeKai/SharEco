@@ -10,6 +10,7 @@ const reviewdb = require("./queries/review");
 const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
+const impressiondb = require("./queries/impression");
 const transactiondb = require("./queries/transaction");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
@@ -2473,6 +2474,86 @@ app.get("/api/v1/rankedWeekAds", async (req, res) => {
     }
   } catch (err) {
     console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+
+/**********************          Impressions Routes             **************************/
+// create impression
+app.post("/api/v1/impression", async (req, res) => {
+  const { itemId, userId } = req.body;
+
+  try {
+    const impression = await impressiondb.createImpression(itemId, userId);
+
+    // Send the newly created wishlist as response
+    res.status(201).json({
+      status: "success",
+      data: {
+        impression: impression,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get impressions by itemId
+app.get("/api/v1/impression/itemId/:itemId", async (req, res) => {
+  const itemId = req.params.itemId;
+
+  try {
+    const impressions = await impressiondb.getImpressionsByItemId(itemId);
+
+    if (impressions.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          impressions: impressions,
+        },
+      });
+    } else {
+      // if impressions not found
+      res.status(200).json({
+        status: "success",
+        data: {
+          impressions: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get distinct impressions by itemId
+app.get("/api/v1/impression/distinct/itemId/:itemId", async (req, res) => {
+  const itemId = req.params.itemId;
+
+  try {
+    const impressions = await impressiondb.getDistinctImpressionsByItemId(itemId);
+
+    if (impressions.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          impressions: impressions,
+        },
+      });
+    } else {
+      // if impressions not found
+      res.status(200).json({
+        status: "success",
+        data: {
+          impressions: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Database error" });
   }
 });
