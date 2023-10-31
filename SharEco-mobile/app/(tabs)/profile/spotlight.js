@@ -6,7 +6,7 @@ import {
   Pressable,
   Dimensions,
 } from "react-native";
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -14,6 +14,8 @@ import Header from "../../../components/Header";
 import RegularText from "../../../components/text/RegularText";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import { colours } from "../../../components/ColourPalette";
+import { useAuth } from "../../../context/auth";
+import MessageBox from "../../../components/text/MessageBox";
 const { primary, white, black, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -83,55 +85,105 @@ const SpotlightButtons = ({
 };
 
 const Footer = ({ activeButton, spotlightDetails }) => {
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
   const details = spotlightDetails.find((detail) => detail.id === activeButton);
   const params = useLocalSearchParams();
+  const [message, setMessage] = useState("");
+  const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const { itemId } = params;
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchData();
+  }, [user.userId]);
+
   const handleSpotlight = async () => {
-    try {
-      const spotlightData = {
-        duration: details.duration,
-        price: details.price,
-        itemId: itemId, //stub
-      };
+    const userWalletBalance = parseFloat(user.walletBalance.replace("$", ""));
+    if (userWalletBalance >= details.price) {
+      try {
+        const spotlightData = {
+          duration: details.duration,
+          price: details.price,
+          itemId: itemId, //stub
+        };
 
-      const response = await axios.post(
-        `http://${BASE_URL}:4000/api/v1/spotlight`,
-        spotlightData
-      );
+        const transactionData = {
+          senderId: user.userId,
+          amount: details.price,
+          transactionType: "ADS",
+        };
 
-      if (response.status === 200) {
-        console.log("Spotlight created successfully");
-        router.replace("/profile");
-      } else {
-        //shouldnt come here
-        console.log("Spotlight creation unsuccessful");
+        const response = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/spotlight`,
+          spotlightData
+        );
+
+        const transactionResponse = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+          transactionData
+        );
+
+        if (response.status === 200 && transactionResponse.status === 200) {
+          console.log("Spotlight created successfully");
+          router.replace("/profile");
+        } else {
+          //shouldnt come here
+          console.log("Spotlight creation unsuccessful");
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 500) {
+          console.log("Internal server error");
+        } else {
+          console.log("Error during spotlight creation: ", error.message);
+        }
       }
-    } catch (error) {
-      if (error.response && error.response.status === 500) {
-        console.log("Internal server error");
-      } else {
-        console.log("Error during item creation: ", error.message);
-      }
+    } else {
+      console.log("error message")
+      setMessage("Please top up your EcoWallet.");
+      setIsSuccessMessage(false);
     }
   };
 
   return (
-    <View style={styles.nav}>
-      <View style={styles.buttonContainer}>
-        <RegularText typography="Subtitle" style={{ marginBottom: 5 }}>
-          ${details.price.toFixed(2)}
-        </RegularText>
-        <RegularText typography="H2">{details.duration}</RegularText>
+    <View style={{bottom:-viewportHeightInPixels(12.9)}}>
+      <View>
+        <MessageBox style={{ marginBottom: 10 }} success={isSuccessMessage}>
+          {message || " "}
+        </MessageBox>
       </View>
-      <View style={styles.buttonContainer}>
-        <PrimaryButton
-          typography={"H3"}
-          color={white}
-          onPress={handleSpotlight}
-        >
-          Spotlight
-        </PrimaryButton>
+      <View style={styles.nav}>
+        <View style={styles.buttonContainer}>
+          <RegularText typography="Subtitle" style={{ marginBottom: 5 }}>
+            ${details.price.toFixed(2)}
+          </RegularText>
+          <RegularText typography="H2">{details.duration}</RegularText>
+        </View>
+        <View style={styles.buttonContainer}>
+          <PrimaryButton
+            typography={"H3"}
+            color={white}
+            onPress={handleSpotlight}
+          >
+            Spotlight
+          </PrimaryButton>
+        </View>
       </View>
     </View>
   );
@@ -214,7 +266,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   nav: {
-    bottom: -53,
+    bottom: -viewportHeightInPixels(7.5),
     width: "100%",
     position: "absolute",
     height: 70,
