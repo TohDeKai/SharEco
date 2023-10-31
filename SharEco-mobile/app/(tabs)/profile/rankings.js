@@ -124,10 +124,14 @@ const viewRankings = () => {
     );
   };
 
+  const toBiddingGuide = () => {
+    router.replace("profile/biddingGuide");
+  }
+
   return (
     <SafeAreaContainer>
       <Header title="Current Rankings" action="back" onPress={handleBack} />
-      <Pressable style={styles.info}>
+      <Pressable style={styles.info} onPress={toBiddingGuide}>
         <MaterialIcons name="info" size={23} color={secondary} style={{ marginRight: 5 }} />
         <RegularText typography="B2" color={secondary}>Learn how bidding works</RegularText>
       </Pressable>
