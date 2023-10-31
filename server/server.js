@@ -81,6 +81,23 @@ app.get("/api/v1/users", async (req, res) => {
   }
 });
 
+// Get Total Number of Users (Exclude Admin)
+app.get("/api/v1/allusers", async (req, res) => {
+  try {
+    const users = await userdb.getTotalNumberOfUsers();
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: users,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 app.get("/api/v1/users/userId/:userId", async (req, res) => {
   try {
     console.log("Getting user with userId: " + req.params.userId);
@@ -864,6 +881,27 @@ app.get("/api/v1/items", async (req, res) => {
   }
 });
 
+//Get total number of item listings
+app.get("/api/v1/allItems", async (req, res) => {
+  try {
+    const items = await listingdb.getTotalNumberOfListing();
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
 //Get other people's items
 app.get("/api/v1/items/not/:userId", async (req, res) => {
   const userId = req.params.userId;
@@ -1027,6 +1065,24 @@ app.post("/api/v1/user/resendemail", userAuth.ResendEmail);
 app.get("/api/v1/businessVerifications", async (req, res) => {
   try {
     const businessVerifications = await businessdb.getBusinessVerifications();
+    res.status(200).json({
+      status: "success",
+      data: {
+        businessVerifications: businessVerifications,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get all business verifications requests
+app.get("/api/v1/allBusinessVerificationsReq", async (req, res) => {
+  try {
+    const businessVerifications =
+      await businessdb.getTotalBusinessVerificationRequest();
     res.status(200).json({
       status: "success",
       data: {
@@ -1826,10 +1882,10 @@ app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
       });
     } else {
       // Handle the case where the rental request is not found
-      res.status(200).json({ 
+      res.status(200).json({
         data: {
           reviews: [],
-        } 
+        },
       });
     }
   } catch (err) {

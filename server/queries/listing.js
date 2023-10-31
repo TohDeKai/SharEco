@@ -23,7 +23,7 @@ const createItem = async (
   collectionLocations,
   otherLocation,
   isBusiness,
-  checklistCriteria,
+  checklistCriteria
 ) => {
   try {
     const result = await pool.query(
@@ -138,6 +138,18 @@ const disableItem = async (itemId, disabled) => {
     return result.rows[0];
   } catch (err) {
     throw err;
+  }
+};
+
+// Get total number of listing
+const getTotalNumberOfListing = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT("itemId") FROM "sharEco-schema"."item"`
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -267,4 +279,5 @@ module.exports = {
   getOtherUserItemsByCategory,
   getOtherUserItemsByKeywords,
   getOtherUserItemsByCategoryByKeywords,
+  getTotalNumberOfListing,
 };

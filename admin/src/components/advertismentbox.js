@@ -52,41 +52,49 @@ const Advertismentbox = ({ title }) => {
               advertismentName="Ad 1"
               price="1200"
               username="user123"
+              status="Approved"
             />
             <Advertisment
               advertismentName="Ad 2"
               price="100"
               username="user123"
+              status="Rejected"
             />
             <Advertisment
               advertismentName="Ad 3"
               price="120"
               username="user123"
+              status="Approved"
             />
             <Advertisment
               advertismentName="Ad 4"
               price="200"
               username="user123"
+              status="Cancelled"
             />
             <Advertisment
               advertismentName="Ad 5"
               price="2200"
               username="user123"
+              status="Pending"
             />
             <Advertisment
               advertismentName="Ad 6"
               price="100"
               username="user123"
+              status="Rejected"
             />
             <Advertisment
               advertismentName="Ad 8"
               price="300"
               username="user123"
+              status="Pending"
             />
             <Advertisment
               advertismentName="Ad 7"
               price="400"
               username="user123"
+              status="Approved"
             />
           </Box>
         </Box>
