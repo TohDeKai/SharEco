@@ -18,7 +18,17 @@ const createAd = async (image, title, description, bidPrice, bizId, link) => {
       `INSERT INTO "sharEco-schema"."advertisement" 
          ("startDate", "endDate", "image", "title", "description", "bidPrice", "status", "bizId", "link") 
                 values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
-      [startDate, endDate, image, title, description, bidPrice, "PENDING", bizId, link]
+      [
+        startDate,
+        endDate,
+        image,
+        title,
+        description,
+        bidPrice,
+        "PENDING",
+        bizId,
+        link,
+      ]
     );
     return result.rows[0];
   } catch (err) {
@@ -49,8 +59,13 @@ const updateAdImage = async (adId, image) => {
 
 const getStartBidDate = () => {
   const today = new Date();
+  // If it's saturday (vetting period, end of bidding week)
+  if (today.getDay() === 6) {
+    // Move onto next week
+    today.setDate(today.getDate() + 7);
+  }
   const dayOfWeek = today.getDay();
-  const daysUntilSunday = 0 - dayOfWeek + 7 + 1;
+  const daysUntilSunday = 7 - dayOfWeek;
   const nextSunday = new Date(today);
   nextSunday.setDate(today.getDate() + daysUntilSunday);
   nextSunday.setHours(0, 0, 0, 0);
@@ -129,7 +144,7 @@ const getWeekAdsByStartDate = async (startDate) => {
       [startDate, endDate.toISOString().split("T")[0]]
     );
     console.log(startDate);
-    console.log('Query Result:', endDate.toISOString().split("T")[0]);
+    console.log("Query Result:", endDate.toISOString().split("T")[0]);
     return result.rows;
   } catch (err) {
     throw err;
@@ -144,9 +159,9 @@ const rankWeekAds = async () => {
     console.log(ads);
     return ads;
   } catch (err) {
-    throw err
+    throw err;
   }
-}
+};
 
 module.exports = {
   createAd,

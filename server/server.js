@@ -11,6 +11,7 @@ const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
 const transactiondb = require("./queries/transaction");
+const advertisementdb = require("./queries/advertisement");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();

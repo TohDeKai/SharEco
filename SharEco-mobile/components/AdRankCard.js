@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Pressable,
-  Image,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Pressable, Image, StyleSheet, Dimensions } from "react-native";
 
 //components
 import { Ionicons } from "@expo/vector-icons";
@@ -14,10 +8,11 @@ import { Link, router } from "expo-router";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
 import axios from "axios";
-const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const { secondary, black, white, yellow, dark, inputbackground } = colours;
 import UserAvatar from "./UserAvatar";
 import { PrimaryButton, SecondaryButton } from "./buttons/RegularButton";
 import ConfirmationModal from "./ConfirmationModal";
+import { useAuth } from "../context/auth";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportHeightInPixels = (percentage) => {
@@ -30,147 +25,112 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-export default function AdCard({ ad }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const { image, title, description, bidPrice, link, advertisementId } =
-    ad.item;
-  const [showDeleteModal, setShowDeleteModall] = useState(false);
+export default function AdRankCard({ ad, rank }) {
+  console.log(ad);
+  const { image, bidPrice, bizId } = ad;
+  const [user, setUser] = useState({});
+  const [userId, setUserId] = useState("");
+  const { getUserData } = useAuth();
 
-  const toggleCollapse = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const toEditAd = () => {
-    router.push({
-      pathname: "profile/editAd",
-      params: { adId: advertisementId },
-    });
-  };
-
-  const handleDeleteAd = async () => {
-    try {
-      const response = await axios.delete(
-        `http://${BASE_URL}:4000/api/v1/cancelAd/adId/${advertisementId}`
-      );
-
-      console.log(response.status);
-      if (response.status === 200) {
-        console.log("Ad successfully deleted");
-        handleCloseDeleteModal();
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUserId(userData.userId);
+        }
+      } catch (error) {
+        console.log(error.message);
       }
-    } catch (error) {
-      console.log(error.message);
     }
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteModall(false);
-  };
-
-  const handleShowDeleteModal = () => {
-    setShowDeleteModall(true);
-  }
+    fetchUserData();
+    async function fetchData() {
+      try {
+        const userResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/users/userId/${bizId}`
+        );
+        if (userResponse.status === 200) {
+          const userData = userResponse.data.data.user;
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchData();
+  }, []);
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.card} onPress={toggleCollapse}>
+      <View style={userId == user.userId ? styles.myCard : styles.card}>
         <View style={{ flexDirection: "row" }}>
           <Image source={{ uri: image }} style={styles.image} />
           <View style={styles.details}>
+            {userId == user.userId ? (
+              <RegularText typography="H4" style={styles.title} color={white}>
+                Me
+              </RegularText>
+            ) : (
+              <RegularText
+                typography="B1"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={styles.title}
+              >
+                @{user.username}
+              </RegularText>
+            )}
             <RegularText
-              typography="B1"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={styles.title}
+              typography="B3"
+              color={userId == user.userId ? white : black}
             >
-              {title}
+              Bid: {bidPrice}
             </RegularText>
-            <RegularText typography="B3">Bid: {bidPrice}</RegularText>
           </View>
         </View>
-        {isExpanded ? (
-          <Ionicons
-            style={styles.chevron}
-            name="chevron-up"
-            size={23}
-            color={dark}
-          />
-        ) : (
-          <Ionicons
-            style={styles.chevron}
-            name="chevron-down"
-            size={23}
-            color={dark}
-          />
-        )}
-      </Pressable>
-      {isExpanded && (
-        <View style={styles.expanded}>
-          <RegularText typography="B1">Description</RegularText>
-          <RegularText typography="Subtitle" style={styles.textMargin}>
-            {description}
-          </RegularText>
-          <RegularText typography="B1" style={styles.headerMargin}>
-            Link
-          </RegularText>
-          {link ? (
-            <RegularText
-              typography="Subtitle"
-              color={primary}
-              style={styles.textMargin}
-            >
-              <Link href={link}>{link}</Link>
-            </RegularText>
-          ) : (
-            <RegularText typography="Subtitle" style={styles.textMargin}>
-              No link provided, we will redirect users to your profile
+        <View style={styles.rank}>
+          {rank < 11 && (
+            <RegularText typography="B3" color={userId == user.userId ? white : black}>
+              TOP 10
             </RegularText>
           )}
-          <View style={styles.buttonContainer}>
-            <SecondaryButton
-              typography={"B1"}
-              color={primary}
-              style={styles.button}
-              onPress={handleShowDeleteModal}
-            >
-              Delete
-            </SecondaryButton>
-            <PrimaryButton
-              typography={"B1"}
-              color={white}
-              style={styles.button}
-              onPress={toEditAd}
-            >
-              Edit
-            </PrimaryButton>
+          <View style={rank > 10 ? styles.lowRank : styles.highRank}>
+            <RegularText typography="H4" color={userId == user.userId ? secondary : white}>
+              {rank + 1}
+            </RegularText>
           </View>
-          {showDeleteModal && (
-            <ConfirmationModal
-              isVisible={showDeleteModal}
-              onConfirm={handleDeleteAd}
-              onClose={handleCloseDeleteModal}
-              style={{ flex: 0 }}
-              type="Delete"
-            />
-          )}
         </View>
-      )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderBottomColor: inputbackground,
-    borderBottomWidth: 1,
+    // borderBottomColor: inputbackground,
+    // borderBottomWidth: 1,
+    marginHorizontal: viewportWidthInPixels(5),
+    marginBottom: 6,
   },
-  card: {
-    // backgroundColor: inputbackground,
+  myCard: {
+    backgroundColor: secondary,
     width: viewportWidthInPixels(90),
     paddingVertical: 15,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: viewportWidthInPixels(5),
+    borderRadius: 6,
+  },
+  card: {
+    backgroundColor: inputbackground,
+    width: viewportWidthInPixels(90),
+    paddingHorizontal: viewportWidthInPixels(5),
+    paddingVertical: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 6,
   },
   details: {
     justifyContent: "center",
@@ -206,5 +166,26 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  highRank: {
+    marginTop: 5,
+    backgroundColor: yellow,
+    borderRadius: 30,
+    height: viewportWidthInPixels(6),
+    width: viewportWidthInPixels(6),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  lowRank: {
+    marginTop: 5,
+    backgroundColor: inputbackground,
+    borderRadius: 30,
+    height: viewportWidthInPixels(6),
+    width: viewportWidthInPixels(6),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rank: {
+    alignItems: "flex-end",
   },
 });
