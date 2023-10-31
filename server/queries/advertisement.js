@@ -36,6 +36,20 @@ const createAd = async (image, title, description, bidPrice, bizId, link) => {
   }
 };
 
+// Get all PENDING Advertisment
+const getAdsReq = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT("advertisementId") FROM "sharEco-schema".advertisement 
+    WHERE "status" = $1`,
+      ["PENDING"]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Update images for an ad
 const updateAdImage = async (adId, image) => {
   try {
@@ -172,4 +186,5 @@ module.exports = {
   getAdsByBizId,
   getWeekAdsByStartDate,
   rankWeekAds,
+  getAdsReq,
 };

@@ -49,6 +49,20 @@ const getBusinessVerificationByBusinessVerificationId = async (
   }
 };
 
+// Get total number of business verification request
+const getTotalBusinessVerificationRequest = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT("businessVerificationId") FROM "sharEco-schema"."businessVerification"
+    WHERE "approved" = $1`,
+      [false]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Create new business verification
 const createBusinessVerification = async (
   UEN,
@@ -94,7 +108,10 @@ const updateBusinessVerification = async (
 };
 
 // Update documents for a business verification
-const updateDocumentsForBusinessVerification = async (businessVerificationId, files) => {
+const updateDocumentsForBusinessVerification = async (
+  businessVerificationId,
+  files
+) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."businessVerification" 
@@ -137,4 +154,5 @@ module.exports = {
   updateBusinessVerification,
   updateDocumentsForBusinessVerification,
   deleteBusinessVerification,
+  getTotalBusinessVerificationRequest,
 };

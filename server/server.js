@@ -11,7 +11,7 @@ const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
 const transactiondb = require("./queries/transaction");
-const advertisementdb = require("./queries/advertisement");
+const advertisementdb = require("./queries/advertisement")
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -69,6 +69,23 @@ app.use(express.json());
 app.get("/api/v1/users", async (req, res) => {
   try {
     const users = await userdb.getUsers();
+    res.status(200).json({
+      status: "success",
+      data: {
+        user: users,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get Total Number of Users (Exclude Admin)
+app.get("/api/v1/allusers", async (req, res) => {
+  try {
+    const users = await userdb.getTotalNumberOfUsers();
     res.status(200).json({
       status: "success",
       data: {
@@ -865,6 +882,27 @@ app.get("/api/v1/items", async (req, res) => {
   }
 });
 
+//Get total number of item listings
+app.get("/api/v1/allItems", async (req, res) => {
+  try {
+    const items = await listingdb.getTotalNumberOfListing();
+
+    if (items) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          items: items,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
 //Get other people's items
 app.get("/api/v1/items/not/:userId", async (req, res) => {
   const userId = req.params.userId;
@@ -1028,6 +1066,24 @@ app.post("/api/v1/user/resendemail", userAuth.ResendEmail);
 app.get("/api/v1/businessVerifications", async (req, res) => {
   try {
     const businessVerifications = await businessdb.getBusinessVerifications();
+    res.status(200).json({
+      status: "success",
+      data: {
+        businessVerifications: businessVerifications,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get all business verifications requests
+app.get("/api/v1/allBusinessVerificationsReq", async (req, res) => {
+  try {
+    const businessVerifications =
+      await businessdb.getTotalBusinessVerificationRequest();
     res.status(200).json({
       status: "success",
       data: {
@@ -1827,10 +1883,10 @@ app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
       });
     } else {
       // Handle the case where the rental request is not found
-      res.status(200).json({ 
+      res.status(200).json({
         data: {
           reviews: [],
-        } 
+        },
       });
     }
   } catch (err) {
@@ -2307,7 +2363,7 @@ app.post("/api/v1/createAd", async (req, res) => {
       title,
       description,
       bidPrice,
-      bizId, 
+      bizId,
       link
     );
 
@@ -2320,6 +2376,27 @@ app.post("/api/v1/createAd", async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get all Advertisment Request
+app.get("/api/v1/allAds", async (req, res) => {
+  try {
+    const ads = await advertisementdb.getAdsReq();
+
+    if (ads) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          advertisments: ads,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
   }
 });
 
@@ -2357,7 +2434,7 @@ app.put("/api/v1/editAd/adId/:adId", async (req, res) => {
       req.body.title,
       req.body.description,
       req.body.bidPrice,
-      req.body.link,
+      req.body.link
     );
 
     if (ad) {
@@ -2441,7 +2518,9 @@ app.get("/api/v1/ads/bizId/:bizId", async (req, res) => {
 //Get ads for the week
 app.get("/api/v1/weekAds/startDate/:startDate", async (req, res) => {
   try {
-    const ads = await advertisementdb.getWeekAdsByStartDate(req.params.startDate);
+    const ads = await advertisementdb.getWeekAdsByStartDate(
+      req.params.startDate
+    );
     if (ads && ads.length != 0) {
       res.status(200).json({
         status: "success",
