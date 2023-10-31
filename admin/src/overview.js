@@ -5,6 +5,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { Box, Grid } from "@mui/material";
 import StatsBox from "./components/statsbox";
 import GraphBox from "./components/graphbox";
+import Advertismentbox from "./components/advertismentbox";
 
 const Overview = () => {
   return (
@@ -51,6 +52,9 @@ const Overview = () => {
               </Grid>
               <Grid item xs={6}>
                 <GraphBox title="Ratings" />
+              </Grid>
+              <Grid item xs={6}>
+                <Advertismentbox title="Ad Bidding Approval" />
               </Grid>
             </Grid>
           </Box>
