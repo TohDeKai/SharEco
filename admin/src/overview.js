@@ -40,7 +40,16 @@ const Overview = () => {
         );
 
         setNumberOfBizVerificationReq(
-          totalBizVerificationReqResponse.data.data.items.count
+          totalBizVerificationReqResponse.data.data.businessVerifications.count
+        );
+
+        // Fetch data for number of advertisments request
+        const totalAdvertismentsRequestResponse = await axios.get(
+          "http://localhost:4000/api/v1/allAds"
+        );
+
+        setNumberOfBizAdsReq(
+          totalAdvertismentsRequestResponse.data.data.advertisments.count
         );
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -48,7 +57,12 @@ const Overview = () => {
     }
 
     fetchOverviewData();
-  }, [numberOfUsers, numberOfListings]);
+  }, [
+    numberOfUsers,
+    numberOfListings,
+    numberOfBizVerificationReq,
+    numberOfBizAdsReq,
+  ]);
 
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
@@ -78,13 +92,16 @@ const Overview = () => {
             >
               <StatsBox subtitle="Users" number={numberOfUsers} />
               <StatsBox subtitle="Listings" number={numberOfListings} />
-              <StatsBox subtitle="Rentals" number="46,012" />
-              <StatsBox subtitle="Unresolved Disputes" number="4" />
+              <StatsBox subtitle="Rentals" number="PENDING" />
+              <StatsBox subtitle="Unresolved Disputes" number="PENDING DB" />
               <StatsBox
                 subtitle="Biz Verifications Requests"
                 number={numberOfBizVerificationReq}
               />
-              <StatsBox subtitle="Biz Advertisments Requests" number="102" />
+              <StatsBox
+                subtitle="Biz Advertisments Requests"
+                number={numberOfBizAdsReq}
+              />
             </Box>
           </Box>
           <Box>

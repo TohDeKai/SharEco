@@ -18,11 +18,35 @@ const createAd = async (image, title, description, bidPrice, bizId, link) => {
       `INSERT INTO "sharEco-schema"."advertisement" 
          ("startDate", "endDate", "image", "title", "description", "bidPrice", "status", "bizId", "link") 
                 values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
-      [startDate, endDate, image, title, description, bidPrice, "PENDING", bizId, link]
+      [
+        startDate,
+        endDate,
+        image,
+        title,
+        description,
+        bidPrice,
+        "PENDING",
+        bizId,
+        link,
+      ]
     );
     return result.rows[0];
   } catch (err) {
     throw err;
+  }
+};
+
+// Get all PENDING Advertisment
+const getAdsReq = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT("advertisementId") FROM "sharEco-schema".advertisement 
+    WHERE "status" = $1`,
+      ["PENDING"]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -129,7 +153,7 @@ const getWeekAdsByStartDate = async (startDate) => {
       [startDate, endDate.toISOString().split("T")[0]]
     );
     console.log(startDate);
-    console.log('Query Result:', endDate.toISOString().split("T")[0]);
+    console.log("Query Result:", endDate.toISOString().split("T")[0]);
     return result.rows;
   } catch (err) {
     throw err;
@@ -144,9 +168,9 @@ const rankWeekAds = async () => {
     console.log(ads);
     return ads;
   } catch (err) {
-    throw err
+    throw err;
   }
-}
+};
 
 module.exports = {
   createAd,
@@ -157,4 +181,5 @@ module.exports = {
   getAdsByBizId,
   getWeekAdsByStartDate,
   rankWeekAds,
+  getAdsReq,
 };

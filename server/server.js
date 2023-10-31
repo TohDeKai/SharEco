@@ -11,6 +11,7 @@ const businessdb = require("./queries/businessVerifications");
 const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
 const transactiondb = require("./queries/transaction");
+const advertisementdb = require("./queries/advertisement")
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -2362,7 +2363,7 @@ app.post("/api/v1/createAd", async (req, res) => {
       title,
       description,
       bidPrice,
-      bizId, 
+      bizId,
       link
     );
 
@@ -2375,6 +2376,27 @@ app.post("/api/v1/createAd", async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get all Advertisment Request
+app.get("/api/v1/allAds", async (req, res) => {
+  try {
+    const ads = await advertisementdb.getAdsReq();
+
+    if (ads) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          advertisments: ads,
+        },
+      });
+    } else {
+      // Handle the case where no items are found
+      res.status(404).json({ error: "No Items Found" });
+    }
+  } catch (error) {
+    console.log(error.message);
   }
 });
 
@@ -2412,7 +2434,7 @@ app.put("/api/v1/editAd/adId/:adId", async (req, res) => {
       req.body.title,
       req.body.description,
       req.body.bidPrice,
-      req.body.link,
+      req.body.link
     );
 
     if (ad) {
@@ -2496,7 +2518,9 @@ app.get("/api/v1/ads/bizId/:bizId", async (req, res) => {
 //Get ads for the week
 app.get("/api/v1/weekAds/startDate/:startDate", async (req, res) => {
   try {
-    const ads = await advertisementdb.getWeekAdsByStartDate(req.params.startDate);
+    const ads = await advertisementdb.getWeekAdsByStartDate(
+      req.params.startDate
+    );
     if (ads && ads.length != 0) {
       res.status(200).json({
         status: "success",
