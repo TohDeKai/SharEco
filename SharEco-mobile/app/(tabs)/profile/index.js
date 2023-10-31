@@ -64,7 +64,7 @@ const ProfileHeader = () => {
       try {
         const ratingsResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/ratings/userId/${user.userId}`
-        )
+        );
         if (ratingsResponse.status === 200) {
           setRatings(ratingsResponse.data.data);
         }
@@ -99,10 +99,38 @@ const ProfileHeader = () => {
   const toEditProfile = () => {
     router.push("profile/editProfile");
   };
+  const toBizDashboard = () => {
+    router.push("profile/bizDashboard");
+  };
 
   return (
     <View style={styles.header}>
       <View style={styles.headerGreen}>
+        {business.approved && (
+          <Pressable
+            onPress={toBizDashboard}
+            style={[
+              ({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+              }),
+              styles.bizButton,
+            ]}
+          >
+            <Ionicons
+              name="briefcase"
+              color={primary}
+              size={20}
+              style={styles.headerIcon}
+            />
+            <RegularText
+              color={primary}
+              typography="B1"
+              style={{ paddingHorizontal: 5 }}
+            >
+              Manage Biz
+            </RegularText>
+          </Pressable>
+        )}
         <Pressable
           onPress={toEditProfile}
           style={({ pressed }) => ({
@@ -163,7 +191,9 @@ const ProfileHeader = () => {
       <View style={styles.ratingsContainer}>
         <RegularText typography="B1">{ratings.averageRating || 0}</RegularText>
         <Rating stars={ratings.starsToDisplay || 0} size={20} color={yellow} />
-        <RegularText typography="B1">({ratings.numberOfRatings || 0})</RegularText>
+        <RegularText typography="B1">
+          ({ratings.numberOfRatings || 0})
+        </RegularText>
       </View>
     </View>
   );
@@ -241,7 +271,8 @@ const NoReviews = ({ activePill }) => {
   let message;
   switch (activePill) {
     case "All":
-      message = "No reviews at the moment! Make a rental as lender or borrower!";
+      message =
+        "No reviews at the moment! Make a rental as lender or borrower!";
       break;
     case "By Lender":
       message = "No reviews at the moment! Rent something from someone first!";
@@ -274,9 +305,13 @@ const Content = ({ navigation, activeTab }) => {
 
   const fetchData = async (userId) => {
     try {
-      const itemResponse = await axios.get(`http://${BASE_URL}:4000/api/v1/items/${userId}`);
-      const reviewResponse = await axios.get(`http://${BASE_URL}:4000/api/v1/reviews/revieweeId/${userId}`);
-  
+      const itemResponse = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/${userId}`
+      );
+      const reviewResponse = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/reviews/revieweeId/${userId}`
+      );
+
       if (itemResponse.status === 200) {
         const items = itemResponse.data.data.items.reverse();
         if (reviewResponse.status === 200) {
@@ -289,10 +324,10 @@ const Content = ({ navigation, activeTab }) => {
     } catch (error) {
       console.log(error);
     }
-  
+
     return null;
   };
-  
+
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
@@ -300,10 +335,10 @@ const Content = ({ navigation, activeTab }) => {
       if (userData) {
         const userId = userData.userId;
         const data = await fetchData(userId);
-  
+
         if (data) {
           const { items, reviews } = data;
-          setUserItems(items);     
+          setUserItems(items);
           setUserReviews(reviews);
         }
       }
@@ -312,7 +347,7 @@ const Content = ({ navigation, activeTab }) => {
     }
     setRefreshing(false);
   };
-  
+
   useEffect(() => {
     handleRefresh();
   }, []);
@@ -364,94 +399,84 @@ const Content = ({ navigation, activeTab }) => {
 
       {activeTab == "Reviews" && (
         <View style={{ flex: 1 }}>
-        <Pills
-          pillItems={pill}
-          activeLendingPill={activePill}
-          handlePillPress={handlePillPress}
-        /> 
+          <Pills
+            pillItems={pill}
+            activeLendingPill={activePill}
+            handlePillPress={handlePillPress}
+          />
 
-        {activePill == "All" && (
-          <View style={{ alignItems: "center", flex: 1 }}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              style={styles.activityCardContainer}
-              contentContainerStyle={{ flexGrow: 1 }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                />
-              }
-            >
-              {userReviews && userReviews.length > 0 ? (
-                userReviews.map((review) => (
-                  <ReviewsCard
-                    review={review}
-                    showReviewerDetails={true}
+          {activePill == "All" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
                   />
-                ))
-              ) : (
-                <NoReviews activePill={activePill}/>
-              )}
-            </ScrollView>
-          </View>
-        )}
+                }
+              >
+                {userReviews && userReviews.length > 0 ? (
+                  userReviews.map((review) => (
+                    <ReviewsCard review={review} showReviewerDetails={true} />
+                  ))
+                ) : (
+                  <NoReviews activePill={activePill} />
+                )}
+              </ScrollView>
+            </View>
+          )}
 
-        {activePill == "By Lender" && (
-          <View style={{ alignItems: "center", flex: 1 }}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              style={styles.activityCardContainer}
-              contentContainerStyle={{ flexGrow: 1 }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                />
-              }
-            >
-              {userReviewsByLender && userReviewsByLender.length > 0 ? (
-                userReviewsByLender.map((review) => (
-                  <ReviewsCard
-                    review={review}
-                    showReviewerDetails={true}
+          {activePill == "By Lender" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
                   />
-                ))
-              ) : (
-                <NoReviews activePill={activePill}/>
-              )}
-            </ScrollView>
-          </View>
-        )}
+                }
+              >
+                {userReviewsByLender && userReviewsByLender.length > 0 ? (
+                  userReviewsByLender.map((review) => (
+                    <ReviewsCard review={review} showReviewerDetails={true} />
+                  ))
+                ) : (
+                  <NoReviews activePill={activePill} />
+                )}
+              </ScrollView>
+            </View>
+          )}
 
-        {activePill == "By Borrower" && (
-          <View style={{ alignItems: "center", flex: 1 }}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              style={styles.activityCardContainer}
-              contentContainerStyle={{ flexGrow: 1 }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                />
-              }
-            >
-              {userReviewsByBorrower && userReviewsByBorrower.length > 0 ? (
-                userReviewsByBorrower.map((review) => (
-                  <ReviewsCard
-                    review={review}
-                    showReviewerDetails={true}
+          {activePill == "By Borrower" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
                   />
-                ))
-              ) : (
-                <NoReviews activePill={activePill}/>
-              )}
-            </ScrollView>
-          </View>
-        )}
-      </View>
-
+                }
+              >
+                {userReviewsByBorrower && userReviewsByBorrower.length > 0 ? (
+                  userReviewsByBorrower.map((review) => (
+                    <ReviewsCard review={review} showReviewerDetails={true} />
+                  ))
+                ) : (
+                  <NoReviews activePill={activePill} />
+                )}
+              </ScrollView>
+            </View>
+          )}
+        </View>
       )}
     </View>
   );
@@ -580,5 +605,14 @@ const styles = StyleSheet.create({
   },
   activityCardContainer: {
     width: Dimensions.get("window").width - 46,
+  },
+  bizButton: {
+    backgroundColor: white,
+    flexDirection: "row",
+    paddingVertical: 3,
+    paddingHorizontal: 4,
+    borderRadius: 10,
+    alignItems: "center",
+    marginRight: 4,
   },
 });
