@@ -19,6 +19,19 @@ const getUsers = async () => {
   }
 };
 
+// Get total number of users (exclude admin)
+const getTotalNumberOfUsers = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT("userId") FROM "sharEco-schema"."user" WHERE NOT "userId" = $1`,
+      [1]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 //Get a user by ID
 const getUserById = async (userId) => {
   try {
@@ -323,6 +336,7 @@ module.exports = {
   getWalletIdByUserId,
   updateUserWalletBalance,
   getWalletBalanceByUserId,
+  getTotalNumberOfUsers,
   updateAdminWalletBalance,
   verifyUser,
   getUserByEmail,

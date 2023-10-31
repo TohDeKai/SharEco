@@ -6,7 +6,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import { grey } from "@mui/material/colors";
 import Divider from "@mui/material/Divider";
 
-const Advertisment = ({ advertismentName, price, username }) => {
+const Advertisment = ({ advertismentName, price, username, status }) => {
   return (
     <>
       <Box width="100%" sx={{ mt: 2, mb: 2 }}>
@@ -56,7 +56,7 @@ const Advertisment = ({ advertismentName, price, username }) => {
           </Grid>
           <Grid item xs={4} sx={{ display: "flex", alignItems: "center" }}>
             {/* Content for the 3rd column */}
-            <Button
+            {/* <Button
               variant="contained"
               color="error"
               size="medium"
@@ -67,7 +67,30 @@ const Advertisment = ({ advertismentName, price, username }) => {
               }}
             >
               To Be Approved
-            </Button>
+            </Button> */}
+            <Typography
+              variant="body1"
+              sx={{
+                width: "55%",
+                height: "30px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                padding: "3px",
+                color: "white",
+                borderRadius: "4px",
+                textAlign: "center",
+                backgroundColor:
+                  status === "Approved"
+                    ? "green"
+                    : status === "Pending"
+                    ? "orange"
+                    : status === "Rejected"
+                    ? "red"
+                    : "gray", // Default color if needed
+              }}
+            >
+              {status}
+            </Typography>
           </Grid>
         </Grid>
       </Box>
