@@ -120,7 +120,9 @@ const biddingPeriod = () => {
 const dashboard = () => {
   const { getUserData } = useAuth();
   const adPills = ["Pending", "Active", "Past", "Rejected", "Cancelled"];
+  const analyticsPills = ["Revenue", "Likes", "Rentals", "Impressions"]
   const [activeAdPill, setActiveAdPill] = useState("Pending");
+  const [activeAnalyticsPill, setActiveAnalyticsPill] = useState("Revenue");
   const [userAds, setUserAds] = useState([]);
   const [userId, setUserId] = useState();
   const [refreshing, setRefreshing] = useState(false);
@@ -179,6 +181,33 @@ const dashboard = () => {
     );
   };
 
+  const PillsAnalytics = ({ pillItems, setActiveAnalyticsPill, handlePillPress }) => {
+    return (
+      <View style={styles.analyticsPillContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {pillItems.map((pill) => (
+            <Pressable
+              key={pill}
+              onPress={() => handlePillPress(pill)}
+              style={({ pressed }) => [
+                { opacity: pressed ? 0.5 : 1 },
+                styles.pill,
+                activeAnalyticsPill === pill && styles.activePill,
+              ]}
+            >
+              <RegularText
+                typography="B1"
+                color={activeAnalyticsPill === pill ? primary : dark}
+              >
+                {pill}
+              </RegularText>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   const handleBack = () => {
     router.back();
   };
@@ -189,6 +218,23 @@ const dashboard = () => {
     setActiveTab(tabName);
     console.log("Active tab: " + tabName);
   };
+
+  const Analytics = () => {
+    const handlePillPress = (pill) => {
+      setActiveAnalyticsPill(pill);
+      console.log("Active pill: " + pill);
+    };
+
+    return (
+      <View>
+        <PillsAnalytics
+          pillItems={analyticsPills}
+          setActiveAdPill={activeAnalyticsPill}
+          handlePillPress={handlePillPress}
+        />
+      </View>
+    )
+  }
 
   const Advertise = () => {
     //Refresh
@@ -430,6 +476,7 @@ const dashboard = () => {
         </View>
         <View style={styles.container}>
           {activeTab === "Advertise" && <Advertise />}
+          {activeTab ==="Analytics" && <Analytics/> }
         </View>
       </View>
     </SafeAreaContainer>
@@ -475,6 +522,9 @@ const styles = StyleSheet.create({
   },
   pillContainer: {
     paddingTop: 18,
+    paddingBottom: 25,
+  },
+  analyticsPillContainer: {
     paddingBottom: 25,
   },
   pill: {
