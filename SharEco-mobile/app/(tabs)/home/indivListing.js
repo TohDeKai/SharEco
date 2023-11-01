@@ -51,6 +51,7 @@ const ItemInformation = () => {
   const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
   const { itemId } = params;
+  const { getUserData } = useAuth();
 
   const handleBack = () => {
     router.back();
@@ -98,6 +99,7 @@ const ItemInformation = () => {
 
   useEffect(() => {
     async function fetchData() {
+      const loggedInUserData = await getUserData();
       try {
         const itemResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
@@ -122,6 +124,18 @@ const ItemInformation = () => {
             if (ratingsResponse.status === 200) {
               setRatings(ratingsResponse.data.data);
             }
+
+            const impressionResponse = await axios.post(
+              `http://${BASE_URL}:4000/api/v1/impression`, {
+                itemId: item.itemId,
+                userId: loggedInUserData.userId,
+            });
+            if (impressionResponse === 201) {
+              console.log("Created impression successfully");
+            } else {
+              console.log("Failed to create impression");
+            }
+
           } else {
             console.log("Failed to retrieve user");
           }
