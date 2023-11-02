@@ -30,7 +30,7 @@ import {
   PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { primary, placeholder, white, yellow, dark, black, secondary, inputbackground } =
+const { primary, placeholder, white, yellow, dark, black, secondary, inputbackground, red } =
   colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
@@ -180,8 +180,26 @@ const Impressions = () => {
         </View>
       </View>
       <View style={{marginTop: 20}}>
-        <RegularText typography="H4">Total Earnings: ${parseFloat(totalEarnings.replace('$', '')).toFixed(2)}</RegularText>
-        <RegularText typography="H4">Item Original Price: ${parseFloat(itemOriginalPrice.replace('$', '')).toFixed(2)}</RegularText>
+        <View style={style.pricingRow}>
+          <RegularText typography="H4">Total Earnings:</RegularText>
+          <RegularText> ${parseFloat(totalEarnings.replace('$', '')).toFixed(2)}</RegularText>
+        </View>
+        
+        <View style={style.pricingRow}>
+          <RegularText typography="H4">Item Original Price: </RegularText>
+          <RegularText> ${parseFloat(itemOriginalPrice.replace('$', '')).toFixed(2)}</RegularText>
+        </View>
+
+        <View style={style.pricingRow}>
+          <RegularText typography="H4">Profit </RegularText>
+          {parseFloat(totalEarnings.replace('$', '') - itemOriginalPrice.replace('$', '')).toFixed(2) >= 0 ? (
+            <RegularText> ${parseFloat(totalEarnings.replace('$', '') - itemOriginalPrice.replace('$', '')).toFixed(2)}</RegularText>
+          ) : (
+            <RegularText style={{ color: red }}> -${
+              Math.abs(parseFloat(totalEarnings.replace('$', '') - itemOriginalPrice.replace('$', '')).toFixed(2))
+            }</RegularText>
+          )}
+        </View>
       </View>
     </View>
   )
@@ -324,4 +342,7 @@ const style = StyleSheet.create({
     textOverflow: "ellipsis",
     maxWidth: viewportWidthInPixels(40),
   },
+  pricingRow: {
+    flexDirection: "row"
+  }
 });
