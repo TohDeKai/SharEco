@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { BarChart } from "react-native-gifted-charts";
 
 //components
@@ -156,6 +156,8 @@ const dashboard = () => {
 
   const [impressions, setImpressions] = useState([]);
   const [distinctImpressions, setDistinctImpressions] = useState([]);
+  const [totalEarnings, setTotalEarnings] = useState([]);
+  const [total, setTotal] = useState("0.00");
 
   useEffect(() => {
     async function fetchImpressions() {
@@ -175,10 +177,32 @@ const dashboard = () => {
         console.log(error.message);
       }
     }
+    async function fetchRevenueData() {
+      try {
+        const revenueResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/rentalEarnings/userId/${userId}`
+        );
+
+        if (revenueResponse.status === 200) {
+          setTotalEarnings(revenueResponse.data.data.totalEarnings);
+
+          const total = revenueResponse.data.data.totalEarnings.reduce((sum, transaction) => {
+            const amount = parseFloat(transaction.rentalFee);
+            return sum + amount;
+          }, 0);
+
+          setTotal(total.toFixed(2));
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
     fetchImpressions(); 
+    fetchRevenueData();
   }, [userId]);
 
-  const barData = [];
+  const impressionBarData = [];
   const today = new Date();
   const dayLabels = [];
 
@@ -201,13 +225,49 @@ const dashboard = () => {
 
     const value = impressionsForDay.length;
 
-    barData.push({ value, label });
+    impressionBarData.push({ value, label });
   }
 
   // Set the label for today as 'Today'.
   const todayIndex = dayLabels.indexOf(today.getDate());
   if (todayIndex !== -1) {
-    barData[todayIndex].label = 'Today';
+    impressionBarData[todayIndex].label = 'Today';
+  }
+
+
+  const revenueBarData = [];
+  const monthLabels = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setMonth(today.getMonth() - i);
+
+    const label = date.toLocaleString('default', { month: 'short' }); // Get the month name.
+    monthLabels.push(label);
+
+    // Calculate the total earnings for the current month.
+    const earningsForMonth = totalEarnings.filter((earning) => {
+      const earningDate = new Date(earning.endDate);
+      return (
+        earningDate.getMonth() === date.getMonth() &&
+        earningDate.getFullYear() === date.getFullYear()
+      );
+    });
+
+    const value = earningsForMonth.reduce((sum, earning) => {
+      const amount = parseFloat(earning.rentalFee);
+      return sum + amount;
+    }, 0);
+
+    revenueBarData.push({ value, label });
+  } 
+
+  console.log(revenueBarData);
+
+  // Set the label for the current month as 'This Month'.
+  const thisMonthIndex = dayLabels.findIndex(label => label === today.toLocaleString('default', { month: 'short' }));
+  if (thisMonthIndex !== -1) {
+    impressionBarData[thisMonthIndex].label = 'This Month';
   }
 
   const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
@@ -289,10 +349,27 @@ const dashboard = () => {
           handlePillPress={handlePillPress}
         />
         {activeAnalyticsPill === "Revenue" && (
-          <View>
-            <RegularText>Revenue</RegularText>
+          <View style={{display:"flex"}}>
+            <RegularText typography="H3" style={{marginBottom: 10}}>Total Rental Income</RegularText>
+            <RegularText style={{marginBottom: 20}}>${total}</RegularText>
+            
+            <RegularText typography="H3" style={{marginBottom: 20}}>6 Month Rental Income Overview</RegularText>
+            <BarChart 
+              data={revenueBarData} 
+              vertical
+              frontColor={primary}
+              isAnimated
+              noOfSections={3}
+              barWidth={22}
+              spacing={22}
+              xAxisThickness={0}
+              initialSpacing={0}
+              yAxisLabelPrefix="$"
+            />
+            
           </View>
         )}
+
         {activeAnalyticsPill === "Impressions" && (
           <View style={{display:"flex"}}>
             <RegularText typography="H3" style={{marginBottom: 20}}>All Time Impressions</RegularText>
@@ -311,7 +388,7 @@ const dashboard = () => {
             <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Impressions</RegularText>
 
             <BarChart 
-              data={barData} 
+              data={impressionBarData} 
               vertical
               frontColor={primary}
               isAnimated

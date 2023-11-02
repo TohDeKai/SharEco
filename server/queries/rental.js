@@ -1018,6 +1018,30 @@ const getRentalEarningsByItemId = async (itemId) => {
   }
 };
 
+//get total earnings by userId
+const getRentalEarningsByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT r."rentalFee", r."endDate", r."itemId"
+      FROM "sharEco-schema"."rental" r
+      WHERE r."lenderId" = $1 AND r."status" = 'COMPLETED'
+
+      `,
+      [userId]
+    );
+    // Apply the 0.95 multiplier to the rentalFee in each row.
+    const earningsWithMultiplier = result.rows.map((row) => ({
+      ...row,
+      rentalFee: (parseFloat(row.rentalFee.replace('$', '')) * 0.95).toFixed(2),
+    }));
+
+    return earningsWithMultiplier;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -1041,4 +1065,5 @@ module.exports = {
   createBlockout,
   deleteBlockout,
   getRentalEarningsByItemId,
+  getRentalEarningsByUserId,
 };

@@ -2662,13 +2662,14 @@ app.get("/api/v1/rentalEarnings/itemId/:itemId", async (req, res) => {
   }
 });
 
-// Get rental earnings by itemId
+// Get rental earnings by userId
 app.get("/api/v1/rentalEarnings/userId/:userId", async (req, res) => {
-  const itemId = req.params.itemId;
+  const userId = req.params.userId;
 
   try {
-    const totalEarnings = await transactiondb.getRentalEarningsByUserId(userId);
-
+    //const totalEarnings = await transactiondb.getRentalEarningsByUserId(userId);  
+    //IN THEORY THIS WOULD WORK, BUT SINCE SOME RENTALS WERE COMPLETED BEFORE TRANSACTIONS WERE IMPLEMENTED, THE NUMBERS DONT TALLY
+    const totalEarnings = await rentaldb.getRentalEarningsByUserId(userId);
     if (totalEarnings) {
       res.status(200).json({
         status: "success",

@@ -352,8 +352,9 @@ const getTransactionsByType = async (type) => {
 const getRentalEarningsByUserId = async (userId) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."transaction" 
-      WHERE "transactionType" = "RENTAL_INCOME" AND "receiverId" = $1`,
+      `SELECT t.*
+      FROM "sharEco-schema"."transaction" t
+      WHERE "transactionType" = 'RENTAL_INCOME' AND "receiverId" = $1`,
       [userId]
     );
     if (result.rows.length > 0) {
