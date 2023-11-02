@@ -11,7 +11,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
 import { Link } from "expo-router";
-import { router } from "expo-router";
+import { BarChart } from "react-native-gifted-charts";
 
 //components
 import { Ionicons } from "@expo/vector-icons";
@@ -25,7 +25,7 @@ import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import AdCard from "../../../components/AdCard";
-const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const { primary, secondary, white, yellow, dark, inputbackground, black } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportHeightInPixels = (percentage) => {
@@ -154,6 +154,62 @@ const dashboard = () => {
     fetchUserAds();
   }, [userId]);
 
+  const [impressions, setImpressions] = useState([]);
+  const [distinctImpressions, setDistinctImpressions] = useState([]);
+
+  useEffect(() => {
+    async function fetchImpressions() {
+      try {
+        const impressionsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/impression/userId/${userId}`
+        );
+        const distinctImpressionsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/impression/distinct/userId/${userId}`
+        );
+        if (impressionsResponse.status === 200) {
+          setImpressions(impressionsResponse.data.data.impressions);
+        }
+        if (distinctImpressionsResponse.status === 200) {
+          setDistinctImpressions(distinctImpressionsResponse.data.data.impressions);        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchImpressions(); 
+  }, [userId]);
+
+  const barData = [];
+  const today = new Date();
+  const dayLabels = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+
+    const label = date.getDate(); // Get the day of the month.
+    dayLabels.push(label);
+
+    // Calculate the number of impressions for the current day.
+    const impressionsForDay = impressions.filter((impression) => {
+      const impressionDate = new Date(impression.impressionDate);
+      return (
+        impressionDate.getDate() === date.getDate() &&
+        impressionDate.getMonth() === date.getMonth() &&
+        impressionDate.getFullYear() === date.getFullYear()
+      );
+    });
+
+    const value = impressionsForDay.length;
+
+    barData.push({ value, label });
+  }
+
+  // Set the label for today as 'Today'.
+  const todayIndex = dayLabels.indexOf(today.getDate());
+  if (todayIndex !== -1) {
+    barData[todayIndex].label = 'Today';
+  }
+
   const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
     return (
       <View style={styles.pillContainer}>
@@ -232,6 +288,52 @@ const dashboard = () => {
           setActiveAdPill={activeAnalyticsPill}
           handlePillPress={handlePillPress}
         />
+        {activeAnalyticsPill === "Revenue" && (
+          <View>
+            <RegularText>Revenue</RegularText>
+          </View>
+        )}
+        {activeAnalyticsPill === "Likes" && (
+          <View>
+            <RegularText>Likes</RegularText>
+          </View>
+        )}
+        {activeAnalyticsPill === "Rentals" && (
+          <View>
+            <RegularText>Rental</RegularText>
+          </View>
+        )}
+        {activeAnalyticsPill === "Impressions" && (
+          <View style={{display:"flex"}}>
+            <RegularText typography="H3" style={{marginBottom: 20}}>All Time Impressions</RegularText>
+            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
+              <View style={{alignItems: "center"}}>
+                <Ionicons name="people" size={18} color={black}/>
+                <RegularText>{impressions && impressions[0] ? impressions.length : 0}</RegularText>
+                <RegularText typography="Subtitle">Impressions</RegularText>
+              </View>
+              <View style={{alignItems: "center"}}>
+                <Ionicons name="person" size={18} color={black}/>
+                <RegularText>{distinctImpressions && distinctImpressions[0] ? distinctImpressions.length : 0}</RegularText>
+                <RegularText typography="Subtitle">Distinct Impressions</RegularText>
+              </View>
+            </View>
+            <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Impressions</RegularText>
+
+            <BarChart 
+              data={barData} 
+              vertical
+              frontColor={primary}
+              isAnimated
+              noOfSections={3}
+              barWidth={22}
+              spacing={22}
+              xAxisThickness={0}
+              initialSpacing={0}
+            />
+        
+          </View>
+        )}
       </View>
     )
   }

@@ -2557,3 +2557,32 @@ app.get("/api/v1/impression/distinct/itemId/:itemId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// Get impressions by userId
+app.get("/api/v1/impression/userId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const impressions = await impressiondb.getImpressionsByUserId(userId);
+
+    if (impressions.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          impressions: impressions,
+        },
+      });
+    } else {
+      // if impressions not found
+      res.status(200).json({
+        status: "success",
+        data: {
+          impressions: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
