@@ -1,9 +1,36 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { Box, Typography, Grid } from "@mui/material";
 import { LineChart } from "@mui/x-charts";
 import MiniStats from "./ministats";
+import axios from "axios";
 
 const GraphBox = ({ title }) => {
+  const [rentalRevenue, setRentalRevenue] = useState();
+  const [adRevenue, setAdRevenue] = useState();
+  const [spotlightRevenue, setSpotlightRevenue] = useState();
+
+  useEffect(() => {
+    async function fetchRevenueData() {
+      try {
+        // Fetch data for number of users
+        const revenueDataResponse = await axios.get(
+          "http://localhost:4000/api/v1/revenue"
+        );
+        setRentalRevenue(revenueDataResponse.data.data.rentalRevenue);
+        setAdRevenue(revenueDataResponse.data.data.adRevenue);
+        setSpotlightRevenue(revenueDataResponse.data.data.spotlightRevenue);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+
+    fetchRevenueData();
+  }, [
+    rentalRevenue,
+    adRevenue,
+    spotlightRevenue,
+  ]);
+
   return (
     <Box width="100%" sx={{ marginTop: 2 }}>
       <Box display="flex" justifyContent="space-between">
@@ -53,17 +80,17 @@ const GraphBox = ({ title }) => {
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={4}>
                     <Box>
-                      <MiniStats subtitle="Rental fees" number="456.33" />
+                      <MiniStats subtitle="Rental fees" number={rentalRevenue} />
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <Box>
-                      <MiniStats subtitle="Ad revenue" number="3100.10" />
+                      <MiniStats subtitle="Ad revenue" number={adRevenue} />
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <Box>
-                      <MiniStats subtitle="Spotlight" number="291.02" />
+                      <MiniStats subtitle="Spotlight" number={spotlightRevenue} />
                     </Box>
                   </Grid>
                 </Grid>

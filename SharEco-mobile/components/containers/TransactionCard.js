@@ -61,7 +61,7 @@ const TransactionCard = ({ transaction, isIncoming }) => {
 
   let iconName;
   switch (transaction.transactionType) {
-    case "ADS":
+    case "ADS" || "SPOTLIGHT":
       iconName = "briefcase";
       break;
     case "TRANSFER":

@@ -368,6 +368,31 @@ const getRentalEarningsByUserId = async (userId) => {
   }
 }
 
+const getRevenueData = async () => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        SUM(CASE WHEN "transactionType" = 'RENTAL_PAYMENT' THEN ("amount"::numeric) ELSE 0 END) -
+        SUM(CASE WHEN "transactionType" IN ('RENTAL_INCOME', 'REFUND') THEN ("amount"::numeric) ELSE 0 END) AS revenue,
+        SUM(CASE WHEN "transactionType" = 'ADS' THEN ("amount"::numeric) ELSE 0 END) AS ads,
+        SUM(CASE WHEN "transactionType" = 'SPOTLIGHT' THEN ("amount"::numeric) ELSE 0 END) AS spotlight
+      FROM "sharEco-schema"."transaction"
+    `);
+
+    const revenue = result.rows[0].revenue;
+    const ads = result.rows[0].ads;
+    const spotlight = result.rows[0].spotlight;
+
+    return {
+      revenue,
+      ads,
+      spotlight,
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createTransaction,
   getTransactionsByReceiverId,
@@ -379,4 +404,5 @@ module.exports = {
   approveWithdrawalRequest,
   getTransactionsByType,
   getRentalEarningsByUserId,
+  getRevenueData
 };
