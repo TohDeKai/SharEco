@@ -120,7 +120,7 @@ const biddingPeriod = () => {
 const dashboard = () => {
   const { getUserData } = useAuth();
   const adPills = ["Pending", "Active", "Past", "Rejected", "Cancelled"];
-  const analyticsPills = ["Revenue", "Likes", "Rentals", "Impressions"]
+  const analyticsPills = ["Revenue", "Impressions"]
   const [activeAdPill, setActiveAdPill] = useState("Pending");
   const [activeAnalyticsPill, setActiveAnalyticsPill] = useState("Revenue");
   const [userAds, setUserAds] = useState([]);
@@ -291,16 +291,6 @@ const dashboard = () => {
         {activeAnalyticsPill === "Revenue" && (
           <View>
             <RegularText>Revenue</RegularText>
-          </View>
-        )}
-        {activeAnalyticsPill === "Likes" && (
-          <View>
-            <RegularText>Likes</RegularText>
-          </View>
-        )}
-        {activeAnalyticsPill === "Rentals" && (
-          <View>
-            <RegularText>Rental</RegularText>
           </View>
         )}
         {activeAnalyticsPill === "Impressions" && (

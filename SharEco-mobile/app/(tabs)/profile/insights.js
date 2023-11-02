@@ -30,7 +30,7 @@ import {
   PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { primary, placeholder, white, yellow, dark, black, inputbackground } =
+const { primary, placeholder, white, yellow, dark, black, secondary, inputbackground } =
   colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
@@ -46,14 +46,15 @@ const viewportWidthInPixels = (percentage) => {
 };
 
 const Impressions = () => {
-  const [listingItem, setListingItem] = useState({});
   const params = useLocalSearchParams();
   const { itemId } = params;
   const [impressions, setImpressions] = useState([]);
   const [distinctImpressions, setDistinctImpressions] = useState([]);
+  const [totalEarnings, setTotalEarnings] = useState("$0.00");
+  const [itemOriginalPrice, setItemOriginalPrice] = useState("0.00");
 
   useEffect(() => {
-    async function fetchImpressions() {
+    async function fetchInsights() {
       try {
         const impressionsResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/impression/itemId/${itemId}`
@@ -61,16 +62,30 @@ const Impressions = () => {
         const distinctImpressionsResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/impression/distinct/itemId/${itemId}`
         );
+        const totalEarningsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/rentalEarnings/itemId/${itemId}`
+        )
+        const itemResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+        );
+        if (itemResponse.status === 200) {
+          const item = itemResponse.data.data.item;
+          setItemOriginalPrice(item.itemOriginalPrice);
+        }
         if (impressionsResponse.status === 200) {
           setImpressions(impressionsResponse.data.data.impressions);
         }
         if (distinctImpressionsResponse.status === 200) {
-          setDistinctImpressions(distinctImpressionsResponse.data.data.impressions);        }
+          setDistinctImpressions(distinctImpressionsResponse.data.data.impressions);  
+        }
+        if (totalEarningsResponse.status === 200) {
+          setTotalEarnings(totalEarningsResponse.data.data.totalEarnings[0].totalEarnings);
+        }
       } catch (error) {
         console.log(error.message);
       }
     }
-    fetchImpressions(); 
+    fetchInsights(); 
   }, []);
 
   const barData = [];
@@ -105,6 +120,17 @@ const Impressions = () => {
     barData[todayIndex].label = 'Today';
   }
 
+  const percentageRecouped = ((parseFloat(totalEarnings.replace('$', '')) / parseFloat(itemOriginalPrice.replace('$', ''))) * 100).toFixed(2);
+  const fullPieData = [
+    {value: 1, color: secondary}
+  ]
+  const pieData = percentageRecouped < 100 ? 
+    [
+      { value: parseFloat(percentageRecouped), color: primary, focus: true },
+      { value: 100 - parseFloat(percentageRecouped), color: placeholder }
+    ] 
+    : fullPieData;
+
   return (
     <View style={{display:"flex"}}>
       <RegularText typography="H3" style={{marginBottom: 20}}>All Time Impressions</RegularText>
@@ -120,8 +146,8 @@ const Impressions = () => {
           <RegularText typography="Subtitle">Distinct Impressions</RegularText>
         </View>
       </View>
-      <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Impressions</RegularText>
 
+      <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Impressions</RegularText>
       <BarChart 
         data={barData} 
         vertical
@@ -133,7 +159,30 @@ const Impressions = () => {
         xAxisThickness={0}
         initialSpacing={0}
       />
-  
+
+      <RegularText typography="H3" style={{marginTop: 50, marginBottom: 20}}>Revenue</RegularText>      
+
+      <View style={{alignItems:"center", justifyContent:"center"}}>
+        <PieChart
+          donut
+          radius={140}
+          innerRadius={100}
+          textSize={20} 
+          data={pieData}
+        />
+        <View style={{alignItems:"center", justifyContent:"center", position: 'absolute', top: "140px"}}>
+          <RegularText
+            typography="H3"
+          >
+            {parseFloat(percentageRecouped).toFixed(0)}%
+          </RegularText>
+          <RegularText>Cost Recouped</RegularText>
+        </View>
+      </View>
+      <View style={{marginTop: 20}}>
+        <RegularText typography="H4">Total Earnings: ${parseFloat(totalEarnings.replace('$', '')).toFixed(2)}</RegularText>
+        <RegularText typography="H4">Item Original Price: ${parseFloat(itemOriginalPrice.replace('$', '')).toFixed(2)}</RegularText>
+      </View>
     </View>
   )
 }
@@ -144,10 +193,6 @@ const ItemInformation = () => {
   const [user, setUser] = useState("");
   const params = useLocalSearchParams();
   const { itemId } = params;
-  //setListingItemId({itemId});
-  const handleBack = () => {
-    router.back();
-  };
 
   useEffect(() => {
     async function fetchUserData() {
@@ -157,8 +202,6 @@ const ItemInformation = () => {
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
         );
-        console.log("get");
-        console.log(response.status);
         if (response.status === 200) {
           const item = response.data.data.item;
           setListingItem(item);
@@ -185,14 +228,6 @@ const ItemInformation = () => {
     usersLikedCount,
     userId,
   } = listingItem;
-
-  console.log(collectionLocations);
-  const formattedLocations = collectionLocations
-    ? collectionLocations.join(", ")
-    : collectionLocations;
-  console.log(formattedLocations);
-
-  // const collectionLocationValues = Object.values(collectionLocations);
 
   return (
     <View style={style.listingDetails}>
@@ -243,10 +278,10 @@ const insights = () => {
   return (
     <SafeAreaContainer>
       <Header title="Insights" action="back" onPress={handleBack}/>
-      <View style={style.content}>
-        <ItemInformation />
+      <ScrollView style={style.content}>
+        <ItemInformation/>
         <Impressions/>
-      </View>
+      </ScrollView>
     </SafeAreaContainer>
   );
 };
@@ -274,7 +309,8 @@ const style = StyleSheet.create({
     flex: 1,
     alignSelf: "center",
     width: viewportWidthInPixels(85),
-    top: 20,
+    marginTop: 20,
+    marginBottom: 20,
   },
   listingDetails: {
     height: 80,
