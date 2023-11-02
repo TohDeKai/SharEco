@@ -10,8 +10,8 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
-import { Link } from "expo-router";
-import { router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
+import { BarChart } from "react-native-gifted-charts";
 
 //components
 import { Ionicons } from "@expo/vector-icons";
@@ -25,7 +25,7 @@ import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import AdCard from "../../../components/AdCard";
-const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const { primary, secondary, white, yellow, dark, inputbackground, black } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportHeightInPixels = (percentage) => {
@@ -120,7 +120,9 @@ const biddingPeriod = () => {
 const dashboard = () => {
   const { getUserData } = useAuth();
   const adPills = ["Pending", "Active", "Past", "Rejected", "Cancelled"];
+  const analyticsPills = ["Finances", "Impressions", "Likes"]
   const [activeAdPill, setActiveAdPill] = useState("Pending");
+  const [activeAnalyticsPill, setActiveAnalyticsPill] = useState("Finances");
   const [userAds, setUserAds] = useState([]);
   const [userId, setUserId] = useState();
   const [refreshing, setRefreshing] = useState(false);
@@ -152,6 +154,169 @@ const dashboard = () => {
     fetchUserAds();
   }, [userId]);
 
+  const [impressions, setImpressions] = useState([]);
+  const [distinctImpressions, setDistinctImpressions] = useState([]);
+  const [totalEarnings, setTotalEarnings] = useState([]);
+  const [total, setTotal] = useState("0.00");
+  const [wishlist, setWishlist] = useState([]);
+
+  useEffect(() => {
+    async function fetchImpressions() {
+      try {
+        const impressionsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/impression/userId/${userId}`
+        );
+        const distinctImpressionsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/impression/distinct/userId/${userId}`
+        );
+        if (impressionsResponse.status === 200) {
+          setImpressions(impressionsResponse.data.data.impressions);
+        }
+        if (distinctImpressionsResponse.status === 200) {
+          setDistinctImpressions(distinctImpressionsResponse.data.data.impressions);        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    async function fetchRevenueData() {
+      try {
+        const revenueResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/rentalEarnings/userId/${userId}`
+        );
+
+        if (revenueResponse.status === 200) {
+          setTotalEarnings(revenueResponse.data.data.totalEarnings);
+
+          const total = revenueResponse.data.data.totalEarnings.reduce((sum, transaction) => {
+            const amount = parseFloat(transaction.rentalFee);
+            return sum + amount;
+          }, 0);
+
+          setTotal(total.toFixed(2));
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    async function fetchWishlistData() {
+      try {
+        const wishlistResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/likes/userId/${userId}`
+        );
+        if (wishlistResponse.status === 200) {
+          setWishlist(wishlistResponse.data.data.likes);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
+    fetchImpressions(); 
+    fetchRevenueData();
+    fetchWishlistData();
+  }, [userId]);
+
+  //POPULATES IMPRESSIONS GRAPH
+  const impressionBarData = [];
+  const today = new Date();
+  const dayLabels = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+
+    const label = date.getDate(); // Get the day of the month.
+    dayLabels.push(label);
+
+    // Calculate the number of impressions for the current day.
+    const impressionsForDay = impressions.filter((impression) => {
+      const impressionDate = new Date(impression.impressionDate);
+      return (
+        impressionDate.getDate() === date.getDate() &&
+        impressionDate.getMonth() === date.getMonth() &&
+        impressionDate.getFullYear() === date.getFullYear()
+      );
+    });
+
+    const value = impressionsForDay.length;
+
+    impressionBarData.push({ value, label });
+  }
+
+  // Set the label for today as 'Today'.
+  const todayIndex = dayLabels.indexOf(today.getDate());
+  if (todayIndex !== -1) {
+    impressionBarData[todayIndex].label = 'Today';
+  }
+
+  //POPULATES REVENUE GRAPH
+  const revenueBarData = [];
+  const monthLabels = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setMonth(today.getMonth() - i);
+
+    const label = date.toLocaleString('default', { month: 'short' }); // Get the month name.
+    monthLabels.push(label);
+
+    // Calculate the total earnings for the current month.
+    const earningsForMonth = totalEarnings.filter((earning) => {
+      const earningDate = new Date(earning.endDate);
+      return (
+        earningDate.getMonth() === date.getMonth() &&
+        earningDate.getFullYear() === date.getFullYear()
+      );
+    });
+
+    const value = earningsForMonth.reduce((sum, earning) => {
+      const amount = parseFloat(earning.rentalFee);
+      return sum + amount;
+    }, 0);
+
+    revenueBarData.push({ value, label });
+  } 
+
+  // Set the label for the current month as 'This Month'.
+  const thisMonthIndex = dayLabels.findIndex(label => label === today.toLocaleString('default', { month: 'short' }));
+  if (thisMonthIndex !== -1) {
+    impressionBarData[thisMonthIndex].label = 'This Month';
+  }
+
+  //POPULATES LIKES GRAPH
+  const likeBarData = [];
+  const likeDayLabels = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+
+    const label = date.getDate(); // Get the day of the month.
+    likeDayLabels.push(label);
+
+    // Calculate the number of likes for the current day.
+    const likesForDay = wishlist.filter((wishlist) => {
+      const likesDate = new Date(wishlist.wishlistDate);
+      return (
+        likesDate.getDate() === date.getDate() &&
+        likesDate.getMonth() === date.getMonth() &&
+        likesDate.getFullYear() === date.getFullYear()
+      );
+    });
+
+    const value = likesForDay.length;
+
+    likeBarData.push({ value, label });
+  }
+
+  // Set the label for today as 'Today'.
+  const likeTodayIndex = likeDayLabels.indexOf(today.getDate());
+  if (likeTodayIndex !== -1) {
+    likeBarData[todayIndex].label = 'Today';
+  }
+
+  
+
   const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
     return (
       <View style={styles.pillContainer}>
@@ -179,6 +344,33 @@ const dashboard = () => {
     );
   };
 
+  const PillsAnalytics = ({ pillItems, setActiveAnalyticsPill, handlePillPress }) => {
+    return (
+      <View style={styles.analyticsPillContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {pillItems.map((pill) => (
+            <Pressable
+              key={pill}
+              onPress={() => handlePillPress(pill)}
+              style={({ pressed }) => [
+                { opacity: pressed ? 0.5 : 1 },
+                styles.pill,
+                activeAnalyticsPill === pill && styles.activePill,
+              ]}
+            >
+              <RegularText
+                typography="B1"
+                color={activeAnalyticsPill === pill ? primary : dark}
+              >
+                {pill}
+              </RegularText>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   const handleBack = () => {
     router.back();
   };
@@ -189,6 +381,109 @@ const dashboard = () => {
     setActiveTab(tabName);
     console.log("Active tab: " + tabName);
   };
+
+  const Analytics = () => {
+    const handlePillPress = (pill) => {
+      setActiveAnalyticsPill(pill);
+      console.log("Active pill: " + pill);
+    };
+
+    return (
+      <View>
+        <PillsAnalytics
+          pillItems={analyticsPills}
+          setActiveAdPill={activeAnalyticsPill}
+          handlePillPress={handlePillPress}
+        />
+        {activeAnalyticsPill === "Finances" && (
+          <View style={{display:"flex"}}>
+            <RegularText typography="H3" style={{marginBottom: 10}}>Total Rental Income</RegularText>
+            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
+              <View style={{justifyContent: "center", alignItems: "center"}}>
+                <Ionicons name="cash" size={18} color={primary}/>
+                <RegularText>${total}</RegularText>
+                <RegularText typography="Subtitle">Rental Income</RegularText>
+              </View>
+            </View>            
+            <RegularText typography="H3" style={{marginBottom: 20}}>6 Month Rental Income Overview</RegularText>
+            <BarChart 
+              data={revenueBarData} 
+              vertical
+              frontColor={primary}
+              isAnimated
+              noOfSections={3}
+              barWidth={22}
+              spacing={22}
+              xAxisThickness={0}
+              initialSpacing={0}
+              yAxisLabelPrefix="$"
+            />
+            
+          </View>
+        )}
+
+        {activeAnalyticsPill === "Impressions" && (
+          <View style={{display:"flex"}}>
+            <RegularText typography="H3" style={{marginBottom: 20}}>All Time Impressions</RegularText>
+            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
+              <View style={{alignItems: "center"}}>
+                <Ionicons name="people" size={18} color={primary}/>
+                <RegularText>{impressions && impressions[0] ? impressions.length : 0}</RegularText>
+                <RegularText typography="Subtitle">Impressions</RegularText>
+              </View>
+              <View style={{alignItems: "center"}}>
+                <Ionicons name="person" size={18} color={primary}/>
+                <RegularText>{distinctImpressions && distinctImpressions[0] ? distinctImpressions.length : 0}</RegularText>
+                <RegularText typography="Subtitle">Distinct Impressions</RegularText>
+              </View>
+            </View>
+            <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Impressions</RegularText>
+
+            <BarChart 
+              data={impressionBarData} 
+              vertical
+              frontColor={primary}
+              isAnimated
+              noOfSections={3}
+              barWidth={22}
+              spacing={22}
+              xAxisThickness={0}
+              initialSpacing={0}
+            />
+        
+          </View>
+        )}
+
+        {activeAnalyticsPill === "Likes" && (
+          <View style={{display:"flex"}}>
+            <RegularText typography="H3" style={{marginBottom: 20}}>All Time Likes</RegularText>
+            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
+              <View style={{justifyContent: "center", alignItems: "center"}}>
+                <Ionicons name="heart" size={18} color={primary}/>
+                <RegularText>{wishlist && wishlist[0] ? wishlist.length : 0}</RegularText>
+                <RegularText typography="Subtitle">Likes</RegularText>
+              </View>
+            </View>
+
+            <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Likes</RegularText>
+
+            <BarChart 
+              data={likeBarData} 
+              vertical
+              frontColor={primary}
+              isAnimated
+              noOfSections={3}
+              barWidth={22}
+              spacing={22}
+              xAxisThickness={0}
+              initialSpacing={0}
+            />
+        
+          </View>
+        )}
+      </View>
+    )
+  }
 
   const Advertise = () => {
     //Refresh
@@ -430,6 +725,7 @@ const dashboard = () => {
         </View>
         <View style={styles.container}>
           {activeTab === "Advertise" && <Advertise />}
+          {activeTab ==="Analytics" && <Analytics/> }
         </View>
       </View>
     </SafeAreaContainer>
@@ -477,12 +773,15 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 25,
   },
+  analyticsPillContainer: {
+    paddingBottom: 25,
+  },
   pill: {
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
     backgroundColor: inputbackground,
-    marginLeft: 13,
+    marginRight: 13,
   },
   activePill: {
     backgroundColor: white,

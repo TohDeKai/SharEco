@@ -995,6 +995,53 @@ const deleteBlockout = async (blockoutId) => {
   }
 };
 
+//get total earnings by itemId
+const getRentalEarningsByItemId = async (itemId) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT "itemId", (SUM("rentalFee") * 0.95) AS "totalEarnings"
+      FROM "sharEco-schema"."rental"
+      WHERE "itemId" = $1 AND "status" = 'COMPLETED'
+      GROUP BY "itemId";
+      `,
+      [itemId]
+    );
+    if (result.rows.length > 0) {
+      return result.rows;
+    } else {
+      // If no rows found, return "$0"
+      return [{ itemId, totalEarnings: "$0" }];
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+//get total earnings by userId
+const getRentalEarningsByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT r."rentalFee", r."endDate", r."itemId"
+      FROM "sharEco-schema"."rental" r
+      WHERE r."lenderId" = $1 AND r."status" = 'COMPLETED'
+
+      `,
+      [userId]
+    );
+    // Apply the 0.95 multiplier to the rentalFee in each row.
+    const earningsWithMultiplier = result.rows.map((row) => ({
+      ...row,
+      rentalFee: (parseFloat(row.rentalFee.replace('$', '')) * 0.95).toFixed(2),
+    }));
+
+    return earningsWithMultiplier;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -1017,4 +1064,6 @@ module.exports = {
   updateRentalUponBorrowerReview,
   createBlockout,
   deleteBlockout,
+  getRentalEarningsByItemId,
+  getRentalEarningsByUserId,
 };
