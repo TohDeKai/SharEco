@@ -130,7 +130,7 @@ const ItemInformation = () => {
                 itemId: item.itemId,
                 userId: loggedInUserData.userId,
             });
-            if (impressionResponse === 201) {
+            if (impressionResponse.status === 201) {
               console.log("Created impression successfully");
             } else {
               console.log("Failed to create impression");

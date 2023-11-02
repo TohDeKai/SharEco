@@ -13,6 +13,7 @@ import { useAuth } from "../../../context/auth";
 import { Link, useLocalSearchParams } from "expo-router";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { BarChart, LineChart, PieChart } from "react-native-gifted-charts";
 
 //components
 import { Rating } from "react-native-stock-star-rating";
@@ -72,13 +73,67 @@ const Impressions = () => {
     fetchImpressions(); 
   }, []);
 
-  console.log("DEBUG " + impressions);
-  console.log("DEBUG " + distinctImpressions);
+  const barData = [];
+  const today = new Date();
+  const dayLabels = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+
+    const label = date.getDate(); // Get the day of the month.
+    dayLabels.push(label);
+
+    // Calculate the number of impressions for the current day.
+    const impressionsForDay = impressions.filter((impression) => {
+      const impressionDate = new Date(impression.impressionDate);
+      return (
+        impressionDate.getDate() === date.getDate() &&
+        impressionDate.getMonth() === date.getMonth() &&
+        impressionDate.getFullYear() === date.getFullYear()
+      );
+    });
+
+    const value = impressionsForDay.length;
+
+    barData.push({ value, label });
+  }
+
+  // Set the label for today as 'Today'.
+  const todayIndex = dayLabels.indexOf(today.getDate());
+  if (todayIndex !== -1) {
+    barData[todayIndex].label = 'Today';
+  }
 
   return (
-    <View>
-      <RegularText>Impressions: {impressions && impressions[0] ? impressions.length : 0}</RegularText>
-      <RegularText>Distinct Impressions: {distinctImpressions && distinctImpressions[0] ? distinctImpressions.length : 0}</RegularText>
+    <View style={{display:"flex"}}>
+      <RegularText typography="H3" style={{marginBottom: 20}}>All Time Impressions</RegularText>
+      <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
+        <View style={{alignItems: "center"}}>
+          <Ionicons name="people" size={18} color={black}/>
+          <RegularText>{impressions && impressions[0] ? impressions.length : 0}</RegularText>
+          <RegularText typography="Subtitle">Impressions</RegularText>
+        </View>
+        <View style={{alignItems: "center"}}>
+          <Ionicons name="person" size={18} color={black}/>
+          <RegularText>{distinctImpressions && distinctImpressions[0] ? distinctImpressions.length : 0}</RegularText>
+          <RegularText typography="Subtitle">Distinct Impressions</RegularText>
+        </View>
+      </View>
+      <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Impressions</RegularText>
+
+      <BarChart 
+        data={barData} 
+        vertical
+        frontColor={primary}
+        isAnimated
+        noOfSections={3}
+        barWidth={22}
+        spacing={22}
+        xAxisThickness={0}
+        initialSpacing={0}
+      />
+  
     </View>
   )
 }
@@ -199,6 +254,8 @@ const insights = () => {
 export default insights;
 
 const windowWidth = Dimensions.get("window").width;
+
+
 
 const style = StyleSheet.create({
   imgContainer: {
