@@ -2685,3 +2685,32 @@ app.get("/api/v1/rentalEarnings/userId/:userId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// Get likes by userId
+app.get("/api/v1/likes/userId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const likes = await wishlistdb.getLikesByUserId(userId);
+
+    if (likes.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          likes: likes,
+        },
+      });
+    } else {
+      // if likes not found
+      res.status(200).json({
+        status: "success",
+        data: {
+          likes: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});

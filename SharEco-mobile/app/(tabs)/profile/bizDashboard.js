@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { BarChart } from "react-native-gifted-charts";
 
 //components
@@ -120,9 +120,9 @@ const biddingPeriod = () => {
 const dashboard = () => {
   const { getUserData } = useAuth();
   const adPills = ["Pending", "Active", "Past", "Rejected", "Cancelled"];
-  const analyticsPills = ["Revenue", "Impressions"]
+  const analyticsPills = ["Finances", "Impressions", "Likes"]
   const [activeAdPill, setActiveAdPill] = useState("Pending");
-  const [activeAnalyticsPill, setActiveAnalyticsPill] = useState("Revenue");
+  const [activeAnalyticsPill, setActiveAnalyticsPill] = useState("Finances");
   const [userAds, setUserAds] = useState([]);
   const [userId, setUserId] = useState();
   const [refreshing, setRefreshing] = useState(false);
@@ -158,6 +158,7 @@ const dashboard = () => {
   const [distinctImpressions, setDistinctImpressions] = useState([]);
   const [totalEarnings, setTotalEarnings] = useState([]);
   const [total, setTotal] = useState("0.00");
+  const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
     async function fetchImpressions() {
@@ -197,11 +198,25 @@ const dashboard = () => {
         console.log(error.message);
       }
     }
+    async function fetchWishlistData() {
+      try {
+        const wishlistResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/likes/userId/${userId}`
+        );
+        if (wishlistResponse.status === 200) {
+          setWishlist(wishlistResponse.data.data.likes);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
 
     fetchImpressions(); 
     fetchRevenueData();
+    fetchWishlistData();
   }, [userId]);
 
+  //POPULATES IMPRESSIONS GRAPH
   const impressionBarData = [];
   const today = new Date();
   const dayLabels = [];
@@ -234,7 +249,7 @@ const dashboard = () => {
     impressionBarData[todayIndex].label = 'Today';
   }
 
-
+  //POPULATES REVENUE GRAPH
   const revenueBarData = [];
   const monthLabels = [];
 
@@ -262,13 +277,45 @@ const dashboard = () => {
     revenueBarData.push({ value, label });
   } 
 
-  console.log(revenueBarData);
-
   // Set the label for the current month as 'This Month'.
   const thisMonthIndex = dayLabels.findIndex(label => label === today.toLocaleString('default', { month: 'short' }));
   if (thisMonthIndex !== -1) {
     impressionBarData[thisMonthIndex].label = 'This Month';
   }
+
+  //POPULATES LIKES GRAPH
+  const likeBarData = [];
+  const likeDayLabels = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+
+    const label = date.getDate(); // Get the day of the month.
+    likeDayLabels.push(label);
+
+    // Calculate the number of likes for the current day.
+    const likesForDay = wishlist.filter((wishlist) => {
+      const likesDate = new Date(wishlist.wishlistDate);
+      return (
+        likesDate.getDate() === date.getDate() &&
+        likesDate.getMonth() === date.getMonth() &&
+        likesDate.getFullYear() === date.getFullYear()
+      );
+    });
+
+    const value = likesForDay.length;
+
+    likeBarData.push({ value, label });
+  }
+
+  // Set the label for today as 'Today'.
+  const likeTodayIndex = likeDayLabels.indexOf(today.getDate());
+  if (likeTodayIndex !== -1) {
+    likeBarData[todayIndex].label = 'Today';
+  }
+
+  
 
   const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
     return (
@@ -348,11 +395,16 @@ const dashboard = () => {
           setActiveAdPill={activeAnalyticsPill}
           handlePillPress={handlePillPress}
         />
-        {activeAnalyticsPill === "Revenue" && (
+        {activeAnalyticsPill === "Finances" && (
           <View style={{display:"flex"}}>
             <RegularText typography="H3" style={{marginBottom: 10}}>Total Rental Income</RegularText>
-            <RegularText style={{marginBottom: 20}}>${total}</RegularText>
-            
+            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
+              <View style={{justifyContent: "center", alignItems: "center"}}>
+                <Ionicons name="cash" size={18} color={primary}/>
+                <RegularText>${total}</RegularText>
+                <RegularText typography="Subtitle">Rental Income</RegularText>
+              </View>
+            </View>            
             <RegularText typography="H3" style={{marginBottom: 20}}>6 Month Rental Income Overview</RegularText>
             <BarChart 
               data={revenueBarData} 
@@ -375,12 +427,12 @@ const dashboard = () => {
             <RegularText typography="H3" style={{marginBottom: 20}}>All Time Impressions</RegularText>
             <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
               <View style={{alignItems: "center"}}>
-                <Ionicons name="people" size={18} color={black}/>
+                <Ionicons name="people" size={18} color={primary}/>
                 <RegularText>{impressions && impressions[0] ? impressions.length : 0}</RegularText>
                 <RegularText typography="Subtitle">Impressions</RegularText>
               </View>
               <View style={{alignItems: "center"}}>
-                <Ionicons name="person" size={18} color={black}/>
+                <Ionicons name="person" size={18} color={primary}/>
                 <RegularText>{distinctImpressions && distinctImpressions[0] ? distinctImpressions.length : 0}</RegularText>
                 <RegularText typography="Subtitle">Distinct Impressions</RegularText>
               </View>
@@ -389,6 +441,34 @@ const dashboard = () => {
 
             <BarChart 
               data={impressionBarData} 
+              vertical
+              frontColor={primary}
+              isAnimated
+              noOfSections={3}
+              barWidth={22}
+              spacing={22}
+              xAxisThickness={0}
+              initialSpacing={0}
+            />
+        
+          </View>
+        )}
+
+        {activeAnalyticsPill === "Likes" && (
+          <View style={{display:"flex"}}>
+            <RegularText typography="H3" style={{marginBottom: 20}}>All Time Likes</RegularText>
+            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
+              <View style={{justifyContent: "center", alignItems: "center"}}>
+                <Ionicons name="heart" size={18} color={primary}/>
+                <RegularText>{wishlist && wishlist[0] ? wishlist.length : 0}</RegularText>
+                <RegularText typography="Subtitle">Likes</RegularText>
+              </View>
+            </View>
+
+            <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Likes</RegularText>
+
+            <BarChart 
+              data={likeBarData} 
               vertical
               frontColor={primary}
               isAnimated
