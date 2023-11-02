@@ -701,7 +701,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 20,
     backgroundColor: inputbackground,
-    marginLeft: 13,
+    marginRight: 13,
   },
   activePill: {
     backgroundColor: white,
