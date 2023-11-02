@@ -126,7 +126,7 @@ const Impressions = () => {
   ]
   const pieData = percentageRecouped < 100 ? 
     [
-      { value: parseFloat(percentageRecouped), color: primary, focus: true },
+      { value: parseFloat(percentageRecouped), color: primary, focused: true },
       { value: 100 - parseFloat(percentageRecouped), color: placeholder }
     ] 
     : fullPieData;
@@ -169,8 +169,9 @@ const Impressions = () => {
           innerRadius={100}
           textSize={20} 
           data={pieData}
+          sectionAutoFocus
         />
-        <View style={{alignItems:"center", justifyContent:"center", position: 'absolute', top: "140px"}}>
+        <View style={{alignItems:"center", justifyContent:"center", position: 'absolute', top: 140}}>
           <RegularText
             typography="H3"
           >
@@ -184,22 +185,29 @@ const Impressions = () => {
           <RegularText typography="H4">Total Earnings:</RegularText>
           <RegularText> ${parseFloat(totalEarnings.replace('$', '')).toFixed(2)}</RegularText>
         </View>
-        
+
         <View style={style.pricingRow}>
           <RegularText typography="H4">Item Original Price: </RegularText>
           <RegularText> ${parseFloat(itemOriginalPrice.replace('$', '')).toFixed(2)}</RegularText>
         </View>
 
         <View style={style.pricingRow}>
-          <RegularText typography="H4">Profit </RegularText>
-          {parseFloat(totalEarnings.replace('$', '') - itemOriginalPrice.replace('$', '')).toFixed(2) >= 0 ? (
-            <RegularText> ${parseFloat(totalEarnings.replace('$', '') - itemOriginalPrice.replace('$', '')).toFixed(2)}</RegularText>
+          <RegularText typography="H4">Profit: </RegularText>
+          {parseFloat(totalEarnings.replace('$', '')) - parseFloat(itemOriginalPrice.replace('$', '')) >= 0 ? (
+            <RegularText> ${(
+              parseFloat(totalEarnings.replace('$', '')) - parseFloat(itemOriginalPrice.replace('$', ''))
+            ).toFixed(2)}</RegularText>
           ) : (
-            <RegularText style={{ color: red }}> -${
-              Math.abs(parseFloat(totalEarnings.replace('$', '') - itemOriginalPrice.replace('$', '')).toFixed(2))
-            }</RegularText>
+            <RegularText style={{ color: parseFloat(totalEarnings.replace('$', '')) - parseFloat(itemOriginalPrice.replace('$', '')) < 0 ? 'red' : 'black' }}>
+              -${(
+                Math.abs(
+                  parseFloat(totalEarnings.replace('$', '')) - parseFloat(itemOriginalPrice.replace('$', ''))
+                ).toFixed(2)
+              )}
+            </RegularText>
           )}
         </View>
+
       </View>
     </View>
   )
