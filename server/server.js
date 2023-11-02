@@ -2479,7 +2479,7 @@ app.get("/api/v1/rankedWeekAds", async (req, res) => {
 });
 
 
-/**********************          Impressions Routes             **************************/
+/**********************          Insights and Dashboard Routes             **************************/
 // create impression
 app.post("/api/v1/impression", async (req, res) => {
   const { itemId, userId } = req.body;
@@ -2580,6 +2580,104 @@ app.get("/api/v1/impression/userId/:userId", async (req, res) => {
           impressions: [],
         },
       });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get distinct impressions by userId
+app.get("/api/v1/impression/distinct/userId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const impressions = await impressiondb.getDistinctImpressionsByUserId(userId);
+
+    if (impressions.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          impressions: impressions,
+        },
+      });
+    } else {
+      // if impressions not found
+      res.status(200).json({
+        status: "success",
+        data: {
+          impressions: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get rental earnings by itemId
+app.get("/api/v1/rentalEarnings/itemId/:itemId", async (req, res) => {
+  const itemId = req.params.itemId;
+
+  try {
+    const totalEarnings = await rentaldb.getRentalEarningsByItemId(itemId);
+
+    if (totalEarnings) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          totalEarnings: totalEarnings,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Total earnings not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get rental earnings by itemId
+app.get("/api/v1/rentalEarnings/itemId/:itemId", async (req, res) => {
+  const itemId = req.params.itemId;
+
+  try {
+    const totalEarnings = await rentaldb.getRentalEarningsByItemId(itemId);
+
+    if (totalEarnings) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          totalEarnings: totalEarnings,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Total earnings not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get rental earnings by itemId
+app.get("/api/v1/rentalEarnings/userId/:userId", async (req, res) => {
+  const itemId = req.params.itemId;
+
+  try {
+    const totalEarnings = await transactiondb.getRentalEarningsByUserId(userId);
+
+    if (totalEarnings) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          totalEarnings: totalEarnings,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Total earnings not found" });
     }
   } catch (error) {
     console.log(error);

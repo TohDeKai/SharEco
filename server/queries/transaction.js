@@ -349,6 +349,24 @@ const getTransactionsByType = async (type) => {
   }
 };
 
+const getRentalEarningsByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."transaction" 
+      WHERE "transactionType" = "RENTAL_INCOME" AND "receiverId" = $1`,
+      [userId]
+    );
+    if (result.rows.length > 0) {
+      return result.rows;
+    } else {
+      // If no rows found, return "$0"
+      return [{ userId, totalEarnings: "$0" }];
+    }
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   createTransaction,
   getTransactionsByReceiverId,
@@ -359,4 +377,5 @@ module.exports = {
   createWithdrawalRequest,
   approveWithdrawalRequest,
   getTransactionsByType,
+  getRentalEarningsByUserId,
 };

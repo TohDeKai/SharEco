@@ -70,10 +70,30 @@ const getImpressionsByUserId = async (userId) => {
   }
 };
 
+const getDistinctImpressionsByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT DISTINCT ON (i."userId", i."itemId") i.*
+      FROM "sharEco-schema"."impression" i
+      INNER JOIN "sharEco-schema"."item" item ON i."itemId" = item."itemId"
+      WHERE item."userId" = $1
+      ORDER BY i."userId", i."itemId", i."impressionDate" DESC;
+      `,
+      [userId]
+    );
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 
 module.exports = {
   createImpression,
   getImpressionsByItemId,
   getDistinctImpressionsByItemId,
   getImpressionsByUserId,
+  getDistinctImpressionsByUserId,
 }
