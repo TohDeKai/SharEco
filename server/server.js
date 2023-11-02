@@ -2352,6 +2352,24 @@ app.get("/api/v1/transaction/type/:type", async (req, res) => {
   }
 });
 
+// Get Revenue data
+app.get("/api/v1/revenue", async (req, res) => {
+  try {
+    const revenueData = await transactiondb.getRevenueData();
+    res.status(200).json({
+      status: "success",
+      data: {
+        rentalRevenue: revenueData.revenue,
+        adRevenue: revenueData.ads,
+        spotlightRevenue: revenueData.spotlight
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //ADVERTISEMENT FUNCTIONALITIES
 //Create a new ad request
 app.post("/api/v1/createAd", async (req, res) => {
