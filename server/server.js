@@ -12,7 +12,7 @@ const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
 const impressiondb = require("./queries/impression");
 const transactiondb = require("./queries/transaction");
-const advertisementdb = require("./queries/advertisement")
+const advertisementdb = require("./queries/advertisement");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -2362,7 +2362,7 @@ app.get("/api/v1/revenue", async (req, res) => {
       data: {
         rentalRevenue: revenueData.revenue,
         adRevenue: revenueData.ads,
-        spotlightRevenue: revenueData.spotlight
+        spotlightRevenue: revenueData.spotlight,
       },
     });
   } catch (error) {
@@ -2576,7 +2576,6 @@ app.get("/api/v1/rankedWeekAds", async (req, res) => {
   }
 });
 
-
 /**********************          Insights and Dashboard Routes             **************************/
 // create impression
 app.post("/api/v1/impression", async (req, res) => {
@@ -2632,7 +2631,9 @@ app.get("/api/v1/impression/distinct/itemId/:itemId", async (req, res) => {
   const itemId = req.params.itemId;
 
   try {
-    const impressions = await impressiondb.getDistinctImpressionsByItemId(itemId);
+    const impressions = await impressiondb.getDistinctImpressionsByItemId(
+      itemId
+    );
 
     if (impressions.length > 0) {
       res.status(200).json({
@@ -2690,7 +2691,9 @@ app.get("/api/v1/impression/distinct/userId/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const impressions = await impressiondb.getDistinctImpressionsByUserId(userId);
+    const impressions = await impressiondb.getDistinctImpressionsByUserId(
+      userId
+    );
 
     if (impressions.length > 0) {
       res.status(200).json({
@@ -2765,7 +2768,7 @@ app.get("/api/v1/rentalEarnings/userId/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    //const totalEarnings = await transactiondb.getRentalEarningsByUserId(userId);  
+    //const totalEarnings = await transactiondb.getRentalEarningsByUserId(userId);
     //IN THEORY THIS WOULD WORK, BUT SINCE SOME RENTALS WERE COMPLETED BEFORE TRANSACTIONS WERE IMPLEMENTED, THE NUMBERS DONT TALLY
     const totalEarnings = await rentaldb.getRentalEarningsByUserId(userId);
     if (totalEarnings) {
@@ -2812,3 +2815,11 @@ app.get("/api/v1/likes/userId/:userId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// TODO
+// GET all reports with DISPUTE type
+// GET rental
+// GET all reports with USER, LISTING type
+// CREATE new report
+// UPDATE report with respond
+// UPDATE report status
