@@ -81,7 +81,14 @@ const createRentals = () => {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
         try {
           const itemResponse = await axios.get(
@@ -120,7 +127,8 @@ const createRentals = () => {
         } else {
           console.log("Failed to retrieve daily unavailabilities");
         }
-      } catch (error) {start
+      } catch (error) {
+        start;
         console.log(error.message);
       }
 
@@ -221,7 +229,6 @@ const createRentals = () => {
     return stringDate(endDate).concat(" ", stringTime(endTime));
   };
 
-
   const tomorrow = () => {
     const nextDay = new Date(today);
     nextDay.setDate(today.getDate() + 1);
@@ -244,12 +251,11 @@ const createRentals = () => {
   const [validEnd, setValidEnd] = useState(false);
 
   function createDateFromIntervalTime(intervalTime) {
-    
     const [datePart, timePart] = intervalTime.split(", ");
     const [day, month, year] = datePart.split("/");
     const [hour, minute] = timePart.split(":");
     const newDate = new Date(year, month - 1, day, hour, minute);
-    
+
     return newDate;
   }
 
@@ -260,80 +266,114 @@ const createRentals = () => {
     // Iterate through the startAvails array
     for (const interval of startAvails) {
       // Convert start and end times of the interval to time values
-      const intervalStart = createDateFromIntervalTime(interval.start).getTime();
+      const intervalStart = createDateFromIntervalTime(
+        interval.start
+      ).getTime();
       const intervalEnd = createDateFromIntervalTime(interval.end).getTime();
       // Check if startDate is within the current interval
-      if (selectedStartTime >= intervalStart && selectedStartTime <= intervalEnd) {
+      if (
+        selectedStartTime >= intervalStart &&
+        selectedStartTime <= intervalEnd
+      ) {
         return true; // startDate is within this interval
       }
     }
     return false; // startDate is not within any interval
   }
 
-  function isSelectedDurationWithinAvailable(startDate, endDate, startAvails, endAvails){
+  function isSelectedDurationWithinAvailable(
+    startDate,
+    endDate,
+    startAvails,
+    endAvails
+  ) {
     // Iterate through startAvails to check if startDate and endDate are within any slot
     for (const startSlot of startAvails) {
       const startSlotDate = createDateFromIntervalTime(startSlot.start);
       const endSlotDate = createDateFromIntervalTime(startSlot.end);
 
-    // Check if startDate is after startSlotDate and endDate is before endSlotDate
+      // Check if startDate is after startSlotDate and endDate is before endSlotDate
       if (startDate >= startSlotDate && endDate <= endSlotDate) {
         return true; // Selected duration is within an available slot
       }
 
-    // Check if the end of startAvail slot is 23:59 (2359H)
-      if (startSlot.end.endsWith('23:59')) {
+      // Check if the end of startAvail slot is 23:59 (2359H)
+      if (startSlot.end.endsWith("23:59")) {
         const lastStartSlotDate = createDateFromIntervalTime(startSlot.start);
         const firstEndSlotDate = createDateFromIntervalTime(endAvails[0].end);
 
-      // Check if startDate is after lastStartSlotDate and endDate is before firstEndSlotDate
+        // Check if startDate is after lastStartSlotDate and endDate is before firstEndSlotDate
         if (startDate >= lastStartSlotDate && endDate <= firstEndSlotDate) {
           return true; // Selected duration wraps around midnight
         }
-     }
-   }
-
-   for (const endSlot of endAvails) {
-    const startSlotDate = createDateFromIntervalTime(endSlot.start);
-    const endSlotDate = createDateFromIntervalTime(endSlot.end);
-
-  // Check if startDate is after startSlotDate and endDate is before endSlotDate
-    if (startDate >= startSlotDate && endDate <= endSlotDate) {
-      return true; // Selected duration is within an available slot
+      }
     }
 
-  // Check if the end of startAvail slot is 23:59 (2359H)
-  //   if (endSlot.end.endsWith('23:59')) {
-  //     const lastStartSlotDate = createDateFromIntervalTime(startSlot.start);
-  //     const firstEndSlotDate = createDateFromIntervalTime(endAvails[0].end);
+    for (const endSlot of endAvails) {
+      const startSlotDate = createDateFromIntervalTime(endSlot.start);
+      const endSlotDate = createDateFromIntervalTime(endSlot.end);
 
-  //   // Check if startDate is after lastStartSlotDate and endDate is before firstEndSlotDate
-  //     if (startDate >= lastStartSlotDate && endDate <= firstEndSlotDate) {
-  //       return true; // Selected duration wraps around midnight
-  //     }
-  //  }
- }
+      // Check if startDate is after startSlotDate and endDate is before endSlotDate
+      if (startDate >= startSlotDate && endDate <= endSlotDate) {
+        return true; // Selected duration is within an available slot
+      }
+
+      // Check if the end of startAvail slot is 23:59 (2359H)
+      //   if (endSlot.end.endsWith('23:59')) {
+      //     const lastStartSlotDate = createDateFromIntervalTime(startSlot.start);
+      //     const firstEndSlotDate = createDateFromIntervalTime(endAvails[0].end);
+
+      //   // Check if startDate is after lastStartSlotDate and endDate is before firstEndSlotDate
+      //     if (startDate >= lastStartSlotDate && endDate <= firstEndSlotDate) {
+      //       return true; // Selected duration wraps around midnight
+      //     }
+      //  }
+    }
 
     return false; // No matching available slots found
   }
 
-  const handleStartTimeChange = (event, selectedDate) => { //WORK ON THIS
+  const handleStartTimeChange = (event, selectedDate) => {
+    //WORK ON THIS
     if (selectedDate) {
       const selectedTime = new Date(selectedDate);
-      const selectedTimeDate = new Date(new Date(fullStartDate(activeTab)).setHours(selectedTime.getHours(), selectedTime.getMinutes()))
-      
+      const selectedTimeDate = new Date(
+        new Date(fullStartDate(activeTab)).setHours(
+          selectedTime.getHours(),
+          selectedTime.getMinutes()
+        )
+      );
+
       if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 50 * 1000) {
         const endDateTime = new Date(fullEndDate(activeTab));
 
-        console.log("selected duration valid" , isSelectedDurationWithinAvailable(selectedTimeDate, endDateTime, startAvails, endAvails));
+        console.log(
+          "selected duration valid",
+          isSelectedDurationWithinAvailable(
+            selectedTimeDate,
+            endDateTime,
+            startAvails,
+            endAvails
+          )
+        );
         if (selectedTimeDate >= endDateTime) {
-          setHourlyMessage("Selected end time is before start time. Please choose again.");
+          setHourlyMessage(
+            "Selected end time is before start time. Please choose again."
+          );
           setStartTime(endTime);
           setValidStart(false);
-        } else if (!isStartDateWithinIntervals(selectedTimeDate, startAvails) || !isSelectedDurationWithinAvailable(selectedTimeDate, endDateTime, startAvails, endAvails)) { 
+        } else if (
+          !isStartDateWithinIntervals(selectedTimeDate, startAvails) ||
+          !isSelectedDurationWithinAvailable(
+            selectedTimeDate,
+            endDateTime,
+            startAvails,
+            endAvails
+          )
+        ) {
           setHourlyMessage("Your chosen start time is unavailable");
           setValidStart(false);
-          setStartTime(selectedTimeDate)
+          setStartTime(selectedTimeDate);
         } else {
           setStartTime(selectedTime);
           setValidStart(true);
@@ -344,31 +384,54 @@ const createRentals = () => {
     }
   };
 
-  const handleEndTimeChange = (event, selectedDate) => { //WORK ON THIS
+  const handleEndTimeChange = (event, selectedDate) => {
+    //WORK ON THIS
     if (selectedDate) {
       const selectedTime = new Date(selectedDate);
-      const selectedTimeDate = new Date(new Date(fullEndDate(activeTab)).setHours(selectedTime.getHours(), selectedTime.getMinutes()))
+      const selectedTimeDate = new Date(
+        new Date(fullEndDate(activeTab)).setHours(
+          selectedTime.getHours(),
+          selectedTime.getMinutes()
+        )
+      );
 
       // If the result is not the current time
       if (Math.abs(selectedTime.getTime() - new Date().getTime()) > 50 * 1000) {
         const startDateTime = new Date(fullStartDate(activeTab));
-        console.log("selected duration valid" , isSelectedDurationWithinAvailable(startDateTime, selectedTimeDate, startAvails, endAvails));
+        console.log(
+          "selected duration valid",
+          isSelectedDurationWithinAvailable(
+            startDateTime,
+            selectedTimeDate,
+            startAvails,
+            endAvails
+          )
+        );
         if (selectedTimeDate <= new Date(fullStartDate(activeTab))) {
-          console.log("end is before start")
-          setHourlyMessage("Selected end time is before start time. Please choose again.");
+          console.log("end is before start");
+          setHourlyMessage(
+            "Selected end time is before start time. Please choose again."
+          );
           setEndTime(startTime);
           setValidEnd(false);
-        } else if (!isStartDateWithinIntervals(selectedTimeDate, endAvails) || !isSelectedDurationWithinAvailable(startDateTime, selectedTimeDate, startAvails, endAvails)) { 
+        } else if (
+          !isStartDateWithinIntervals(selectedTimeDate, endAvails) ||
+          !isSelectedDurationWithinAvailable(
+            startDateTime,
+            selectedTimeDate,
+            startAvails,
+            endAvails
+          )
+        ) {
           setHourlyMessage("Your chosen end time is unavailable");
           setValidEnd(false);
-          setEndTime(selectedTimeDate)
-        } else{
+          setEndTime(selectedTimeDate);
+        } else {
           setEndTime(selectedTime);
           setValidStart(true);
           setValidEnd(true);
           setHourlyMessage("");
         }
-        
       }
     }
   };
@@ -662,11 +725,11 @@ const createRentals = () => {
         setRangeMessage(
           "Oops, those dates aren't available, please select again!"
         );
-        setValidStart(false)
+        setValidStart(false);
         setValidEnd(false);
       } else {
         setRange({ startDate, endDate });
-        setValidStart(true)
+        setValidStart(true);
         setValidEnd(true);
         setRangeMessage("");
       }
@@ -733,7 +796,22 @@ const createRentals = () => {
 
       if (response.status === 201) {
         // router.replace("/home");
-        router.back();
+        //create transaction to deduct fees from borrower ecowallet when making rental
+        const transactionData = {
+          senderId: user.userId,
+          amount: totalCost(activeTab),
+          transactionType: "RENTAL_PAYMENT",
+        };
+
+        const transactionResponse = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+          transactionData
+        );
+
+        if (transactionResponse.status === 200) {
+          console.log(`Rental fee held by admin`);
+          router.back();
+        }
       }
     } catch (error) {
       console.log(error.message);
@@ -810,10 +888,20 @@ const createRentals = () => {
             <View>
               <View>
                 <View style={styles.hourlyRentalContainer}>
-                  <View style={{ width: viewportWidthInPixels(43) , marginBottom:8}}>
+                  <View
+                    style={{
+                      width: viewportWidthInPixels(43),
+                      marginBottom: 8,
+                    }}
+                  >
                     <RegularText typography="H4">Starts from</RegularText>
                   </View>
-                  <View style={{ width: viewportWidthInPixels(43) , marginBottom:8 }}>
+                  <View
+                    style={{
+                      width: viewportWidthInPixels(43),
+                      marginBottom: 8,
+                    }}
+                  >
                     <RegularText typography="H4">Ends on</RegularText>
                   </View>
                 </View>
@@ -883,7 +971,7 @@ const createRentals = () => {
               <View style={styles.availContainer}>
                 <View style={styles.availCard}>
                   <View>
-                    <Text style={[styles.textMargin, {marginTop:10}]}>
+                    <Text style={[styles.textMargin, { marginTop: 10 }]}>
                       <View>
                         <RegularText typography="Subtitle">
                           Availabilities for
@@ -902,7 +990,7 @@ const createRentals = () => {
                 </View>
                 <View style={styles.availCard}>
                   <View>
-                    <Text style={[styles.textMargin, {marginTop:10}]}>
+                    <Text style={[styles.textMargin, { marginTop: 10 }]}>
                       <View>
                         <RegularText typography="Subtitle">
                           Availabilities for
@@ -948,7 +1036,10 @@ const createRentals = () => {
               </View>
               {(!validStart || !validEnd) && (
                 <View>
-                  <RegularText style={{ marginTop: 10, marginBottom: 15, }} color={fail}>
+                  <RegularText
+                    style={{ marginTop: 10, marginBottom: 15 }}
+                    color={fail}
+                  >
                     {hourlyMessage}
                   </RegularText>
                 </View>
@@ -1006,11 +1097,19 @@ const createRentals = () => {
               if (selectedLocation == null) {
                 setMessage("Please select a location");
                 setIsSuccessMessage(false);
-              } else if (!validEnd || !validStart){
+              } else if (!validEnd || !validStart) {
                 setMessage("Please select a valid rental period");
                 setIsSuccessMessage(false);
-              } 
-              else {
+              } else if (
+                parseFloat(user.walletBalance.replace(/\$/g, "")) -
+                  totalCost(activeTab) <
+                0
+              ) {
+                setMessage(
+                  "You have insufficient balance to make a rental request. Please top up your EcoWallet"
+                );
+                setIsSuccessMessage(false);
+              } else {
                 handleCreateRentalRequest(values);
                 actions.resetForm();
               }
@@ -1097,6 +1196,57 @@ const createRentals = () => {
                     </View>
                   </View>
                 </View>
+
+                {user && user.walletBalance && (
+                  <View style={styles.pricing}>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">
+                          EcoWallet Balance
+                        </RegularText>
+                      </View>
+                      <View>
+                        <RegularText
+                          typography="H3"
+                          color={
+                            parseFloat(user.walletBalance.replace(/\$/g, "")) -
+                              totalCost(activeTab) <
+                            0
+                              ? fail
+                              : black
+                          }
+                        >
+                          $
+                          {(
+                            parseFloat(user.walletBalance.replace(/\$/g, "")) -
+                            totalCost(activeTab)
+                          ).toFixed(2)}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">Available</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          {user.walletBalance}
+                        </RegularText>
+                      </View>
+                    </View>
+                    <View style={styles.pricingRow}>
+                      <View>
+                        <RegularText typography="H3">Booking Total</RegularText>
+                      </View>
+                      <View>
+                        <RegularText typography="H3">
+                          ${totalCost(activeTab)}
+                        </RegularText>
+                      </View>
+                    </View>
+                  </View>
+                )}
+
                 <RegularText
                   typography="Subtitle"
                   style={{ alignSelf: "center" }}
@@ -1128,7 +1278,10 @@ const createRentals = () => {
                     </RegularText>
                   </Pressable>
                 </View>
-                <MessageBox success={isSuccessMessage} style={{marginTop:20}}>
+                <MessageBox
+                  success={isSuccessMessage}
+                  style={{ marginTop: 20 }}
+                >
                   {message || " "}
                 </MessageBox>
                 <RoundedButton

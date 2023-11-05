@@ -42,6 +42,10 @@ export default function ListingCard({ item, mine }) {
     router.push({ pathname: "profile/myListing", params: { itemId: itemId } });
   };
 
+  const toInsights = () => {
+    router.push({ pathname: "profile/insights", params: { itemId: itemId } });
+  };
+
   const toIndivListing = () => {
     router.push({pathname: "home/indivListing", params: { itemId: itemId }});
   }
@@ -115,6 +119,17 @@ export default function ListingCard({ item, mine }) {
                 </View>
               ))}
           </RegularText>
+          {mine && (
+            <Pressable onPress={toInsights}>
+              <View style={{flexDirection: "row", gap: "5px"}}>
+                <Ionicons name="trending-up-outline" size={18} color={secondary} />
+                <RegularText 
+                  typography="B3"
+                  color={secondary}>View Insights
+                </RegularText>
+              </View>
+            </Pressable>
+          )}
         </View>
       </View>
     </Pressable>
@@ -124,7 +139,10 @@ export default function ListingCard({ item, mine }) {
 const style = StyleSheet.create({
   image: {
     width: viewportWidthInPixels(40),
-    height: viewportHeightInPixels(22),
+    height: viewportWidthInPixels(40),
+    borderRadius: 3,
+    marginTop: viewportWidthInPixels(4),
+    marginBottom: viewportWidthInPixels(2),
   },
   card: {
     paddingRight: viewportWidthInPixels(5),

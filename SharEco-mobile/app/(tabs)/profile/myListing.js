@@ -29,7 +29,8 @@ import {
   PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { primary, placeholder, white, yellow, black, inputbackground } = colours;
+const { primary, placeholder, white, yellow, dark, black, inputbackground } =
+  colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
 
@@ -86,6 +87,7 @@ const ItemInformation = () => {
     rentalRateHourly,
     rentalRateDaily,
     collectionLocations,
+    depositFee,
     usersLikedCount,
     userId,
   } = listingItem;
@@ -114,8 +116,13 @@ const ItemInformation = () => {
         </View>
 
         <View style={style.textContainer}>
-          <View style={{marginTop: -viewportHeightInPixels(10), marginBottom: viewportHeightInPixels(2)}}>
-          <PrimaryButton
+          <View
+            style={{
+              marginTop: -viewportHeightInPixels(10),
+              marginBottom: viewportHeightInPixels(2),
+            }}
+          >
+            <PrimaryButton
               typography="H4"
               color={white}
               onPress={() => {
@@ -127,13 +134,13 @@ const ItemInformation = () => {
               style={{
                 width: viewportWidthInPixels(30),
                 alignSelf: "flex-end",
-                
+                height: 40,
+                backgroundColor: dark,
               }}
             >
               Spotlight
             </PrimaryButton>
           </View>
-            
 
           <View style={style.title}>
             <RegularText typography="H1">{itemTitle}</RegularText>
@@ -152,9 +159,11 @@ const ItemInformation = () => {
             </View>
           )}
           {rentalRateHourly == "$0.00" && rentalRateDaily != "0.00" && (
-            <View style={style.pricing}>
-              <RegularText typography="H2">{rentalRateDaily}</RegularText>
-              <RegularText typography="Subtitle">/ day</RegularText>
+            <View style={style.rates}>
+              <View style={style.pricing}>
+                <RegularText typography="H2">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/ day</RegularText>
+              </View>
             </View>
           )}
           {rentalRateHourly != "$0.00" && rentalRateDaily == "$0.00" && (
@@ -177,38 +186,20 @@ const ItemInformation = () => {
 
           <View>
             <RegularText typography="H3" style={style.topic}>
-              Description
+              Deposit Fee
             </RegularText>
             <RegularText typography="B2" style={style.content}>
-              {itemDescription}
+              {depositFee}
             </RegularText>
           </View>
 
           <View>
             <RegularText typography="H3" style={style.topic}>
-              Meet the owner
+              Description
             </RegularText>
-            <View style={style.seller}>
-              <View style={style.avatarContainer}>
-                <UserAvatar
-                  size="medium"
-                  source={{
-                    uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
-                  }}
-                />
-              </View>
-              <View style={style.profile}>
-                <RegularText typography="H3">{user.displayName}</RegularText>
-                <RegularText typography="Subtitle">
-                  @{user.username}
-                </RegularText>
-                <View style={style.ratingsContainer}>
-                  <RegularText typography="Subtitle">0.0</RegularText>
-                  <Rating stars={0} size={18} color={yellow} />
-                  <RegularText typography="Subtitle">(0)</RegularText>
-                </View>
-              </View>
-            </View>
+            <RegularText typography="B2" style={style.content}>
+              {itemDescription}
+            </RegularText>
           </View>
 
           <View>
@@ -266,6 +257,13 @@ const ListingNav = ({ data }) => {
     router.push({ pathname: "profile/editListing", params: { itemId: data } });
   };
 
+  const toManageRentals = () => {
+    router.push({
+      pathname: "profile/manageRentals",
+      params: { itemId: data },
+    });
+  };
+
   const [wishlistCount, setWishlistCount] = useState(0);
 
   useEffect(() => {
@@ -274,12 +272,12 @@ const ListingNav = ({ data }) => {
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/wishlist/itemId/${data}`
         );
-  
+
         if (response.status === 200) {
           const wishlist = response.data.data.wishlist;
           setWishlistCount(wishlist.length);
         } else if (response.status === 404) {
-          console.log("There is no wishlist related to this item")
+          console.log("There is no wishlist related to this item");
           setWishlistCount(0);
         }
       } catch (error) {
@@ -287,13 +285,13 @@ const ListingNav = ({ data }) => {
       }
     }
     fetchWishlistByItemId();
-  }, [])
+  }, []);
 
   return (
     <View>
       <View style={style.nav}>
         <View style={style.wishlist}>
-          <Ionicons name='heart' size={30} color={placeholder} />
+          <Ionicons name="heart" size={30} color={placeholder} />
           <RegularText typography="H2" color={black}>
             {wishlistCount}
           </RegularText>
@@ -308,9 +306,13 @@ const ListingNav = ({ data }) => {
           </SecondaryButton>
         </View>
         <View style={style.buttonContainer}>
-          <DisabledButton typography={"H3"} color={white}>
+          <PrimaryButton
+            typography={"H3"}
+            color={white}
+            onPress={toManageRentals}
+          >
             Manage Rentals
-          </DisabledButton>
+          </PrimaryButton>
         </View>
       </View>
     </View>
@@ -353,6 +355,7 @@ const style = StyleSheet.create({
     paddingVertical: 30,
   },
   title: {
+    marginTop: 15,
     paddingBottom: 15,
   },
   rates: {

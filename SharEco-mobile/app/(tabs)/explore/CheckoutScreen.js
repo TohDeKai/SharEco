@@ -6,6 +6,7 @@ import {
   Button,
   Alert,
   ScrollView,
+  Dimensions,
 } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,8 +22,21 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
+import Header from "../../../components/Header";
 import MessageBox from "../../../components/text/MessageBox";
-const { white, primary, black } = colours;
+import { useAuth } from "../../../context/auth";
+import RoundedButton from "../../../components/buttons/RoundedButton";
+const { white, secondary, black } = colours;
+
+const viewportHeightInPixels = (percentage) => {
+  const screenHeight = Dimensions.get("window").height;
+  return (percentage / 100) * screenHeight;
+};
+
+const viewportWidthInPixels = (percentage) => {
+  const screenHeight = Dimensions.get("window").width;
+  return (percentage / 100) * screenHeight;
+};
 
 const CheckoutScreen = () => {
   const [amountInCents, setAmountInCents] = useState(0);
@@ -31,10 +45,31 @@ const CheckoutScreen = () => {
   const [loading, setLoading] = useState(false);
   const [fetchedPayment, setFetchedPayment] = useState(false);
   const [inputRegistered, setInputRegistered] = useState(false);
-  const params = useLocalSearchParams();
-  const { walletId, userId, walletBalance } = params;
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchData();
+  }, [user.userId]);
 
   const handleTopUp = async () => {
     const fetchPaymentSheetParams = async () => {
@@ -46,16 +81,18 @@ const CheckoutScreen = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            walletId: walletId,
+            walletId: user.walletId,
             amount: amountInCents,
           }),
         }
       );
       const { paymentIntent, ephemeralKey, customer } = await response.json();
 
-      if(walletId == ""){
-        const inputNewCustomerWalletIdResponse = axios.put(`http://${BASE_URL}:4000/api/v1/users/walletId/${userId}`,
-        { walletId: customer});
+      if (user.walletId == "") {
+        const inputNewCustomerWalletIdResponse = axios.put(
+          `http://${BASE_URL}:4000/api/v1/users/walletId/${user.userId}`,
+          { walletId: customer }
+        );
       }
       setFetchedPayment(true);
 
@@ -65,10 +102,11 @@ const CheckoutScreen = () => {
         customer,
       };
     };
-    
+
     const initializePaymentSheet = async () => {
       const { paymentIntent, ephemeralKey, customer, publishableKey } =
         await fetchPaymentSheetParams();
+      console.log("FETCH PAYMENT SHEET PARAMS: " + paymentIntent);
 
       const { error } = await initPaymentSheet({
         merchantDisplayName: "SharEco",
@@ -80,58 +118,42 @@ const CheckoutScreen = () => {
           name: "Jane Doe",
         },
       });
-      if (!error) {
-        setLoading(true);
-      }
-
-      const { error2 } = await presentPaymentSheet();
-
-        if (error2) {
-          Alert.alert(`Error code: ${error2.code}`, error2.message);
-        } else {
-          const updatedBalance =
-            parseFloat(walletBalance.replace("$", "")) + amountInCents / 100;
-          console.log(updatedBalance);
-          const walletUpdateResponse = axios.put(
-            `http://${BASE_URL}:4000/api/v1/users/walletBalance/${userId}`,
-            { walletBalance: updatedBalance }
-          );
-          router.replace("explore");
-          Alert.alert(
-            "Success",
-            `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
-          );
-        }
+      console.log("ERROR: " + error);
     };
     initializePaymentSheet();
 
-    // const openPaymentSheet = async () => {
-    //   try {
-    //     const { error } = await presentPaymentSheet();
+    const openPaymentSheet = async () => {
+      const { error2 } = await presentPaymentSheet();
+      console.log("TYPE OF " + typeof error2);
+      console.log("ERROR 2 " + error2);
 
-    //     if (error) {
-    //       Alert.alert(`Error code: ${error.code}`, error.message);
-    //     } else {
-    //       const updatedBalance =
-    //         parseFloat(walletBalance.replace("$", "")) + amountInCents / 100;
-    //       console.log(updatedBalance);
-    //       const walletUpdateResponse = axios.put(
-    //         `http://${BASE_URL}:4000/api/v1/users/walletBalance/${userId}`,
-    //         { walletBalance: updatedBalance }
-    //       );
-    //       router.replace("explore");
-    //       Alert.alert(
-    //         "Success",
-    //         `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
-    //       );
-    //     }
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-    // if (fetchedPayment) {
-    //   openPaymentSheet();
-    // }
+      if (error2) {
+        Alert.alert(`Error code: ${error2.code}`, error2.message);
+      } else {
+        const topUpTransaction = axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction`,
+          {
+            senderId: 1,
+            receiverId: user.userId,
+            amount: amountInCents / 100,
+            transactionType: "TOP_UP",
+          }
+        );
+        const updatedBalance =
+          parseFloat(user.walletBalance.replace("$", "")) + amountInCents / 100;
+        const walletUpdateResponse = axios.put(
+          `http://${BASE_URL}:4000/api/v1/users/walletBalance/${user.userId}`,
+          { walletBalance: updatedBalance }
+        );
+        router.push("explore");
+        Alert.alert(
+          "Success",
+          `Your order is confirmed! New EcoWallet Balance $${updatedBalance}.`
+        );
+      }
+    };
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    openPaymentSheet();
   };
 
   useEffect(() => {
@@ -140,49 +162,104 @@ const CheckoutScreen = () => {
     }
   }, [inputRegistered, amountInCents]);
 
+  const handleBack = () => {
+    router.back();
+  };
+
   //HANDLE FORMIK
   return (
     <StripeProvider publishableKey="pk_test_51O18L3H2N8GaqjXUYaNSlFFvrC0zxh65jLr9QeCqls1RqGlmAWqE15MSpkmxcJUtJW1d0f37sTN0wcR2qrUJILa800K5tC2yfH">
       <SafeAreaContainer>
-        <Formik
-          initialValues={{ amount: 0 }}
-          onSubmit={(values, setSubmitting) => {
-            if (parseFloat(values.amount) <= 1) {
+        <Header action="back" onPress={handleBack} />
+        <View style={styles.header}>
+          <RegularText
+            typography="H1"
+            color={secondary}
+            style={{ fontSize: 45 }}
+          >
+            Top up
+          </RegularText>
+          <View style={styles.subtitle}>
+            <RegularText
+              typography="B3"
+              color={black}
+              style={{ marginBottom: 10 }}
+            >
+              Top up money into your EcoWallet.
+            </RegularText>
+          </View>
+        </View>
+        <ScrollView>
+          <Formik
+            initialValues={{ amount: 0 }}
+            onSubmit={(values, setSubmitting) => {
+              if (parseFloat(values.amount) <= 1) {
                 console.log(values.amount);
-              setMessage("Input amount cannot be less than or equal to $1.");
-              setIsSuccessMessage(false);
-            } else {
-                setAmountInCents((parseFloat(values.amount) * 100));
+                setMessage("Input amount cannot be less than or equal to $1.");
+                setIsSuccessMessage(false);
+              } else {
+                setAmountInCents(parseFloat(values.amount) * 100);
                 setInputRegistered(true);
-            }
-          }}
-        >
-          {({ handleChange, handleSubmit, values }) => (
-            <ScrollView>
-              <RegularText typography="H3" color={black}>
-                Input Top-Up Amount ($)
-              </RegularText>
-              <StyledTextInput
-                placeholder="Input your top up amount"
-                value={values.amount}
-                onChangeText={handleChange("amount")}
-                keyboardType="numeric"
-              />
-              <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
-                {message || " "}
-              </MessageBox>
-              <Button
-                variant="primary"
-                // disabled={!loading || !inputFilled}
-                title="Confirm"
-                onPress={handleSubmit}
-              />
-            </ScrollView>
-          )}
-        </Formik>
+              }
+            }}
+          >
+            {({ handleChange, handleSubmit, values }) => (
+              <View style={styles.container}>
+                <RegularText typography="H3" style={{ marginBottom: 25 }}>
+                  Account Balance:{" "}
+                  <RegularText typography="H3" color={secondary}>
+                    {user.walletBalance}
+                  </RegularText>
+                </RegularText>
+
+                <RegularText typography="H3" color={black}>
+                  Top Up Amount ($)
+                </RegularText>
+
+                <StyledTextInput
+                  placeholder="Input your top up amount"
+                  value={values.amount}
+                  onChangeText={handleChange("amount")}
+                  keyboardType="numeric"
+                  style={{ marginBottom: 10 }}
+                />
+                <MessageBox
+                  style={{ marginTop: 10 }}
+                  success={isSuccessMessage}
+                >
+                  {message || " "}
+                </MessageBox>
+                <RoundedButton
+                  typography={"B1"}
+                  color={white}
+                  onPress={handleSubmit}
+                >
+                  Confirm
+                </RoundedButton>
+              </View>
+            )}
+          </Formik>
+        </ScrollView>
       </SafeAreaContainer>
     </StripeProvider>
   );
 };
 
 export default CheckoutScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    marginHorizontal: viewportWidthInPixels(7),
+    width: viewportWidthInPixels(86),
+    marginTop: 120,
+  },
+  header: {
+    height: 60,
+    marginHorizontal: viewportWidthInPixels(7),
+    marginTop: 40,
+    width: viewportWidthInPixels(86),
+  },
+  subtitle: {
+    marginTop: 20,
+  },
+});

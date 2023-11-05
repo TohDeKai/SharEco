@@ -9,6 +9,7 @@ import Rental from "./rental";
 import Business from "./business";
 import Listing from "./listings";
 import Transaction from "./transactions";
+import Overview from "./overview";
 
 export default function App() {
   return (
@@ -74,6 +75,15 @@ export default function App() {
             element={
               <RequireAuth loginPath="../signin">
                 <Transaction />
+              </RequireAuth>
+            }
+          ></Route>
+
+          <Route
+            path="overview"
+            element={
+              <RequireAuth loginPath="../signin">
+                <Overview />
               </RequireAuth>
             }
           ></Route>

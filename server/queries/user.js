@@ -19,6 +19,19 @@ const getUsers = async () => {
   }
 };
 
+// Get total number of users (exclude admin)
+const getTotalNumberOfUsers = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT("userId") FROM "sharEco-schema"."user" WHERE NOT "userId" = $1`,
+      [1]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 //Get a user by ID
 const getUserById = async (userId) => {
   try {
@@ -68,12 +81,13 @@ const createUser = async (
   email,
   contactNumber,
   displayName,
-  username
+  username,
+  verification
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."user" 
-        (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName", "aboutMe", "walletBalance", "walletId") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) returning *`,
+        (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName", "aboutMe", "walletBalance", "walletId","verification") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`,
       [
         username,
         password,
@@ -87,6 +101,7 @@ const createUser = async (
         "",
         0,
         "",
+        verification,
       ]
     );
     return result.rows[0];
@@ -262,6 +277,51 @@ const updateUserWalletBalance = async (userId, walletBalance) => {
   }
 };
 
+updateAdminWalletBalance = async (walletBalance) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."user" 
+    SET "walletBalance" = $1
+    WHERE "userId" = $2
+    RETURNING *`,
+      [walletBalance, 1]
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+verifyUser = async (username) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."user" 
+    SET "verification" = $1
+    WHERE "username" = $2
+    RETURNING *`,
+      ["VERIFIED", username]
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+getUserByEmail = async (email) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."user" 
+    WHERE "email" = $1`,
+      [email]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   getUsers,
   getUserById,
@@ -275,5 +335,9 @@ module.exports = {
   addWalletIdToUser,
   getWalletIdByUserId,
   updateUserWalletBalance,
-  getWalletBalanceByUserId
+  getWalletBalanceByUserId,
+  getTotalNumberOfUsers,
+  updateAdminWalletBalance,
+  verifyUser,
+  getUserByEmail,
 };

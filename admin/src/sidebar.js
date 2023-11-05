@@ -21,6 +21,7 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import BusinessCenterOutlinedIcon from "@mui/icons-material/BusinessCenterOutlined";
 import NoteAltOutlinedIcon from "@mui/icons-material/NoteAltOutlined";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import AnalyticsOutlinedIcon from "@mui/icons-material/AnalyticsOutlined";
 import { Typography } from "@mui/material";
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -37,6 +38,11 @@ const Sidebar = () => {
 
   // Menu items
   const customListItems = [
+    {
+      text: "Overview",
+      path: "/overview",
+      icon: <AnalyticsOutlinedIcon />,
+    },
     {
       text: "Dashboard",
       path: "/",

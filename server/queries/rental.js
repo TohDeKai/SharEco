@@ -196,6 +196,20 @@ const getRentalsByLenderId = async (userId) => {
   }
 };
 
+//Get Rentals by Lender Id & ItemId
+const getRentalsByLenderAndItemId = async (lenderId, itemId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."rental" 
+       WHERE "lenderId" = $1 AND "itemId" = $2`,
+      [lenderId, itemId]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
 //Get Rental by Borrower Id
 const getRentalsByBorrowerId = async (userId) => {
   try {
@@ -930,6 +944,104 @@ const updateItemImages = async (itemId, images, checklistFormType) => {
   }
 };
 
+// Create Blockout Period
+const createBlockout = async (
+  startDate,
+  endDate,
+  itemId,
+  lenderId,
+) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO "sharEco-schema"."rental" 
+          ("startDate", "endDate", "collectionLocation", "status", "additionalRequest", "additionalCharges", "depositFee", "rentalFee", 
+          "itemId", "borrowerId", "lenderId", "creationDate", "isUpdated", "totalFee", "isHourly", "isBlockOut") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning *`,
+      [
+        startDate,
+        endDate,
+        "",
+        "UPCOMING",
+        "",
+        0,
+        0,
+        0,
+        itemId,
+        lenderId,
+        lenderId,
+        currentTimeStamp,
+        false,
+        0,
+        true,
+        true,
+      ]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Delete Blockout Period
+const deleteBlockout = async (blockoutId) => {
+  try {
+    const result = await pool.query(
+      `DELETE FROM "sharEco-schema"."rental" WHERE "rentalId" = $1`,
+      [blockoutId]
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+//get total earnings by itemId
+const getRentalEarningsByItemId = async (itemId) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT "itemId", (SUM("rentalFee") * 0.95) AS "totalEarnings"
+      FROM "sharEco-schema"."rental"
+      WHERE "itemId" = $1 AND "status" = 'COMPLETED'
+      GROUP BY "itemId";
+      `,
+      [itemId]
+    );
+    if (result.rows.length > 0) {
+      return result.rows;
+    } else {
+      // If no rows found, return "$0"
+      return [{ itemId, totalEarnings: "$0" }];
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+//get total earnings by userId
+const getRentalEarningsByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT r."rentalFee", r."endDate", r."itemId"
+      FROM "sharEco-schema"."rental" r
+      WHERE r."lenderId" = $1 AND r."status" = 'COMPLETED'
+
+      `,
+      [userId]
+    );
+    // Apply the 0.95 multiplier to the rentalFee in each row.
+    const earningsWithMultiplier = result.rows.map((row) => ({
+      ...row,
+      rentalFee: (parseFloat(row.rentalFee.replace('$', '')) * 0.95).toFixed(2),
+    }));
+
+    return earningsWithMultiplier;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createRentalRequest,
   editRentalRequest,
@@ -937,6 +1049,7 @@ module.exports = {
   deleteRentalRequest,
   getAllRentals,
   getRentalsByLenderId,
+  getRentalsByLenderAndItemId,
   getRentalsByBorrowerId,
   getRentalsByItemId,
   getRentalByRentalId,
@@ -949,4 +1062,8 @@ module.exports = {
   submitEndRentalChecklist,
   updateRentalUponLenderReview,
   updateRentalUponBorrowerReview,
+  createBlockout,
+  deleteBlockout,
+  getRentalEarningsByItemId,
+  getRentalEarningsByUserId,
 };
