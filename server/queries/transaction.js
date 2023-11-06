@@ -354,7 +354,7 @@ const getRevenueData = async () => {
     const result = await pool.query(`
       SELECT
         SUM(CASE WHEN "transactionType" = 'RENTAL_PAYMENT' THEN ("amount"::numeric) ELSE 0 END) -
-        SUM(CASE WHEN "transactionType" IN ('RENTAL_INCOME', 'REFUND') THEN ("amount"::numeric) ELSE 0 END) AS revenue,
+        SUM(CASE WHEN "transactionType" IN ('CANCELLATION_REFUND') THEN ("amount"::numeric) ELSE 0 END) AS revenue,
         SUM(CASE WHEN "transactionType" = 'ADS' THEN ("amount"::numeric) ELSE 0 END) AS ads,
         SUM(CASE WHEN "transactionType" = 'SPOTLIGHT' THEN ("amount"::numeric) ELSE 0 END) AS spotlight
       FROM "sharEco-schema"."transaction"
