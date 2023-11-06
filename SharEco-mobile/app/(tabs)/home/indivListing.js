@@ -59,7 +59,7 @@ const ItemInformation = () => {
 
   const handleReport = () => {
     router.push({
-      pathname: "/report",
+      pathname: "/home/report",
       params: { itemId: itemId, reportType: "LISTING" },
     });
   };
