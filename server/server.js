@@ -13,6 +13,7 @@ const wishlistdb = require("./queries/wishlist");
 const impressiondb = require("./queries/impression");
 const transactiondb = require("./queries/transaction");
 const advertisementdb = require("./queries/advertisement");
+const reportdb = require("./queries/report");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -2821,5 +2822,42 @@ app.get("/api/v1/likes/userId/:userId", async (req, res) => {
 // GET rental
 // GET all reports with USER, LISTING type
 // CREATE new report
+app.post("/api/v1/report", async (req, res) => {
+  const {
+    reportType,
+    reportStatus,
+    reporterId,
+    reason,
+    description,
+    supportingImages,
+    responseText,
+    responseImages,
+  } = req.body;
+
+  try {
+    const report = await reportdb.createReport(
+      reportType,
+      reportStatus,
+      reporterId,
+      reason,
+      description,
+      supportingImages,
+      responseText,
+      responseImages
+    );
+
+    // Send the newly created user as the response
+    res.status(201).json({
+      status: "success",
+      data: {
+        report: report,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 // UPDATE report with respond
 // UPDATE report status

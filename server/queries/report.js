@@ -14,9 +14,42 @@ const pool = new Pool({
 // Get all reports by TYPE(S)
 
 // Create new report
+const createReport = async (
+  reportType,
+  reportStatus,
+  reporterId,
+  reason,
+  description,
+  supportingImages,
+  responseText,
+  responseImages
+) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO "sharEco-schema"."report" 
+          ("type", "status", "reporterId", "reason", "description", "supportingImages", "responseText", "responseImages") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8) returning *`,
+      [
+        reportType,
+        reportStatus,
+        reporterId,
+        reason,
+        description,
+        supportingImages,
+        responseText,
+        responseImages,
+      ]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
 
 // Update report with response
 
 // Update report status
-
-module.exports = {};
+module.exports = {
+  createReport,
+};
