@@ -2895,3 +2895,25 @@ app.post("/api/v1/report", async (req, res) => {
 });
 // UPDATE report with respond
 // UPDATE report status
+app.put("/api/v1/report/status/:reportId", async (req, res) => {
+  try {
+    const status = req.body.status;
+    const reportId = req.params.reportId;
+    const report = await reportdb.updateReportStatus(status, reportId);
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
