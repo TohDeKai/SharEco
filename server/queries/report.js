@@ -20,6 +20,19 @@ const getAllReports = async () => {
 };
 
 // Get all reports by TYPE(S)
+const getReportsByType = async (type) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."report" 
+      WHERE "type" = $1`,
+      [type]
+    );
+    return result.rows;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
 
 // Create new report
 const createReport = async (
@@ -60,5 +73,6 @@ const createReport = async (
 // Update report status
 module.exports = {
   getAllReports,
+  getReportsByType,
   createReport,
 };

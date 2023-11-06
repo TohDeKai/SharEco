@@ -2835,7 +2835,26 @@ app.get("/api/v1/reports", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
 // GET all reports with DISPUTE type
+app.get("/api/v1/reports/type/:type", async (req, res) => {
+  try {
+    reportType = req.params.type;
+
+    const reports = await reportdb.getReportsByType(reportType);
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // GET rental
 // GET all reports with USER, LISTING type
 // CREATE new report
