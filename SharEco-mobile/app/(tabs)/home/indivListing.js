@@ -126,16 +126,17 @@ const ItemInformation = () => {
             }
 
             const impressionResponse = await axios.post(
-              `http://${BASE_URL}:4000/api/v1/impression`, {
+              `http://${BASE_URL}:4000/api/v1/impression`,
+              {
                 itemId: item.itemId,
                 userId: loggedInUserData.userId,
-            });
+              }
+            );
             if (impressionResponse.status === 201) {
               console.log("Created impression successfully");
             } else {
               console.log("Failed to create impression");
             }
-
           } else {
             console.log("Failed to retrieve user");
           }
@@ -179,7 +180,9 @@ const ItemInformation = () => {
         <View style={style.imgContainer}>
           <View style={style.header}>
             <Header action="back" onPress={handleBack} />
+            <Header action="report" onPress={handleBack} />
           </View>
+
           <View style={{ marginTop: -31 }}>
             <CustomSlider data={images} />
           </View>
