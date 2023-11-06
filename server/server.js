@@ -2855,8 +2855,6 @@ app.get("/api/v1/reports/type/:type", async (req, res) => {
   }
 });
 
-// GET rental
-// GET all reports with USER, LISTING type
 // CREATE new report
 app.post("/api/v1/report", async (req, res) => {
   const {
