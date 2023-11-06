@@ -2817,7 +2817,24 @@ app.get("/api/v1/likes/userId/:userId", async (req, res) => {
   }
 });
 
-// TODO
+// ---------REPORTS---------
+
+// GET all reports
+app.get("/api/v1/reports", async (req, res) => {
+  try {
+    const reports = await reportdb.getAllReports();
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 // GET all reports with DISPUTE type
 // GET rental
 // GET all reports with USER, LISTING type
