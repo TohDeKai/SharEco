@@ -27,12 +27,10 @@ const Header = (props) => {
 
   let buttonStyle = {};
 
-  if (props.action === "back" || props.action === "close") {
-    icon = "chevron-back-outline";
-    buttonStyle = styles.backButton;
-  } else if (props.action === "report") {
-    icon = "alert-circle-outline";
+  if (props.action === "report") {
     buttonStyle = styles.actionButton;
+  } else {
+    buttonStyle = styles.backButton;
   }
   return (
     <View style={styles.headerContainer}>
