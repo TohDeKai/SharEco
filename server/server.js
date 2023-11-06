@@ -12,7 +12,8 @@ const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
 const impressiondb = require("./queries/impression");
 const transactiondb = require("./queries/transaction");
-const advertisementdb = require("./queries/advertisement")
+const advertisementdb = require("./queries/advertisement");
+const reportdb = require("./queries/report");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -2362,7 +2363,7 @@ app.get("/api/v1/revenue", async (req, res) => {
       data: {
         rentalRevenue: revenueData.revenue,
         adRevenue: revenueData.ads,
-        spotlightRevenue: revenueData.spotlight
+        spotlightRevenue: revenueData.spotlight,
       },
     });
   } catch (error) {
@@ -2576,7 +2577,6 @@ app.get("/api/v1/rankedWeekAds", async (req, res) => {
   }
 });
 
-
 /**********************          Insights and Dashboard Routes             **************************/
 // create impression
 app.post("/api/v1/impression", async (req, res) => {
@@ -2632,7 +2632,9 @@ app.get("/api/v1/impression/distinct/itemId/:itemId", async (req, res) => {
   const itemId = req.params.itemId;
 
   try {
-    const impressions = await impressiondb.getDistinctImpressionsByItemId(itemId);
+    const impressions = await impressiondb.getDistinctImpressionsByItemId(
+      itemId
+    );
 
     if (impressions.length > 0) {
       res.status(200).json({
@@ -2690,7 +2692,9 @@ app.get("/api/v1/impression/distinct/userId/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const impressions = await impressiondb.getDistinctImpressionsByUserId(userId);
+    const impressions = await impressiondb.getDistinctImpressionsByUserId(
+      userId
+    );
 
     if (impressions.length > 0) {
       res.status(200).json({
@@ -2765,7 +2769,7 @@ app.get("/api/v1/rentalEarnings/userId/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    //const totalEarnings = await transactiondb.getRentalEarningsByUserId(userId);  
+    //const totalEarnings = await transactiondb.getRentalEarningsByUserId(userId);
     //IN THEORY THIS WOULD WORK, BUT SINCE SOME RENTALS WERE COMPLETED BEFORE TRANSACTIONS WERE IMPLEMENTED, THE NUMBERS DONT TALLY
     const totalEarnings = await rentaldb.getRentalEarningsByUserId(userId);
     if (totalEarnings) {
@@ -2809,6 +2813,136 @@ app.get("/api/v1/likes/userId/:userId", async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// ---------REPORTS---------
+
+// GET all reports
+app.get("/api/v1/reports", async (req, res) => {
+  try {
+    const reports = await reportdb.getAllReports();
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// GET all reports with DISPUTE type
+app.get("/api/v1/reports/type/:type", async (req, res) => {
+  try {
+    reportType = req.params.type;
+
+    const reports = await reportdb.getReportsByType(reportType);
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// CREATE new report
+app.post("/api/v1/report", async (req, res) => {
+  const {
+    reportType,
+    reportStatus,
+    reporterId,
+    reason,
+    description,
+    supportingImages,
+    responseText,
+    responseImages,
+  } = req.body;
+
+  try {
+    const report = await reportdb.createReport(
+      reportType,
+      reportStatus,
+      reporterId,
+      reason,
+      description,
+      supportingImages,
+      responseText,
+      responseImages
+    );
+
+    // Send the newly created user as the response
+    res.status(201).json({
+      status: "success",
+      data: {
+        report: report,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// UPDATE report with response
+app.put("/api/v1/report/response/:reportId", async (req, res) => {
+  try {
+    const reportId = req.params.reportId;
+    const responseText = req.body.responseText;
+    const responseImages = req.params.responseImages;
+    const report = await reportdb.addReportResponse(
+      responseText,
+      responseImages,
+      reportId
+    );
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// UPDATE report status
+app.put("/api/v1/report/status/:reportId", async (req, res) => {
+  try {
+    const status = req.body.status;
+    const reportId = req.params.reportId;
+    const report = await reportdb.updateReportStatus(status, reportId);
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
     res.status(500).json({ error: "Database error" });
   }
 });

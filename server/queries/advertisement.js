@@ -78,7 +78,7 @@ const getStartBidDate = () => {
   const nextSunday = new Date(today);
   nextSunday.setDate(today.getDate() + daysUntilSunday);
   nextSunday.setHours(0, 0, 0, 0);
-
+  console.log("Start Bid Date: ", nextSunday);
   return nextSunday;
 };
 
