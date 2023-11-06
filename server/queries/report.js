@@ -69,6 +69,22 @@ const createReport = async (
 };
 
 // Update report with response
+const addReportResponse = async (responseText, responseImages, reportId) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."report" 
+          SET 
+          "responseText" = $1,
+          "responseImages" = $2
+          WHERE "reportId" = $3
+          RETURNING *`,
+      [responseText, responseImages, reportId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
 
 // Update report status
 const updateReportStatus = async (reportStatus, reportId) => {
@@ -91,5 +107,6 @@ module.exports = {
   getAllReports,
   getReportsByType,
   createReport,
+  addReportResponse,
   updateReportStatus,
 };

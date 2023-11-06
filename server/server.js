@@ -2893,7 +2893,36 @@ app.post("/api/v1/report", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-// UPDATE report with respond
+
+// UPDATE report with response
+app.put("/api/v1/report/response/:reportId", async (req, res) => {
+  try {
+    const reportId = req.params.reportId;
+    const responseText = req.body.responseText;
+    const responseImages = req.params.responseImages;
+    const report = await reportdb.addReportResponse(
+      responseText,
+      responseImages,
+      reportId
+    );
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // UPDATE report status
 app.put("/api/v1/report/status/:reportId", async (req, res) => {
   try {
