@@ -57,6 +57,13 @@ const ItemInformation = () => {
     router.back();
   };
 
+  const handleReport = () => {
+    router.push({
+      pathname: "/report",
+      params: { itemId: itemId, reportType: "LISTING" },
+    });
+  };
+
   const handleRefresh = async () => {
     setRefreshing(true);
 
@@ -180,7 +187,7 @@ const ItemInformation = () => {
         <View style={style.imgContainer}>
           <View style={style.header}>
             <Header action="back" onPress={handleBack} />
-            <Header action="report" onPress={handleBack} />
+            <Header action="report" onPress={handleReport} />
           </View>
 
           <View style={{ marginTop: -31 }}>
