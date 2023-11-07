@@ -15,10 +15,6 @@ const ChatComponent = ({ item }) => {
 
   ///👇🏻 Navigates to the Messaging screen
   const handleNavigation = () => {
-    // navigation.navigate("Messaging", {
-    //   id: item.id,
-    //   name: item.name,
-    // });
     router.push({
       pathname: "home/messaging",
       params: { id: item.id, name: item.name },

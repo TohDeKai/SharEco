@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
   chatheading: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "green",
+    color: colours.primary,
   },
   chattopContainer: {
     backgroundColor: colours.white,

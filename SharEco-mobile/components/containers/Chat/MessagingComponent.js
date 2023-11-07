@@ -2,10 +2,9 @@ import { View, Text } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../../styles/chat";
-import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 
 export default function MessageComponent({ item, user }) {
-  const status = item.user !== user;
+  const status = item.sender !== user.userId;
 
   return (
     <View
@@ -29,10 +28,11 @@ export default function MessageComponent({ item, user }) {
               : [styles.mmessage, { backgroundColor: "rgb(194, 243, 194)" }]
           }
         >
-          <Text>{item.text}</Text>
+          <Text>{item.message}</Text>
         </View>
       </View>
-      <Text style={{ marginLeft: 40 }}>{item.time}</Text>
+      {/* For time */}
+      {/* <Text style={{ marginLeft: 40 }}>{item.time}</Text> */}
     </View>
   );
 }
