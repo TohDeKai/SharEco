@@ -40,7 +40,7 @@ const Messaging = () => {
 
   //👇🏻 Access the chatroom's name and id
   const params = useLocalSearchParams();
-  const { name, id } = params;
+  const { name } = params;
 
   // function to format time
   function formatFirestoreTimestamp(timestamp) {
@@ -115,7 +115,7 @@ const Messaging = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title={name} action="back" onPress={handleBack} />
+      <Header title={`@${name}`} action="back" onPress={handleBack} />
 
       <View style={styles.messagingscreen}>
         <View

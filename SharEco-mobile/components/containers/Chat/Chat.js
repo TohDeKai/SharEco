@@ -13,57 +13,53 @@ import {
 } from "firebase/firestore";
 import { fireStoreDB } from "../../../app/utils/firebase";
 import { useAuth } from "../../../context/auth";
+import RegularText from "../../text/RegularText";
 
 const Chat = (props) => {
-  //👇🏻 Dummy list of rooms
-  const rooms = [
-    {
-      id: "1",
-      name: "User123",
-      messages: [
-        {
-          id: "1a",
-          text: "Hello guys, welcome!",
-          time: "07:50",
-          user: "Tomer",
-        },
-        {
-          id: "1b",
-          text: "Hi, thank you! 😇",
-          time: "08:50",
-          user: "David",
-        },
-      ],
-    },
-    {
-      id: "2",
-      name: "User321",
-      messages: [
-        {
-          id: "2a",
-          text: "Guys, who's awake? 🙏🏽",
-          time: "12:50",
-          user: "Team Leader",
-        },
-        {
-          id: "2b",
-          text: "Hello 🧑🏻‍💻",
-          time: "03:50",
-          user: "Victoria",
-        },
-      ],
-    },
-  ];
+  // const rooms = [
+  //   {
+  //     id: "1",
+  //     name: "User123",
+  //     messages: [
+  //       {
+  //         id: "1a",
+  //         text: "Hello guys, welcome!",
+  //         time: "07:50",
+  //         user: "Tomer",
+  //       },
+  //       {
+  //         id: "1b",
+  //         text: "Hi, thank you! 😇",
+  //         time: "08:50",
+  //         user: "David",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "User321",
+  //     messages: [
+  //       {
+  //         id: "2a",
+  //         text: "Guys, who's awake? 🙏🏽",
+  //         time: "12:50",
+  //         user: "Team Leader",
+  //       },
+  //       {
+  //         id: "2b",
+  //         text: "Hello 🧑🏻‍💻",
+  //         time: "03:50",
+  //         user: "Victoria",
+  //       },
+  //     ],
+  //   },
+  // ];
 
   const [chatRooms, setChatRooms] = useState([]);
 
   useLayoutEffect(() => {
     const chatsRef = collection(fireStoreDB, "chats");
     const userId = parseInt(props.userId);
-    // const q = query(
-    //   chatsRef,
-    //   where("user1", "==", userId).orWhere("user2", "==", userId)
-    // );
 
     const q = query(
       collection(fireStoreDB, "chats"),
@@ -72,7 +68,6 @@ const Chat = (props) => {
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const chatRooms = [...querySnapshot.docs].map((doc) => doc.data());
-      console.log("CHATROOMS", chatRooms);
       setChatRooms(chatRooms);
     });
     return unsubscribe;
@@ -87,16 +82,18 @@ const Chat = (props) => {
       </View>
 
       <View style={styles.chatlistContainer}>
-        {rooms.length > 0 ? (
+        {chatRooms.length > 0 ? (
           <FlatList
-            data={rooms}
-            renderItem={({ item }) => <ChatComponent item={item} />}
+            data={chatRooms}
+            renderItem={({ item }) => (
+              <ChatComponent item={item} userId={props.userId} />
+            )}
             keyExtractor={(item) => item.id}
           />
         ) : (
           <View style={styles.chatemptyContainer}>
-            <Text style={styles.chatemptyText}>No rooms created!</Text>
-            <Text>Click the icon above to create a Chat room</Text>
+            <Text style={styles.chatemptyText}>No Chats!</Text>
+            <RegularText>Use this chat to communciate with others</RegularText>
           </View>
         )}
       </View>
