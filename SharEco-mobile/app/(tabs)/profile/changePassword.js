@@ -166,9 +166,14 @@ const changePassword = () => {
                 value={values.confirmPassword}
                 onChangeText={handleChange("confirmPassword")}
               />
-              <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
-                {message || " "}
-              </MessageBox>
+              {message && (
+                <MessageBox
+                  style={{ marginTop: 10 }}
+                  success={isSuccessMessage}
+                >
+                  {message}
+                </MessageBox>
+              )}
             </View>
             <RoundedButton
               typography={"B1"}

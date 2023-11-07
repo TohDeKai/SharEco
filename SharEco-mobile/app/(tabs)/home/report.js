@@ -233,12 +233,14 @@ const report = () => {
                   scrollEnabled={false}
                   minHeight={80}
                 />
-                <MessageBox
-                  style={{ marginTop: 10 }}
-                  success={isSuccessMessage}
-                >
-                  {message || " "}
-                </MessageBox>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
 
                 <RoundedButton
                   typography={"B1"}

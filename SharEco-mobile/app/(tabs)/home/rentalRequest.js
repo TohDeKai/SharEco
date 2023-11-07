@@ -1271,12 +1271,14 @@ const createRentals = () => {
                     </RegularText>
                   </Pressable>
                 </View>
-                <MessageBox
-                  success={isSuccessMessage}
-                  style={{ marginTop: 20 }}
-                >
-                  {message || " "}
-                </MessageBox>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
                 <RoundedButton
                   typography={"B1"}
                   color={white}

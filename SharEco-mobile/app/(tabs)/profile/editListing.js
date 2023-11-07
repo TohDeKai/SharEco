@@ -68,7 +68,9 @@ const editListing = () => {
     null,
   ]);
   const [category, setCategory] = useState(listingItem.category);
-  const [lockers, setLockers] = useState(listingItem.collectionLocations ? listingItem.collectionLocations : []);
+  const [lockers, setLockers] = useState(
+    listingItem.collectionLocations ? listingItem.collectionLocations : []
+  );
   const [locationOpen, setLocationOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   useEffect(() => {
@@ -113,7 +115,7 @@ const editListing = () => {
     { label: "Sports Equipment", value: "Sports Equipment" },
     { label: "Vehicles", value: "Vehicles" },
   ]);
-  
+
   const [locations, setLocations] = useState([
     { label: "Hougang", value: "Hougang" },
     { label: "Punggol", value: "Punggol" },
@@ -167,7 +169,7 @@ const editListing = () => {
   const uploadImageFiles = async (files, listingId) => {
     const uploadPromises = files.map(async (file, index) => {
       try {
-        if (file != null) {  
+        if (file != null) {
           if (file.uri != null) {
             const img = await fetchImageUri(file.uri);
             const key = `listingId-${listingId}-${index + 1}.jpeg`;
@@ -270,7 +272,7 @@ const editListing = () => {
         rentalRateHourly: values.rentalRateHour || listingItem.rentalRateHourly,
         rentalRateDaily: values.rentalRateDay || listingItem.rentalRateDaily,
         depositFee: values.depositFee || listingItem.depositFee,
-        images: listingItem.images, //if new images, later then will upload 
+        images: listingItem.images, //if new images, later then will upload
         category: category || listingItem.category,
         collectionLocations: lockers || listingItem.collectionLocations,
         otherLocation: values.meetupLocation || listingItem.otherLocation,
@@ -296,7 +298,7 @@ const editListing = () => {
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}/images`,
           { images: uploadedURIs }
         );
-        
+
         if (updateImagesResponse.status === 200) {
           setImages([null, null, null, null, null]);
           setImagesResult([null, null, null, null, null]);
@@ -430,7 +432,7 @@ const editListing = () => {
                   autoScroll={true}
                   maxHeight={200}
                   placeholder={listingItem.category}
-                  style={{marginTop: 10}}
+                  style={{ marginTop: 10 }}
                 />
 
                 <RegularText typography="H3" style={styles.headerText}>
@@ -527,7 +529,7 @@ const editListing = () => {
                   autoScroll={true}
                   maxHeight={200}
                   placeholder={lockers}
-                  style={{marginTop: 10}}
+                  style={{ marginTop: 10 }}
                   mode="BADGE"
                   showBadgeDot={false}
                 />
@@ -544,15 +546,17 @@ const editListing = () => {
                   multiline={true}
                   scrollEnabled={false}
                   minHeight={80}
-                  style={{marginBottom:50}}
+                  style={{ marginBottom: 50 }}
                 />
 
-                <MessageBox
-                  style={{ marginTop: 10 }}
-                  success={isSuccessMessage}
-                >
-                  {message || " "}
-                </MessageBox>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
                 <View>
                   <View style={styles.nav}>
                     <View style={styles.buttonContainer}>
@@ -575,11 +579,11 @@ const editListing = () => {
                     </View>
                   </View>
                   <ConfirmationModal
-                        isVisible={showModal}
-                        onConfirm={handleDelist}
-                        onClose={handleCloseModal}
-                        type="Delete"
-                      />
+                    isVisible={showModal}
+                    onConfirm={handleDelist}
+                    onClose={handleCloseModal}
+                    type="Delete"
+                  />
                 </View>
                 {/* <RoundedButton
                   typography={"B1"}

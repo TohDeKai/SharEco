@@ -89,7 +89,8 @@ const createListing = () => {
           `http://${BASE_URL}:4000/api/v1/businessVerifications/businessVerificationId/${user.businessVerificationId}`
         );
         if (businessVerificationResponse.status === 200) {
-          const businessVerificationData = businessVerificationResponse.data.data.businessVerification;
+          const businessVerificationData =
+            businessVerificationResponse.data.data.businessVerification;
           setBusiness(businessVerificationData);
         }
       } catch (error) {
@@ -114,38 +115,38 @@ const createListing = () => {
     { label: "Sports Equipment", value: "Sports Equipment" },
     { label: "Vehicles", value: "Vehicles" },
   ]);
-  
-  const [locations, setLocations] = useState([
-    {label: "North South Line", value: "NSL"},
-    { label: "Jurong East", value: "Jurong East", parent:"NSL" },
-    { label: "Bukit Batok", value: "Bukit Batok", parent:"NSL" },
-    { label: "Bukit Gombak", value: "Bukit Gombak", parent:"NSL" },
-    { label: "Choa Chu Kang", value: "Choa Chu Kang", parent:"NSL" },
-    { label: "Yew Tee", value: "Yew Tee", parent:"NSL" },
-    { label: "Kranji", value: "Kranji", parent:"NSL" },
-    { label: "Marsiling", value: "Marsiling", parent:"NSL" },
-    { label: "Woodlands", value: "Woodlands", parent:"NSL" },
-    { label: "Admiralty", value: "Admiralty", parent:"NSL" },
-    { label: "Sembawang", value: "Sembawang", parent:"NSL" },
-    { label: "Canberra", value: "Canberra", parent:"NSL" },
-    { label: "Yishun", value: "Yishun", parent:"NSL" },
-    { label: "Khatib", value: "Khatib", parent:"NSL" },
-    { label: "Yio Chu Kang", value: "Yio Chu Kang", parent:"NSL" },
-    { label: "Ang Mo Kio", value: "Ang Mo Kio", parent:"NSL" },
-    { label: "Bishan", value: "Bishan", parent:"NSL" },
-    { label: "Braddell", value: "Braddell", parent:"NSL" },
-    { label: "Toa Payoh", value: "Toa Payoh", parent:"NSL" },
-    { label: "Novena", value: "Novena", parent:"NSL" },
-    { label: "Newton", value: "Newton", parent:"NSL" },
-    { label: "Orchard", value: "Orchard", parent:"NSL" },
-    { label: "Somerset", value: "Somerset", parent:"NSL" },
-    { label: "Dhoby Ghuat", value: "Dhoby Ghaut", parent:"NSL" },
-    { label: "City Hall", value: "City Hall", parent:"NSL" },
-    { label: "Raffles Place", value: "Raffles Place", parent:"NSL" },
-    { label: "Marina Bay", value: "Marina Bay", parent:"NSL" },
-    { label: "Marina South Pier", value: "Marina South Pier", parent:"NSL" },
 
-    {label: "East West Line", value: "EWL"},
+  const [locations, setLocations] = useState([
+    { label: "North South Line", value: "NSL" },
+    { label: "Jurong East", value: "Jurong East", parent: "NSL" },
+    { label: "Bukit Batok", value: "Bukit Batok", parent: "NSL" },
+    { label: "Bukit Gombak", value: "Bukit Gombak", parent: "NSL" },
+    { label: "Choa Chu Kang", value: "Choa Chu Kang", parent: "NSL" },
+    { label: "Yew Tee", value: "Yew Tee", parent: "NSL" },
+    { label: "Kranji", value: "Kranji", parent: "NSL" },
+    { label: "Marsiling", value: "Marsiling", parent: "NSL" },
+    { label: "Woodlands", value: "Woodlands", parent: "NSL" },
+    { label: "Admiralty", value: "Admiralty", parent: "NSL" },
+    { label: "Sembawang", value: "Sembawang", parent: "NSL" },
+    { label: "Canberra", value: "Canberra", parent: "NSL" },
+    { label: "Yishun", value: "Yishun", parent: "NSL" },
+    { label: "Khatib", value: "Khatib", parent: "NSL" },
+    { label: "Yio Chu Kang", value: "Yio Chu Kang", parent: "NSL" },
+    { label: "Ang Mo Kio", value: "Ang Mo Kio", parent: "NSL" },
+    { label: "Bishan", value: "Bishan", parent: "NSL" },
+    { label: "Braddell", value: "Braddell", parent: "NSL" },
+    { label: "Toa Payoh", value: "Toa Payoh", parent: "NSL" },
+    { label: "Novena", value: "Novena", parent: "NSL" },
+    { label: "Newton", value: "Newton", parent: "NSL" },
+    { label: "Orchard", value: "Orchard", parent: "NSL" },
+    { label: "Somerset", value: "Somerset", parent: "NSL" },
+    { label: "Dhoby Ghuat", value: "Dhoby Ghaut", parent: "NSL" },
+    { label: "City Hall", value: "City Hall", parent: "NSL" },
+    { label: "Raffles Place", value: "Raffles Place", parent: "NSL" },
+    { label: "Marina Bay", value: "Marina Bay", parent: "NSL" },
+    { label: "Marina South Pier", value: "Marina South Pier", parent: "NSL" },
+
+    { label: "East West Line", value: "EWL" },
     { label: "Pasir Ris", value: "Pasir Ris", parent: "EWL" },
     { label: "Tampines", value: "Tampines", parent: "EWL" },
     { label: "Simei", value: "Simei", parent: "EWL" },
@@ -182,7 +183,7 @@ const createListing = () => {
     { label: "Expo", value: "Expo", parent: "EWL" },
     { label: "Changi Airport", value: "Changi Airport", parent: "EWL" },
 
-    {label: "North East Line", value: "NEL"},
+    { label: "North East Line", value: "NEL" },
     { label: "HarbourFront", value: "HarbourFront", parent: "NEL" },
     { label: "Outram Park", value: "Outram Park", parent: "NEL" },
     { label: "Chinatown", value: "Chinatown", parent: "NEL" },
@@ -200,7 +201,7 @@ const createListing = () => {
     { label: "Sengkang", value: "Sengkang", parent: "NEL" },
     { label: "Punggol", value: "Punggol", parent: "NEL" },
 
-    {label: "Circle Line", value: "CCL"},
+    { label: "Circle Line", value: "CCL" },
     { label: "Dhoby Ghaut", value: "Dhoby Ghaut", parent: "CCL" },
     { label: "Bras Basah", value: "Bras Basah", parent: "CCL" },
     { label: "Esplanade", value: "Esplanade", parent: "CCL" },
@@ -232,7 +233,7 @@ const createListing = () => {
     { label: "Bayfront", value: "Bayfront", parent: "CCL" },
     { label: "Marina Bay", value: "Marina Bay", parent: "CCL" },
 
-    {label: "Downtown Line", value: "DTL"},
+    { label: "Downtown Line", value: "DTL" },
     { label: "Bukit Panjang", value: "Bukit Panjang", parent: "DTL" },
     { label: "Cashew", value: "Cashew", parent: "DTL" },
     { label: "Hillview", value: "Hillview", parent: "DTL" },
@@ -268,7 +269,7 @@ const createListing = () => {
     { label: "Upper Changi", value: "Upper Changi", parent: "DTL" },
     { label: "Expo", value: "Expo", parent: "DTL" },
 
-    {label: "Thomson-East Coast Line", value: "TEL"},
+    { label: "Thomson-East Coast Line", value: "TEL" },
     { label: "Woodlands North", value: "Woodlands North", parent: "TEL" },
     { label: "Woodlands", value: "Woodlands", parent: "TEL" },
     { label: "Woodlands South", value: "Woodlands South", parent: "TEL" },
@@ -290,16 +291,22 @@ const createListing = () => {
     { label: "Marina Bay", value: "Marina Bay", parent: "TEL" },
     { label: "Gardens by the Bay", value: "Gardens by the Bay", parent: "TEL" },
   ]);
-  
+
   const [checklistItems, setChecklistItems] = useState([
     { label: "No new cosmetic damage", value: "No new cosmetic damage" },
     { label: "No new functional damage", value: "No new functional damage" },
     { label: "Item has been cleaned", value: "Item has been cleaned" },
     { label: "Item has been sanitised", value: "Item has been sanitised" },
-    { label: "Battery has been charged fully", value: "Battery has been charged fully" },
+    {
+      label: "Battery has been charged fully",
+      value: "Battery has been charged fully",
+    },
     { label: "Memory has been cleared", value: "Memory has been cleared" },
-    { label: "All included accessories have been returned", value: "All included accessories have been returned" },
-  ])
+    {
+      label: "All included accessories have been returned",
+      value: "All included accessories have been returned",
+    },
+  ]);
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -474,16 +481,17 @@ const createListing = () => {
             }}
             onSubmit={(values, actions) => {
               if (
-                images == [null, null, null, null, null],
+                (images == [null, null, null, null, null],
                 values.title == "" ||
-                values.originalPrice == 0.0 ||
-                //values.depositFee == 0.0 ||
-                values.description == "" ||
-                category == "" ||
-                //if both per hour and per day rental not specified
-                (values.rentalRateHour == 0.0 && values.rentalRateDay == 0.0) ||
-                //if both picklocker or meetup location not specified
-                (lockers.length == 0 && values.meetupLocation == "")
+                  values.originalPrice == 0.0 ||
+                  //values.depositFee == 0.0 ||
+                  values.description == "" ||
+                  category == "" ||
+                  //if both per hour and per day rental not specified
+                  (values.rentalRateHour == 0.0 &&
+                    values.rentalRateDay == 0.0) ||
+                  //if both picklocker or meetup location not specified
+                  (lockers.length == 0 && values.meetupLocation == ""))
               ) {
                 setMessage("Please fill in all fields");
                 setIsSuccessMessage(false);
@@ -531,7 +539,7 @@ const createListing = () => {
                   autoScroll={true}
                   maxHeight={200}
                   placeholder="Select a category"
-                  style={{marginTop: 10}}
+                  style={{ marginTop: 10 }}
                 />
 
                 <RegularText typography="H3" style={styles.headerText}>
@@ -625,7 +633,7 @@ const createListing = () => {
                   autoScroll={true}
                   maxHeight={200}
                   placeholder="Select locations"
-                  style={{marginTop: 10}}
+                  style={{ marginTop: 10 }}
                   mode="BADGE"
                   showBadgeDot={false}
                 />
@@ -657,7 +665,7 @@ const createListing = () => {
                   autoScroll={true}
                   maxHeight={200}
                   placeholder="Select handover checklist criteria"
-                  style={{marginTop: 10}}
+                  style={{ marginTop: 10 }}
                   mode="BADGE"
                   showBadgeDot={false}
                 />
@@ -693,12 +701,14 @@ const createListing = () => {
                     </RegularText>
                   </Pressable>
                 </View>
-                <MessageBox
-                  style={{ marginTop: 10 }}
-                  success={isSuccessMessage}
-                >
-                  {message || " "}
-                </MessageBox>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
                 <RoundedButton
                   typography={"B1"}
                   color={white}
