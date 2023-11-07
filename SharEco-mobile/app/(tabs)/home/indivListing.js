@@ -51,9 +51,17 @@ const ItemInformation = () => {
   const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
   const { itemId } = params;
+  const { getUserData } = useAuth();
 
   const handleBack = () => {
     router.back();
+  };
+
+  const handleReport = () => {
+    router.push({
+      pathname: "/home/report",
+      params: { itemId: itemId, reportType: "LISTING" },
+    });
   };
 
   const handleRefresh = async () => {
@@ -98,6 +106,7 @@ const ItemInformation = () => {
 
   useEffect(() => {
     async function fetchData() {
+      const loggedInUserData = await getUserData();
       try {
         const itemResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
@@ -121,6 +130,19 @@ const ItemInformation = () => {
             );
             if (ratingsResponse.status === 200) {
               setRatings(ratingsResponse.data.data);
+            }
+
+            const impressionResponse = await axios.post(
+              `http://${BASE_URL}:4000/api/v1/impression`,
+              {
+                itemId: item.itemId,
+                userId: loggedInUserData.userId,
+              }
+            );
+            if (impressionResponse.status === 201) {
+              console.log("Created impression successfully");
+            } else {
+              console.log("Failed to create impression");
             }
           } else {
             console.log("Failed to retrieve user");
@@ -165,7 +187,9 @@ const ItemInformation = () => {
         <View style={style.imgContainer}>
           <View style={style.header}>
             <Header action="back" onPress={handleBack} />
+            <Header action="report" onPress={handleReport} />
           </View>
+
           <View style={{ marginTop: -31 }}>
             <CustomSlider data={images} />
           </View>

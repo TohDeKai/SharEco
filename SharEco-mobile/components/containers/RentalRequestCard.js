@@ -32,9 +32,7 @@ const RentalRequestCard = (props) => {
   const currentDate = new Date();
 
   // check if rental is hourly
-  const isHourly =
-    new Date(startDate).setHours(0, 0, 0, 0) ===
-    new Date(endDate).setHours(0, 0, 0, 0);
+  const isHourly = rental.isHourly;
 
   const dateDifferenceMs = endDate - startDate;
 
@@ -50,15 +48,12 @@ const RentalRequestCard = (props) => {
   const dailyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60 * 24));
 
   // calculate hourly rental details
-  const rentalDay = startDate.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
   const startTime = startDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
+    hour: "numeric", minute: "numeric",
   });
-  const endTime = endDate.toLocaleTimeString("en-US", { hour: "numeric" });
+  const endTime = endDate.toLocaleTimeString("en-US", { 
+    hour: "numeric", minute: "numeric",
+  });
   const hourlyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60));
 
   // calculate accept countdown
@@ -212,10 +207,15 @@ const RentalRequestCard = (props) => {
                   {item && item.itemTitle}
                 </RegularText>
                 {isHourly ? (
-                  <RegularText typography="Subtitle">
-                    {rentalDay}, {startTime} - {endTime} ({hourlyRentalLength}{" "}
-                    {hourlyRentalLength == 1 ? "Hour" : "Hours"})
-                  </RegularText>
+                  <View>
+                    <RegularText typography="Subtitle">
+                      {startDay} {hourlyRentalLength > 24 ? ` - ${endDay}` : ""} 
+                    </RegularText>
+                    <RegularText typography="Subtitle">
+                      {startTime} - {endTime} ({hourlyRentalLength}{" "}
+                      {hourlyRentalLength == 1 ? "Hour" : "Hours"})
+                    </RegularText>
+                  </View>
                 ) : (
                   <RegularText typography="Subtitle">
                     {startDay} - {endDay} ({dailyRentalLength}{" "}

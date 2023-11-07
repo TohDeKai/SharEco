@@ -39,14 +39,14 @@ const Sidebar = () => {
   // Menu items
   const customListItems = [
     {
-      text: "Overview",
-      path: "/overview",
-      icon: <AnalyticsOutlinedIcon />,
-    },
-    {
       text: "Dashboard",
       path: "/",
       icon: <SpaceDashboardOutlinedIcon />,
+    },
+    {
+      text: "Overview",
+      path: "/overview",
+      icon: <AnalyticsOutlinedIcon />,
     },
     {
       text: "Rental",
