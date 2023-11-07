@@ -28,8 +28,8 @@ const createItem = async (
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."item" 
-        ("userId", "itemTitle", "itemDescription", "itemOriginalPrice", "rentalRateHourly", "rentalRateDaily", "depositFee", images, category, "collectionLocations", "otherLocation", "usersLikedCount", impressions, "totalRentCollected", "isBusiness", "checklistCriteria") 
-          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning *`,
+        ("userId", "itemTitle", "itemDescription", "itemOriginalPrice", "rentalRateHourly", "rentalRateDaily", "depositFee", images, category, "collectionLocations", "otherLocation", "isBusiness", "checklistCriteria") 
+          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`,
       [
         userId,
         itemTitle,
@@ -42,9 +42,6 @@ const createItem = async (
         category,
         collectionLocations,
         otherLocation,
-        0,
-        0,
-        0,
         isBusiness,
         checklistCriteria,
       ]
