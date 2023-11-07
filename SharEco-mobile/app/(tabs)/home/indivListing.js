@@ -186,11 +186,21 @@ const ItemInformation = () => {
       >
         <View style={style.imgContainer}>
           <View style={style.header}>
-            <Header action="back" onPress={handleBack} />
-            <Header action="report" onPress={handleReport} />
+            <Ionicons
+              name="chevron-back-outline"
+              size={28}
+              color={black}
+              onPress={handleBack}
+            />
+            <Ionicons
+              name="alert-circle-outline"
+              size={28}
+              color={black}
+              onPress={handleReport}
+            />
           </View>
 
-          <View style={{ marginTop: -31 }}>
+          <View style={{ marginTop: -70 }}>
             <CustomSlider data={images} />
           </View>
         </View>
@@ -535,6 +545,10 @@ const style = StyleSheet.create({
   header: {
     top: 30,
     zIndex: 100,
+    marginHorizontal: viewportWidthInPixels(5),
+    marginVertical: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   container: {
     backgroundColor: white,
