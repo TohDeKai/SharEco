@@ -1713,6 +1713,42 @@ app.post("/api/v1/spotlight", async (req, res) => {
   }
 });
 
+//get ongoing spotlight by itemId
+app.get("/api/v1/spotlight/:itemId", async (req, res) => {
+  try {
+    const spotlight = await spotlightdb.getOngoingSpotlightByItemId(
+      req.params.itemId
+    );
+    res.status(200).json({
+      status: "success",
+      data: {
+        spotlight: spotlight,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//get all ongoing spotlights
+app.get("/api/v1/spotlight", async (req, res) => {
+  try {
+    const spotlight = await spotlightdb.getOngoingSpotlights();
+    res.status(200).json({
+      status: "success",
+      data: {
+        spotlight: spotlight,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 app.put(
   "/api/v1/rental/rentalId/:rentalId/handoverChecklist",
   async (req, res) => {
