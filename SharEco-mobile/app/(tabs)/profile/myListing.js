@@ -50,6 +50,8 @@ const ItemInformation = () => {
   const [user, setUser] = useState("");
   const params = useLocalSearchParams();
   const { itemId } = params;
+  const [hasOngoingSpotlight, setHasOngoingSpotlight] = useState(false);
+  const [spotlightEndDate, setSpotlightEndDate] = useState();
   //setListingItemId({itemId});
   const handleBack = () => {
     router.back();
@@ -68,6 +70,23 @@ const ItemInformation = () => {
         if (response.status === 200) {
           const item = response.data.data.item;
           setListingItem(item);
+        } else {
+          // Shouldn't come here
+          console.log("Failed to retrieve items");
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+      try {
+        const spotlightData = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/spotlight/${itemId}`
+        );
+        if (spotlightData.status === 200) {
+          const spotlight = spotlightData.data.data.spotlight;
+          if (spotlight != null ) {
+            setHasOngoingSpotlight(true);
+            setSpotlightEndDate(spotlight.endDate);
+          }
         } else {
           // Shouldn't come here
           console.log("Failed to retrieve items");
@@ -122,24 +141,49 @@ const ItemInformation = () => {
               marginBottom: viewportHeightInPixels(2),
             }}
           >
-            <PrimaryButton
-              typography="H4"
-              color={white}
-              onPress={() => {
-                router.push({
-                  pathname: "profile/spotlight",
-                  params: { itemId: itemId },
-                });
-              }}
-              style={{
-                width: viewportWidthInPixels(30),
+            {hasOngoingSpotlight ? (
+              <View style={{
+                width: viewportWidthInPixels(50),
                 alignSelf: "flex-end",
-                height: 40,
+                height: 50,
+                borderRadius:10,
+                padding:5,
                 backgroundColor: dark,
-              }}
-            >
-              Spotlight
-            </PrimaryButton>
+                alignItems:"center"
+              }}>
+                <RegularText typography="H4" color={white}>
+                  Spotlighted 
+                </RegularText>
+                <RegularText typography="Subtitle" color={white}>
+                until {new Date(spotlightEndDate).toLocaleDateString("en-GB", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+                </RegularText>
+              </View>
+            ) : (
+              <PrimaryButton
+                typography="H4"
+                color={white}
+                onPress={() => {
+                  router.push({
+                    pathname: "profile/spotlight",
+                    params: { itemId: itemId },
+                  });
+                }}
+                style={{
+                  width: viewportWidthInPixels(30),
+                  alignSelf: "flex-end",
+                  height: 40,
+                  backgroundColor: dark,
+                }}
+              >
+                Spotlight
+              </PrimaryButton>
+            )}
           </View>
 
           <View style={style.title}>
