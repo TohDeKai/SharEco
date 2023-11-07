@@ -1550,7 +1550,7 @@ app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
 app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
-    const intervals = await rentaldb.getAvailByRentalIdAndDate(
+    const intervals = await rentaldb.getAvailByItemIdAndDate(
       req.params.itemId,
       req.params.date
     );

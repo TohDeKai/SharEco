@@ -442,13 +442,6 @@ const createRentals = () => {
     return today;
   };
 
-  const chosenStart = () => {
-    if (endDate < startDate) {
-      setEndDate(startDate);
-    }
-    return new Date(startDate);
-  };
-
   const Tabs = ({ activeTab, handleTabPress }) => {
     return (
       <View style={styles.tabContainer}>
@@ -528,7 +521,7 @@ const createRentals = () => {
   // Hourly booking
   // Fetch daily time availabilities for start date
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAvailForStartDate = async () => {
       try {
         console.log("SelectedDate: ", startDate);
         const formattedDate = stringDate(startDate);
@@ -547,13 +540,13 @@ const createRentals = () => {
         console.error(error.message);
       }
     };
-    fetchData();
+    fetchAvailForStartDate();
   }, [startDate]);
 
   // Hourly booking
   // Fetch daily time availabilities for end date
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAvailForEndDate = async () => {
       try {
         console.log("SelectedDate: ", endDate);
         const formattedDate = stringDate(endDate);
@@ -572,7 +565,7 @@ const createRentals = () => {
         console.error(error.message);
       }
     };
-    fetchData();
+    fetchAvailForEndDate();
   }, [endDate]);
 
   const dayBefore = (date) => {
@@ -585,7 +578,7 @@ const createRentals = () => {
   // Hourly booking
   // To get next booking to limit endDate selection in calendar
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchNextBooking = async () => {
       try {
         console.log("SelectedDate: ", startDate);
         const formattedDate = stringDate(startDate);
@@ -604,7 +597,7 @@ const createRentals = () => {
         console.error(error.message);
       }
     };
-    fetchData();
+    fetchNextBooking();
   }, [startDate]);
 
   const Availability = ({ avails }) => {
