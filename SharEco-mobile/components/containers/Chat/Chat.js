@@ -1,10 +1,20 @@
-import React from "react";
+import React, { useEffect, useState, useLayoutEffect } from "react";
 import { View, Text, Pressable, SafeAreaView, FlatList } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import ChatComponent from "./ChatComponent";
 import { styles } from "../../../styles/chat";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  or,
+  onSnapshot,
+} from "firebase/firestore";
+import { fireStoreDB } from "../../../app/utils/firebase";
+import { useAuth } from "../../../context/auth";
 
-const Chat = () => {
+const Chat = (props) => {
   //👇🏻 Dummy list of rooms
   const rooms = [
     {
@@ -44,6 +54,29 @@ const Chat = () => {
       ],
     },
   ];
+
+  const [chatRooms, setChatRooms] = useState([]);
+
+  useLayoutEffect(() => {
+    const chatsRef = collection(fireStoreDB, "chats");
+    const userId = parseInt(props.userId);
+    // const q = query(
+    //   chatsRef,
+    //   where("user1", "==", userId).orWhere("user2", "==", userId)
+    // );
+
+    const q = query(
+      collection(fireStoreDB, "chats"),
+      or(where("user2", "==", userId), where("user1", "==", userId))
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const chatRooms = [...querySnapshot.docs].map((doc) => doc.data());
+      console.log("CHATROOMS", chatRooms);
+      setChatRooms(chatRooms);
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <SafeAreaView>

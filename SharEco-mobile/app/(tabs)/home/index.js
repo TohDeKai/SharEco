@@ -186,7 +186,7 @@ const Content = ({ navigation, activeTab }) => {
       privateItems.push(item);
     }
   }
-  
+
   return (
     <View style={{ flex: 1 }}>
       {/* handles when there are no listings */}
@@ -255,7 +255,7 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -269,7 +269,7 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -282,6 +282,21 @@ const Content = ({ navigation, activeTab }) => {
 const home = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [advertisements, setAdvertisements] = useState({});
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, [user]);
 
   //suppresses nested scrollview error
   useEffect(() => {
@@ -297,7 +312,11 @@ const home = () => {
     <SafeAreaContainer>
       <SearchBarHeader
         onPressChat={() => {
-          router.push("home/chats");
+          // router.push("home/chats");
+          router.push({
+            pathname: "home/chats",
+            params: { userId: user.userId },
+          });
         }}
         onPressWishlist={() => {
           router.push("home/wishlist");
