@@ -47,8 +47,8 @@ export default function ListingCard({ item, mine }) {
   };
 
   const toIndivListing = () => {
-    router.push({pathname: "home/indivListing", params: { itemId: itemId }});
-  }
+    router.push({ pathname: "home/indivListing", params: { itemId: itemId } });
+  };
 
   return (
     <Pressable onPress={mine ? toMyListing : toIndivListing}>
@@ -121,11 +121,10 @@ export default function ListingCard({ item, mine }) {
           </RegularText>
           {mine && (
             <Pressable onPress={toInsights}>
-              <View style={{flexDirection: "row", gap: "5px"}}>
-                <Ionicons name="trending-up-outline" size={18} color={secondary} />
-                <RegularText 
-                  typography="B3"
-                  color={secondary}>View Insights
+              <View style={style.insights}>
+                <Ionicons name="trending-up-outline" size={18} color={dark} />
+                <RegularText typography="B3" color={dark}>
+                  View Insights
                 </RegularText>
               </View>
             </Pressable>
@@ -162,5 +161,16 @@ const style = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 1,
+  },
+  insights: { 
+    flexDirection: "row",
+    gap: "5px",
+    justifyContent: "center",
+    backgroundColor: inputbackground,
+    paddingRight: 8,
+    paddingTop: 6,
+    paddingBottom: 3,
+    borderRadius: 15,
+    marginTop: 5,
   },
 });

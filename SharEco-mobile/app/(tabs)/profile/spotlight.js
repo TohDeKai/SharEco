@@ -162,7 +162,7 @@ const Footer = ({ activeButton, spotlightDetails }) => {
   };
 
   return (
-    <View style={{bottom:-viewportHeightInPixels(12.9)}}>
+    <View style={{bottom:-viewportHeightInPixels(10)}}>
       <View>
         <MessageBox style={{ marginBottom: 10 }} success={isSuccessMessage}>
           {message || " "}
@@ -204,7 +204,7 @@ const Content = () => {
   };
 
   return (
-    <View style={{ height: viewportHeightInPixels(79) }}>
+    <View style={{ height: viewportHeightInPixels(60) }}>
       <Header title="Spotlight" action="back" onPress={handleBack} />
       <View style={{ marginVertical: 30 }}>
         <RegularText
@@ -266,10 +266,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   nav: {
-    bottom: -viewportHeightInPixels(7.5),
     width: "100%",
     position: "absolute",
-    height: 70,
+    height: 80,
     justifyContent: "center",
     backgroundColor: white,
     flex: 1,

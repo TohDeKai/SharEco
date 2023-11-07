@@ -389,6 +389,14 @@ const editRentalRequest = () => {
                     </View>
                   </View>
                 </View>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
                 <RoundedButton
                   typography={"B1"}
                   color={white}

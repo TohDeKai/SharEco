@@ -79,8 +79,14 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
   );
 };
 
+//Sunday -> Saturday
 const adPeriod = () => {
   const today = new Date();
+  // If it's saturday (vetting period, end of bidding week)
+  if (today.getDay() === 6) {
+    // Move onto next week
+    today.setDate(today.getDate() + 7);
+  }
   const daysUntilSunday = 7 - today.getDay();
   const startSunday = new Date(today);
   startSunday.setDate(today.getDate() + daysUntilSunday);
@@ -101,21 +107,22 @@ const adPeriod = () => {
   return `${startString} - ${endString}`;
 };
 
-const biddingPeriod = () => {
-  const today = new Date();
-  const daysUntilSunday = 7 - today.getDay();
-  const startSunday = new Date(today);
-  startSunday.setDate(today.getDate() + daysUntilSunday);
-  startSunday.setHours(0, 0, 0, 0);
-  const endSaturday = new Date(today);
-  endSaturday.setDate(startSunday.getDate() + 6);
-  endSaturday.setHours(0, 0, 0, 0);
+//Saturday -> Friday
+// const biddingPeriod = () => {
+//   const today = new Date();
+//   const daysUntilSaturday = 6 - today.getDay();
+//   const startSaturday = new Date(today);
+//   startSaturday.setDate(today.getDate() + daysUntilSaturday);
+//   startSaturday.setHours(0, 0, 0, 0);
+//   const endFriday = new Date(startSaturday);
+//   endFriday.setDate(startSaturday.getDate() + 6);
+//   endFriday.setHours(0, 0, 0, 0);
 
-  const startString = startSunday.toISOString().split("T")[0];
-  const endString = endSaturday.toISOString().split("T")[0];
+//   const startString = startSaturday.toISOString().split("T")[0];
+//   const endString = endFriday.toISOString().split("T")[0];
 
-  return `${startString} - ${endString}`;
-};
+//   return `${startString} - ${endString}`;
+// };
 
 const dashboard = () => {
   const { getUserData } = useAuth();
@@ -583,7 +590,7 @@ const dashboard = () => {
                   />
                 }
                 style={{
-                  height: viewportHeightInPixels(44.5),
+                  height: viewportHeightInPixels(47.5),
                   paddingBottom: 15,
                 }}
               />
@@ -720,7 +727,7 @@ const dashboard = () => {
     <SafeAreaContainer>
       <View>
         <Header title="Business Dashboard" action="back" onPress={handleBack} />
-        <View style={{ paddingTop: 20 }}>
+        <View style={{ paddingTop: 6 }}>
           <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         </View>
         <View style={styles.container}>

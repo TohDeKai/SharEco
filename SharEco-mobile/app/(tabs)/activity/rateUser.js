@@ -10,7 +10,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { Formik, Field } from "formik";
 import { router, useLocalSearchParams } from "expo-router";
-import { RatingInput } from 'react-native-stock-star-rating';
+import { RatingInput } from "react-native-stock-star-rating";
 import axios from "axios";
 
 // AWS Amplify
@@ -51,7 +51,7 @@ const rateUser = () => {
   const [rental, setRental] = useState({});
   const [reviewerId, setReviewerId] = useState(-1);
   const [revieweeId, setRevieweeId] = useState(-1);
-  const [rating,setRating] = useState(0);
+  const [rating, setRating] = useState(0);
 
   useEffect(() => {
     async function fetchRentalData() {
@@ -103,17 +103,17 @@ const rateUser = () => {
 
         var url;
         if (revieweeIsLenderBoolean) {
-          url = `http://${BASE_URL}:4000/api/v1/rental/borrowerReview/${rentalId}/${reviewId}`
+          url = `http://${BASE_URL}:4000/api/v1/rental/borrowerReview/${rentalId}/${reviewId}`;
         } else {
-          url = `http://${BASE_URL}:4000/api/v1/rental/lenderReview/${rentalId}/${reviewId}`
+          url = `http://${BASE_URL}:4000/api/v1/rental/lenderReview/${rentalId}/${reviewId}`;
         }
-        
+
         const updateResponse = await axios.patch(url);
 
         if (updateResponse.status === 200) {
           console.log("Rental updated with reviewId");
           router.back();
-        }        
+        }
       } else {
         //shouldnt come here
         console.log("Review creation unsuccessful");
@@ -140,8 +140,7 @@ const rateUser = () => {
               if (rating == 0) {
                 setMessage("Please provide a rating");
                 setIsSuccessMessage(false);
-              }
-              else if (values.comments == "") {
+              } else if (values.comments == "") {
                 setMessage("Please provide a review");
                 setIsSuccessMessage(false);
               } else {
@@ -158,12 +157,12 @@ const rateUser = () => {
                 <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
                   Rate the {revieweeIsLenderBoolean ? "lender" : "borrower"}
                 </RegularText>
-                <RatingInput 
-                  rating={rating} 
-                  setRating={setRating} 
-                  size={36}  
-                  maxStars={5} 
-                  bordered={false}  
+                <RatingInput
+                  rating={rating}
+                  setRating={setRating}
+                  size={36}
+                  maxStars={5}
+                  bordered={false}
                   color={yellow}
                 />
 
@@ -171,7 +170,10 @@ const rateUser = () => {
                   Write a review
                 </RegularText>
                 <StyledTextInput
-                  placeholder={"Share more about your experiences with this rental and " + (revieweeIsLenderBoolean ? "lender" : "borrower") }
+                  placeholder={
+                    "Share more about your experiences with this rental and " +
+                    (revieweeIsLenderBoolean ? "lender" : "borrower")
+                  }
                   value={values.comments}
                   onChangeText={handleChange("comments")}
                   maxLength={300}
@@ -180,12 +182,14 @@ const rateUser = () => {
                   minHeight={120}
                 />
 
-                <MessageBox
-                  style={{ marginTop: 10 }}
-                  success={isSuccessMessage}
-                >
-                  {message || " "}
-                </MessageBox>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
                 <RoundedButton
                   typography={"B1"}
                   color={white}

@@ -36,20 +36,6 @@ const createAd = async (image, title, description, bidPrice, bizId, link) => {
   }
 };
 
-// Get all PENDING Advertisment
-const getAdsReq = async () => {
-  try {
-    const result = await pool.query(
-      `SELECT COUNT("advertisementId") FROM "sharEco-schema".advertisement 
-    WHERE "status" = $1`,
-      ["PENDING"]
-    );
-    return result.rows[0];
-  } catch (error) {
-    throw error;
-  }
-};
-
 // Update images for an ad
 const updateAdImage = async (adId, image) => {
   try {
@@ -73,8 +59,13 @@ const updateAdImage = async (adId, image) => {
 
 const getStartBidDate = () => {
   const today = new Date();
+  // If it's saturday (vetting period, end of bidding week)
+  if (today.getDay() === 6) {
+    // Move onto next week
+    today.setDate(today.getDate() + 7);
+  }
   const dayOfWeek = today.getDay();
-  const daysUntilSunday = 0 - dayOfWeek + 7 + 1;
+  const daysUntilSunday = 7 - dayOfWeek;
   const nextSunday = new Date(today);
   nextSunday.setDate(today.getDate() + daysUntilSunday);
   nextSunday.setHours(0, 0, 0, 0);
@@ -172,6 +163,35 @@ const rankWeekAds = async () => {
   }
 };
 
+// Get all PENDING Advertisment
+const getAdsReq = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT("advertisementId") FROM "sharEco-schema".advertisement 
+    WHERE "status" = $1`,
+      ["PENDING"]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Get all APPROVED Advertisement
+const getActiveAds = async() => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."advertisement" 
+      WHERE "status" = $1
+      ORDER BY "bidPrice" DESC`,
+      ["ACTIVE"]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
 module.exports = {
   createAd,
   updateAdImage,
@@ -182,4 +202,5 @@ module.exports = {
   getWeekAdsByStartDate,
   rankWeekAds,
   getAdsReq,
+  getActiveAds,
 };
