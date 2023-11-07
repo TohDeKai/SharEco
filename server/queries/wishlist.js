@@ -13,8 +13,8 @@ const pool = new Pool({
 const createWishList = async (itemId, userId) => {
   try {
     const result = await pool.query(
-      `INSERT INTO "sharEco-schema"."wishlist" ("itemId", "userId") 
-      values ($1, $2) returning *`,
+      `INSERT INTO "sharEco-schema"."wishlist" ("itemId", "userId", "wishlistDate") 
+      values ($1, $2, CURRENT_TIMESTAMP) returning *`,
       [itemId, userId]
     );
     return result.rows[0];
@@ -84,10 +84,29 @@ const getWishlistByItemIdAndUserId = async (itemId, userId) => {
   }
 };
 
+// Get likes by userId 
+const getLikesByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT w.*
+      FROM "sharEco-schema"."wishlist" w
+      INNER JOIN "sharEco-schema"."item" item ON w."itemId" = item."itemId"
+      WHERE item."userId" = $1
+      `,
+      [userId]
+    );
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createWishList,
   removeWishlist,
   getWishlistByItemId,
   getItemsByWishlistUserId,
   getWishlistByItemIdAndUserId,
+  getLikesByUserId,
 }

@@ -349,6 +349,50 @@ const getTransactionsByType = async (type) => {
   }
 };
 
+const getRentalEarningsByUserId = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT t.*
+      FROM "sharEco-schema"."transaction" t
+      WHERE "transactionType" = 'RENTAL_INCOME' AND "receiverId" = $1`,
+      [userId]
+    );
+    if (result.rows.length > 0) {
+      return result.rows;
+    } else {
+      // If no rows found, return "$0"
+      return [{ userId, totalEarnings: "$0" }];
+    }
+  } catch (err) {
+    throw err;
+  }
+}
+
+const getRevenueData = async () => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        SUM(CASE WHEN "transactionType" = 'RENTAL_PAYMENT' THEN ("amount"::numeric) ELSE 0 END) -
+        SUM(CASE WHEN "transactionType" IN ('CANCELLATION_REFUND') THEN ("amount"::numeric) ELSE 0 END) AS revenue,
+        SUM(CASE WHEN "transactionType" = 'ADS' THEN ("amount"::numeric) ELSE 0 END) AS ads,
+        SUM(CASE WHEN "transactionType" = 'SPOTLIGHT' THEN ("amount"::numeric) ELSE 0 END) AS spotlight
+      FROM "sharEco-schema"."transaction"
+    `);
+
+    const revenue = result.rows[0].revenue;
+    const ads = result.rows[0].ads;
+    const spotlight = result.rows[0].spotlight;
+
+    return {
+      revenue,
+      ads,
+      spotlight,
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createTransaction,
   getTransactionsByReceiverId,
@@ -359,4 +403,6 @@ module.exports = {
   createWithdrawalRequest,
   approveWithdrawalRequest,
   getTransactionsByType,
+  getRentalEarningsByUserId,
+  getRevenueData
 };

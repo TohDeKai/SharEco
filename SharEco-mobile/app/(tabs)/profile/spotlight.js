@@ -127,7 +127,7 @@ const Footer = ({ activeButton, spotlightDetails }) => {
         const transactionData = {
           senderId: user.userId,
           amount: details.price,
-          transactionType: "ADS",
+          transactionType: "SPOTLIGHT",
         };
 
         const response = await axios.post(

@@ -1,5 +1,5 @@
-import { View, StyleSheet, Dimensions, Pressable } from 'react-native';
-import React from 'react';
+import { View, StyleSheet, Dimensions, Pressable } from "react-native";
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
@@ -21,20 +21,33 @@ const Header = (props) => {
   let icon = "";
   if (props.action === "back") {
     icon = "chevron-back-outline";
+  } else if (props.action === "report") {
+    icon = "alert-circle-outline";
   } else if (props.action === "close") {
     icon = "close";
   }
+
+  let buttonStyle = {};
+
+  if (props.action === "report") {
+    buttonStyle = styles.actionButton;
+  } else {
+    buttonStyle = styles.backButton;
+  }
   return (
     <View style={styles.headerContainer}>
-    <Pressable 
-          onPress={props.onPress}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.5 : 1,
-            ...styles.backButton 
-  })}>  
-      <Ionicons name={icon} size={28} color={black}/>
-    </Pressable>
-      <RegularText typography="H2" style={styles.header}>{props.title}</RegularText>
+      <Pressable
+        onPress={props.onPress}
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.5 : 1,
+          ...buttonStyle,
+        })}
+      >
+        <Ionicons name={icon} size={28} color={black} />
+      </Pressable>
+      <RegularText typography="H2" style={styles.header}>
+        {props.title}
+      </RegularText>
     </View>
   );
 };
@@ -55,5 +68,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 15,
     top: 17,
+  },
+  actionButton: {
+    position: "absolute",
+    left: 375,
+    top: -8,
   },
 });
