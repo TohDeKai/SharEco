@@ -2922,6 +2922,7 @@ app.post("/api/v1/report", async (req, res) => {
     supportingImages,
     responseText,
     responseImages,
+    targetId,
   } = req.body;
 
   try {
@@ -2933,7 +2934,8 @@ app.post("/api/v1/report", async (req, res) => {
       description,
       supportingImages,
       responseText,
-      responseImages
+      responseImages,
+      targetId
     );
 
     // Send the newly created user as the response
@@ -2985,6 +2987,30 @@ app.put("/api/v1/report/status/:reportId", async (req, res) => {
     const status = req.body.status;
     const reportId = req.params.reportId;
     const report = await reportdb.updateReportStatus(status, reportId);
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// UPDATE report with supporting images
+app.put("/api/v1/report/images/:reportId", async (req, res) => {
+  try {
+    const images = req.body.images;
+    const reportId = req.params.reportId;
+    const report = await reportdb.updateSupportingImages(images, reportId);
     if (report) {
       res.status(200).json({
         status: "success",

@@ -30,6 +30,8 @@ import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import DropdownList from "../../../components/inputs/DropdownList";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
+import { useAuth } from "../../../context/auth";
+
 const { white, primary, inputbackground, black } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -48,6 +50,7 @@ const report = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const params = useLocalSearchParams();
   const { itemId, reportType } = params;
+  const { getUserData } = useAuth();
   const [item, setItem] = useState({});
   const [selectedReason, setSelectedReason] = React.useState("");
 
@@ -78,7 +81,7 @@ const report = () => {
   ]);
 
   const reasons = [
-    { key: "1", value: "Suspicious Account" },
+    { key: "1", value: "Suspicious Listing" },
     { key: "2", value: "Items wrongly categorized" },
     { key: "3", value: "Selling counterfeit items" },
     { key: "4", value: "Duplicate posts" },
@@ -174,7 +177,53 @@ const report = () => {
     router.back();
   };
 
-  const handleSubmitReport = async () => {};
+  const handleSubmitReport = async (values) => {
+    try {
+      const userData = await getUserData();
+      const userId = userData.userId;
+      const reportData = {
+        reportType: reportType,
+        reportStatus: "PENDING",
+        reporterId: userId,
+        reason: selectedReason,
+        description: values.description,
+        supportingImages: [],
+        responseText: "",
+        responseImages: [],
+        targetId: item.itemId,
+      };
+
+      const reportResponse = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/report`,
+        reportData
+      );
+
+      console.log(reportData);
+      const reportId = reportResponse.data.report.reportId;
+      //handle upload all images and returns the array of uris
+      const uploadedURIs = await uploadImageFiles(imagesResult, reportId);
+
+      const response = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/report/images/${reportId}}`,
+        uploadedURIs
+      );
+
+      if (response.status == 201) {
+        console.log("Report form submitted successfully");
+        setImages([null, null, null, null, null]);
+        setImagesResult([null, null, null, null, null]);
+        router.back();
+      } else {
+        console.log("Report form submission unsuccessfully");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 500) {
+        console.log("Internal server error");
+      } else {
+        console.log("Error during item creation: ", error.message);
+      }
+    }
+  };
 
   return (
     <SafeAreaContainer>
