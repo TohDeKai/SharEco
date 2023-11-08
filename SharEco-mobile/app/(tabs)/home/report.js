@@ -69,7 +69,7 @@ const report = () => {
       }
     }
     fetchItemData();
-  }, [item]);
+  }, []);
 
   const [images, setImages] = useState([null, null, null, null, null]);
   const [imagesResult, setImagesResult] = useState([
@@ -81,7 +81,7 @@ const report = () => {
   ]);
 
   const reasons = [
-    { key: "1", value: "Suspicious Listing" },
+    { key: "1", value: "Inappropriate Listing" },
     { key: "2", value: "Items wrongly categorized" },
     { key: "3", value: "Selling counterfeit items" },
     { key: "4", value: "Duplicate posts" },
@@ -198,17 +198,18 @@ const report = () => {
         reportData
       );
 
-      console.log(reportData);
-      const reportId = reportResponse.data.report.reportId;
+      console.log(reportResponse.data.data);
+      const reportId = reportResponse.data.data.report.reportId;
+      console.log("REPORT ID: " + reportId);
       //handle upload all images and returns the array of uris
       const uploadedURIs = await uploadImageFiles(imagesResult, reportId);
 
       const response = await axios.put(
-        `http://${BASE_URL}:4000/api/v1/report/images/${reportId}}`,
-        uploadedURIs
+        `http://${BASE_URL}:4000/api/v1/report/images/${reportId}`,
+        { images: uploadedURIs }
       );
 
-      if (response.status == 201) {
+      if (response.status == 200) {
         console.log("Report form submitted successfully");
         setImages([null, null, null, null, null]);
         setImagesResult([null, null, null, null, null]);
@@ -300,7 +301,7 @@ const report = () => {
                   onPress={handleSubmit}
                   style={{ marginBottom: viewportHeightInPixels(3) }}
                 >
-                  Submit Checklist
+                  Submit Report
                 </RoundedButton>
               </View>
             )}
