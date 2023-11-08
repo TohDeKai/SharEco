@@ -1,4 +1,15 @@
-import { View, ScrollView, Text, StyleSheet, Pressable, FlatList, RefreshControl, LogBox, Dimensions, Modal } from "react-native";
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  RefreshControl,
+  LogBox,
+  Dimensions,
+  Modal,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import { Link, router, Drawer, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../../context/auth";
@@ -129,7 +140,11 @@ const Content = ({ navigation, activeTab, keywords, category }) => {
     try {
       const userData = await getUserData();
       const response = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}/keywords?keywords=${encodeURIComponent(keywords)}`
+        `http://${BASE_URL}:4000/api/v1/items/not/${
+          userData.userId
+        }/category/${category}/keywords?keywords=${encodeURIComponent(
+          keywords
+        )}`
       );
       if (response.status === 200) {
         const allListings = response.data.data.items;
@@ -150,7 +165,11 @@ const Content = ({ navigation, activeTab, keywords, category }) => {
       try {
         const userData = await getUserData();
         const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/not/${userData.userId}/category/${category}/keywords?keywords=${encodeURIComponent(keywords)}`
+          `http://${BASE_URL}:4000/api/v1/items/not/${
+            userData.userId
+          }/category/${category}/keywords?keywords=${encodeURIComponent(
+            keywords
+          )}`
         );
         if (response.status === 200) {
           const allListings = response.data.data.items;
@@ -159,8 +178,7 @@ const Content = ({ navigation, activeTab, keywords, category }) => {
           //Shouldn't come here
           console.log("Failed to retrieve all listings");
         }
-
-      } catch(error) {
+      } catch (error) {
         console.log(error.message);
       }
     }
@@ -192,33 +210,35 @@ const Content = ({ navigation, activeTab, keywords, category }) => {
         </View>
       )}
       {/* handles when there are no business listings */}
-      {activeTab == "Business" && (businessItems ? businessItems.length : 0) === 0 && (
-        <View style={{ marginTop: 160 }}>
-          <RegularText
-            typography="B2"
-            style={{ marginBottom: 5, textAlign: "center" }}
-          >
-            There are no business listings yet
-          </RegularText>
-          <RegularText typography="H3" style={{ textAlign: "center" }}>
-            watch this space!
-          </RegularText>
-        </View>
-      )}
+      {activeTab == "Business" &&
+        (businessItems ? businessItems.length : 0) === 0 && (
+          <View style={{ marginTop: 160 }}>
+            <RegularText
+              typography="B2"
+              style={{ marginBottom: 5, textAlign: "center" }}
+            >
+              There are no business listings yet
+            </RegularText>
+            <RegularText typography="H3" style={{ textAlign: "center" }}>
+              watch this space!
+            </RegularText>
+          </View>
+        )}
       {/* handles when there are no private listings */}
-      {activeTab == "Private" && (privateItems ? privateItems.length : 0) === 0 && (
-        <View style={{ marginTop: 160 }}>
-          <RegularText
-            typography="B2"
-            style={{ marginBottom: 5, textAlign: "center" }}
-          >
-            There are no listings yet!
-          </RegularText>
-          <RegularText typography="H3" style={{ textAlign: "center" }}>
-            watch this space!
-          </RegularText>
-        </View>
-      )}
+      {activeTab == "Private" &&
+        (privateItems ? privateItems.length : 0) === 0 && (
+          <View style={{ marginTop: 160 }}>
+            <RegularText
+              typography="B2"
+              style={{ marginBottom: 5, textAlign: "center" }}
+            >
+              There are no listings yet!
+            </RegularText>
+            <RegularText typography="H3" style={{ textAlign: "center" }}>
+              watch this space!
+            </RegularText>
+          </View>
+        )}
 
       {/* renders all listings */}
       {activeTab == "All" && (
@@ -227,8 +247,7 @@ const Content = ({ navigation, activeTab, keywords, category }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => 
-            <ListingCard item={item} mine={false} />}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -242,7 +261,7 @@ const Content = ({ navigation, activeTab, keywords, category }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -256,7 +275,7 @@ const Content = ({ navigation, activeTab, keywords, category }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -274,8 +293,8 @@ const browseByCategoryByKeywords = () => {
 
   //suppresses nested scrollview error
   useEffect(() => {
-    LogBox.ignoreLogs(['VirtualizedLists should never be nested']); 
-  }, [])
+    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
+  }, []);
 
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
@@ -285,8 +304,12 @@ const browseByCategoryByKeywords = () => {
   return (
     <SafeAreaContainer>
       <SearchBarHeader
-        onPressChat={() => {router.push("home/chats")}}
-        onPressWishlist={() => {router.push("home/wishlist")}}
+        onPressChat={() => {
+          router.push("home/chats");
+        }}
+        onPressWishlist={() => {
+          router.push("home/wishlist");
+        }}
         onPressBack={() => {
           console.log("going to category");
           router.back();
@@ -298,10 +321,14 @@ const browseByCategoryByKeywords = () => {
         reset={false}
         category={category}
       />
-      <View style={{flex:1}}>
+      <View style={{ flex: 1 }}>
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
-          <Content activeTab={activeTab} keywords={keywords} category={category}/>
+          <Content
+            activeTab={activeTab}
+            keywords={keywords}
+            category={category}
+          />
         </View>
       </View>
     </SafeAreaContainer>
@@ -313,7 +340,7 @@ export default browseByCategoryByKeywords;
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
-    width: '100%',
+    width: "100%",
     paddingTop: 20,
   },
   tab: {
@@ -331,7 +358,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 4,
     backgroundColor: white,
-    paddingHorizontal: '7%',
+    paddingHorizontal: "7%",
     justifyContent: "space-evenly",
   },
-})
+});

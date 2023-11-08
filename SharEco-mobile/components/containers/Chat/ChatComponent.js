@@ -48,6 +48,7 @@ const ChatComponent = ({ item, userId }) => {
       pathname: "home/messaging",
       params: { name: otherPerson.username },
     });
+    console.log("handle navigation");
   };
 
   return (

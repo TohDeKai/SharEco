@@ -10,6 +10,8 @@ import {
   orderBy,
   query,
   onSnapshot,
+  where,
+  getDocs,
   serverTimestamp,
 } from "firebase/firestore";
 import { fireStoreDB } from "../../utils/firebase";
@@ -29,10 +31,12 @@ import Header from "../../../components/Header";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import { Ionicons } from "@expo/vector-icons";
 import { colours } from "../../../components/ColourPalette";
+import RegularText from "../../../components/text/RegularText";
 
 const Messaging = () => {
   const [chatMessages, setChatMessages] = useState();
   const [user, setUser] = useState("");
+  const [chatRoomId, setChatRoomId] = useState("");
   const { getUserData } = useAuth();
 
   // Messages States
@@ -40,7 +44,7 @@ const Messaging = () => {
 
   //👇🏻 Access the chatroom's name and id
   const params = useLocalSearchParams();
-  const { name } = params;
+  const { name, chatDocId } = params;
 
   // function to format time
   function formatFirestoreTimestamp(timestamp) {
@@ -72,7 +76,7 @@ const Messaging = () => {
     const collectionRef = collection(
       fireStoreDB,
       "chats",
-      "8Tzbz6g5I3A5jEAsVcyh",
+      chatDocId,
       "messages"
     );
     const q = query(collectionRef, orderBy("time", "asc"));
@@ -102,7 +106,7 @@ const Messaging = () => {
 
     setMessage("");
     await addDoc(
-      collection(fireStoreDB, "chats", "8Tzbz6g5I3A5jEAsVcyh", "messages"),
+      collection(fireStoreDB, "chats", chatDocId, "messages"),
       messageData
     )
       .then(() => {})
@@ -133,7 +137,7 @@ const Messaging = () => {
               keyExtractor={(item) => item.id}
             />
           ) : (
-            ""
+            <RegularText></RegularText>
           )}
         </View>
 

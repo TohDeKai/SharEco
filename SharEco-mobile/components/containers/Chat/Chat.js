@@ -16,45 +16,6 @@ import { useAuth } from "../../../context/auth";
 import RegularText from "../../text/RegularText";
 
 const Chat = (props) => {
-  // const rooms = [
-  //   {
-  //     id: "1",
-  //     name: "User123",
-  //     messages: [
-  //       {
-  //         id: "1a",
-  //         text: "Hello guys, welcome!",
-  //         time: "07:50",
-  //         user: "Tomer",
-  //       },
-  //       {
-  //         id: "1b",
-  //         text: "Hi, thank you! 😇",
-  //         time: "08:50",
-  //         user: "David",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "User321",
-  //     messages: [
-  //       {
-  //         id: "2a",
-  //         text: "Guys, who's awake? 🙏🏽",
-  //         time: "12:50",
-  //         user: "Team Leader",
-  //       },
-  //       {
-  //         id: "2b",
-  //         text: "Hello 🧑🏻‍💻",
-  //         time: "03:50",
-  //         user: "Victoria",
-  //       },
-  //     ],
-  //   },
-  // ];
-
   const [chatRooms, setChatRooms] = useState([]);
 
   useLayoutEffect(() => {

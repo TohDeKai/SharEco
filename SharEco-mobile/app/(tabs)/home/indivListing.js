@@ -30,7 +30,17 @@ import {
   SecondaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { white, yellow, red, black, inputbackground } = colours;
+const { white, yellow, red, black, inputbackground, primary } = colours;
+import { fireStoreDB } from "../../../app/utils/firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  or,
+  onSnapshot,
+} from "firebase/firestore";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
 
@@ -47,6 +57,7 @@ const viewportWidthInPixels = (percentage) => {
 const ItemInformation = () => {
   const [listingItem, setListingItem] = useState({});
   const [user, setUser] = useState("");
+  const [sessionUser, setSessionUser] = useState("");
   const [ratings, setRatings] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
@@ -107,6 +118,7 @@ const ItemInformation = () => {
   useEffect(() => {
     async function fetchData() {
       const loggedInUserData = await getUserData();
+      setSessionUser(loggedInUserData);
       try {
         const itemResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
@@ -267,7 +279,11 @@ const ItemInformation = () => {
               onPress={() =>
                 router.push({
                   pathname: "home/othersProfile",
-                  params: { userId: user.userId },
+                  params: {
+                    userId: user.userId,
+                    otherUserId: sessionUser.userId,
+                    otherUserName: sessionUser.username,
+                  },
                 })
               }
             >
@@ -314,6 +330,7 @@ const ItemInformation = () => {
         </View>
       </ScrollView>
       <ListingNav
+        listingUser={user}
         data={itemId}
         tab={rentalRateHourly == "$0.00" ? "Daily" : "Hourly"}
       />
@@ -356,10 +373,11 @@ const CustomPaging = ({ data, activeSlide }) => {
   return <Pagination {...settings} />;
 };
 
-const ListingNav = ({ data, tab }) => {
+const ListingNav = ({ data, tab, listingUser }) => {
   const itemId = data;
 
   const [user, setUser] = useState("");
+  const [otherPerson, setOtherPerson] = useState("");
   const { getUserData } = useAuth();
 
   useEffect(() => {
@@ -368,19 +386,65 @@ const ListingNav = ({ data, tab }) => {
         const userData = await getUserData();
         if (userData) {
           setUser(userData);
+          setOtherPerson(listingUser);
         }
       } catch (error) {
         console.log(error.message);
       }
     }
+
     fetchUserData();
-  }, [user]);
+  }, [user, otherPerson]);
 
   const toRentalRequest = () => {
     router.push({
       pathname: "home/rentalRequest",
       params: { itemId: itemId, tab: tab },
     }); //to update path name
+  };
+
+  const toChats = async () => {
+    const chatsRef = collection(fireStoreDB, "chats");
+    const userId = user.userId;
+    const otherPersonId = otherPerson.userId;
+
+    const q = query(
+      chatsRef,
+      where("user1", "in", [userId, otherPersonId]),
+      where("user2", "in", [userId, otherPersonId])
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.size > 0) {
+      // Chat room already exists
+      const chatRoom = querySnapshot.docs[0];
+      router.push({
+        pathname: "home/messaging",
+        params: {
+          name: otherPerson.username,
+          chatDocId: chatRoom.id,
+        },
+      });
+    } else {
+      // Chat room doesn't exist, so create a new chat
+      const userData = {
+        user1: userId,
+        user2: otherPersonId,
+      };
+
+      await addDoc(chatsRef, userData)
+        .then((docRef) => {
+          router.push({
+            pathname: "home/messaging",
+            params: {
+              name: otherPerson.username,
+              chatDocId: docRef.id,
+            },
+          });
+        })
+        .catch((error) => console.log(error));
+    }
   };
 
   const [isWishlist, setIsWishlist] = useState(false);
@@ -499,9 +563,9 @@ const ListingNav = ({ data, tab }) => {
           </RegularText>
         </View>
         <View style={style.buttonContainer}>
-          <DisabledButton typography={"H3"} color={white}>
+          <SecondaryButton typography={"H3"} color={primary} onPress={toChats}>
             Chat
-          </DisabledButton>
+          </SecondaryButton>
         </View>
         <View style={style.buttonContainer}>
           <PrimaryButton
