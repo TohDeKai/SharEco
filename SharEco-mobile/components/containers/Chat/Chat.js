@@ -22,14 +22,53 @@ const Chat = (props) => {
     const chatsRef = collection(fireStoreDB, "chats");
     const userId = parseInt(props.userId);
 
+    // const q = query(
+    //   collection(fireStoreDB, "chats"),
+    //   or(where("user2", "==", userId), where("user1", "==", userId))
+    // );
+
+    // const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    //   const chatRooms = [...querySnapshot.docs].map((doc) => ({
+    //     chatRoomId: doc.id,
+    //     data: doc.data(),
+    //   }));
+    //   setChatRooms(chatRooms);
+    // });
+
     const q = query(
       collection(fireStoreDB, "chats"),
       or(where("user2", "==", userId), where("user1", "==", userId))
     );
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const chatRooms = [...querySnapshot.docs].map((doc) => doc.data());
-      setChatRooms(chatRooms);
+    const chatRoomsData = [];
+
+    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+      const promises = [];
+
+      querySnapshot.forEach(async (doc) => {
+        const data = doc.data();
+        const messageCollectionRef = collection(
+          fireStoreDB,
+          "chats",
+          doc.id,
+          "messages"
+        );
+        const promise = getDocs(messageCollectionRef).then(
+          (messagesSnapshot) => {
+            if (!messagesSnapshot.empty) {
+              chatRoomsData.push({
+                chatRoomId: doc.id,
+                data: data,
+              });
+            }
+          }
+        );
+
+        promises.push(promise);
+      });
+
+      await Promise.all(promises);
+      setChatRooms(chatRoomsData);
     });
     return unsubscribe;
   }, []);

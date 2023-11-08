@@ -9,7 +9,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ChatComponent = ({ item, userId }) => {
   const otherPersonId =
-    item.user1 == parseInt(userId) ? item.user2 : item.user1;
+    item.data.user1 == parseInt(userId) ? item.data.user2 : item.data.user1;
   const [otherPerson, setOtherPerson] = useState("");
   const [profileUri, setProfileUri] = useState("");
 
@@ -46,9 +46,11 @@ const ChatComponent = ({ item, userId }) => {
   const handleNavigation = () => {
     router.push({
       pathname: "home/messaging",
-      params: { name: otherPerson.username },
+      params: {
+        name: otherPerson.username,
+        chatDocId: item.chatRoomId,
+      },
     });
-    console.log("handle navigation");
   };
 
   return (
