@@ -66,8 +66,16 @@ const report = () => {
             const targetData = targetResponse.data.data.item;
             setTarget(targetData);
           }
+        } else if (reportType == "USER") {
+          const targetResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${targetId}`
+          );
+          if (targetResponse.status === 200) {
+            const targetData = targetResponse.data.data.user;
+            setTarget(targetData);
+          }
         }
-        console.log(target);
+        console.log("TARGET: " + target);
       } catch (error) {
         console.log(error.message);
       }
@@ -84,7 +92,7 @@ const report = () => {
     null,
   ]);
 
-  const reasons = [
+  const listingReasons = [
     { key: "1", value: "Inappropriate Listing" },
     { key: "2", value: "Items wrongly categorized" },
     { key: "3", value: "Selling counterfeit items" },
@@ -94,6 +102,20 @@ const report = () => {
     { key: "7", value: "Irrelevant keywords" },
     { key: "8", value: "Offensive behaviour" },
   ];
+
+  const userReasons = [
+    { key: "1", value: "Suspicious Account" },
+    { key: "2", value: "Selling counterfeit items" },
+    { key: "3", value: "Cancelling on deal" },
+    { key: "4", value: "Duplicate posts" },
+    { key: "5", value: "Selling prohibited item" },
+    { key: "6", value: "Mispriced Listings" },
+    { key: "7", value: "Irrelevant keywords" },
+    { key: "8", value: "Offensive behaviour" },
+  ];
+
+  // Determine the data array based on reportType
+  const reasons = reportType === "LISTING" ? listingReasons : userReasons;
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -257,7 +279,9 @@ const report = () => {
               <View style={{ width: "85%" }}>
                 <RegularText typography="H3" style={styles.headerText}>
                   You are reporting {reportType.toLowerCase()}:{" "}
-                  {target.itemTitle} {target.displayName}
+                  {reportType === "LISTING"
+                    ? ` ${target.itemTitle}`
+                    : ` ${target.displayName}`}
                 </RegularText>
                 <RegularText typography="H3" style={styles.headerText}>
                   Reason
