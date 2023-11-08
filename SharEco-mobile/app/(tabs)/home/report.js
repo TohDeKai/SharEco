@@ -74,6 +74,14 @@ const report = () => {
             const targetData = targetResponse.data.data.user;
             setTarget(targetData);
           }
+        } else if (reportType == "DISPUTE") {
+          const targetResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/rentals/rentalId/${targetId}`
+          );
+          if (targetResponse.status === 200) {
+            const targetData = targetResponse.data.data.rental;
+            setTarget(targetData);
+          }
         }
         console.log("TARGET: " + target);
       } catch (error) {
@@ -114,8 +122,24 @@ const report = () => {
     { key: "8", value: "Offensive behaviour" },
   ];
 
+  const disputeReasons = [
+    { key: "1", value: "Late or No Show" },
+    { key: "2", value: "Item different from listing" },
+    { key: "3", value: "Offensive behaviour" },
+    { key: "4", value: "Others" },
+  ];
+
   // Determine the data array based on reportType
-  const reasons = reportType === "LISTING" ? listingReasons : userReasons;
+  // Determine the data array based on reportType
+  let reasons = [];
+
+  if (reportType === "LISTING") {
+    reasons = listingReasons;
+  } else if (reportType === "USER") {
+    reasons = userReasons;
+  } else if (reportType === "DISPUTE") {
+    reasons = disputeReasons;
+  }
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -258,11 +282,16 @@ const report = () => {
     <SafeAreaContainer>
       <Header
         title={
-          "Report " + reportType.charAt(0) + reportType.slice(1).toLowerCase()
+          reportType === "DISPUTE"
+            ? "Raise Dispute"
+            : "Report " +
+              reportType.charAt(0) +
+              reportType.slice(1).toLowerCase()
         }
         action="close"
         onPress={handleBack}
       />
+
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
@@ -277,12 +306,20 @@ const report = () => {
           >
             {({ handleChange, handleBlur, handleSubmit, values }) => (
               <View style={{ width: "85%" }}>
-                <RegularText typography="H3" style={styles.headerText}>
-                  You are reporting {reportType.toLowerCase()}:{" "}
-                  {reportType === "LISTING"
-                    ? ` ${target.itemTitle}`
-                    : ` ${target.displayName}`}
-                </RegularText>
+                {reportType === "DISPUTE" ? (
+                  <RegularText typography="H3" style={styles.headerText}>
+                    Initiate a dispute
+                  </RegularText>
+                ) : (
+                  <RegularText typography="H3" style={styles.headerText}>
+                    You are reporting {reportType.toLowerCase()}
+                    {reportType === "LISTING"
+                      ? ` : ${target.itemTitle}`
+                      : reportType === "USER"
+                      ? ` : ${target.displayName}`
+                      : ""}
+                  </RegularText>
+                )}
                 <RegularText typography="H3" style={styles.headerText}>
                   Reason
                 </RegularText>
@@ -290,20 +327,23 @@ const report = () => {
                   data={reasons}
                   setSelected={(val) => setSelectedReason(val)}
                 />
-
-                <RegularText typography="H3" style={styles.headerText}>
-                  Upload Images
-                </RegularText>
-                <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
-                  Up to 5 images
-                </RegularText>
-                <ScrollView
-                  horizontal
-                  contentContainerStyle={styles.imageCarousel}
-                  style={{ paddingVertical: 7 }}
-                >
-                  {imageContainers}
-                </ScrollView>
+                {reportType === "DISPUTE" && (
+                  <View>
+                    <RegularText typography="H3" style={styles.headerText}>
+                      Upload Images
+                    </RegularText>
+                    <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
+                      Up to 5 images
+                    </RegularText>
+                    <ScrollView
+                      horizontal
+                      contentContainerStyle={styles.imageCarousel}
+                      style={{ paddingVertical: 7 }}
+                    >
+                      {imageContainers}
+                    </ScrollView>
+                  </View>
+                )}
 
                 <RegularText typography="H3" style={styles.headerText}>
                   Description
