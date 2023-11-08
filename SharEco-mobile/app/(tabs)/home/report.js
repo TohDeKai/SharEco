@@ -200,6 +200,9 @@ const report = () => {
             {({ handleChange, handleBlur, handleSubmit, values }) => (
               <View style={{ width: "85%" }}>
                 <RegularText typography="H3" style={styles.headerText}>
+                  You are reporting listing: {item.itemTitle}
+                </RegularText>
+                <RegularText typography="H3" style={styles.headerText}>
                   Reason
                 </RegularText>
                 <DropdownList
