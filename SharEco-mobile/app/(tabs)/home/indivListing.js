@@ -60,7 +60,7 @@ const ItemInformation = () => {
   const handleReport = () => {
     router.push({
       pathname: "/home/report",
-      params: { itemId: itemId, reportType: "LISTING" },
+      params: { targetId: itemId, reportType: "LISTING" },
     });
   };
 

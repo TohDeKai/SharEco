@@ -49,26 +49,30 @@ const report = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const params = useLocalSearchParams();
-  const { itemId, reportType } = params;
+  const { targetId, reportType } = params;
   const { getUserData } = useAuth();
-  const [item, setItem] = useState({});
+  const [target, setTarget] = useState({});
   const [selectedReason, setSelectedReason] = React.useState("");
 
   useEffect(() => {
-    async function fetchItemData() {
+    console.log(reportType);
+    async function fetchTargetData() {
       try {
-        const itemResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
-        );
-        if (itemResponse.status === 200) {
-          const itemData = itemResponse.data.data.item;
-          setItem(itemData);
+        if (reportType == "LISTING") {
+          const targetResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/items/itemId/${targetId}`
+          );
+          if (targetResponse.status === 200) {
+            const targetData = targetResponse.data.data.item;
+            setTarget(targetData);
+          }
         }
+        console.log(target);
       } catch (error) {
         console.log(error.message);
       }
     }
-    fetchItemData();
+    fetchTargetData();
   }, []);
 
   const [images, setImages] = useState([null, null, null, null, null]);
@@ -190,7 +194,7 @@ const report = () => {
         supportingImages: [],
         responseText: "",
         responseImages: [],
-        targetId: item.itemId,
+        targetId: targetId,
       };
 
       const reportResponse = await axios.post(
@@ -250,7 +254,8 @@ const report = () => {
             {({ handleChange, handleBlur, handleSubmit, values }) => (
               <View style={{ width: "85%" }}>
                 <RegularText typography="H3" style={styles.headerText}>
-                  You are reporting listing: {item.itemTitle}
+                  You are reporting {reportType.toLowerCase()}:{" "}
+                  {target.itemTitle} {target.displayName}
                 </RegularText>
                 <RegularText typography="H3" style={styles.headerText}>
                   Reason
