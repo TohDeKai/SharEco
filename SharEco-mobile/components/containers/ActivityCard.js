@@ -100,6 +100,16 @@ const ActivityCard = ({ rental, type }) => {
     });
   };
 
+  const handleReport = () => {
+    router.push({
+      pathname: "home/report",
+      params: {
+        targetId: rental.rentalId,
+        reportType: "DISPUTE",
+      },
+    });
+  };
+
   const handleCancellationPaymentsForLending = async (
     startDate,
     depositFee,
@@ -560,13 +570,14 @@ const ActivityCard = ({ rental, type }) => {
               </Pressable>
               {/* to be implemented */}
               <View style={styles.buttonContainer}>
-                <DisabledButton
+                <SecondaryButton
                   typography="B3"
-                  color={white}
+                  color={primary}
                   style={{ paddingVertical: 0 }}
+                  onPress={handleReport}
                 >
                   Report
-                </DisabledButton>
+                </SecondaryButton>
               </View>
               <View style={styles.buttonContainer}>
                 <SecondaryButton
@@ -622,13 +633,14 @@ const ActivityCard = ({ rental, type }) => {
             </Pressable>
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
-              <DisabledButton
+              <SecondaryButton
+                color={primary}
                 typography="B3"
-                color={white}
                 style={{ paddingVertical: 0 }}
+                onPress={handleReport}
               >
                 Report
-              </DisabledButton>
+              </SecondaryButton>
             </View>
 
             {type === "Borrowing" && (
@@ -736,9 +748,13 @@ const ActivityCard = ({ rental, type }) => {
               />
             </Pressable>
             <View style={styles.buttonContainer}>
-              <DisabledButton typography="B3" color={white}>
+              <SecondaryButton
+                color={primary}
+                typography="B3"
+                onPress={handleReport}
+              >
                 Report
-              </DisabledButton>
+              </SecondaryButton>
             </View>
             {/*
             {type === "Lending" && (
