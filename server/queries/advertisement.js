@@ -177,7 +177,7 @@ const getAdsReq = async () => {
   }
 };
 
-// Get all APPROVED Advertisement
+// Get all ACTIVE Advertisement
 const getActiveAds = async() => {
   try {
     const result = await pool.query(

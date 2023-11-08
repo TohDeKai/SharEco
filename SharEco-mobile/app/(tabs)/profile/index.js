@@ -369,7 +369,7 @@ const Content = ({ navigation, activeTab }) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, marginBottom: 20, }}>
       {activeTab == "Listings" && (userItems ? userItems.length : 0) === 0 && (
         <View style={{ marginTop: 160 }}>
           <RegularText

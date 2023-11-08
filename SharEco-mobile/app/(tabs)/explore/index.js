@@ -9,9 +9,10 @@ import {
   Dimensions,
   ScrollView,
   RefreshControl,
+  ImageBackground,
 } from "react-native";
 import React from "react";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { router } from "expo-router";
 import axios from "axios";
@@ -272,7 +273,7 @@ const explore = () => {
                     key={transaction.transactionId}
                     transaction={transaction}
                     isIncoming={true}
-                    style={{width: viewportWidthInPixels(90)}}
+                    style={{ width: viewportWidthInPixels(90) }}
                   />
                 ))
               ) : (
@@ -329,73 +330,95 @@ const explore = () => {
   return (
     <SafeAreaContainer>
       <View style={styles.header}>
-        <RegularText typography="H1" color={secondary}>EcoWallet</RegularText>
+        <RegularText typography="H1" color={secondary}>
+          EcoWallet
+        </RegularText>
       </View>
-      <View style={styles.greenHeader}>
-        <RegularText typography="B2" color={white}>
-          Balance Amount
-        </RegularText>
-        <RegularText typography="EcoWallet" color={white}>
-          {walletBalance}
-        </RegularText>
-        <View style={styles.buttonContainer}>
-          <Pressable
-            onPress={toTransfer}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <Ionicons
-              name="send"
-              size={24}
-              color={secondary}
-              style={{ alignSelf: "center" }}
-            />
-            <RegularText typography="B2" color={secondary}>
-              Transfer
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <ImageBackground
+          source={require("./../../../assets/walletbg.png")}
+          resizeMode="cover"
+          style={styles.imageBg}
+        >
+          <View style={styles.greenHeader}>
+            <RegularText typography="B2" color={white}>
+              Balance Amount
             </RegularText>
-          </Pressable>
-          <Pressable
-            onPress={toTopUp}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <Ionicons
-              name="add-circle"
-              size={24}
-              color={secondary}
-              style={{ alignSelf: "center" }}
-            />
-            <RegularText typography="B2" color={secondary}>
-              Top-Up
+            <RegularText typography="EcoWallet" color={white}>
+              {walletBalance}
             </RegularText>
-          </Pressable>
-          <Pressable
-            onPress={toWithdraw}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <MaterialCommunityIcons
-              name="bank-outline"
-              size={24}
-              color={secondary}
-              style={{ alignSelf: "center" }}
-            />
-            <RegularText typography="B2" color={secondary}>
-              Withdraw
-            </RegularText>
-          </Pressable>
+            <View style={styles.buttonContainer}>
+              <Pressable
+                onPress={toTransfer}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                <Ionicons
+                  name="send"
+                  size={24}
+                  color={secondary}
+                  style={{ alignSelf: "center" }}
+                />
+                <RegularText
+                  typography="B1"
+                  color={secondary}
+                  style={styles.actionText}
+                >
+                  Transfer
+                </RegularText>
+              </Pressable>
+              <Pressable
+                onPress={toTopUp}
+                style={[({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                }), {paddingLeft: 12}]}
+              >
+                <Ionicons
+                  name="add-circle"
+                  size={30}
+                  color={secondary}
+                  style={{ alignSelf: "center" }}
+                />
+                <RegularText
+                  typography="B1"
+                  color={secondary}
+                  style={{paddingTop: 2}}
+                >
+                  Top-Up
+                </RegularText>
+              </Pressable>
+              <Pressable
+                onPress={toWithdraw}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                <FontAwesome
+                  name="bank"
+                  size={23}
+                  color={secondary}
+                  style={{ alignSelf: "center" }}
+                />
+                <RegularText
+                  typography="B1"
+                  color={secondary}
+                  style={styles.actionText}
+                >
+                  Withdraw
+                </RegularText>
+              </Pressable>
+            </View>
+          </View>
+        </ImageBackground>
+        <View style={styles.body}>
+          <RegularText typography="H2" color={black}>
+            Transaction History
+          </RegularText>
         </View>
-      </View>
-      <View style={styles.body}>
-        <RegularText typography="H2" color={black}>
-          Transaction History
-        </RegularText>
-      </View>
-      <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-      <TransactionsContent activeTab={activeTab} />
+        <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
+        <TransactionsContent activeTab={activeTab} />
+      </ScrollView>
     </SafeAreaContainer>
   );
 };
@@ -410,6 +433,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: viewportWidthInPixels(100),
+    borderBottomColor: inputbackground,
+    borderBottomWidth: 2,
   },
   greenHeader: {
     height: 150,
@@ -417,8 +442,13 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: secondary,
+    // backgroundColor: secondary,
     marginBottom: 30,
+  },
+  imageBg: {
+    height: 160,
+    width: viewportWidthInPixels(100),
+    marginBottom: 20,
   },
   buttonContainer: {
     borderRadius: 15,
@@ -430,11 +460,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     top: viewportHeightInPixels(3),
     width: viewportWidthInPixels(80),
-    paddingHorizontal: viewportWidthInPixels(5),
+    paddingHorizontal: viewportWidthInPixels(7),
     paddingVertical: 15,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-end",
     backgroundColor: white,
   },
   body: {
@@ -460,5 +490,8 @@ const styles = StyleSheet.create({
   },
   txtContainer: {
     marginHorizontal: viewportWidthInPixels(3),
-  }
+  },
+  actionText: {
+    paddingTop: 5,
+  },
 });
