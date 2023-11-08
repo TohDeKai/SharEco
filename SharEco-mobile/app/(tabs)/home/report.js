@@ -217,7 +217,9 @@ const report = () => {
         console.log("Report form submitted successfully");
         setImages([null, null, null, null, null]);
         setImagesResult([null, null, null, null, null]);
-        router.back();
+        router.push({
+          pathname: "/home",
+        });
       } else {
         console.log("Report form submission unsuccessfully");
       }
