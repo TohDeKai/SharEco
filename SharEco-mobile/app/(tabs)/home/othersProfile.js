@@ -57,7 +57,7 @@ const ProfileHeader = () => {
 
           const ratingsResponse = await axios.get(
             `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
-          )
+          );
           if (ratingsResponse.status === 200) {
             setRatings(ratingsResponse.data.data);
           }
@@ -93,6 +93,13 @@ const ProfileHeader = () => {
     router.push("home/chats");
   };
 
+  const handleReport = () => {
+    router.push({
+      pathname: "/home/report",
+      params: { targetId: user.userId, reportType: "USER" },
+    });
+  };
+
   return (
     <View style={styles.header}>
       <View style={styles.headerGreen}>
@@ -109,6 +116,19 @@ const ProfileHeader = () => {
             style={styles.headerIcon}
           />
         </Pressable>
+        <Pressable
+          onPress={handleReport}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1,
+          })}
+        >
+          <Ionicons
+            name="alert-circle-outline"
+            color={white}
+            size={26}
+            style={styles.headerIcon}
+          />
+        </Pressable>
       </View>
       <View style={styles.headerWhite}>
         <RegularText typography="H2" style={{ marginTop: 40 }}>
@@ -119,7 +139,7 @@ const ProfileHeader = () => {
           style={{ marginTop: 5 }}
           color={secondary}
         >
-          @{user.username}
+          @{user.username} bitch
         </RegularText>
         <RegularText typography="B2" style={{ marginTop: 8 }}>
           {user.aboutMe}
@@ -143,7 +163,9 @@ const ProfileHeader = () => {
       <View style={styles.ratingsContainer}>
         <RegularText typography="B1">{ratings.averageRating || 0}</RegularText>
         <Rating stars={ratings.starsToDisplay || 0} size={20} color={yellow} />
-        <RegularText typography="B1">({ratings.numberOfRatings || 0})</RegularText>
+        <RegularText typography="B1">
+          ({ratings.numberOfRatings || 0})
+        </RegularText>
       </View>
     </View>
   );
@@ -221,13 +243,16 @@ const NoReviews = ({ activePill }) => {
   let message;
   switch (activePill) {
     case "All":
-      message = "No reviews at the moment! Make a rental as lender or borrower to review user!";
+      message =
+        "No reviews at the moment! Make a rental as lender or borrower to review user!";
       break;
     case "By Lender":
-      message = "No reviews at the moment! Rent something from user first to review user!";
+      message =
+        "No reviews at the moment! Rent something from user first to review user!";
       break;
     case "By Borrower":
-      message = "No reviews at the moment! Lend something to user first to review user!";
+      message =
+        "No reviews at the moment! Lend something to user first to review user!";
       break;
   }
 
@@ -255,9 +280,13 @@ const Content = ({ navigation, activeTab }) => {
 
   const fetchData = async (userId) => {
     try {
-      const itemResponse = await axios.get(`http://${BASE_URL}:4000/api/v1/items/${userId}`);
-      const reviewResponse = await axios.get(`http://${BASE_URL}:4000/api/v1/reviews/revieweeId/${userId}`);
-  
+      const itemResponse = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/${userId}`
+      );
+      const reviewResponse = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/reviews/revieweeId/${userId}`
+      );
+
       if (itemResponse.status === 200) {
         const items = itemResponse.data.data.items.reverse();
         if (reviewResponse.status === 200) {
@@ -270,10 +299,10 @@ const Content = ({ navigation, activeTab }) => {
     } catch (error) {
       console.log(error);
     }
-  
+
     return null;
   };
-  
+
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
@@ -281,7 +310,7 @@ const Content = ({ navigation, activeTab }) => {
 
       if (data) {
         const { items, reviews } = data;
-        setUserItems(items);     
+        setUserItems(items);
         setUserReviews(reviews);
       }
     } catch (error) {
@@ -289,7 +318,7 @@ const Content = ({ navigation, activeTab }) => {
     }
     setRefreshing(false);
   };
-  
+
   useEffect(() => {
     handleRefresh();
   }, []);
@@ -325,7 +354,7 @@ const Content = ({ navigation, activeTab }) => {
           </RegularText>
         </View>
       )}
-      
+
       {activeTab == "Listings" && (
         <FlatList
           data={userItems}
@@ -341,94 +370,84 @@ const Content = ({ navigation, activeTab }) => {
 
       {activeTab == "Reviews" && (
         <View style={{ flex: 1 }}>
-        <Pills
-          pillItems={pill}
-          activeLendingPill={activePill}
-          handlePillPress={handlePillPress}
-        /> 
+          <Pills
+            pillItems={pill}
+            activeLendingPill={activePill}
+            handlePillPress={handlePillPress}
+          />
 
-        {activePill == "All" && (
-          <View style={{ alignItems: "center", flex: 1 }}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              style={styles.activityCardContainer}
-              contentContainerStyle={{ flexGrow: 1 }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                />
-              }
-            >
-              {userReviews && userReviews.length > 0 ? (
-                userReviews.map((review) => (
-                  <ReviewsCard
-                    review={review}
-                    showReviewerDetails={true}
+          {activePill == "All" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
                   />
-                ))
-              ) : (
-                <NoReviews activePill={activePill}/>
-              )}
-            </ScrollView>
-          </View>
-        )}
+                }
+              >
+                {userReviews && userReviews.length > 0 ? (
+                  userReviews.map((review) => (
+                    <ReviewsCard review={review} showReviewerDetails={true} />
+                  ))
+                ) : (
+                  <NoReviews activePill={activePill} />
+                )}
+              </ScrollView>
+            </View>
+          )}
 
-        {activePill == "By Lender" && (
-          <View style={{ alignItems: "center", flex: 1 }}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              style={styles.activityCardContainer}
-              contentContainerStyle={{ flexGrow: 1 }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                />
-              }
-            >
-              {userReviewsByLender && userReviewsByLender.length > 0 ? (
-                userReviewsByLender.map((review) => (
-                  <ReviewsCard
-                    review={review}
-                    showReviewerDetails={true}
+          {activePill == "By Lender" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
                   />
-                ))
-              ) : (
-                <NoReviews activePill={activePill}/>
-              )}
-            </ScrollView>
-          </View>
-        )}
+                }
+              >
+                {userReviewsByLender && userReviewsByLender.length > 0 ? (
+                  userReviewsByLender.map((review) => (
+                    <ReviewsCard review={review} showReviewerDetails={true} />
+                  ))
+                ) : (
+                  <NoReviews activePill={activePill} />
+                )}
+              </ScrollView>
+            </View>
+          )}
 
-        {activePill == "By Borrower" && (
-          <View style={{ alignItems: "center", flex: 1 }}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              style={styles.activityCardContainer}
-              contentContainerStyle={{ flexGrow: 1 }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                />
-              }
-            >
-              {userReviewsByBorrower && userReviewsByBorrower.length > 0 ? (
-                userReviewsByBorrower.map((review) => (
-                  <ReviewsCard
-                    review={review}
-                    showReviewerDetails={true}
+          {activePill == "By Borrower" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
                   />
-                ))
-              ) : (
-                <NoReviews activePill={activePill}/>
-              )}
-            </ScrollView>
-          </View>
-        )}
+                }
+              >
+                {userReviewsByBorrower && userReviewsByBorrower.length > 0 ? (
+                  userReviewsByBorrower.map((review) => (
+                    <ReviewsCard review={review} showReviewerDetails={true} />
+                  ))
+                ) : (
+                  <NoReviews activePill={activePill} />
+                )}
+              </ScrollView>
+            </View>
+          )}
         </View>
-
       )}
     </View>
   );
