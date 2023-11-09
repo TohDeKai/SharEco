@@ -231,6 +231,7 @@ const report = () => {
     try {
       const userData = await getUserData();
       const userId = userData.userId;
+      const today = new Date();
       var reportStatus = "";
       if (reportType == "LISTING" || reportType == "USER") {
         reportStatus = "UNDER REVIEW";
@@ -247,6 +248,7 @@ const report = () => {
         responseText: "",
         responseImages: [],
         targetId: targetId,
+        reportDate: today,
       };
 
       const reportResponse = await axios.post(
