@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     borderBottomColor: primary,
   },
   contentContainer: {
-    flex: 4,
+    flex: 1,
     backgroundColor: white,
     paddingHorizontal: "7%",
     justifyContent: "space-evenly",

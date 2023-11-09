@@ -16,7 +16,7 @@ import RegularText from "../../../components/text/RegularText";
 import ActivityCard from "../../../components/containers/ActivityCard";
 import { colours } from "../../../components/ColourPalette";
 import { useAuth } from "../../../context/auth";
-const { black, inputbackground, white, primary, dark, placeholder } = colours;
+const { black, inputbackground, white, primary, dark, placeholder, secondary } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ActivityHeader = () => {
@@ -123,7 +123,7 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
           >
             <RegularText
               typography="B1"
-              color={activeLendingPill === pill ? primary : dark}
+              color={activeLendingPill === pill ? white : secondary}
             >
               {pill}
             </RegularText>
@@ -149,15 +149,15 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
         ]}
       >
         <View style={styles.rentalNotifItems}>
-          <Ionicons name="earth" size={30} color={primary} />
-          <RegularText typography="Subtitle">New Rental Requests</RegularText>
+          <Ionicons name="file-tray-full" size={30} color={secondary} />
+          <RegularText typography="B2">New Rental Requests</RegularText>
         </View>
 
         <View style={styles.rentalNotifItems}>
           {numOfNewRentalReq > 0 && (
             <View style={styles.badge}>
-              <RegularText typography="Subtitle2" color={white}>
-                {numOfNewRentalReq >= 99 ? "99+" : numOfNewRentalReq}
+              <RegularText typography="B2" color={white}>
+                {numOfNewRentalReq >= 9 ? "9+" : numOfNewRentalReq}
               </RegularText>
             </View>
           )}
@@ -173,15 +173,15 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
         ]}
       >
         <View style={styles.rentalNotifItems}>
-          <Ionicons name="refresh-circle" size={30} color={primary} />
-          <RegularText typography="Subtitle">Rental Updates</RegularText>
+          <Ionicons name="refresh-circle" size={30} color={secondary} />
+          <RegularText typography="B2">Rental Updates</RegularText>
         </View>
 
         <View style={styles.rentalNotifItems}>
           {numOfRentalUpdates > 0 && (
             <View style={styles.badge}>
-              <RegularText typography="Subtitle2" color={white}>
-                {numOfRentalUpdates >= 99 ? "99+" : numOfRentalUpdates}
+              <RegularText typography="B2" color={white}>
+                {numOfRentalUpdates >= 9 ? "9+" : numOfRentalUpdates}
               </RegularText>
             </View>
           )}
@@ -786,23 +786,23 @@ const styles = StyleSheet.create({
   pillContainer: {
     paddingTop: 18,
     paddingBottom: 25,
+    paddingHorizontal: 13,
   },
   pill: {
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: inputbackground,
-    marginLeft: 13,
+    borderColor: secondary,
+    borderWidth: 1,
+    marginRight: 13,
   },
   activePill: {
-    backgroundColor: white,
-    borderColor: primary,
-    borderWidth: 1,
+    backgroundColor: secondary,
   },
   rentalNotifContainer: {
     borderBottomColor: inputbackground,
     borderBottomWidth: 2,
-    paddingVertical: 20,
+    paddingVertical: 10,
   },
   rentalNotif: {
     display: "flex",
@@ -820,8 +820,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     borderRadius: 50,
-    width: 23,
-    height: 23,
+    width: 25,
+    height: 25,
     backgroundColor: primary,
     alignItems: "center",
     justifyContent: "center",

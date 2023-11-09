@@ -564,7 +564,7 @@ const ActivityCard = ({ rental, type }) => {
               <Pressable>
                 <Ionicons
                   name="chatbubble-outline"
-                  color={placeholder}
+                  color={primary}
                   size={35}
                 />
               </Pressable>
@@ -627,7 +627,7 @@ const ActivityCard = ({ rental, type }) => {
             <Pressable>
               <Ionicons
                 name="chatbubble-outline"
-                color={placeholder}
+                color={primary}
                 size={35}
               />
             </Pressable>
@@ -743,7 +743,7 @@ const ActivityCard = ({ rental, type }) => {
             <Pressable>
               <Ionicons
                 name="chatbubble-outline"
-                color={placeholder}
+                color={primary}
                 size={35}
               />
             </Pressable>

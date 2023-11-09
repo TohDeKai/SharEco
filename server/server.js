@@ -2633,6 +2633,28 @@ app.get("/api/v1/activeAds", async (req, res) => {
   }
 });
 
+//Increase visit counter by 1
+app.put("/api/v1/addVisit/adId/:adId", async (req, res) => {
+  try {
+    const ad = await advertisementdb.updateAdVisits(
+      req.params.adId
+    );
+    if (ad) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ad: ad,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Advertisement not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 /**********************          Insights and Dashboard Routes             **************************/
 // create impression
 app.post("/api/v1/impression", async (req, res) => {
