@@ -16,6 +16,7 @@ import RegularText from "../../../components/text/RegularText";
 import ActivityCard from "../../../components/containers/ActivityCard";
 import { colours } from "../../../components/ColourPalette";
 import { useAuth } from "../../../context/auth";
+import ReportCard from "../../../components/containers/ReportCard";
 const { black, inputbackground, white, primary, dark, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -86,6 +87,21 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
           color={activeTab === "Borrowing" ? primary : dark}
         >
           Borrowing
+        </RegularText>
+      </Pressable>
+      <Pressable
+        onPress={() => handleTabPress("Reports")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.tab,
+          activeTab === "Reports" && styles.activeTab,
+        ]}
+      >
+        <RegularText
+          typography="B2"
+          color={activeTab === "Others" ? primary : dark}
+        >
+          Reports
         </RegularText>
       </Pressable>
       <Pressable
@@ -228,6 +244,7 @@ const Content = ({ activeTab }) => {
   const { getUserData } = useAuth();
   const [userLendings, setUserLendings] = useState([]);
   const [userBorrowings, setUserBorrowings] = useState([]);
+  const [userReports, setUserReports] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
@@ -272,10 +289,23 @@ const Content = ({ activeTab }) => {
       } catch (error) {
         console.log(error);
       }
+      try {
+        const response3 = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/reports/user/${userId}`
+        );
+        if (response3.status === 200) {
+          const reports = response3.data.data.report;
+          setUserReports(reports);
+        } else {
+          // Handle the error condition appropriately
+          console.log("Failed to retrieve reports");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     } catch (error) {
       console.log(error.message);
     }
-
     // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
   };
@@ -317,11 +347,32 @@ const Content = ({ activeTab }) => {
         console.log(error.message);
       }
     }
+    async function fetchReports() {
+      try {
+        const userData = await getUserData();
+        const userId = userData.userId;
+        console.log("USER ID: " + userId);
+        const response3 = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/reports/user/${userId}`
+        );
+        if (response3.status === 200) {
+          const reports = response3.data.data.report;
+          setUserReports(reports);
+        } else {
+          // Handle the error condition appropriately
+          console.log("Failed to retrieve reports");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
     fetchRentals();
+    fetchReports();
   }, []);
 
   const [activeLendingPill, setActiveLendingPill] = useState("Upcoming");
   const [activeBorrowingPill, setActiveBorrowingPill] = useState("Pending");
+  const [activeReportPill, setActiveReportPill] = useState("Pending");
 
   const lendingPill = ["Upcoming", "Ongoing", "Completed", "Cancelled"];
   const borrowingPill = [
@@ -332,17 +383,24 @@ const Content = ({ activeTab }) => {
     "Cancelled",
     "Rejected",
   ];
+  const reportPill = ["Pending", "Under Review", "Resolved"];
 
   const upcomingLendings = userLendings
-    .filter((rental) => rental.status === "UPCOMING" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "UPCOMING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   const ongoingLendings = userLendings
-    .filter((rental) => rental.status === "ONGOING" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "ONGOING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
   const completedLendings = userLendings
-    .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "COMPLETED" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const cancelledLendings = userLendings.filter(
@@ -362,23 +420,43 @@ const Content = ({ activeTab }) => {
     .sort((a, b) => new Date(b.creationDate) - new Date(a.creationDate));
 
   const ongoingBorrowings = userBorrowings
-    .filter((rental) => rental.status === "ONGOING" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "ONGOING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
   const upcomingBorrowings = userBorrowings
-    .filter((rental) => rental.status === "UPCOMING" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "UPCOMING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   const completedBorrowings = userBorrowings
-    .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "COMPLETED" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const rejectedBorrowings = userBorrowings
-    .filter((rental) => rental.status === "REJECTED" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "REJECTED" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const cancelledBorrowings = userBorrowings.filter(
     (rental) => rental.status === "CANCELLED" && rental.isBlockOut === false
+  );
+
+  const pendingReports = userReports.filter(
+    (report) => report.status === "PENDING"
+  );
+
+  const underReviewReports = userReports.filter(
+    (report) => report.status === "UNDER REVIEW"
+  );
+
+  const resolvedReports = userReports.filter(
+    (report) => report.status === "RESOLVED"
   );
 
   // to include activeBorrowingPill
@@ -388,6 +466,9 @@ const Content = ({ activeTab }) => {
     }
     {
       activeTab == "Borrowing" && setActiveBorrowingPill(pill);
+    }
+    {
+      activeTab == "Reports" && setActiveReportPill(pill);
     }
     console.log("Active pill: " + pill);
   };
@@ -695,6 +776,53 @@ const Content = ({ activeTab }) => {
                 ) : (
                   <NoRental rentalStatus={activeBorrowingPill} />
                 )}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      )}
+      {activeTab == "Reports" && (
+        <View style={{ flex: 1 }}>
+          <Pills
+            pillItems={reportPill}
+            activeLendingPill={activeReportPill}
+            handlePillPress={handlePillPress}
+          />
+          {activeReportPill == "Pending" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {pendingReports.map((report) => (
+                  <ReportCard report={report} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+          {activeReportPill == "Under Review" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {underReviewReports.map((report) => (
+                  <ReportCard report={report} />
+                ))}
               </ScrollView>
             </View>
           )}
