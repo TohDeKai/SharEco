@@ -75,7 +75,6 @@ const getStartBidDate = () => {
 
 const editAd = async (adId, image, title, description, bidPrice, link) => {
   try {
-    console.log(description, image);
     const result = await pool.query(
       `UPDATE "sharEco-schema"."advertisement" 
         SET "image" = $1, 
@@ -177,8 +176,8 @@ const getAdsReq = async () => {
   }
 };
 
-// Get all APPROVED Advertisement
-const getActiveAds = async() => {
+// Get all ACTIVE Advertisement
+const getActiveAds = async () => {
   try {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."advertisement" 
@@ -190,7 +189,34 @@ const getActiveAds = async() => {
   } catch (err) {
     throw err;
   }
-}
+};
+
+// Increase visit counter
+const updateAdVisits = async (adId) => {
+  try {
+    const currentVisitsResult = await pool.query(
+      `SELECT "visits" FROM "sharEco-schema"."advertisement" WHERE "advertisementId" = $1`,
+      [adId]
+    );
+    const currentVisits = currentVisitsResult.rows[0]?.visits;
+    console.log(currentVisits)
+
+    if (currentVisits !== undefined) {
+      const result = await pool.query(
+        `UPDATE "sharEco-schema"."advertisement" 
+        SET "visits" = $1
+        WHERE "advertisementId" = $2
+        RETURNING *`,
+        [currentVisits + 1, adId]
+      );
+      return result.rows[0];
+    } else {
+      throw new Error("Current visits count is undefined");
+    }
+  } catch (err) {
+    throw err;
+  }
+};
 
 module.exports = {
   createAd,
@@ -203,4 +229,5 @@ module.exports = {
   rankWeekAds,
   getAdsReq,
   getActiveAds,
+  updateAdVisits,
 };

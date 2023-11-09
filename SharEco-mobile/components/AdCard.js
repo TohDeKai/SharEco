@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   image: {
-    height: viewportWidthInPixels(12),
-    width: viewportWidthInPixels(24),
+    height: viewportWidthInPixels(10),
+    width: viewportWidthInPixels(30),
     backgroundColor: dark,
     alignItems: "center",
     justifyContent: "center",

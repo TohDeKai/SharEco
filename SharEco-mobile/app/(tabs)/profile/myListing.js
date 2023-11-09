@@ -107,17 +107,9 @@ const ItemInformation = () => {
     rentalRateDaily,
     collectionLocations,
     depositFee,
-    usersLikedCount,
+    otherLocation,
     userId,
   } = listingItem;
-
-  console.log(collectionLocations);
-  const formattedLocations = collectionLocations
-    ? collectionLocations.join(", ")
-    : collectionLocations;
-  console.log(formattedLocations);
-
-  // const collectionLocationValues = Object.values(collectionLocations);
 
   return (
     <View>
@@ -255,9 +247,18 @@ const ItemInformation = () => {
             <RegularText typography="H3" style={style.topic}>
               Collection & Return Locations
             </RegularText>
-            <RegularText typography="B2" style={style.content}>
-              {formattedLocations}
-            </RegularText>
+            <View style={style.locationContainer}>
+              {collectionLocations &&
+                collectionLocations.map((item) => (
+                  <View style={style.locationButton} key={item}>
+                    <RegularText typography="B2">{item}</RegularText>
+                  </View>
+                ))}
+            </View>
+            <View style={{ marginBottom: 8 }}>
+              <RegularText typography="H4">Additional Comments</RegularText>
+            </View>
+            <RegularText typography="B2">{otherLocation}</RegularText>
           </View>
         </View>
       </ScrollView>
@@ -493,5 +494,20 @@ const style = StyleSheet.create({
     flex: 0.5,
     paddingHorizontal: 5,
     justifyContent: "center",
+  },
+  locationButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 10,
+    marginRight: 6,
+    borderRadius: 15,
+    borderColor: black,
+    borderWidth: 1,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 7,
+    marginBottom: 10,
   },
 });

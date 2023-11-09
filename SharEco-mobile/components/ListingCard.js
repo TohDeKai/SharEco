@@ -14,7 +14,7 @@ import { Rating } from "react-native-stock-star-rating";
 import { Link, router } from "expo-router";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
-const { primary, secondary, white, yellow, dark, inputbackground } = colours;
+const { secondary, dark, black } = colours;
 import UserAvatar from "./UserAvatar";
 
 const viewportHeightInPixels = (percentage) => {
@@ -166,7 +166,8 @@ const style = StyleSheet.create({
     flexDirection: "row",
     gap: "5px",
     justifyContent: "center",
-    backgroundColor: inputbackground,
+    borderColor: black,
+    borderWidth: 1,
     paddingRight: 8,
     paddingTop: 6,
     paddingBottom: 3,
