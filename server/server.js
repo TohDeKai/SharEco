@@ -3028,3 +3028,22 @@ app.put("/api/v1/report/images/:reportId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// GET all reports made by user or against user
+app.get("/api/v1/reports/user/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const reports = await reportdb.getReportsMadeByOrAgainstUser(userId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});

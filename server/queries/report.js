@@ -121,6 +121,21 @@ const updateSupportingImages = async (supportingImages, reportId) => {
     throw err;
   }
 };
+
+// Get all reports that are made by user or DISPUTE against user
+const getReportsMadeByOrAgainstUser = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."report" 
+      WHERE "reporterId" = $1 or ("type" = 'USER' and "targetId" = $1)`,
+      [userId]
+    );
+    return result.rows;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
 module.exports = {
   getAllReports,
   getReportsByType,
@@ -128,4 +143,5 @@ module.exports = {
   addReportResponse,
   updateReportStatus,
   updateSupportingImages,
+  getReportsMadeByOrAgainstUser,
 };
