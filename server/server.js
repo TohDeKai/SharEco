@@ -2923,6 +2923,7 @@ app.post("/api/v1/report", async (req, res) => {
     responseText,
     responseImages,
     targetId,
+    reportDate,
   } = req.body;
 
   try {
@@ -2935,7 +2936,8 @@ app.post("/api/v1/report", async (req, res) => {
       supportingImages,
       responseText,
       responseImages,
-      targetId
+      targetId,
+      reportDate
     );
 
     // Send the newly created user as the response

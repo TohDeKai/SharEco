@@ -44,13 +44,14 @@ const createReport = async (
   supportingImages,
   responseText,
   responseImages,
-  targetId
+  targetId,
+  reportDate
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."report" 
-          ("type", "status", "reporterId", "reason", "description", "supportingImages", "responseText", "responseImages", "targetId") 
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
+          ("type", "status", "reporterId", "reason", "description", "supportingImages", "responseText", "responseImages", "targetId","reportDate") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning *`,
       [
         reportType,
         reportStatus,
@@ -61,6 +62,7 @@ const createReport = async (
         responseText,
         responseImages,
         targetId,
+        reportDate,
       ]
     );
     return result.rows[0];
