@@ -138,6 +138,21 @@ const getReportsMadeByOrAgainstUser = async (userId) => {
     throw err;
   }
 };
+
+// Get report by reportId
+const getReportsById = async (reportId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."report" 
+      WHERE "reportId" = $1`,
+      [reportId]
+    );
+    return result.rows;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
 module.exports = {
   getAllReports,
   getReportsByType,
@@ -146,4 +161,5 @@ module.exports = {
   updateReportStatus,
   updateSupportingImages,
   getReportsMadeByOrAgainstUser,
+  getReportsById,
 };

@@ -3049,3 +3049,22 @@ app.get("/api/v1/reports/user/:userId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// GET report by reportId
+app.get("/api/v1/reports/reportId/:reportId", async (req, res) => {
+  try {
+    const reportId = req.params.reportId;
+
+    const reports = await reportdb.getReportsById(reportId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
