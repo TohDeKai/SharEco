@@ -168,7 +168,7 @@ const advertise = () => {
             >
               <RegularText
                 typography="B1"
-                color={activeAdPill === pill ? primary : dark}
+                color={activeAdPill === pill ? white : secondary}
               >
                 {pill}
               </RegularText>
@@ -456,13 +456,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: inputbackground,
+    borderColor: secondary,
+    borderWidth: 1,
     marginRight: 13,
   },
   activePill: {
-    backgroundColor: white,
-    borderColor: primary,
-    borderWidth: 1,
+    backgroundColor: secondary,
   },
   centeredText: {
     marginTop: 30,

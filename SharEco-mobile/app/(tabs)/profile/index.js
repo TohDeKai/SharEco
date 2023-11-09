@@ -256,7 +256,7 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
           >
             <RegularText
               typography="B1"
-              color={activeLendingPill === pill ? primary : dark}
+              color={activeLendingPill === pill ? white : secondary}
             >
               {pill}
             </RegularText>
@@ -595,13 +595,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: inputbackground,
+    borderColor: secondary,
+    borderWidth: 1,
     marginRight: 13,
   },
   activePill: {
-    backgroundColor: white,
-    borderColor: primary,
-    borderWidth: 1,
+    backgroundColor: secondary,
   },
   activityCardContainer: {
     width: Dimensions.get("window").width - 46,

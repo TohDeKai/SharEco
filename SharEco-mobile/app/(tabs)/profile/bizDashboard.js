@@ -166,7 +166,7 @@ const dashboard = () => {
     } catch (error) {
       console.log(error);
     }
-    
+
     setRefreshing(false);
   };
 
@@ -291,7 +291,7 @@ const dashboard = () => {
             >
               <RegularText
                 typography="B1"
-                color={activeAnalyticsPill === pill ? primary : dark}
+                color={activeAnalyticsPill === pill ? white : secondary}
               >
                 {pill}
               </RegularText>
@@ -321,22 +321,19 @@ const dashboard = () => {
         />
         {activeAnalyticsPill === "Finances" && (
           <View style={{ display: "flex" }}>
-            <RegularText typography="H3" style={{ marginBottom: 10 }}>
-              Total Rental Income
-            </RegularText>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-around",
-                marginBottom: 20,
-              }}
-            >
-              <View style={{ justifyContent: "center", alignItems: "center" }}>
-                <Ionicons name="cash" size={18} color={primary} />
-                <RegularText>${total}</RegularText>
-                <RegularText typography="Subtitle">Rental Income</RegularText>
+            <View style={styles.analyticsContainer}>
+              <Ionicons
+                name="cash"
+                size={40}
+                color={primary}
+                style={{ marginRight: 15 }}
+              />
+              <View>
+                <RegularText typography="H4">Total Rental Income</RegularText>
+                <RegularText typography="H2">${total}</RegularText>
               </View>
             </View>
+
             <RegularText typography="H3" style={{ marginBottom: 20 }}>
               6 Month Rental Income Overview
             </RegularText>
@@ -357,35 +354,39 @@ const dashboard = () => {
 
         {activeAnalyticsPill === "Impressions" && (
           <View style={{ display: "flex" }}>
-            <RegularText typography="H3" style={{ marginBottom: 20 }}>
-              All Time Impressions
-            </RegularText>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-around",
-                marginBottom: 20,
-              }}
-            >
-              <View style={{ alignItems: "center" }}>
-                <Ionicons name="people" size={18} color={primary} />
-                <RegularText>
+            <View style={styles.analyticsContainer}>
+              <Ionicons
+                name="people"
+                size={40}
+                color={primary}
+                style={{ marginRight: 15 }}
+              />
+              <View>
+                <RegularText typography="H4">Total impressions</RegularText>
+                <RegularText typography="H2">
                   {impressions && impressions[0] ? impressions.length : 0}
                 </RegularText>
-                <RegularText typography="Subtitle">Impressions</RegularText>
               </View>
-              <View style={{ alignItems: "center" }}>
-                <Ionicons name="person" size={18} color={primary} />
-                <RegularText>
+            </View>
+            <View style={styles.analyticsContainer}>
+              <Ionicons
+                name="person"
+                size={34}
+                color={primary}
+                style={{ marginRight: 15 }}
+              />
+              <View>
+                <RegularText typography="H4">
+                  Total distinct impressions
+                </RegularText>
+                <RegularText typography="H2">
                   {distinctImpressions && distinctImpressions[0]
                     ? distinctImpressions.length
                     : 0}
                 </RegularText>
-                <RegularText typography="Subtitle">
-                  Distinct Impressions
-                </RegularText>
               </View>
             </View>
+
             <RegularText typography="H3" style={{ marginBottom: 20 }}>
               This Week's Impressions
             </RegularText>
@@ -406,22 +407,16 @@ const dashboard = () => {
 
         {activeAnalyticsPill === "Likes" && (
           <View style={{ display: "flex" }}>
-            <RegularText typography="H3" style={{ marginBottom: 20 }}>
-              All Time Likes
-            </RegularText>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-around",
-                marginBottom: 20,
-              }}
-            >
-              <View style={{ justifyContent: "center", alignItems: "center" }}>
-                <Ionicons name="heart" size={18} color={primary} />
-                <RegularText>
-                  {wishlist && wishlist[0] ? wishlist.length : 0}
-                </RegularText>
-                <RegularText typography="Subtitle">Likes</RegularText>
+            <View style={styles.analyticsContainer}>
+              <Ionicons
+                name="heart"
+                size={40}
+                color={primary}
+                style={{ marginRight: 15 }}
+              />
+              <View>
+                <RegularText typography="H4">Total Likes</RegularText>
+                <RegularText typography="H2">{wishlist && wishlist[0] ? wishlist.length : 0}</RegularText>
               </View>
             </View>
 
@@ -560,7 +555,7 @@ const styles = StyleSheet.create({
   },
   pillContainer: {
     paddingTop: 18,
-    paddingBottom: 25,
+    paddingBottom: 20,
   },
   analyticsPillContainer: {
     paddingBottom: 25,
@@ -569,13 +564,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: inputbackground,
+    borderColor: secondary,
+    borderWidth: 1,
     marginRight: 13,
   },
   activePill: {
-    backgroundColor: white,
-    borderColor: primary,
-    borderWidth: 1,
+    backgroundColor: secondary,
   },
   centeredText: {
     marginTop: 30,
@@ -616,5 +610,14 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 8,
     borderRadius: 8,
+  },
+  analyticsContainer: {
+    backgroundColor: inputbackground,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    marginBottom: 20,
   },
 });

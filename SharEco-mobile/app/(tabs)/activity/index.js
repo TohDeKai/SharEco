@@ -16,7 +16,7 @@ import RegularText from "../../../components/text/RegularText";
 import ActivityCard from "../../../components/containers/ActivityCard";
 import { colours } from "../../../components/ColourPalette";
 import { useAuth } from "../../../context/auth";
-const { black, inputbackground, white, primary, dark, placeholder } = colours;
+const { black, inputbackground, white, primary, dark, placeholder, secondary } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ActivityHeader = () => {
@@ -123,7 +123,7 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
           >
             <RegularText
               typography="B1"
-              color={activeLendingPill === pill ? primary : dark}
+              color={activeLendingPill === pill ? white : secondary}
             >
               {pill}
             </RegularText>
@@ -786,18 +786,18 @@ const styles = StyleSheet.create({
   pillContainer: {
     paddingTop: 18,
     paddingBottom: 25,
+    paddingHorizontal: 13,
   },
   pill: {
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: inputbackground,
-    marginLeft: 13,
+    borderColor: secondary,
+    borderWidth: 1,
+    marginRight: 13,
   },
   activePill: {
-    backgroundColor: white,
-    borderColor: primary,
-    borderWidth: 1,
+    backgroundColor: secondary,
   },
   rentalNotifContainer: {
     borderBottomColor: inputbackground,
