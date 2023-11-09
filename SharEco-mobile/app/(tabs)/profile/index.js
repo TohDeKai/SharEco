@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
   },
   pillContainer: {
     paddingTop: 18,
-    paddingBottom: 25,
+    paddingBottom: 18,
   },
   pill: {
     paddingHorizontal: 15,
