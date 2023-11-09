@@ -54,6 +54,33 @@ const dashboard = () => {
   const [total, setTotal] = useState("0.00");
   const [wishlist, setWishlist] = useState([]);
 
+  //Get user ads
+  useEffect(() => {
+    async function fetchUserAds() {
+      try {
+        const userData = await getUserData();
+        const userId = userData.userId;
+        setUserId(userId);
+        try {
+          const response = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`
+          );
+          if (response.status === 200) {
+            const ads = response.data.data.ads;
+            setUserAds(ads);
+          } else {
+            console.log("Failed to retrieve ads");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchUserAds();
+  }, [userId]);
+
   useEffect(() => {
     async function fetchImpressions() {
       try {
@@ -392,19 +419,59 @@ const dashboard = () => {
     );
   };
 
+  const pendingAdCount = userAds.filter((ad) => ad.status === "PENDING").length;
+  const activeAdCount = userAds.filter((ad) => ad.status === "ACTIVE").length;
+
   return (
     <SafeAreaContainer>
       <View>
         <Header title="Business Dashboard" action="back" onPress={handleBack} />
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.ads}>
-          <ImageBackground
-            source={require("./../../../assets/walletbg.png")}
-            resizeMode="cover"
-            style={styles.imageBg}
-          >
-            <RegularText>Hello</RegularText>
-          </ImageBackground></View>
+          <View>
+            <ImageBackground
+              source={require("./../../../assets/bannerwave.png")}
+              resizeMode="contain"
+              style={styles.imageBg}
+            >
+              <View style={styles.adContainer}>
+                <View style={{ gap: 3 }}>
+                  <RegularText typography="Subtitle" color={white}>
+                    Let's grow your customer base together!
+                  </RegularText>
+                  <RegularText typography="H2" color={white}>
+                    Your Advertisements
+                  </RegularText>
+                </View>
+                <Ionicons name="rocket" size={30} color={white} />
+              </View>
+              <View style={styles.adStats}>
+                <View style={styles.indivStats}>
+                  <RegularText typography="H3" color={white}>
+                    {pendingAdCount || "-"}
+                  </RegularText>
+                  <RegularText typography="Subtitle" color={white}>
+                    PENDING
+                  </RegularText>
+                </View>
+                <View style={styles.indivStats}>
+                  <RegularText typography="H3" color={white}>
+                    {activeAdCount || "-"}
+                  </RegularText>
+                  <RegularText typography="Subtitle" color={white}>
+                    ACTIVE
+                  </RegularText>
+                </View>
+                <View style={styles.indivStats}>
+                  <RegularText typography="H3" color={white}>
+                    567
+                  </RegularText>
+                  <RegularText typography="Subtitle" color={white}>
+                    VISITS
+                  </RegularText>
+                </View>
+              </View>
+            </ImageBackground>
+          </View>
           <View style={styles.container}>
             <Analytics />
           </View>
@@ -491,12 +558,29 @@ const styles = StyleSheet.create({
   activeTab: {
     borderBottomColor: primary,
   },
-  ads: {
-    height: 100,
-    width: viewportWidthInPixels(100),
-  },
   imageBg: {
-    height: 100,
-    width: viewportWidthInPixels(100),
-  }
+    marginTop: 8,
+    height: 150,
+    marginHorizontal: viewportWidthInPixels(3),
+  },
+  adContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: viewportWidthInPixels(7),
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  adStats: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: viewportWidthInPixels(7),
+  },
+  indivStats: {
+    alignItems: "center",
+    backgroundColor: "rgba(252, 252, 252, 0.17)",
+    minWidth: viewportWidthInPixels(20),
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
 });

@@ -73,6 +73,7 @@ const Carousel = () => {
     image: ad.image,
     link: ad.link,
     bizId: ad.bizId,
+    adId: ad.advertisementId,
   }));
 
   const handleScroll = (event) => {
@@ -81,15 +82,28 @@ const Carousel = () => {
     setActiveIndex(index);
   };
 
-  const handleAdPress = (item) => {
+  const handleAdPress = async (item) => {
+    try {
+      const adId = parseInt(item.adId);
+      console.log(adId);
+      const response = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/addVisit/adId/${adId}`
+      );
+      if (response.status === 200) {
+        console.log("Added visit count");
+      } else {
+        //Shouldn't come here
+        console.log("Failed to retrieve all listings");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
     if (!item.link) {
-      console.log("Open profile", item);
       router.push({
         pathname: "home/othersProfile",
         params: { userId: item.bizId },
       });
     } else {
-      console.log("Open link", item.link);
       return Linking.openURL(item.link);
     }
   };
