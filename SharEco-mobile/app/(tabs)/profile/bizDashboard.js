@@ -143,6 +143,33 @@ const dashboard = () => {
     fetchWishlistData();
   }, [userId]);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      const userData = await getUserData();
+      const userId = userData.userId;
+      setUserId(userId);
+      try {
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`
+        );
+        if (response.status === 200) {
+          const ads = response.data.data.ads;
+          setUserAds(ads);
+        } else {
+          console.log("Failed to retrieve ads");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    
+    setRefreshing(false);
+  };
+
   //POPULATES IMPRESSIONS GRAPH
   const impressionBarData = [];
   const today = new Date();
@@ -433,7 +460,12 @@ const dashboard = () => {
     <SafeAreaContainer>
       <View>
         <Header title="Business Dashboard" action="back" onPress={handleBack} />
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        >
           <Pressable onPress={() => toAdsPage()}>
             <ImageBackground
               source={require("./../../../assets/bannerwave.png")}
@@ -494,6 +526,7 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 20,
     marginHorizontal: viewportWidthInPixels(5),
+    paddingBottom: 80,
   },
   adHeader: {
     alignItems: "center",
@@ -553,17 +586,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: viewportWidthInPixels(100),
   },
-  tab: {
-    flex: 1,
-    height: 36,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: white,
+  header: {
+    paddingBottom: 10,
+    marginBottom: 15,
     borderBottomWidth: 2,
     borderBottomColor: inputbackground,
-  },
-  activeTab: {
-    borderBottomColor: primary,
   },
   imageBg: {
     marginTop: 8,
