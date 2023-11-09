@@ -425,12 +425,16 @@ const dashboard = () => {
     .filter((ad) => ad.status === "ACTIVE")
     .reduce((sum, ad) => sum + ad.visits, 0);
 
+  const toAdsPage = () => {
+    router.push("profile/advertise");
+  };
+
   return (
     <SafeAreaContainer>
       <View>
         <Header title="Business Dashboard" action="back" onPress={handleBack} />
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View>
+          <Pressable onPress={() => toAdsPage()}>
             <ImageBackground
               source={require("./../../../assets/bannerwave.png")}
               resizeMode="contain"
@@ -445,7 +449,7 @@ const dashboard = () => {
                     Your Advertisements
                   </RegularText>
                 </View>
-                <Ionicons name="rocket" size={30} color={white} />
+                <Ionicons name="chevron-forward" size={30} color={white} />
               </View>
               <View style={styles.adStats}>
                 <View style={styles.indivStats}>
@@ -474,7 +478,7 @@ const dashboard = () => {
                 </View>
               </View>
             </ImageBackground>
-          </View>
+          </Pressable>
           <View style={styles.container}>
             <Analytics />
           </View>

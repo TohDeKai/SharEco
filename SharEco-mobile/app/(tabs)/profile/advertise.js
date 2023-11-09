@@ -1,6 +1,6 @@
 import {
   View,
-  Text,
+  ImageBackground,
   ScrollView,
   StyleSheet,
   Dimensions,
@@ -14,7 +14,7 @@ import { Link, router, useLocalSearchParams } from "expo-router";
 import { BarChart } from "react-native-gifted-charts";
 
 //components
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Rating } from "react-native-stock-star-rating";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
@@ -102,71 +102,137 @@ const advertise = () => {
     fetchUserAds();
   }, [userId]);
 
-  const Advertise = () => {
-    //Refresh
-    const handleRefresh = async () => {
-      setRefreshing(true);
+  //Refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
 
-      try {
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`
-        );
-        console.log(response.status);
-        if (response.status === 200) {
-          const ads = response.data.data.ads;
-          setUserAds(ads);
-        } else {
-          // Handle the error condition appropriately
-          console.log("Failed to retrieve user's items");
-        }
-      } catch (error) {
-        // Handle the axios request error appropriately
-        console.log("Error:", error);
+    try {
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`
+      );
+      console.log(response.status);
+      if (response.status === 200) {
+        const ads = response.data.data.ads;
+        setUserAds(ads);
+      } else {
+        // Handle the error condition appropriately
+        console.log("Failed to retrieve user's items");
       }
+    } catch (error) {
+      // Handle the axios request error appropriately
+      console.log("Error:", error);
+    }
 
-      // After all the data fetching and updating, set refreshing to false
-      setRefreshing(false);
-    };
+    // After all the data fetching and updating, set refreshing to false
+    setRefreshing(false);
+  };
 
-    const handlePillPress = (pill) => {
-      setActiveAdPill(pill);
-      console.log("Active pill: " + pill);
-    };
-    const handleCreateNewAd = () => {
-      router.push("profile/createAd");
-    };
-    const handleViewRanks = () => {
-      router.push("profile/rankings");
-    };
+  const handlePillPress = (pill) => {
+    setActiveAdPill(pill);
+    console.log("Active pill: " + pill);
+  };
+  const handleCreateNewAd = () => {
+    router.push("profile/createAd");
+  };
+  const handleViewRanks = () => {
+    router.push("profile/rankings");
+  };
 
-    const pendingAds = userAds.filter((ad) => ad.status === "PENDING");
-    const activeAds = userAds.filter((ad) => ad.status === "ACTIVE");
-    const pastAds = userAds.filter((ad) => ad.status === "PAST");
-    const rejectedAds = userAds.filter((ad) => ad.status === "REJECTED");
-    const cancelledAds = userAds.filter((ad) => ad.status === "CANCELLED");
+  const handleBack = () => {
+    router.back();
+  };
 
+  const toBiddingGuide = () => {
+    router.replace("profile/biddingGuide");
+  };
+
+  const pendingAds = userAds.filter((ad) => ad.status === "PENDING");
+  const activeAds = userAds.filter((ad) => ad.status === "ACTIVE");
+  const pastAds = userAds.filter((ad) => ad.status === "PAST");
+  const rejectedAds = userAds.filter((ad) => ad.status === "REJECTED");
+  const cancelledAds = userAds.filter((ad) => ad.status === "CANCELLED");
+
+  const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
     return (
-      <View>
-        <View style={styles.adHeader}>
-          <View>
-            <RegularText typography="H1">Advertisement</RegularText>
-          </View>
-          <View>
-            <PrimaryButton style={styles.button} onPress={handleCreateNewAd}>
-              <Ionicons name="add" color={white} size={25} />
-              <View style={{ paddingTop: 3, paddingRight: 5 }}>
-                <RegularText typography="H4" color={white}>
-                  Create ad
+      <View style={styles.pillContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {pillItems.map((pill) => (
+            <Pressable
+              key={pill}
+              onPress={() => handlePillPress(pill)}
+              style={({ pressed }) => [
+                { opacity: pressed ? 0.5 : 1 },
+                styles.pill,
+                activeAdPill === pill && styles.activePill,
+              ]}
+            >
+              <RegularText
+                typography="B1"
+                color={activeAdPill === pill ? primary : dark}
+              >
+                {pill}
+              </RegularText>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaContainer>
+      <Header title="Advertise" action="back" onPress={handleBack} />
+      <Pressable style={styles.info} onPress={toBiddingGuide}>
+        <MaterialIcons
+          name="info"
+          size={23}
+          color={secondary}
+          style={{ marginRight: 5 }}
+        />
+        <RegularText typography="B2" color={secondary}>
+          Learn how bidding works
+        </RegularText>
+      </Pressable>
+
+      <View style={styles.container}>
+        <ImageBackground
+          source={require("./../../../assets/bannerwave100.png")}
+          resizeMode="contain"
+          style={styles.imageBg}
+        >
+          <View style={styles.biddingContainer}>
+            <View style={styles.bidWeek}>
+              <RegularText typography="B2" color={white}>
+                Currently bidding for
+              </RegularText>
+              <View style={styles.biddingPeriod}>
+                <Ionicons
+                  name="calendar"
+                  size={17}
+                  style={{ marginRight: 10 }}
+                  color={white}
+                />
+                <RegularText typography="H2" color={white}>
+                  {adPeriod()}
                 </RegularText>
               </View>
-            </PrimaryButton>
+              <RegularText typography="Subtitle2" color={white}>
+                *Bidding period ends every Friday
+              </RegularText>
+            </View>
+            <View>
+              <Pressable style={styles.button} onPress={handleCreateNewAd}>
+                <Ionicons name="add" color={white} size={25} />
+                <View style={{ paddingRight: 5 }}>
+                  <RegularText typography="H4" color={white}>
+                    Create ad
+                  </RegularText>
+                </View>
+              </Pressable>
+            </View>
           </View>
-        </View>
-        <View style={styles.bidWeek}>
-          <Ionicons name="calendar" size={17} style={{ marginRight: 10 }} />
-          <RegularText typography="B2">Bidding opened for </RegularText>
-          <RegularText typography="H4">{adPeriod()}</RegularText>
-        </View>
+        </ImageBackground>
+
         <Pills
           pillItems={adPills}
           setActiveAdPill={activeAdPill}
@@ -330,98 +396,87 @@ const advertise = () => {
           </View>
         )}
       </View>
-    );
-  };
-
-  const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
-    return (
-      <View style={styles.pillContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {pillItems.map((pill) => (
-            <Pressable
-              key={pill}
-              onPress={() => handlePillPress(pill)}
-              style={({ pressed }) => [
-                { opacity: pressed ? 0.5 : 1 },
-                styles.pill,
-                activeAdPill === pill && styles.activePill,
-              ]}
-            >
-              <RegularText
-                typography="B1"
-                color={activeAdPill === pill ? primary : dark}
-              >
-                {pill}
-              </RegularText>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-    );
-  };
-
-  const handleBack = () => {
-    router.back();
-  };
+    </SafeAreaContainer>
+  );
 };
 
 export default advertise;
 
 const styles = StyleSheet.create({
-    container: {
-      marginVertical: 20,
-      marginHorizontal: viewportWidthInPixels(5),
-    },
-    adHeader: {
-      alignItems: "center",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginBottom: 10,
-    },
-    button: {
-      width: 120,
-      height: 40,
-      paddingVertical: 3,
-    },
-    bidWeek: {
-      backgroundColor: inputbackground,
-      paddingVertical: 6,
-      paddingHorizontal: 17,
-      borderRadius: 7,
-      flexDirection: "row",
-      height: 40,
-      alignItems: "center",
-    },
-    ranks: {
-      borderBottomColor: inputbackground,
-      borderBottomWidth: 1,
-      paddingVertical: 6,
-      borderRadius: 7,
-      flexDirection: "row",
-      height: 40,
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    pillContainer: {
-      paddingTop: 18,
-      paddingBottom: 25,
-    },
-    pill: {
-      paddingHorizontal: 15,
-      paddingVertical: 5,
-      borderRadius: 20,
-      backgroundColor: inputbackground,
-      marginRight: 13,
-    },
-    activePill: {
-      backgroundColor: white,
-      borderColor: primary,
-      borderWidth: 1,
-    },
-    centeredText: {
-      marginTop: 30,
-      width: viewportWidthInPixels(90),
-      alignItems: "center",
-    },
-  });
-  
+  container: {
+    marginVertical: 20,
+    marginHorizontal: viewportWidthInPixels(5),
+  },
+  adHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  button: {
+    width: 120,
+    height: 40,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    backgroundColor: "rgba(252, 252, 252, 0.3)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+  },
+  biddingContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 20,
+    paddingHorizontal: 17,
+  },
+  bidWeek: {},
+  biddingPeriod: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 5,
+    paddingBottom: 5,
+  },
+  ranks: {
+    borderBottomColor: inputbackground,
+    borderBottomWidth: 1,
+    paddingVertical: 6,
+    borderRadius: 7,
+    flexDirection: "row",
+    height: 40,
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  pillContainer: {
+    paddingTop: 18,
+    paddingBottom: 25,
+  },
+  pill: {
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: inputbackground,
+    marginRight: 13,
+  },
+  activePill: {
+    backgroundColor: white,
+    borderColor: primary,
+    borderWidth: 1,
+  },
+  centeredText: {
+    marginTop: 30,
+    width: viewportWidthInPixels(90),
+    alignItems: "center",
+  },
+  info: {
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: inputbackground,
+  },
+  imageBg: {
+    height: 100,
+  },
+});
