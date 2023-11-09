@@ -1,4 +1,11 @@
-import { Text, View, Image, StyleSheet, Dimensions } from "react-native";
+import {
+  Text,
+  View,
+  Image,
+  StyleSheet,
+  Dimensions,
+  ImageBackground,
+} from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import axios from "axios";
@@ -18,6 +25,10 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
   return (percentage / 100) * screenHeight;
+};
+const viewportWidthInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").width;
+  return (percentage / 100) * screenWidth;
 };
 
 export default function SignIn() {
@@ -80,6 +91,11 @@ export default function SignIn() {
 
   return (
     <SafeAreaContainer>
+      <ImageBackground
+        source={require("./../../assets/topwave.png")}
+        resizeMode="cover"
+        style={styles.imageBg}
+      />
       <View style={styles.container}>
         <Image
           source={require("../../assets/logo-light.png")} // Replace with your logo file path
@@ -129,25 +145,27 @@ export default function SignIn() {
           )}
         </Formik>
       </View>
-      <View style={styles.bottomContainer}>
-        <RegularText typography="B2">
-          Don't have an account?{" "}
+      <View style={{ marginBottom: 10 }}>
+        <View style={styles.bottomContainer}>
           <Link href="/sign-up">
-            <Text style={{ color: primary, textDecorationLine: "underline" }}>
-              Sign up
-            </Text>
+            <RegularText typography="B2">
+              Don't have an account?{" "}
+              <RegularText color={primary} typography="B1">
+                Sign up
+              </RegularText>
+            </RegularText>
           </Link>
-        </RegularText>
-      </View>
-      <View style={styles.bottomContainer}>
-        <RegularText typography="B2">
-          Have not verified your account?{" "}
+        </View>
+        <View style={styles.bottomContainer}>
           <Link href="/verificationResend">
-            <Text style={{ color: primary, textDecorationLine: "underline" }}>
-              Verify
-            </Text>
+            <RegularText typography="B2">
+              Have not verified your account?{" "}
+              <RegularText color={primary} typography="B1">
+                Verify
+              </RegularText>
+            </RegularText>
           </Link>
-        </RegularText>
+        </View>
       </View>
     </SafeAreaContainer>
   );
@@ -158,7 +176,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: white,
-    top: viewportHeightInPixels(20),
+    top: viewportHeightInPixels(5),
   },
   scrollContainer: {
     flexGrow: 1,
@@ -166,7 +184,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bottomContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
     alignSelf: "center", // Center horizontally
+  },
+  imageBg: {
+    height: 180,
+    width: viewportWidthInPixels(100),
+    marginTop: -47,
   },
 });
