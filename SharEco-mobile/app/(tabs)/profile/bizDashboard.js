@@ -421,6 +421,9 @@ const dashboard = () => {
 
   const pendingAdCount = userAds.filter((ad) => ad.status === "PENDING").length;
   const activeAdCount = userAds.filter((ad) => ad.status === "ACTIVE").length;
+  const visitCount = userAds
+    .filter((ad) => ad.status === "ACTIVE")
+    .reduce((sum, ad) => sum + ad.visits, 0);
 
   return (
     <SafeAreaContainer>
@@ -463,10 +466,10 @@ const dashboard = () => {
                 </View>
                 <View style={styles.indivStats}>
                   <RegularText typography="H3" color={white}>
-                    567
+                    {visitCount || "-"}
                   </RegularText>
                   <RegularText typography="Subtitle" color={white}>
-                    VISITS
+                    WK VISITS
                   </RegularText>
                 </View>
               </View>
@@ -577,8 +580,8 @@ const styles = StyleSheet.create({
   },
   indivStats: {
     alignItems: "center",
-    backgroundColor: "rgba(252, 252, 252, 0.17)",
-    minWidth: viewportWidthInPixels(20),
+    backgroundColor: "rgba(252, 252, 252, 0.2)",
+    minWidth: viewportWidthInPixels(25),
     paddingVertical: 5,
     paddingHorizontal: 8,
     borderRadius: 8,
