@@ -1312,11 +1312,9 @@ const styles = StyleSheet.create({
   listingDetails: {
     height: 70,
     backgroundColor: white,
-    borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: inputbackground,
     paddingHorizontal: viewportWidthInPixels(5),
-    marginTop: 10,
     flexDirection: "row",
     alignItems: "center",
   },

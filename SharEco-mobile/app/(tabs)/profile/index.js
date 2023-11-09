@@ -123,7 +123,7 @@ const ProfileHeader = () => {
               style={styles.headerIcon}
             />
             <RegularText
-              color={primary}
+              color={secondary}
               typography="B1"
               style={{ paddingHorizontal: 5 }}
             >
