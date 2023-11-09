@@ -231,9 +231,15 @@ const report = () => {
     try {
       const userData = await getUserData();
       const userId = userData.userId;
+      var reportStatus = "";
+      if (reportType == "LISTING" || reportType == "USER") {
+        reportStatus = "UNDER REVIEW";
+      } else {
+        reportStatus = "PENDING";
+      }
       const reportData = {
         reportType: reportType,
-        reportStatus: "PENDING",
+        reportStatus: reportStatus,
         reporterId: userId,
         reason: selectedReason,
         description: values.description,
