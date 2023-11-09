@@ -10,22 +10,18 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { BarChart } from "react-native-gifted-charts";
 
 //components
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Rating } from "react-native-stock-star-rating";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
-import UserAvatar from "../../../components/UserAvatar";
-import ListingCard from "../../../components/ListingCard";
 import Header from "../../../components/Header";
-import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import AdCard from "../../../components/AdCard";
-const { primary, secondary, white, yellow, dark, inputbackground, black } =
+const { secondary, white, yellow, dark, inputbackground, black } =
   colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -310,7 +306,7 @@ const advertise = () => {
         )}
         {activeAdPill === "Past" && (
           <View>
-            {activeAds.length > 0 ? (
+            {pastAds.length > 0 ? (
               <FlatList
                 data={pastAds}
                 numColumns={1}
@@ -339,7 +335,7 @@ const advertise = () => {
         )}
         {activeAdPill === "Rejected" && (
           <View>
-            {activeAds.length > 0 ? (
+            {rejectedAds.length > 0 ? (
               <FlatList
                 data={rejectedAds}
                 numColumns={1}
@@ -368,7 +364,7 @@ const advertise = () => {
         )}
         {activeAdPill === "Cancelled" && (
           <View>
-            {activeAds.length > 0 ? (
+            {cancelledAds.length > 0 ? (
               <FlatList
                 data={cancelledAds}
                 numColumns={1}
@@ -450,7 +446,7 @@ const styles = StyleSheet.create({
   },
   pillContainer: {
     paddingTop: 18,
-    paddingBottom: 25,
+    paddingBottom: 20,
   },
   pill: {
     paddingHorizontal: 15,

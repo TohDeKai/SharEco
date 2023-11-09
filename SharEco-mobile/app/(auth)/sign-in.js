@@ -99,7 +99,7 @@ export default function SignIn() {
       <View style={styles.container}>
         <Image
           source={require("../../assets/logo-light.png")} // Replace with your logo file path
-          style={{ width: "50%", height: 100 }} // Adjust the width and height as needed
+          style={{ width: "50%", height: 130 }} // Adjust the width and height as needed
         />
         <Formik
           initialValues={{ username: "", password: "" }}
@@ -176,7 +176,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: white,
-    top: viewportHeightInPixels(5),
   },
   scrollContainer: {
     flexGrow: 1,
