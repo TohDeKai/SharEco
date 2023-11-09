@@ -2895,7 +2895,7 @@ app.get("/api/v1/reports", async (req, res) => {
 // GET all reports with DISPUTE type
 app.get("/api/v1/reports/type/:type", async (req, res) => {
   try {
-    reportType = req.params.type;
+    const reportType = req.params.type;
 
     const reports = await reportdb.getReportsByType(reportType);
     res.status(200).json({
