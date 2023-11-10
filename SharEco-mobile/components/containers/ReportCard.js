@@ -37,6 +37,7 @@ const ReportCard = ({ report }) => {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [hourlyRentalLength, setHourlyRentalLength] = useState(0);
+  const [isReported, setIsReported] = useState(false);
 
   useEffect(() => {
     async function fetchUserData(userId) {
@@ -81,9 +82,12 @@ const ReportCard = ({ report }) => {
           setEndDate(rentalData.endDate);
           setIsHourly(rentalData.isHourly);
           setDateDifferenceMs(rentalData.endDate - rentalData.startDate);
-          const isLending =
-            rentalData.lenderId == currUserData.userId ? true : false;
-          setIsLending(isLending);
+          setIsLending(
+            rentalData.lenderId == currUserData.userId ? true : false
+          );
+          setIsReported(
+            report.reporterId == currUserData.userId ? false : true
+          );
           setStartDay(
             new Date(rentalData.startDate).toLocaleDateString("en-US", {
               month: "short",
@@ -152,8 +156,16 @@ const ReportCard = ({ report }) => {
   }, []);
 
   const formatDate = (dateString) => {
-    const options = { month: "short", year: "2-digit" };
+    const options = { day: "2-digit", month: "short" };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const calculateDaysDifference = (endDate) => {
+    const currentDate = new Date();
+    const endDateTime = new Date(endDate);
+    const timeDifference = endDateTime.getTime() - currentDate.getTime();
+    const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+    return daysDifference;
   };
 
   const CardHeader = () => {
@@ -285,6 +297,33 @@ const ReportCard = ({ report }) => {
             {formatDate(report.reportDate)}
           </RegularText>
         </View>
+        {isReported && (
+          <RegularText typography="B3" style={{ textAlign: "right" }}>
+            {calculateDaysDifference(report.reportDate)}{" "}
+            {calculateDaysDifference(report.reportDate) == 1 ? "day" : "days"}{" "}
+            left to respond
+          </RegularText>
+        )}
+      </View>
+    );
+  };
+
+  const CardFooter = () => {
+    const handleRespond = () => {};
+
+    return (
+      <View>
+        {isReported && (
+          <View style={styles.buttonContainer}>
+            <PrimaryButton
+              typography="B3"
+              color={white}
+              onPress={handleRespond}
+            >
+              Respond
+            </PrimaryButton>
+          </View>
+        )}
       </View>
     );
   };
@@ -294,6 +333,7 @@ const ReportCard = ({ report }) => {
       <View style={styles.activityCard}>
         <CardHeader />
         <CardDetails />
+        <CardFooter />
       </View>
     </View>
   );
