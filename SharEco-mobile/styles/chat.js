@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
   chatheading: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "green",
+    color: colours.primary,
   },
   chattopContainer: {
     backgroundColor: colours.white,
@@ -77,6 +77,7 @@ export const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginBottom: 2,
+    marginHorizontal: 5,
   },
   mvatar: {
     marginRight: 5,

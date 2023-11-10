@@ -6,13 +6,15 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 import Messaging from "./messaging";
 import Chat from "../../../components/containers/Chat/Chat";
-const { white, primary } = colours;
+import { useLocalSearchParams } from "expo-router";
 
 const chats = () => {
+  const params = useLocalSearchParams();
+  const { userId } = params;
   return (
     <SafeAreaContainer>
       <View>
-        <Chat />
+        <Chat userId={userId} />
       </View>
     </SafeAreaContainer>
   );

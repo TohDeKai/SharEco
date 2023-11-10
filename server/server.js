@@ -49,6 +49,11 @@ const { AWS_GETFILE_URL } = require("./s3");
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
 
+//http request logger middleware
+app.use(morgan("dev"));
+// retrieve data from body
+app.use(express.json());
+
 // Configure CORS to allow requests from your React app's domain (http://localhost:3000)
 app.use(
   cors({
@@ -61,11 +66,6 @@ app.use(
 app.listen(port, () => {
   console.log(`Server is up and listening on Port ${port}`);
 });
-
-//http request logger middleware
-app.use(morgan("dev"));
-// retrieve data from body
-app.use(express.json());
 
 // User CRUD operations
 app.get("/api/v1/users", async (req, res) => {

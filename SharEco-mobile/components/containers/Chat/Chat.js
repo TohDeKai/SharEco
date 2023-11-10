@@ -1,74 +1,99 @@
-import React from "react";
+import React, { useEffect, useState, useLayoutEffect } from "react";
 import { View, Text, Pressable, SafeAreaView, FlatList } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import ChatComponent from "./ChatComponent";
 import { styles } from "../../../styles/chat";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  or,
+  onSnapshot,
+} from "firebase/firestore";
+import { fireStoreDB } from "../../../app/utils/firebase";
+import { useAuth } from "../../../context/auth";
+import RegularText from "../../text/RegularText";
 
-const Chat = () => {
-  //👇🏻 Dummy list of rooms
-  const rooms = [
-    {
-      id: "1",
-      name: "User123",
-      messages: [
-        {
-          id: "1a",
-          text: "Hello guys, welcome!",
-          time: "07:50",
-          user: "Tomer",
-        },
-        {
-          id: "1b",
-          text: "Hi, thank you! 😇",
-          time: "08:50",
-          user: "David",
-        },
-      ],
-    },
-    {
-      id: "2",
-      name: "User321",
-      messages: [
-        {
-          id: "2a",
-          text: "Guys, who's awake? 🙏🏽",
-          time: "12:50",
-          user: "Team Leader",
-        },
-        {
-          id: "2b",
-          text: "Hello 🧑🏻‍💻",
-          time: "03:50",
-          user: "Victoria",
-        },
-      ],
-    },
-  ];
+const Chat = (props) => {
+  const [chatRooms, setChatRooms] = useState([]);
+
+  useLayoutEffect(() => {
+    const chatsRef = collection(fireStoreDB, "chats");
+    const userId = parseInt(props.userId);
+
+    // const q = query(
+    //   collection(fireStoreDB, "chats"),
+    //   or(where("user2", "==", userId), where("user1", "==", userId))
+    // );
+
+    // const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    //   const chatRooms = [...querySnapshot.docs].map((doc) => ({
+    //     chatRoomId: doc.id,
+    //     data: doc.data(),
+    //   }));
+    //   setChatRooms(chatRooms);
+    // });
+
+    const q = query(
+      collection(fireStoreDB, "chats"),
+      or(where("user2", "==", userId), where("user1", "==", userId))
+    );
+
+    const chatRoomsData = [];
+
+    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+      const promises = [];
+
+      querySnapshot.forEach(async (doc) => {
+        const data = doc.data();
+        const messageCollectionRef = collection(
+          fireStoreDB,
+          "chats",
+          doc.id,
+          "messages"
+        );
+        const promise = getDocs(messageCollectionRef).then(
+          (messagesSnapshot) => {
+            if (!messagesSnapshot.empty) {
+              chatRoomsData.push({
+                chatRoomId: doc.id,
+                data: data,
+              });
+            }
+          }
+        );
+
+        promises.push(promise);
+      });
+
+      await Promise.all(promises);
+      setChatRooms(chatRoomsData);
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <SafeAreaView>
       <View style={styles.chattopContainer}>
         <View style={styles.chatheader}>
           <Text style={styles.chatheading}>Chats</Text>
-
-          {/* 👇🏻 Logs "ButtonPressed" to the console when the icon is clicked */}
-          <Pressable onPress={() => console.log("Button Pressed!")}>
-            <Feather name="edit" size={24} color="green" />
-          </Pressable>
         </View>
       </View>
 
       <View style={styles.chatlistContainer}>
-        {rooms.length > 0 ? (
+        {chatRooms.length > 0 ? (
           <FlatList
-            data={rooms}
-            renderItem={({ item }) => <ChatComponent item={item} />}
+            data={chatRooms}
+            renderItem={({ item }) => (
+              <ChatComponent item={item} userId={props.userId} />
+            )}
             keyExtractor={(item) => item.id}
           />
         ) : (
           <View style={styles.chatemptyContainer}>
-            <Text style={styles.chatemptyText}>No rooms created!</Text>
-            <Text>Click the icon above to create a Chat room</Text>
+            <Text style={styles.chatemptyText}>No Chats!</Text>
+            <RegularText>Use this chat to communciate with others</RegularText>
           </View>
         )}
       </View>

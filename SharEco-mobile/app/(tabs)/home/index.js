@@ -248,6 +248,21 @@ const Content = ({ navigation, activeTab }) => {
 const home = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [advertisements, setAdvertisements] = useState({});
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, [user]);
 
   //suppresses nested scrollview error
   useEffect(() => {
@@ -263,7 +278,11 @@ const home = () => {
     <SafeAreaContainer>
       <SearchBarHeader
         onPressChat={() => {
-          router.push("home/chats");
+          // router.push("home/chats");
+          router.push({
+            pathname: "home/chats",
+            params: { userId: user.userId },
+          });
         }}
         onPressWishlist={() => {
           router.push("home/wishlist");
@@ -312,5 +331,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: "7%",
     justifyContent: "space-evenly",
     zIndex: 0,
+  },
+  dotContainer: {
+    marginTop: -50,
+  },
+  dotStyle: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "black",
+  },
+  inactiveDotStyle: {
+    backgroundColor: "rgb(255,230,230)",
+  },
+  image: {
+    flex: 1,
+    width: undefined,
+    height: undefined,
   },
 });

@@ -19,7 +19,18 @@ import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
 import ListingCard from "../../../components/ListingCard";
 import ReviewsCard from "../../../components/containers/ReviewsCard";
+import { fireStoreDB } from "../../../app/utils/firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  or,
+  onSnapshot,
+} from "firebase/firestore";
 import axios from "axios";
+import { useAuth } from "../../../context/auth";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -35,7 +46,7 @@ const viewportWidthInPixels = (percentage) => {
 
 const ProfileHeader = () => {
   const params = useLocalSearchParams();
-  const { userId } = params;
+  const { userId, otherUserId, otherUserName } = params;
   const [user, setUser] = useState("");
   const [profileUri, setProfileUri] = useState();
   const [ratings, setRatings] = useState({});
@@ -89,8 +100,52 @@ const ProfileHeader = () => {
     fetchBusinessVerification();
   }, [user.businessVerificationId]);
 
-  const toChats = () => {
-    router.push("home/chats");
+  // const toChats = () => {
+  //   // router.push("home/chats");
+  // };
+
+  const toChats = async () => {
+    const chatsRef = collection(fireStoreDB, "chats");
+    const userId = parseInt(user.userId);
+    const otherPersonId = parseInt(otherUserId);
+
+    const q = query(
+      chatsRef,
+      where("user1", "in", [userId, otherPersonId]),
+      where("user2", "in", [userId, otherPersonId])
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.size > 0) {
+      // Chat room already exists
+      const chatRoom = querySnapshot.docs[0];
+      router.push({
+        pathname: "home/messaging",
+        params: {
+          name: user.username,
+          chatDocId: chatRoom.id,
+        },
+      });
+    } else {
+      // Chat room doesn't exist, so create a new chat
+      const userData = {
+        user1: parseInt(userId),
+        user2: parseInt(otherPersonId),
+      };
+
+      await addDoc(chatsRef, userData)
+        .then((docRef) => {
+          router.push({
+            pathname: "home/messaging",
+            params: {
+              name: user.username,
+              chatDocId: docRef.id,
+            },
+          });
+        })
+        .catch((error) => console.log(error));
+    }
   };
 
   const handleReport = () => {
