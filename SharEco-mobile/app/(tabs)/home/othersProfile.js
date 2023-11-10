@@ -148,6 +148,13 @@ const ProfileHeader = () => {
     }
   };
 
+  const handleReport = () => {
+    router.push({
+      pathname: "/home/report",
+      params: { targetId: user.userId, reportType: "USER" },
+    });
+  };
+
   return (
     <View style={styles.header}>
       <View style={styles.headerGreen}>
@@ -164,6 +171,19 @@ const ProfileHeader = () => {
             style={styles.headerIcon}
           />
         </Pressable>
+        <Pressable
+          onPress={handleReport}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1,
+          })}
+        >
+          <Ionicons
+            name="alert-circle-outline"
+            color={white}
+            size={26}
+            style={styles.headerIcon}
+          />
+        </Pressable>
       </View>
       <View style={styles.headerWhite}>
         <RegularText typography="H2" style={{ marginTop: 40 }}>
@@ -174,7 +194,7 @@ const ProfileHeader = () => {
           style={{ marginTop: 5 }}
           color={secondary}
         >
-          @{user.username}
+          @{user.username} bitch
         </RegularText>
         <RegularText typography="B2" style={{ marginTop: 8 }}>
           {user.aboutMe}

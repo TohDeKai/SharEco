@@ -16,7 +16,9 @@ import RegularText from "../../../components/text/RegularText";
 import ActivityCard from "../../../components/containers/ActivityCard";
 import { colours } from "../../../components/ColourPalette";
 import { useAuth } from "../../../context/auth";
-const { black, inputbackground, white, primary, dark, placeholder } = colours;
+import ReportCard from "../../../components/containers/ReportCard";
+const { black, inputbackground, white, primary, dark, placeholder, secondary } =
+  colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ActivityHeader = () => {
@@ -89,6 +91,21 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
         </RegularText>
       </Pressable>
       <Pressable
+        onPress={() => handleTabPress("Reports")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.tab,
+          activeTab === "Reports" && styles.activeTab,
+        ]}
+      >
+        <RegularText
+          typography="B2"
+          color={activeTab === "Others" ? primary : dark}
+        >
+          Reports
+        </RegularText>
+      </Pressable>
+      <Pressable
         onPress={() => handleTabPress("Others")}
         style={({ pressed }) => [
           { opacity: pressed ? 0.5 : 1 },
@@ -123,7 +140,7 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
           >
             <RegularText
               typography="B1"
-              color={activeLendingPill === pill ? primary : dark}
+              color={activeLendingPill === pill ? white : secondary}
             >
               {pill}
             </RegularText>
@@ -149,15 +166,15 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
         ]}
       >
         <View style={styles.rentalNotifItems}>
-          <Ionicons name="earth" size={30} color={primary} />
-          <RegularText typography="Subtitle">New Rental Requests</RegularText>
+          <Ionicons name="file-tray-full" size={30} color={secondary} />
+          <RegularText typography="B2">New Rental Requests</RegularText>
         </View>
 
         <View style={styles.rentalNotifItems}>
           {numOfNewRentalReq > 0 && (
             <View style={styles.badge}>
-              <RegularText typography="Subtitle2" color={white}>
-                {numOfNewRentalReq >= 99 ? "99+" : numOfNewRentalReq}
+              <RegularText typography="B2" color={white}>
+                {numOfNewRentalReq >= 9 ? "9+" : numOfNewRentalReq}
               </RegularText>
             </View>
           )}
@@ -173,15 +190,15 @@ const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
         ]}
       >
         <View style={styles.rentalNotifItems}>
-          <Ionicons name="refresh-circle" size={30} color={primary} />
-          <RegularText typography="Subtitle">Rental Updates</RegularText>
+          <Ionicons name="refresh-circle" size={30} color={secondary} />
+          <RegularText typography="B2">Rental Updates</RegularText>
         </View>
 
         <View style={styles.rentalNotifItems}>
           {numOfRentalUpdates > 0 && (
             <View style={styles.badge}>
-              <RegularText typography="Subtitle2" color={white}>
-                {numOfRentalUpdates >= 99 ? "99+" : numOfRentalUpdates}
+              <RegularText typography="B2" color={white}>
+                {numOfRentalUpdates >= 9 ? "9+" : numOfRentalUpdates}
               </RegularText>
             </View>
           )}
@@ -228,6 +245,7 @@ const Content = ({ activeTab }) => {
   const { getUserData } = useAuth();
   const [userLendings, setUserLendings] = useState([]);
   const [userBorrowings, setUserBorrowings] = useState([]);
+  const [userReports, setUserReports] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
@@ -272,10 +290,23 @@ const Content = ({ activeTab }) => {
       } catch (error) {
         console.log(error);
       }
+      try {
+        const response3 = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/reports/user/${userId}`
+        );
+        if (response3.status === 200) {
+          const reports = response3.data.data.report;
+          setUserReports(reports);
+        } else {
+          // Handle the error condition appropriately
+          console.log("Failed to retrieve reports");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     } catch (error) {
       console.log(error.message);
     }
-
     // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
   };
@@ -317,11 +348,32 @@ const Content = ({ activeTab }) => {
         console.log(error.message);
       }
     }
+    async function fetchReports() {
+      try {
+        const userData = await getUserData();
+        const userId = userData.userId;
+        console.log("USER ID: " + userId);
+        const response3 = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/reports/user/${userId}`
+        );
+        if (response3.status === 200) {
+          const reports = response3.data.data.report;
+          setUserReports(reports);
+        } else {
+          // Handle the error condition appropriately
+          console.log("Failed to retrieve reports");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
     fetchRentals();
+    fetchReports();
   }, []);
 
   const [activeLendingPill, setActiveLendingPill] = useState("Upcoming");
   const [activeBorrowingPill, setActiveBorrowingPill] = useState("Pending");
+  const [activeReportPill, setActiveReportPill] = useState("Pending");
 
   const lendingPill = ["Upcoming", "Ongoing", "Completed", "Cancelled"];
   const borrowingPill = [
@@ -332,17 +384,24 @@ const Content = ({ activeTab }) => {
     "Cancelled",
     "Rejected",
   ];
+  const reportPill = ["Pending", "Under Review", "Resolved"];
 
   const upcomingLendings = userLendings
-    .filter((rental) => rental.status === "UPCOMING" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "UPCOMING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   const ongoingLendings = userLendings
-    .filter((rental) => rental.status === "ONGOING" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "ONGOING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
   const completedLendings = userLendings
-    .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "COMPLETED" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const cancelledLendings = userLendings.filter(
@@ -362,23 +421,43 @@ const Content = ({ activeTab }) => {
     .sort((a, b) => new Date(b.creationDate) - new Date(a.creationDate));
 
   const ongoingBorrowings = userBorrowings
-    .filter((rental) => rental.status === "ONGOING" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "ONGOING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
   const upcomingBorrowings = userBorrowings
-    .filter((rental) => rental.status === "UPCOMING" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "UPCOMING" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   const completedBorrowings = userBorrowings
-    .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "COMPLETED" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const rejectedBorrowings = userBorrowings
-    .filter((rental) => rental.status === "REJECTED" && rental.isBlockOut === false)
+    .filter(
+      (rental) => rental.status === "REJECTED" && rental.isBlockOut === false
+    )
     .sort((a, b) => new Date(b.endDate) - new Date(a.endDate));
 
   const cancelledBorrowings = userBorrowings.filter(
     (rental) => rental.status === "CANCELLED" && rental.isBlockOut === false
+  );
+
+  const pendingReports = userReports.filter(
+    (report) => report.status === "PENDING"
+  );
+
+  const underReviewReports = userReports.filter(
+    (report) => report.status === "UNDER REVIEW"
+  );
+
+  const resolvedReports = userReports.filter(
+    (report) => report.status === "RESOLVED"
   );
 
   // to include activeBorrowingPill
@@ -388,6 +467,9 @@ const Content = ({ activeTab }) => {
     }
     {
       activeTab == "Borrowing" && setActiveBorrowingPill(pill);
+    }
+    {
+      activeTab == "Reports" && setActiveReportPill(pill);
     }
     console.log("Active pill: " + pill);
   };
@@ -700,6 +782,53 @@ const Content = ({ activeTab }) => {
           )}
         </View>
       )}
+      {activeTab == "Reports" && (
+        <View style={{ flex: 1 }}>
+          <Pills
+            pillItems={reportPill}
+            activeLendingPill={activeReportPill}
+            handlePillPress={handlePillPress}
+          />
+          {activeReportPill == "Pending" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {pendingReports.map((report) => (
+                  <ReportCard report={report} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+          {activeReportPill == "Under Review" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {underReviewReports.map((report) => (
+                  <ReportCard report={report} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      )}
 
       {activeTab == "Others" && (
         <View
@@ -786,23 +915,23 @@ const styles = StyleSheet.create({
   pillContainer: {
     paddingTop: 18,
     paddingBottom: 25,
+    paddingHorizontal: 13,
   },
   pill: {
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: inputbackground,
-    marginLeft: 13,
+    borderColor: secondary,
+    borderWidth: 1,
+    marginRight: 13,
   },
   activePill: {
-    backgroundColor: white,
-    borderColor: primary,
-    borderWidth: 1,
+    backgroundColor: secondary,
   },
   rentalNotifContainer: {
     borderBottomColor: inputbackground,
     borderBottomWidth: 2,
-    paddingVertical: 20,
+    paddingVertical: 10,
   },
   rentalNotif: {
     display: "flex",
@@ -820,8 +949,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     borderRadius: 50,
-    width: 23,
-    height: 23,
+    width: 25,
+    height: 25,
     backgroundColor: primary,
     alignItems: "center",
     justifyContent: "center",

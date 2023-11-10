@@ -80,7 +80,7 @@ const GraphBox = ({ title }) => {
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={4}>
                     <Box>
-                      <MiniStats subtitle="Rental fees" number={rentalRevenue} />
+                      <MiniStats subtitle="Total Rental Fees" number={rentalRevenue} />
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>

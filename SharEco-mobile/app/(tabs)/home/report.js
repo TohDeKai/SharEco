@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import Checkbox from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import { SelectList } from "react-native-dropdown-select-list";
 
 // AWS Amplify
 import { Amplify, Storage } from "aws-amplify";
@@ -30,6 +31,8 @@ import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import DropdownList from "../../../components/inputs/DropdownList";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
+import { useAuth } from "../../../context/auth";
+
 const { white, primary, inputbackground, black } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -47,26 +50,47 @@ const report = () => {
   const [message, setMessage] = useState("");
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const params = useLocalSearchParams();
-  const { itemId, reportType } = params;
-  const [item, setItem] = useState({});
+  const { targetId, reportType } = params;
+  const { getUserData } = useAuth();
+  const [target, setTarget] = useState({});
   const [selectedReason, setSelectedReason] = React.useState("");
 
   useEffect(() => {
-    async function fetchItemData() {
+    console.log(reportType);
+    async function fetchTargetData() {
       try {
-        const itemResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
-        );
-        if (itemResponse.status === 200) {
-          const itemData = itemResponse.data.data.item;
-          setItem(itemData);
+        if (reportType == "LISTING") {
+          const targetResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/items/itemId/${targetId}`
+          );
+          if (targetResponse.status === 200) {
+            const targetData = targetResponse.data.data.item;
+            setTarget(targetData);
+          }
+        } else if (reportType == "USER") {
+          const targetResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${targetId}`
+          );
+          if (targetResponse.status === 200) {
+            const targetData = targetResponse.data.data.user;
+            setTarget(targetData);
+          }
+        } else if (reportType == "DISPUTE") {
+          const targetResponse = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/rentals/rentalId/${targetId}`
+          );
+          if (targetResponse.status === 200) {
+            const targetData = targetResponse.data.data.rental;
+            setTarget(targetData);
+          }
         }
+        console.log("TARGET: " + target);
       } catch (error) {
         console.log(error.message);
       }
     }
-    fetchItemData();
-  }, [item]);
+    fetchTargetData();
+  }, []);
 
   const [images, setImages] = useState([null, null, null, null, null]);
   const [imagesResult, setImagesResult] = useState([
@@ -77,8 +101,8 @@ const report = () => {
     null,
   ]);
 
-  const reasons = [
-    { key: "1", value: "Suspicious Account" },
+  const listingReasons = [
+    { key: "1", value: "Inappropriate Listing" },
     { key: "2", value: "Items wrongly categorized" },
     { key: "3", value: "Selling counterfeit items" },
     { key: "4", value: "Duplicate posts" },
@@ -87,6 +111,36 @@ const report = () => {
     { key: "7", value: "Irrelevant keywords" },
     { key: "8", value: "Offensive behaviour" },
   ];
+
+  const userReasons = [
+    { key: "1", value: "Suspicious Account" },
+    { key: "2", value: "Selling counterfeit items" },
+    { key: "3", value: "Cancelling on deal" },
+    { key: "4", value: "Duplicate posts" },
+    { key: "5", value: "Selling prohibited item" },
+    { key: "6", value: "Mispriced Listings" },
+    { key: "7", value: "Irrelevant keywords" },
+    { key: "8", value: "Offensive behaviour" },
+  ];
+
+  const disputeReasons = [
+    { key: "1", value: "Late or No Show" },
+    { key: "2", value: "Item different from listing" },
+    { key: "3", value: "Offensive behaviour" },
+    { key: "4", value: "Others" },
+  ];
+
+  // Determine the data array based on reportType
+  // Determine the data array based on reportType
+  let reasons = [];
+
+  if (reportType === "LISTING") {
+    reasons = listingReasons;
+  } else if (reportType === "USER") {
+    reasons = userReasons;
+  } else if (reportType === "DISPUTE") {
+    reasons = disputeReasons;
+  }
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -174,17 +228,80 @@ const report = () => {
     router.back();
   };
 
-  const handleSubmitReport = async () => {};
+  const handleSubmitReport = async (values) => {
+    try {
+      const userData = await getUserData();
+      const userId = userData.userId;
+      const today = new Date();
+      var reportStatus = "";
+      if (reportType == "LISTING" || reportType == "USER") {
+        reportStatus = "UNDER REVIEW";
+      } else {
+        reportStatus = "PENDING";
+      }
+      const reportData = {
+        reportType: reportType,
+        reportStatus: reportStatus,
+        reporterId: userId,
+        reason: selectedReason,
+        description: values.description,
+        supportingImages: [],
+        responseText: "",
+        responseImages: [],
+        targetId: targetId,
+        reportDate: today,
+        reportResult: [],
+      };
+
+      const reportResponse = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/report`,
+        reportData
+      );
+
+      console.log(reportResponse.data.data);
+      const reportId = reportResponse.data.data.report.reportId;
+      console.log("REPORT ID: " + reportId);
+      //handle upload all images and returns the array of uris
+      const uploadedURIs = await uploadImageFiles(imagesResult, reportId);
+
+      const response = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/report/images/${reportId}`,
+        { images: uploadedURIs }
+      );
+
+      if (response.status == 200) {
+        console.log("Report form submitted successfully");
+        setImages([null, null, null, null, null]);
+        setImagesResult([null, null, null, null, null]);
+        router.push({
+          pathname: "/home",
+        });
+      } else {
+        console.log("Report form submission unsuccessfully");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 500) {
+        console.log("Internal server error");
+      } else {
+        console.log("Error during item creation: ", error.message);
+      }
+    }
+  };
 
   return (
     <SafeAreaContainer>
       <Header
         title={
-          "Report " + reportType.charAt(0) + reportType.slice(1).toLowerCase()
+          reportType === "DISPUTE"
+            ? "Raise Dispute"
+            : "Report " +
+              reportType.charAt(0) +
+              reportType.slice(1).toLowerCase()
         }
         action="close"
         onPress={handleBack}
       />
+
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
@@ -199,27 +316,57 @@ const report = () => {
           >
             {({ handleChange, handleBlur, handleSubmit, values }) => (
               <View style={{ width: "85%" }}>
+                {reportType === "DISPUTE" ? (
+                  <RegularText typography="H3" style={styles.headerText}>
+                    Initiate a dispute
+                  </RegularText>
+                ) : (
+                  <RegularText typography="H3" style={styles.headerText}>
+                    You are reporting {reportType.toLowerCase()}
+                    {reportType === "LISTING"
+                      ? ` : ${target.itemTitle}`
+                      : reportType === "USER"
+                      ? ` : ${target.displayName}`
+                      : ""}
+                  </RegularText>
+                )}
                 <RegularText typography="H3" style={styles.headerText}>
                   Reason
                 </RegularText>
-                <DropdownList
-                  data={reasons}
+                <SelectList
                   setSelected={(val) => setSelectedReason(val)}
+                  data={reasons}
+                  save="value"
+                  boxStyles={{
+                    marginTop: 16,
+                    backgroundColor: inputbackground,
+                    padding: 13,
+                    paddingRight: 28,
+                    borderRadius: 9,
+                    fontSize: 14,
+                    width: "100%",
+                    color: black,
+                    borderColor: inputbackground,
+                    borderWidth: 2,
+                  }}
                 />
-
-                <RegularText typography="H3" style={styles.headerText}>
-                  Upload Images
-                </RegularText>
-                <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
-                  Up to 5 images
-                </RegularText>
-                <ScrollView
-                  horizontal
-                  contentContainerStyle={styles.imageCarousel}
-                  style={{ paddingVertical: 7 }}
-                >
-                  {imageContainers}
-                </ScrollView>
+                {reportType === "DISPUTE" && (
+                  <View>
+                    <RegularText typography="H3" style={styles.headerText}>
+                      Upload Images
+                    </RegularText>
+                    <RegularText typography="Subtitle" style={{ marginTop: 7 }}>
+                      Up to 5 images
+                    </RegularText>
+                    <ScrollView
+                      horizontal
+                      contentContainerStyle={styles.imageCarousel}
+                      style={{ paddingVertical: 7 }}
+                    >
+                      {imageContainers}
+                    </ScrollView>
+                  </View>
+                )}
 
                 <RegularText typography="H3" style={styles.headerText}>
                   Description
@@ -233,12 +380,14 @@ const report = () => {
                   scrollEnabled={false}
                   minHeight={80}
                 />
-                <MessageBox
-                  style={{ marginTop: 10 }}
-                  success={isSuccessMessage}
-                >
-                  {message || " "}
-                </MessageBox>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
 
                 <RoundedButton
                   typography={"B1"}
@@ -246,7 +395,7 @@ const report = () => {
                   onPress={handleSubmit}
                   style={{ marginBottom: viewportHeightInPixels(3) }}
                 >
-                  Submit Checklist
+                  Submit Report
                 </RoundedButton>
               </View>
             )}

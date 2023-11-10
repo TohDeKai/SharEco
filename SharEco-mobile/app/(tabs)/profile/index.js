@@ -123,7 +123,7 @@ const ProfileHeader = () => {
               style={styles.headerIcon}
             />
             <RegularText
-              color={primary}
+              color={secondary}
               typography="B1"
               style={{ paddingHorizontal: 5 }}
             >
@@ -256,7 +256,7 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
           >
             <RegularText
               typography="B1"
-              color={activeLendingPill === pill ? primary : dark}
+              color={activeLendingPill === pill ? white : secondary}
             >
               {pill}
             </RegularText>
@@ -369,7 +369,7 @@ const Content = ({ navigation, activeTab }) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, marginBottom: 20, }}>
       {activeTab == "Listings" && (userItems ? userItems.length : 0) === 0 && (
         <View style={{ marginTop: 160 }}>
           <RegularText
@@ -589,19 +589,18 @@ const styles = StyleSheet.create({
   },
   pillContainer: {
     paddingTop: 18,
-    paddingBottom: 25,
+    paddingBottom: 18,
   },
   pill: {
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: inputbackground,
+    borderColor: secondary,
+    borderWidth: 1,
     marginRight: 13,
   },
   activePill: {
-    backgroundColor: white,
-    borderColor: primary,
-    borderWidth: 1,
+    backgroundColor: secondary,
   },
   activityCardContainer: {
     width: Dimensions.get("window").width - 46,

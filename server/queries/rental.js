@@ -252,8 +252,8 @@ const getRentalByRentalId = async (rentalId) => {
   }
 };
 
-//Get availabilities by rental ID and selected date
-const getAvailByRentalIdAndDate = async (itemId, date) => {
+//Get availabilities by item ID and selected date
+const getAvailByItemIdAndDate = async (itemId, date) => {
   try {
     // Convert date string to a Date object
     const currentDate = new Date(date);
@@ -1038,7 +1038,7 @@ module.exports = {
   getRentalsByBorrowerId,
   getRentalsByItemId,
   getRentalByRentalId,
-  getAvailByRentalIdAndDate,
+  getAvailByItemIdAndDate,
   getDailyUnavailability,
   getFullDayUnavailability,
   getNextRentalByItemIdAndDate,

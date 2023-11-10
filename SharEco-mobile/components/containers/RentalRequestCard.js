@@ -12,7 +12,7 @@ import RegularText from "../text/RegularText";
 import { PrimaryButton, SecondaryButton } from "../buttons/RegularButton";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { colours } from "../ColourPalette";
-const { black, dark, placeholder, white, inputbackground, yellow, primary } =
+const { black, dark, secondary, white, inputbackground, yellow, primary } =
   colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -32,9 +32,7 @@ const RentalRequestCard = (props) => {
   const currentDate = new Date();
 
   // check if rental is hourly
-  const isHourly =
-    new Date(startDate).setHours(0, 0, 0, 0) ===
-    new Date(endDate).setHours(0, 0, 0, 0);
+  const isHourly = rental.isHourly;
 
   const dateDifferenceMs = endDate - startDate;
 
@@ -50,15 +48,14 @@ const RentalRequestCard = (props) => {
   const dailyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60 * 24));
 
   // calculate hourly rental details
-  const rentalDay = startDate.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
   const startTime = startDate.toLocaleTimeString("en-US", {
     hour: "numeric",
+    minute: "numeric",
   });
-  const endTime = endDate.toLocaleTimeString("en-US", { hour: "numeric" });
+  const endTime = endDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "numeric",
+  });
   const hourlyRentalLength = Math.ceil(dateDifferenceMs / (1000 * 60 * 60));
 
   // calculate accept countdown
@@ -96,7 +93,7 @@ const RentalRequestCard = (props) => {
 
           const ratingsResponse = await axios.get(
             `http://${BASE_URL}:4000/api/v1/ratings/userId/${userData.userId}`
-          )
+          );
           if (ratingsResponse.status === 200) {
             setBorrowerRatings(ratingsResponse.data.data);
           }
@@ -191,8 +188,12 @@ const RentalRequestCard = (props) => {
     setIsExpanded(!isExpanded);
   };
 
-  const platformFee = (parseFloat(rental.rentalFee.replace(/\$/g, '')) * 0.05).toFixed(2);
-  const netEarnings = (parseFloat(rental.rentalFee.replace(/\$/g, '')) - platformFee).toFixed(2);
+  const platformFee = (
+    parseFloat(rental.rentalFee.replace(/\$/g, "")) * 0.05
+  ).toFixed(2);
+  const netEarnings = (
+    parseFloat(rental.rentalFee.replace(/\$/g, "")) - platformFee
+  ).toFixed(2);
 
   return (
     <View style={styles.container}>
@@ -208,14 +209,19 @@ const RentalRequestCard = (props) => {
               />
 
               <View style={styles.rentalDetailsText}>
-                <RegularText typography="B2">
+                <RegularText typography="H4">
                   {item && item.itemTitle}
                 </RegularText>
                 {isHourly ? (
-                  <RegularText typography="Subtitle">
-                    {rentalDay}, {startTime} - {endTime} ({hourlyRentalLength}{" "}
-                    {hourlyRentalLength == 1 ? "Hour" : "Hours"})
-                  </RegularText>
+                  <View style={{ gap: 3 }}>
+                    <RegularText typography="Subtitle">
+                      {startDay} {hourlyRentalLength > 24 ? ` - ${endDay}` : ""}
+                    </RegularText>
+                    <RegularText typography="Subtitle">
+                      {startTime} - {endTime} ({hourlyRentalLength}{" "}
+                      {hourlyRentalLength == 1 ? "Hour" : "Hours"})
+                    </RegularText>
+                  </View>
                 ) : (
                   <RegularText typography="Subtitle">
                     {startDay} - {endDay} ({dailyRentalLength}{" "}
@@ -279,24 +285,32 @@ const RentalRequestCard = (props) => {
               <View style={styles.profile}>
                 <RegularText typography="B1">{user.displayName}</RegularText>
                 <View style={styles.ratingsContainer}>
-                  <RegularText typography="Subtitle">{borrowerRatings.averageRating || 0}</RegularText>
-                  <Rating stars={borrowerRatings.starsToDisplay || 0} size={18} color={yellow} />
-                  <RegularText typography="Subtitle">({borrowerRatings.numberOfRatings || 0})</RegularText>
+                  <RegularText typography="Subtitle">
+                    {borrowerRatings.averageRating || 0}
+                  </RegularText>
+                  <Rating
+                    stars={borrowerRatings.starsToDisplay || 0}
+                    size={18}
+                    color={yellow}
+                  />
+                  <RegularText typography="Subtitle">
+                    ({borrowerRatings.numberOfRatings || 0})
+                  </RegularText>
                 </View>
               </View>
             </View>
           </Pressable>
 
           <View style={styles.location}>
-            <RegularText typography="B3">Location</RegularText>
+            <RegularText typography="H4">Location</RegularText>
             <RegularText typography="Subtitle">
               {rental.collectionLocation}
             </RegularText>
           </View>
 
           {rental.additionalRequest !== "" && (
-            <View style={styles.additionalRequests}>
-              <RegularText typography="B3">Additional Requests</RegularText>
+            <View style={styles.location}>
+              <RegularText typography="H4">Additional Requests</RegularText>
               <RegularText typography="Subtitle">
                 {rental.additionalRequest}
               </RegularText>
@@ -304,27 +318,27 @@ const RentalRequestCard = (props) => {
           )}
 
           <View>
-            <View style={styles.totalEarnings}>
-              <RegularText typography="H3" color={dark}>
+            <View style={[styles.totalEarnings, styles.borderBottom]}>
+              <RegularText typography="H2" color={secondary}>
                 Net Earnings
               </RegularText>
-              <RegularText typography="H3" color={dark}>
+              <RegularText typography="H2" color={secondary}>
                 ${netEarnings}
               </RegularText>
             </View>
             <View style={styles.totalEarnings}>
-              <RegularText typography="B2" color={dark}>
+              <RegularText typography="Subtitle" color={dark}>
                 Rental Fees
               </RegularText>
-              <RegularText typography="B2" color={dark}>
+              <RegularText typography="Subtitle" color={dark}>
                 {rental.rentalFee}
               </RegularText>
             </View>
             <View style={styles.totalEarnings}>
-              <RegularText typography="B2" color={dark}>
+              <RegularText typography="Subtitle" color={dark}>
                 Platform Fee
               </RegularText>
-              <RegularText typography="B2" color={dark}>
+              <RegularText typography="Subtitle" color={dark}>
                 ${platformFee}
               </RegularText>
             </View>
@@ -340,11 +354,7 @@ const RentalRequestCard = (props) => {
 
             <View style={styles.buttonContainer}>
               <Pressable>
-                <Ionicons
-                  name="chatbubble-outline"
-                  color={placeholder}
-                  size={35}
-                />
+                <Ionicons name="chatbubble-outline" color={primary} size={35} />
               </Pressable>
               <View style={styles.button}>
                 <SecondaryButton
@@ -437,6 +447,7 @@ const styles = StyleSheet.create({
   },
   location: {
     gap: 5,
+    marginBottom: 5,
   },
   user: {
     display: "flex",
@@ -464,11 +475,8 @@ const styles = StyleSheet.create({
     paddingTop: 2,
     gap: 2,
   },
-  additionalRequests: {
-    gap: 5,
-  },
   totalEarnings: {
-    paddingVertical: 10,
+    paddingVertical: 3,
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -478,9 +486,20 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "space-between",
+    borderBottomColor: inputbackground,
+    borderBottomWidth: 2,
+    marginBottom: 10,
+    paddingBottom: 20,
   },
   button: {
     flex: 1,
+    marginLeft: 10,
+  },
+  borderBottom: {
+    borderBottomColor: inputbackground,
+    borderBottomWidth: 1,
+    marginBottom: 10,
+    paddingBottom: 10,
   },
 });

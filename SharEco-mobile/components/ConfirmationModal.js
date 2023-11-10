@@ -259,7 +259,7 @@ const ConfirmationModal = ({
                   color={black}
                   style={styles.modalStyle}
                 >
-                  <Text style={styles.heading}>Please confirm rental for:</Text>
+                  <Text style={styles.heading}>You are accepting this rental</Text>
                   {"\n"}
                   {"\n"}
                   <Text style={styles.subHeading}>
@@ -551,13 +551,12 @@ const ConfirmationModal = ({
 };
 const styles = StyleSheet.create({
   modalStyle: {
-    backgroundColor: white,
     marginVertical: 10,
     textAlign: "center",
     textAlignVertical: "center",
   },
   heading: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: "bold",
     textAlign: "left",
   },

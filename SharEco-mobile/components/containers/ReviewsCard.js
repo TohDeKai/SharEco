@@ -16,7 +16,7 @@ import axios from "axios";
 //components
 import RegularText from "../text/RegularText";
 import { colours } from "../ColourPalette";
-const { white, yellow } = colours;
+const { inputbackground, yellow } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const AWS_GETFILE_URL =
   "https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/";
@@ -65,7 +65,7 @@ const ReviewsCard = ({review, preRenderedItem, showReviewerDetails}) => {
   }, [rentalId, preRenderedItem]);
 
   return (
-    <View>
+    <View style={styles.container}>
       {showReviewerDetails && (
         <Pressable 
         style={({ pressed }) => ({
@@ -83,18 +83,18 @@ const ReviewsCard = ({review, preRenderedItem, showReviewerDetails}) => {
             />
           )}
           {reviewer && (
-            <RegularText typography="Subtitle">@{reviewer.username}</RegularText>
+            <RegularText typography="B2">@{reviewer.username}</RegularText>
           )}
         </View>
       </Pressable>
       )}
       
       <View style={styles.rowContainer}>
-        <Rating stars={review.rating} size={15} color={yellow} />
-        <RegularText typography="Subtitle2">{review.revieweeIsLender ? "Review as borrower" : "Review as lender"}</RegularText>
-        <RegularText typography="Subtitle2" style={{position: "absolute", right: 0}}>{formattedDate}</RegularText>
+        <Rating stars={review.rating} size={18} color={yellow} />
+        <RegularText typography="Subtitle">{review.revieweeIsLender ? "Review as borrower" : "Review as lender"}</RegularText>
+        <RegularText typography="Subtitle" style={{position: "absolute", right: 0}}>{formattedDate}</RegularText>
       </View>
-      <RegularText typography="Subtitle">
+      <RegularText typography="B2">
         {review.comments}
       </RegularText>
       
@@ -124,6 +124,12 @@ const ReviewsCard = ({review, preRenderedItem, showReviewerDetails}) => {
 export default ReviewsCard;
 
 const styles = StyleSheet.create({
+  container: {
+    paddingBottom: 5,
+    marginBottom: 15,
+    borderBottomColor: inputbackground,
+    borderBottomWidth: 1,
+  },
   rowContainer: {
     flexDirection: "row",
     display: "flex",
@@ -132,8 +138,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cardDetailsContainer: {
-    marginTop: 20,
+    marginTop: 15,
     marginBottom: 15,
+    backgroundColor: inputbackground,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
   reviewDetailsContainer: {
     justifyContent: "space-between",
@@ -146,8 +156,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
+    borderRadius: 5,
   },
   itemDetailsText: {
     flexDirection: "column",

@@ -124,6 +124,24 @@ const TransactionCard = ({ transaction, isIncoming }) => {
             {" "}
             +{transaction.amount}
           </RegularText>
+        ) : transaction.transactionType === "WITHDRAW" ? (
+          <View>
+            <RegularText typography="H3" color={fail}>
+              {"-" + transaction.amount}
+            </RegularText>
+            <View style={{ flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end" }}>
+              <RegularText typography="Subtitle2" color={fail}>
+                Transaction Fee:
+              </RegularText>
+              <RegularText typography="Subtitle" color={fail}>
+                $
+                {Math.min(
+                  10,
+                  0.05 * parseFloat(transaction.amount.replace("$", ""))
+                ).toFixed(2)}
+              </RegularText>
+            </View>
+          </View>
         ) : (
           <RegularText typography="H3" color={fail}>
             {" "}
@@ -162,5 +180,5 @@ const styles = StyleSheet.create({
   },
   textMargin: {
     paddingBottom: 3,
-  }
+  },
 });
