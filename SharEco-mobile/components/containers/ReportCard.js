@@ -23,6 +23,7 @@ const AWS_GETFILE_URL =
 
 const ReportCard = ({ report }) => {
   const [reportedUser, setReportedUser] = useState({});
+  const { getUserData } = useAuth();
   const [item, setItem] = useState({});
   const [rental, setRental] = useState({});
   const [isLending, setIsLending] = useState(false);
@@ -68,16 +69,21 @@ const ReportCard = ({ report }) => {
 
     async function fetchRentalData(rentalId) {
       try {
+        const currUserData = await getUserData();
         const rentalResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/rentals/rentalId/${rentalId}`
         );
         if (rentalResponse.status === 200) {
           const rentalData = rentalResponse.data.data.rental;
+
           setRental(rentalData);
           setStartDate(rentalData.startDate);
           setEndDate(rentalData.endDate);
           setIsHourly(rentalData.isHourly);
           setDateDifferenceMs(rentalData.endDate - rentalData.startDate);
+          const isLending =
+            rentalData.lenderId == currUserData.userId ? true : false;
+          setIsLending(isLending);
           setStartDay(
             new Date(rentalData.startDate).toLocaleDateString("en-US", {
               month: "short",
@@ -112,9 +118,7 @@ const ReportCard = ({ report }) => {
                 (1000 * 60 * 60)
             )
           );
-          const isLending =
-            rentalData.lenderId == report.reporterId ? true : false;
-          setIsLending[isLending];
+
           fetchUserData(
             isLending ? rentalData.borrowerId : rentalData.lenderId
           );
@@ -188,7 +192,7 @@ const ReportCard = ({ report }) => {
               )}
               {reportedUser && (
                 <RegularText typography="Subtitle">
-                  @{reportedUser.username}
+                  @{reportedUser.username} ({isLending ? "Borrower" : "Lender"})
                 </RegularText>
               )}
             </View>

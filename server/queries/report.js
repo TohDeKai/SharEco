@@ -128,8 +128,13 @@ const updateSupportingImages = async (supportingImages, reportId) => {
 const getReportsMadeByOrAgainstUser = async (userId) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."report" 
-      WHERE "reporterId" = $1 or ("type" = 'USER' and "targetId" = $1)`,
+      `SELECT report.*
+      FROM "sharEco-schema".report AS report
+      LEFT JOIN "sharEco-schema"."rental" AS rental ON report."targetId" = rental."rentalId"
+      LEFT JOIN "sharEco-schema"."user" AS "user" ON rental."borrowerId" = "user"."userId" OR rental."lenderId" = "user"."userId"
+      WHERE report."reporterId" = $1
+      OR (report.type = 'USER' AND report."targetId" = $1)
+      OR (report.type = 'DISPUTE' AND rental."rentalId" = report."targetId" AND (rental."borrowerId" = $1 OR rental."lenderId" = $1))`,
       [userId]
     );
     return result.rows;
