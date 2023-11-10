@@ -2636,9 +2636,7 @@ app.get("/api/v1/activeAds", async (req, res) => {
 //Increase visit counter by 1
 app.put("/api/v1/addVisit/adId/:adId", async (req, res) => {
   try {
-    const ad = await advertisementdb.updateAdVisits(
-      req.params.adId
-    );
+    const ad = await advertisementdb.updateAdVisits(req.params.adId);
     if (ad) {
       res.status(200).json({
         status: "success",
@@ -2917,7 +2915,7 @@ app.get("/api/v1/reports", async (req, res) => {
 // GET all reports with DISPUTE type
 app.get("/api/v1/reports/type/:type", async (req, res) => {
   try {
-    reportType = req.params.type;
+    const reportType = req.params.type;
 
     const reports = await reportdb.getReportsByType(reportType);
     res.status(200).json({
@@ -2945,6 +2943,8 @@ app.post("/api/v1/report", async (req, res) => {
     responseText,
     responseImages,
     targetId,
+    reportDate,
+    reportResult,
   } = req.body;
 
   try {
@@ -2957,7 +2957,9 @@ app.post("/api/v1/report", async (req, res) => {
       supportingImages,
       responseText,
       responseImages,
-      targetId
+      targetId,
+      reportDate,
+      reportResult
     );
 
     // Send the newly created user as the response
@@ -3044,6 +3046,44 @@ app.put("/api/v1/report/images/:reportId", async (req, res) => {
       // Handle the case where the report is not found
       res.status(404).json({ error: "Report not found" });
     }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// GET all reports made by user or against user
+app.get("/api/v1/reports/user/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const reports = await reportdb.getReportsMadeByOrAgainstUser(userId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// GET report by reportId
+app.get("/api/v1/reports/reportId/:reportId", async (req, res) => {
+  try {
+    const reportId = req.params.reportId;
+
+    const reports = await reportdb.getReportsById(reportId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
   } catch (err) {
     // Handle the error here if needed
     console.log(err);

@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import Checkbox from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import { SelectList } from "react-native-dropdown-select-list";
 
 // AWS Amplify
 import { Amplify, Storage } from "aws-amplify";
@@ -231,9 +232,16 @@ const report = () => {
     try {
       const userData = await getUserData();
       const userId = userData.userId;
+      const today = new Date();
+      var reportStatus = "";
+      if (reportType == "LISTING" || reportType == "USER") {
+        reportStatus = "UNDER REVIEW";
+      } else {
+        reportStatus = "PENDING";
+      }
       const reportData = {
         reportType: reportType,
-        reportStatus: "PENDING",
+        reportStatus: reportStatus,
         reporterId: userId,
         reason: selectedReason,
         description: values.description,
@@ -241,6 +249,8 @@ const report = () => {
         responseText: "",
         responseImages: [],
         targetId: targetId,
+        reportDate: today,
+        reportResult: [],
       };
 
       const reportResponse = await axios.post(
@@ -323,9 +333,22 @@ const report = () => {
                 <RegularText typography="H3" style={styles.headerText}>
                   Reason
                 </RegularText>
-                <DropdownList
-                  data={reasons}
+                <SelectList
                   setSelected={(val) => setSelectedReason(val)}
+                  data={reasons}
+                  save="value"
+                  boxStyles={{
+                    marginTop: 16,
+                    backgroundColor: inputbackground,
+                    padding: 13,
+                    paddingRight: 28,
+                    borderRadius: 9,
+                    fontSize: 14,
+                    width: "100%",
+                    color: black,
+                    borderColor: inputbackground,
+                    borderWidth: 2,
+                  }}
                 />
                 {reportType === "DISPUTE" && (
                   <View>

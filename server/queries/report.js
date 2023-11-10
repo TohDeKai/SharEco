@@ -44,13 +44,15 @@ const createReport = async (
   supportingImages,
   responseText,
   responseImages,
-  targetId
+  targetId,
+  reportDate,
+  reportResult
 ) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."report" 
-          ("type", "status", "reporterId", "reason", "description", "supportingImages", "responseText", "responseImages", "targetId") 
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`,
+          ("type", "status", "reporterId", "reason", "description", "supportingImages", "responseText", "responseImages", "targetId","reportDate", "reportResult") 
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) returning *`,
       [
         reportType,
         reportStatus,
@@ -61,6 +63,7 @@ const createReport = async (
         responseText,
         responseImages,
         targetId,
+        reportDate,
       ]
     );
     return result.rows[0];
@@ -121,6 +124,41 @@ const updateSupportingImages = async (supportingImages, reportId) => {
     throw err;
   }
 };
+
+// Get all reports that are made by user or DISPUTE against user
+const getReportsMadeByOrAgainstUser = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT report.*
+      FROM "sharEco-schema".report AS report
+      LEFT JOIN "sharEco-schema"."rental" AS rental ON report."targetId" = rental."rentalId"
+      LEFT JOIN "sharEco-schema"."user" AS "user" ON rental."borrowerId" = "user"."userId" OR rental."lenderId" = "user"."userId"
+      WHERE report."reporterId" = $1
+      OR (report.type = 'USER' AND report."targetId" = $1)
+      OR (report.type = 'DISPUTE' AND rental."rentalId" = report."targetId" AND (rental."borrowerId" = $1 OR rental."lenderId" = $1))`,
+      [userId]
+    );
+    return result.rows;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+// Get report by reportId
+const getReportsById = async (reportId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."report" 
+      WHERE "reportId" = $1`,
+      [reportId]
+    );
+    return result.rows;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
 module.exports = {
   getAllReports,
   getReportsByType,
@@ -128,4 +166,6 @@ module.exports = {
   addReportResponse,
   updateReportStatus,
   updateSupportingImages,
+  getReportsMadeByOrAgainstUser,
+  getReportsById,
 };
