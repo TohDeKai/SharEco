@@ -23,6 +23,7 @@ const AWS_GETFILE_URL =
 
 const ReportCard = ({ report }) => {
   const [reportedUser, setReportedUser] = useState({});
+  const [reporterUser, setReporterUser] = useState({});
   const { getUserData } = useAuth();
   const [item, setItem] = useState({});
   const [rental, setRental] = useState({});
@@ -45,9 +46,15 @@ const ReportCard = ({ report }) => {
         const userResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/users/userId/${userId}`
         );
+
+        const userResponse2 = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/users/userId/${report.reporterId}`
+        );
         if (userResponse.status === 200) {
           const userData = userResponse.data.data.user;
+          const userData2 = userResponse2.data.data.user;
           setReportedUser(userData);
+          setReporterUser(userData2);
         }
       } catch (error) {
         console.log(error.message);
@@ -181,6 +188,34 @@ const ReportCard = ({ report }) => {
               {reportedUser.username}
             </RegularText>
           </View>
+        ) : isReported ? (
+          <Pressable
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+            onPress={() =>
+              router.push({
+                pathname: "home/othersProfile",
+                params: { userId: reporterUser.userId },
+              })
+            }
+          >
+            <View style={styles.username}>
+              {reportedUser && (
+                <UserAvatar
+                  size="xsmall"
+                  source={{
+                    uri: `${AWS_GETFILE_URL}${reporterUser.userPhotoUrl}.jpeg`,
+                  }}
+                />
+              )}
+              {reporterUser && (
+                <RegularText typography="Subtitle">
+                  @{reporterUser.username} ({isLending ? "Borrower" : "Lender"})
+                </RegularText>
+              )}
+            </View>
+          </Pressable>
         ) : (
           <Pressable
             style={({ pressed }) => ({
@@ -309,7 +344,16 @@ const ReportCard = ({ report }) => {
   };
 
   const CardFooter = () => {
-    const handleRespond = () => {};
+    const handleRespond = () => {
+      router.push({
+        pathname: "/home/response",
+        params: {
+          reportId: report.reportId,
+          reason: report.reason,
+          description: report.description == null ? "" : report.description,
+        },
+      });
+    };
 
     return (
       <View>
