@@ -33,7 +33,9 @@ import Alert from "@mui/material/Alert";
 
 const columns = [
   { id: "itemId", label: "Item ID", minWidth: 20 },
-  { id: "itemTitle", label: "Item Title", minWidth: 100 },
+  { id: "itemTitle", label: "Item Title", minWidth: 50 },
+  { id: "rentalRateHourly", label: "Hourly Rate", minWidth: 20 },
+  { id: "rentalRateDaily", label: "Daily Rate", minWidth: 20 },
   {
     id: "userId",
     label: "User ID",
@@ -81,11 +83,6 @@ const Listing = ({}) => {
   const [selectedItemOriginalPrice, setSelectedItemOriginalPrice] =
     React.useState("");
   const [selectedDepositFee, setSelectedDepositFee] = React.useState("");
-  const [selectedUsersLikedCount, setSelectedUsersLikedCount] =
-    React.useState(0);
-  const [selectedImpressions, setSelectedImpressions] = React.useState(0);
-  const [selectedTotalRentCollected, setSelectedTotalRentCollected] =
-    React.useState(0);
   const [selectedDisabled, setSelectedDisabled] = React.useState(false);
   const [selectedOtherLocation, setSelectedOtherLocation] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState("");
@@ -146,9 +143,6 @@ const Listing = ({}) => {
     itemTitle,
     itemOriginalPrice,
     depositFee,
-    usersLikedCount,
-    impressions,
-    totalRentCollected,
     disabled,
     otherLocation,
     category,
@@ -174,9 +168,6 @@ const Listing = ({}) => {
       setSelectedItemTitle(itemTitle);
       setSelectedItemOriginalPrice(itemOriginalPrice);
       setSelectedDepositFee(depositFee);
-      setSelectedUsersLikedCount(usersLikedCount);
-      setSelectedImpressions(impressions);
-      setSelectedTotalRentCollected(totalRentCollected);
       setSelectedDisabled(disabled);
       setSelectedOtherLocation(otherLocation);
       setSelectedCategory(category);
@@ -305,9 +296,6 @@ const Listing = ({}) => {
                               row.itemTitle,
                               row.itemOriginalPrice,
                               row.depositFee,
-                              row.usersLikedCount,
-                              row.impressions,
-                              row.totalRentCollected,
                               row.disabled,
                               row.otherLocation,
                               row.category,
@@ -471,18 +459,7 @@ const Listing = ({}) => {
                   <TableCell style={cellStyle}>Deposit Fee</TableCell>
                   <TableCell>{selectedDepositFee}</TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell style={cellStyle}>Users Liked Count</TableCell>
-                  <TableCell>{selectedUsersLikedCount}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell style={cellStyle}>Impressions</TableCell>
-                  <TableCell>{selectedImpressions}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell style={cellStyle}>Total Rent Collected</TableCell>
-                  <TableCell>{selectedTotalRentCollected}</TableCell>
-                </TableRow>
+
                 <TableRow>
                   <TableCell style={cellStyle}>Disabled</TableCell>
                   <TableCell>{selectedDisabled ? "Yes" : "No"}</TableCell>
