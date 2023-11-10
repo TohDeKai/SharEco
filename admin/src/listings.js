@@ -30,7 +30,8 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-
+import NorthOutlinedIcon from "@mui/icons-material/NorthOutlined";
+import SouthOutlinedIcon from "@mui/icons-material/SouthOutlined";
 const columns = [
   { id: "itemId", label: "Item ID", minWidth: 20 },
   { id: "itemTitle", label: "Item Title", minWidth: 50 },
@@ -61,6 +62,25 @@ const Listing = ({}) => {
 
   const handleEnableSnackbarClose = () => {
     setEnableSnackbarOpen(false);
+  };
+
+  const [orderBy, setOrderBy] = useState("rentalRateHourly");
+  const [order, setOrder] = useState("asc");
+
+  const [orderByDaily, setOrderByDaily] = useState("rentalRateDaily");
+  const [orderDaily, setOrderDaily] = useState("asc");
+
+  const handleSort = (columnId) => {
+    const isAsc = orderBy === columnId && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(columnId);
+  };
+
+  const handleSortDaily = () => {
+    const isAscDaily =
+      orderByDaily === "rentalRateDaily" && orderDaily === "asc";
+    setOrderDaily(isAscDaily ? "desc" : "asc");
+    setOrderByDaily("rentalRateDaily");
   };
 
   const [page, setPage] = React.useState(0);
@@ -256,7 +276,6 @@ const Listing = ({}) => {
           sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
         >
           <h1>Listings</h1>
-
           <Paper sx={{ width: "100%", overflow: "hidden" }}>
             <TableContainer sx={{ maxHeight: 440 }}>
               <Table stickyHeader aria-label="sticky table">
@@ -267,8 +286,20 @@ const Listing = ({}) => {
                         key={column.id}
                         align={column.align}
                         style={{ minWidth: column.minWidth }}
+                        onClick={() => handleSort(column.id)}
                       >
                         {column.label}
+                        {orderBy === column.id && (
+                          <span
+                            style={{ alignItems: "center", paddingLeft: "4px" }}
+                          >
+                            {order === "desc" ? (
+                              <SouthOutlinedIcon sx={{ fontSize: 16 }} />
+                            ) : (
+                              <NorthOutlinedIcon sx={{ fontSize: 16 }} />
+                            )}
+                          </span>
+                        )}
                       </TableCell>
                     ))}
                     <TableCell>Disable/Enable</TableCell>
@@ -277,6 +308,16 @@ const Listing = ({}) => {
                 <TableBody>
                   {itemData
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .sort((a, b) => {
+                      const aValue =
+                        parseFloat(a[orderBy].replace(/[^\d.-]/g, "")) || 0;
+                      const bValue =
+                        parseFloat(b[orderBy].replace(/[^\d.-]/g, "")) || 0;
+
+                      return order === "asc"
+                        ? aValue - bValue
+                        : bValue - aValue;
+                    })
                     .map((row) => {
                       return (
                         <TableRow
