@@ -248,29 +248,6 @@ const sharEcoBiz = () => {
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <KeyboardAvoidingView style={styles.content}>
               <View style={{ width: "100%" }}>
-                {/* <RegularText typography="H3" style={styles.headerText}>Business Name</RegularText>
-                <StyledTextInput
-                  placeholder={"Enter your business name"}
-                  returnKeyType="next"
-                  value={values.name}
-                  onChangeText={handleChange("name")}
-                />
-                <RegularText typography="H3" style={styles.headerText}>Business Email</RegularText>
-                <StyledTextInput
-                  placeholder={"Enter your business email"}
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  value={values.email}
-                  onChangeText={handleChange("email")}
-                />
-                <RegularText typography="H3" style={styles.headerText}>Business Phone Number</RegularText>
-                <StyledTextInput
-                  placeholder={"Enter your business phone number"}
-                  keyboardType="number-pad"
-                  returnKeyType="next"
-                  value={values.phoneNumber}
-                  onChangeText={handleChange("phoneNumber")}
-                /> */}
                 <RegularText typography="H3" style={styles.headerText}>
                   UEN
                 </RegularText>
@@ -310,6 +287,7 @@ const sharEcoBiz = () => {
                 >
                   {message}
                 </MessageBox>}
+                  
               </View>
               <RoundedButton
                 typography={"B1"}
@@ -334,6 +312,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     alignSelf: "center",
+    justifyContent: "space-between",
     width: viewportWidthInPixels(85),
     top: 20,
   },
