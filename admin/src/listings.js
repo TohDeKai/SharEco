@@ -70,6 +70,14 @@ const Listing = ({}) => {
   const [orderByDaily, setOrderByDaily] = useState("rentalRateDaily");
   const [orderDaily, setOrderDaily] = useState("asc");
 
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState(null);
+
+  const handleCategoryFilterChange = (category) => {
+    setSelectedCategoryFilter(
+      category === selectedCategoryFilter ? null : category
+    );
+  };
+
   const handleSort = (columnId) => {
     const isAsc = orderBy === columnId && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -150,6 +158,22 @@ const Listing = ({}) => {
     setSelectedItemId(itemId);
     setEnableOpen(true);
   };
+
+  const categories = [
+    "Audio",
+    "Car Accessories",
+    "Computer & Tech",
+    "Health & Personal Care",
+    "Hobbies & Craft",
+    "Home & Living",
+    "Luxury",
+    "Mens Fashion",
+    "Womens Fashion",
+    "Mobile Phone & Gadgets",
+    "Photography & Videography",
+    "Sports Equipment",
+    "Vehicles",
+  ];
 
   // Enter all attributes of the listings in
   const handleClickDetails = async (
@@ -276,7 +300,34 @@ const Listing = ({}) => {
           sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
         >
           <h1>Listings</h1>
+
           <Paper sx={{ width: "100%", overflow: "hidden" }}>
+            <Box sx={{ mb: 5 }}>
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Filter by Category:
+              </Typography>
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={
+                    category === selectedCategoryFilter
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() => handleCategoryFilterChange(category)}
+                  sx={{ mr: 1, mb: 1 }}
+                >
+                  {category}
+                </Button>
+              ))}
+              <Button
+                variant={selectedCategoryFilter ? "outlined" : "contained"}
+                onClick={() => handleCategoryFilterChange(null)}
+                sx={{ mb: 1 }}
+              >
+                All
+              </Button>
+            </Box>
             <TableContainer sx={{ maxHeight: 440 }}>
               <Table stickyHeader aria-label="sticky table">
                 <TableHead>
@@ -307,6 +358,11 @@ const Listing = ({}) => {
                 </TableHead>
                 <TableBody>
                   {itemData
+                    .filter((row) =>
+                      selectedCategoryFilter
+                        ? row.category === selectedCategoryFilter
+                        : true
+                    )
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .sort((a, b) => {
                       const aValue =
