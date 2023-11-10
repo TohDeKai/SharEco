@@ -250,6 +250,7 @@ const report = () => {
         responseImages: [],
         targetId: targetId,
         reportDate: today,
+        reportResult: [],
       };
 
       const reportResponse = await axios.post(

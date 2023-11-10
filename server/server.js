@@ -2636,9 +2636,7 @@ app.get("/api/v1/activeAds", async (req, res) => {
 //Increase visit counter by 1
 app.put("/api/v1/addVisit/adId/:adId", async (req, res) => {
   try {
-    const ad = await advertisementdb.updateAdVisits(
-      req.params.adId
-    );
+    const ad = await advertisementdb.updateAdVisits(req.params.adId);
     if (ad) {
       res.status(200).json({
         status: "success",
@@ -2946,6 +2944,7 @@ app.post("/api/v1/report", async (req, res) => {
     responseImages,
     targetId,
     reportDate,
+    reportResult,
   } = req.body;
 
   try {
@@ -2959,7 +2958,8 @@ app.post("/api/v1/report", async (req, res) => {
       responseText,
       responseImages,
       targetId,
-      reportDate
+      reportDate,
+      reportResult
     );
 
     // Send the newly created user as the response
