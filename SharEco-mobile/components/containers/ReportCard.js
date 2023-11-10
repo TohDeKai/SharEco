@@ -313,7 +313,7 @@ const ReportCard = ({ report }) => {
 
     return (
       <View>
-        {isReported && (
+        {isReported && report.status == "PENDING" && (
           <View style={styles.buttonContainer}>
             <PrimaryButton
               typography="B3"
