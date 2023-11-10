@@ -32,6 +32,8 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import NorthOutlinedIcon from "@mui/icons-material/NorthOutlined";
 import SouthOutlinedIcon from "@mui/icons-material/SouthOutlined";
+import Chip from "@mui/material/Chip";
+
 const columns = [
   { id: "itemId", label: "Item ID", minWidth: 20 },
   { id: "itemTitle", label: "Item Title", minWidth: 50 },
@@ -302,32 +304,31 @@ const Listing = ({}) => {
           <h1>Listings</h1>
 
           <Paper sx={{ width: "100%", overflow: "hidden" }}>
-            <Box sx={{ mb: 5 }}>
+            <Box sx={{ mb: 2 }}>
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Filter by Category:
               </Typography>
+              <Chip
+                label="All"
+                clickable
+                color={selectedCategoryFilter ? "default" : "primary"}
+                onClick={() => handleCategoryFilterChange(null)}
+                sx={{ mb: 1 }}
+              />
               {categories.map((category) => (
-                <Button
+                <Chip
                   key={category}
-                  variant={
-                    category === selectedCategoryFilter
-                      ? "contained"
-                      : "outlined"
+                  label={category}
+                  clickable
+                  color={
+                    category === selectedCategoryFilter ? "primary" : "default"
                   }
                   onClick={() => handleCategoryFilterChange(category)}
                   sx={{ mr: 1, mb: 1 }}
-                >
-                  {category}
-                </Button>
+                />
               ))}
-              <Button
-                variant={selectedCategoryFilter ? "outlined" : "contained"}
-                onClick={() => handleCategoryFilterChange(null)}
-                sx={{ mb: 1 }}
-              >
-                All
-              </Button>
             </Box>
+
             <TableContainer sx={{ maxHeight: 440 }}>
               <Table stickyHeader aria-label="sticky table">
                 <TableHead>
