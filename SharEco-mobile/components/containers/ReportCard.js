@@ -376,17 +376,17 @@ const styles = StyleSheet.create({
   rentalDetails: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 10,
   },
   image: {
     width: 50,
     height: 50,
+    marginRight: 8,
   },
   rentalDetailsText: {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "flex-start",
-    width: 250,
+    width: 200,
     gap: 4,
   },
   rentalLocation: {

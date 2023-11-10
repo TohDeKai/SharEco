@@ -14,7 +14,7 @@ import { Rating } from "react-native-stock-star-rating";
 import { Link, router } from "expo-router";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
-const { secondary, dark, black } = colours;
+const { secondary, dark, black, primary, white } = colours;
 import UserAvatar from "./UserAvatar";
 
 const viewportHeightInPixels = (percentage) => {
@@ -53,6 +53,21 @@ export default function ListingCard({ item, mine }) {
   return (
     <Pressable onPress={mine ? toMyListing : toIndivListing}>
       <View style={style.card}>
+      {/* <View
+        style={{
+          backgroundColor: secondary,
+          paddingVertical: 3,
+          alignItems: "center",
+          top: 40,
+          zIndex: 1,
+          width: 80,
+          borderTopRightRadius: 20,
+          borderBottomRightRadius: 20,
+          marginTop: -21,
+        }}
+      >
+        <RegularText typography="B3" color={white}>Spotlight</RegularText>
+      </View> */}
         <Image
           resizeMode="contain"
           source={{
@@ -162,7 +177,7 @@ const style = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 1,
   },
-  insights: { 
+  insights: {
     flexDirection: "row",
     gap: "5px",
     justifyContent: "center",

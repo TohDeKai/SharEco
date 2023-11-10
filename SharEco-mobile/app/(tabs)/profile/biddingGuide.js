@@ -13,6 +13,9 @@ import SafeAreaContainer from "../../../components/containers/SafeAreaContainer"
 import { colours } from "../../../components/ColourPalette";
 const { secondary, white, inputbackground, black } = colours;
 import { Ionicons } from "@expo/vector-icons";
+import { router, Link, useLocalSearchParams } from "expo-router";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
 
 const viewportWidthInPixels = (percentage) => {
   const screenWidth = Dimensions.get("window").width;
@@ -108,6 +111,8 @@ export default function biddingGuide() {
             After the bid week ends, our admin will approve the ads from the top
             ranked until we have 10 approved ads. {"\n"}
             {"\n"}
+            Ads are ranked by your bid. Time and date of creation is used as the
+            tiebreaker.
           </RegularText>
         </View>
 
