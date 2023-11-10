@@ -14,7 +14,7 @@ import { Rating } from "react-native-stock-star-rating";
 import { Link, router } from "expo-router";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
-const { secondary, dark, black } = colours;
+const { secondary, dark, black, primary, white } = colours;
 import UserAvatar from "./UserAvatar";
 
 const viewportHeightInPixels = (percentage) => {

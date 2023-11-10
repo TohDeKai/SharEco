@@ -313,7 +313,7 @@ const Content = ({ navigation, activeTab }) => {
       );
 
       if (itemResponse.status === 200) {
-        const items = itemResponse.data.data.items.reverse();
+        const items = itemResponse.data.data.items;
         if (reviewResponse.status === 200) {
           const reviews = reviewResponse.data.data.reviews.reverse();
           return { items, reviews };

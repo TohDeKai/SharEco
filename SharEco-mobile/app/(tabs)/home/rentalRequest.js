@@ -1027,14 +1027,9 @@ const createRentals = () => {
                   </View>
                 </View>
               </View>
-              {(!validStart || !validEnd) && (
+              {hourlyMessage && (
                 <View>
-                  <RegularText
-                    style={{ marginTop: 10, marginBottom: 15 }}
-                    color={fail}
-                  >
-                    {hourlyMessage}
-                  </RegularText>
+                  <MessageBox>{hourlyMessage}</MessageBox>
                 </View>
               )}
             </View>
@@ -1074,9 +1069,7 @@ const createRentals = () => {
               />
               {rangeMessage && (
                 <View>
-                  <RegularText style={{ marginTop: 7 }} color={fail}>
-                    {rangeMessage}
-                  </RegularText>
+                  <MessageBox>{rangeMessage}</MessageBox>
                 </View>
               )}
             </View>

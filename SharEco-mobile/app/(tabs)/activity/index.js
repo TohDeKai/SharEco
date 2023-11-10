@@ -32,7 +32,7 @@ const ActivityHeader = () => {
 
   return (
     <View style={styles.header}>
-      <RegularText typography="H2">Activity</RegularText>
+      <RegularText typography="H1">Activity</RegularText>
 
       <View style={styles.icons}>
         <Pressable
