@@ -50,6 +50,8 @@ const response = ({}) => {
   const localSearchParams = useLocalSearchParams();
 
   const reportId = localSearchParams.reportId;
+  const reportReason = localSearchParams.reason;
+  const reportDescription = localSearchParams.description;
   const [message, setMessage] = useState("");
   const [report, setReport] = useState({});
   const [response, setResponse] = useState("");
@@ -62,7 +64,10 @@ const response = ({}) => {
     null,
   ]);
 
-  useEffect(() => {});
+  useEffect(() => {
+    console.log(typeof reportDescription === "string");
+    console.log(reportDescription.trim() == "");
+  });
 
   const handleOpenGallery = (imageNumber) => {
     console.log("Opening gallery");
@@ -177,11 +182,29 @@ const response = ({}) => {
                 <RegularText typography="H2" style={styles.headerText}>
                   Report Details
                 </RegularText>
-                <RegularText
-                  typography="H3"
-                  style={styles.headerText}
-                ></RegularText>
-                <RegularText style={styles.headerText}>TODO</RegularText>
+                <RegularText typography="H3" style={styles.headerText}>
+                  {" "}
+                  Reason
+                </RegularText>
+                <RegularText style={styles.headerText}>
+                  {reportReason}
+                </RegularText>
+                {reportDescription.trim() != "" && (
+                  <View>
+                    <RegularText typography="H3" style={styles.headerText}>
+                      {" "}
+                      Description
+                    </RegularText>
+                    <RegularText style={styles.headerText}>
+                      {reportDescription}
+                    </RegularText>
+                  </View>
+                )}
+
+                <RegularText typography="H2" style={styles.headerText}>
+                  {" "}
+                  Response
+                </RegularText>
                 <View>
                   <RegularText typography="H3" style={styles.headerText}>
                     Upload Images
