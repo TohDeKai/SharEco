@@ -24,7 +24,7 @@ import {
   Button,
   Image,
   KeyboardAvoidingView,
-  ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useAuth } from "../../../context/auth";
 import MessageComponent from "../../../components/containers/Chat/MessagingComponent";
@@ -42,6 +42,7 @@ import axios from "axios";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const Messaging = () => {
+  const [loading, setLoading] = useState(true);
   const [chatMessages, setChatMessages] = useState();
   const [user, setUser] = useState("");
   const [chatRoomId, setChatRoomId] = useState("");
@@ -107,9 +108,11 @@ useEffect(() => {
           ),
         }));
         setItems(formattedItems);
+        setLoading(false);
       }
     } catch (error) {
       console.log(error.message);
+      setLoading(false);
     }
   }
   fetchItemsData();
@@ -170,14 +173,20 @@ useEffect(() => {
   return (
     <SafeAreaContainer>
       <Header title={`@${name}`} action="back" onPress={handleBack} />
-
-      <KeyboardAvoidingView style={styles.messagingscreen}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        style={styles.messagingscreen}>
         <View
           style={[
             styles.messagingscreen,
             { paddingVertical: 15, paddingHorizontal: 10 },
           ]}
         >
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={colours.primary} />
+            </View>
+          )}
           {chatMessages ? (
             <FlatList
               data={chatMessages}

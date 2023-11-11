@@ -45,9 +45,9 @@ export const styles = StyleSheet.create({
   },
   messaginginputContainer: {
     width: "100%",
-    minHeight: 100,
+    minHeight: 80,
     backgroundColor: colours.white,
-    paddingVertical: 30,
+    paddingVertical: 20,
     paddingHorizontal: 15,
     justifyContent: "center",
     flexDirection: "row",
@@ -67,10 +67,8 @@ export const styles = StyleSheet.create({
   },
   mmessageWrapper: {
     width: "100%",
-    maxWidth: "90%",
     alignItems: "flex-start",
     marginBottom: 15,
-    marginHorizontal: 10,
   },
   mmessage: {
     maxWidth: "70%",
@@ -112,5 +110,10 @@ export const styles = StyleSheet.create({
   },
   ctime: {
     opacity: 0.5,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
   },
 });
