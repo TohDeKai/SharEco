@@ -65,44 +65,51 @@ const Messaging = () => {
     return formattedTime;
   }
 
-  //👇🏻 This function gets the user
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const userData = await getUserData();
-        if (userData) {
-          setUser(userData);
-        }
+  // Fetch user data
+useEffect(() => {
+  async function fetchUserData() {
+    try {
+      const userData = await getUserData();
+      if (userData) {
+        setUser(userData);
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  fetchUserData();
+}, []); // Empty dependency array, runs only once when the component mounts
+
+// Fetch items data
+useEffect(() => {
+  async function fetchItemsData() {
+    try {
+      if (user && user.userId) {
         const userItemsResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/${user.userId}`
         );
-        const formattedItems = userItemsResponse.data.data.items.map(
-          (item) => ({
-            label: item.itemTitle,
-            value: item.itemTitle.toLowerCase(),
-            category: item.category,
-            itemDescription: item.itemDescription,
-            icon: () => (
-              <Image
-                source={{
-                  uri:
-                    item.images && item.images.length > 0
-                      ? item.images[0]
-                      : null,
-                }}
-                style={{ height: 50, width: 50 }}
-              />
-            ),
-          })
-        );
-
+        const formattedItems = userItemsResponse.data.data.items.map((item) => ({
+          label: item.itemTitle,
+          value: item.itemTitle.toLowerCase(),
+          category: item.category,
+          itemDescription: item.itemDescription,
+          icon: () => (
+            <Image
+              source={{
+                uri: item.images && item.images.length > 0 ? item.images[0] : null,
+              }}
+              style={{ height: 50, width: 50 }}
+            />
+          ),
+        }));
         setItems(formattedItems);
-      } catch (error) {
-        console.log(error.message);
       }
+    } catch (error) {
+      console.log(error.message);
     }
-    fetchUserData();
-  }, [user]);
+  }
+  fetchItemsData();
+}, [user]); 
 
   useLayoutEffect(() => {
     const collectionRef = collection(

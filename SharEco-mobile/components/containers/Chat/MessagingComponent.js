@@ -4,6 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../../styles/chat";
 import UserAvatar from "../../../components/UserAvatar";
 import axios from "axios";
+import { colours } from "../../ColourPalette";
+import RegularText from "../../text/RegularText";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 export default function MessageComponent({ item, user }) {
@@ -63,11 +65,11 @@ export default function MessageComponent({ item, user }) {
         <View
           style={
             isUserMessage
-              ? [styles.mmessage, { backgroundColor: "rgb(194, 243, 194)" }]
+              ? [styles.mmessage, { backgroundColor: colours.primary }]
               : styles.mmessage
           }
         >
-          <Text>{item.message}</Text>
+          <RegularText typography="Subtitle" color={colours.white}>{item.message}</RegularText>
         </View>
         {isUserMessage && (
           <UserAvatar

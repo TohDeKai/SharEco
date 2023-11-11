@@ -73,7 +73,7 @@ export const styles = StyleSheet.create({
   },
   mmessage: {
     maxWidth: "70%",
-    backgroundColor: "#f5ccc2",
+    backgroundColor: colours.placeholder,
     padding: 15,
     borderRadius: 10,
     marginBottom: 2,
