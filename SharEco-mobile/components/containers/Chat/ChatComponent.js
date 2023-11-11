@@ -49,6 +49,7 @@ const ChatComponent = ({ item, userId }) => {
       params: {
         name: otherPerson.username,
         chatDocId: item.chatRoomId,
+        otherPersonId: otherPersonId,
       },
     });
   };

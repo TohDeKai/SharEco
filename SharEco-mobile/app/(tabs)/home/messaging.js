@@ -59,7 +59,7 @@ const Messaging = () => {
 
   //👇🏻 Access the chatroom's name and id
   const params = useLocalSearchParams();
-  const { name, chatDocId } = params;
+  const { name, chatDocId, otherPersonId } = params;
 
   // function to format time
   function formatFirestoreTimestamp(timestamp) {
@@ -91,26 +91,24 @@ useEffect(() => {
 useEffect(() => {
   async function fetchItemsData() {
     try {
-      if (user && user.userId) {
-        const userItemsResponse = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/items/${user.userId}`
-        );
-        const formattedItems = userItemsResponse.data.data.items.map((item) => ({
-          label: item.itemTitle,
-          value: item.itemTitle.toLowerCase(),
-          category: item.category,
-          itemDescription: item.itemDescription,
-          itemId: item.itemId,
-          icon: item.images[0],
-        }));
-        setItems(formattedItems);
-      }
+      const userItemsResponse = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/${otherPersonId}`
+      );
+      const formattedItems = userItemsResponse.data.data.items.map((item) => ({
+        label: item.itemTitle,
+        value: item.itemTitle.toLowerCase(),
+        category: item.category,
+        itemDescription: item.itemDescription,
+        itemId: item.itemId,
+        icon: item.images[0],
+      }));
+      setItems(formattedItems);
     } catch (error) {
       console.log(error.message);
     }
   }
   fetchItemsData();
-}, [user]); 
+}, []); 
 
   useLayoutEffect(() => {
     const collectionRef = collection(
