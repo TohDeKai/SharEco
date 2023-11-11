@@ -3,6 +3,8 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
+const { inputbackground } = colours;
+
 const { black } = colours;
 
 const viewportHeightInPixels = (percentage) => {
@@ -58,6 +60,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: viewportWidthInPixels(100),
     paddingTop: 17,
+    paddingBottom: 12,
+    borderBottomWidth:1,
+    borderBottomColor: inputbackground,
   },
   backButton: {
     position: "absolute",

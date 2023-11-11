@@ -30,7 +30,17 @@ import {
   SecondaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { white, yellow, red, black, inputbackground } = colours;
+const { white, yellow, red, black, inputbackground, primary, dark } = colours;
+import { fireStoreDB } from "../../../app/utils/firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  or,
+  onSnapshot,
+} from "firebase/firestore";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
 
@@ -44,9 +54,18 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
+const LocationPill = (location) => {
+  return (
+    <View style={style.locationButton}>
+      <RegularText>{location}</RegularText>
+    </View>
+  );
+};
+
 const ItemInformation = () => {
   const [listingItem, setListingItem] = useState({});
   const [user, setUser] = useState("");
+  const [sessionUser, setSessionUser] = useState("");
   const [ratings, setRatings] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
@@ -60,7 +79,7 @@ const ItemInformation = () => {
   const handleReport = () => {
     router.push({
       pathname: "/home/report",
-      params: { itemId: itemId, reportType: "LISTING" },
+      params: { targetId: itemId, reportType: "LISTING" },
     });
   };
 
@@ -107,6 +126,7 @@ const ItemInformation = () => {
   useEffect(() => {
     async function fetchData() {
       const loggedInUserData = await getUserData();
+      setSessionUser(loggedInUserData);
       try {
         const itemResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
@@ -166,31 +186,36 @@ const ItemInformation = () => {
     rentalRateHourly,
     rentalRateDaily,
     collectionLocations,
-    usersLikedCount,
-    userId,
+    otherLocation,
     depositFee,
   } = listingItem;
-
-  const formattedLocations = collectionLocations
-    ? collectionLocations.join(", ")
-    : collectionLocations;
 
   return (
     <View>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={{ marginBottom: 50 }}
+        style={{ marginBottom: 70 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
         <View style={style.imgContainer}>
           <View style={style.header}>
-            <Header action="back" onPress={handleBack} />
-            <Header action="report" onPress={handleReport} />
+            <Ionicons
+              name="chevron-back-outline"
+              size={28}
+              color={black}
+              onPress={handleBack}
+            />
+            <Ionicons
+              name="alert-circle-outline"
+              size={28}
+              color={black}
+              onPress={handleReport}
+            />
           </View>
 
-          <View style={{ marginTop: -31 }}>
+          <View style={{ marginTop: -70 }}>
             <CustomSlider data={images} />
           </View>
         </View>
@@ -267,7 +292,11 @@ const ItemInformation = () => {
               onPress={() =>
                 router.push({
                   pathname: "home/othersProfile",
-                  params: { userId: user.userId },
+                  params: {
+                    userId: user.userId,
+                    otherUserId: sessionUser.userId,
+                    otherUserName: sessionUser.username,
+                  },
                 })
               }
             >
@@ -307,13 +336,23 @@ const ItemInformation = () => {
             <RegularText typography="H3" style={style.topic}>
               Collection & Return Locations
             </RegularText>
-            <RegularText typography="B2" style={style.content}>
-              {formattedLocations}
-            </RegularText>
+            <View style={style.locationContainer}>
+              {collectionLocations &&
+                collectionLocations.map((item) => (
+                  <View style={style.locationButton} key={item}>
+                    <RegularText typography="B2">{item}</RegularText>
+                  </View>
+                ))}
+            </View>
+            <View style={{ marginBottom: 8 }}>
+              <RegularText typography="H4">Seller's Comments</RegularText>
+            </View>
+            <RegularText typography="B2">{otherLocation}</RegularText>
           </View>
         </View>
       </ScrollView>
       <ListingNav
+        listingUser={user}
         data={itemId}
         tab={rentalRateHourly == "$0.00" ? "Daily" : "Hourly"}
       />
@@ -356,10 +395,11 @@ const CustomPaging = ({ data, activeSlide }) => {
   return <Pagination {...settings} />;
 };
 
-const ListingNav = ({ data, tab }) => {
+const ListingNav = ({ data, tab, listingUser }) => {
   const itemId = data;
 
   const [user, setUser] = useState("");
+  const [otherPerson, setOtherPerson] = useState("");
   const { getUserData } = useAuth();
 
   useEffect(() => {
@@ -368,19 +408,65 @@ const ListingNav = ({ data, tab }) => {
         const userData = await getUserData();
         if (userData) {
           setUser(userData);
+          setOtherPerson(listingUser);
         }
       } catch (error) {
         console.log(error.message);
       }
     }
+
     fetchUserData();
-  }, [user]);
+  }, [user, otherPerson]);
 
   const toRentalRequest = () => {
     router.push({
       pathname: "home/rentalRequest",
       params: { itemId: itemId, tab: tab },
     }); //to update path name
+  };
+
+  const toChats = async () => {
+    const chatsRef = collection(fireStoreDB, "chats");
+    const userId = user.userId;
+    const otherPersonId = otherPerson.userId;
+
+    const q = query(
+      chatsRef,
+      where("user1", "in", [userId, otherPersonId]),
+      where("user2", "in", [userId, otherPersonId])
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.size > 0) {
+      // Chat room already exists
+      const chatRoom = querySnapshot.docs[0];
+      router.push({
+        pathname: "home/messaging",
+        params: {
+          name: otherPerson.username,
+          chatDocId: chatRoom.id,
+        },
+      });
+    } else {
+      // Chat room doesn't exist, so create a new chat
+      const userData = {
+        user1: userId,
+        user2: otherPersonId,
+      };
+
+      await addDoc(chatsRef, userData)
+        .then((docRef) => {
+          router.push({
+            pathname: "home/messaging",
+            params: {
+              name: otherPerson.username,
+              chatDocId: docRef.id,
+            },
+          });
+        })
+        .catch((error) => console.log(error));
+    }
   };
 
   const [isWishlist, setIsWishlist] = useState(false);
@@ -499,9 +585,9 @@ const ListingNav = ({ data, tab }) => {
           </RegularText>
         </View>
         <View style={style.buttonContainer}>
-          <DisabledButton typography={"H3"} color={white}>
+          <SecondaryButton typography={"H3"} color={primary} onPress={toChats}>
             Chat
-          </DisabledButton>
+          </SecondaryButton>
         </View>
         <View style={style.buttonContainer}>
           <PrimaryButton
@@ -535,6 +621,10 @@ const style = StyleSheet.create({
   header: {
     top: 30,
     zIndex: 100,
+    marginHorizontal: viewportWidthInPixels(5),
+    marginVertical: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   container: {
     backgroundColor: white,
@@ -577,7 +667,7 @@ const style = StyleSheet.create({
     paddingBottom: 10,
   },
   content: {
-    paddingBottom: 20,
+    paddingBottom: 25,
   },
   seller: {
     display: "flex",
@@ -637,5 +727,20 @@ const style = StyleSheet.create({
     flex: 0.5,
     paddingHorizontal: 5,
     justifyContent: "center",
+  },
+  locationButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 10,
+    marginRight: 6,
+    borderRadius: 15,
+    borderColor: black,
+    borderWidth: 1,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 7,
+    marginBottom: 10,
   },
 });

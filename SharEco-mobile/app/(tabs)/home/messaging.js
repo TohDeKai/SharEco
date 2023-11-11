@@ -1,5 +1,29 @@
-import React, { useLayoutEffect, useState, useEffect } from "react";
-import { View, TextInput, Text, FlatList, Pressable } from "react-native";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+} from "react";
+import {
+  collection,
+  addDoc,
+  orderBy,
+  query,
+  onSnapshot,
+  where,
+  getDocs,
+  serverTimestamp,
+} from "firebase/firestore";
+import { fireStoreDB } from "../../utils/firebase";
+import {
+  View,
+  TextInput,
+  Text,
+  FlatList,
+  Pressable,
+  Button,
+  Image,
+} from "react-native";
 import { useAuth } from "../../../context/auth";
 import MessageComponent from "../../../components/containers/Chat/MessagingComponent";
 import { styles } from "../../../styles/chat";
@@ -8,29 +32,38 @@ import Header from "../../../components/Header";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import { Ionicons } from "@expo/vector-icons";
 import { colours } from "../../../components/ColourPalette";
+import RegularText from "../../../components/text/RegularText";
+import DropDownPicker from "react-native-dropdown-picker";
+import axios from "axios";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const Messaging = () => {
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: "1",
-      text: "Hello guys, welcome!",
-      time: "07:50",
-      user: "Tomer",
-    },
-    {
-      id: "2",
-      text: "Hi Tomer, thank you! 😇",
-      time: "08:50",
-      user: "David",
-    },
-  ]);
-  const [message, setMessage] = useState("");
+  const [chatMessages, setChatMessages] = useState();
   const [user, setUser] = useState("");
+  const [chatRoomId, setChatRoomId] = useState("");
   const { getUserData } = useAuth();
+
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([]);
+
+  // Messages States
+  const [message, setMessage] = useState("");
 
   //👇🏻 Access the chatroom's name and id
   const params = useLocalSearchParams();
-  const { name, id } = params;
+  const { name, chatDocId } = params;
+
+  // function to format time
+  function formatFirestoreTimestamp(timestamp) {
+    const seconds = timestamp.seconds;
+    const nanoseconds = timestamp.nanoseconds;
+    const date = new Date(seconds * 1000 + nanoseconds / 1000000); // Convert nanoseconds to milliseconds
+    const formattedTime = `${date.getHours()}:${String(
+      date.getMinutes()
+    ).padStart(2, "0")}`;
+    return formattedTime;
+  }
 
   //👇🏻 This function gets the user
   useEffect(() => {
@@ -40,6 +73,30 @@ const Messaging = () => {
         if (userData) {
           setUser(userData);
         }
+        const userItemsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/${user.userId}`
+        );
+        const formattedItems = userItemsResponse.data.data.items.map(
+          (item) => ({
+            label: item.itemTitle,
+            value: item.itemTitle.toLowerCase(),
+            category: item.category,
+            itemDescription: item.itemDescription,
+            icon: () => (
+              <Image
+                source={{
+                  uri:
+                    item.images && item.images.length > 0
+                      ? item.images[0]
+                      : null,
+                }}
+                style={{ height: 50, width: 50 }}
+              />
+            ),
+          })
+        );
+
+        setItems(formattedItems);
       } catch (error) {
         console.log(error.message);
       }
@@ -47,22 +104,45 @@ const Messaging = () => {
     fetchUserData();
   }, [user]);
 
-  const handleNewMessage = () => {
-    const hour =
-      new Date().getHours() < 10
-        ? `0${new Date().getHours()}`
-        : `${new Date().getHours()}`;
+  useLayoutEffect(() => {
+    const collectionRef = collection(
+      fireStoreDB,
+      "chats",
+      chatDocId,
+      "messages"
+    );
+    const q = query(collectionRef, orderBy("time", "asc"));
 
-    const mins =
-      new Date().getMinutes() < 10
-        ? `0${new Date().getMinutes()}`
-        : `${new Date().getMinutes()}`;
-
-    console.log({
-      message,
-      user,
-      timestamp: { hour, mins },
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const msg = [...querySnapshot.docs].map((doc) => ({
+        // time: formatFirestoreTimestamp(doc.data().time),
+        message: doc.data().message,
+        sender: doc.data().sender,
+      }));
+      setChatMessages(msg);
     });
+    return unsubscribe;
+  }, []);
+
+  const sendMessage = async () => {
+    if (message === "") {
+      return;
+    }
+
+    const timeStamp = serverTimestamp();
+    const messageData = {
+      message: message,
+      sender: user.userId,
+      time: timeStamp,
+    };
+
+    setMessage("");
+    await addDoc(
+      collection(fireStoreDB, "chats", chatDocId, "messages"),
+      messageData
+    )
+      .then(() => {})
+      .catch((error) => console.log(error));
   };
 
   const handleBack = () => {
@@ -71,7 +151,8 @@ const Messaging = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title={name} action="back" onPress={handleBack} />
+      <Header title={`@${name}`} action="back" onPress={handleBack} />
+
       <View style={styles.messagingscreen}>
         <View
           style={[
@@ -79,7 +160,7 @@ const Messaging = () => {
             { paddingVertical: 15, paddingHorizontal: 10 },
           ]}
         >
-          {chatMessages[0] ? (
+          {chatMessages ? (
             <FlatList
               data={chatMessages}
               renderItem={({ item }) => (
@@ -88,19 +169,29 @@ const Messaging = () => {
               keyExtractor={(item) => item.id}
             />
           ) : (
-            ""
+            <RegularText></RegularText>
           )}
         </View>
 
         <View style={styles.messaginginputContainer}>
           <TextInput
             style={styles.messaginginput}
+            value={message}
             onChangeText={(value) => setMessage(value)}
             placeholder="Write a message"
           />
+          <DropDownPicker
+            open={open}
+            value={value}
+            items={items}
+            setOpen={setOpen}
+            setValue={setValue}
+            setItems={setItems}
+            placeholder="You can choose your listing to share here"
+          />
           <Pressable
             style={styles.messagingbuttonContainer}
-            onPress={handleNewMessage}
+            onPress={sendMessage}
           >
             <View>
               <Ionicons

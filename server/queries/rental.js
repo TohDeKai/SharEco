@@ -252,8 +252,8 @@ const getRentalByRentalId = async (rentalId) => {
   }
 };
 
-//Get availabilities by rental ID and selected date
-const getAvailByRentalIdAndDate = async (itemId, date) => {
+//Get availabilities by item ID and selected date
+const getAvailByItemIdAndDate = async (itemId, date) => {
   try {
     // Convert date string to a Date object
     const currentDate = new Date(date);
@@ -881,12 +881,7 @@ const submitStartRentalChecklist = async (
           "startRentalImages" = $3
           WHERE "rentalId" = $4
           RETURNING *`,
-      [
-        checklist,
-        existingDamages,
-        images,
-        rentalId,
-      ]
+      [checklist, existingDamages, images, rentalId]
     );
     return result.rows[0];
   } catch (err) {
@@ -909,12 +904,7 @@ const submitEndRentalChecklist = async (
           "endRentalImages" = $3
           WHERE "rentalId" = $4
           RETURNING *`,
-      [
-        checklist,
-        newDamages,
-        images,
-        rentalId,
-      ]
+      [checklist, newDamages, images, rentalId]
     );
     return result.rows[0];
   } catch (err) {
@@ -945,12 +935,7 @@ const updateItemImages = async (itemId, images, checklistFormType) => {
 };
 
 // Create Blockout Period
-const createBlockout = async (
-  startDate,
-  endDate,
-  itemId,
-  lenderId,
-) => {
+const createBlockout = async (startDate, endDate, itemId, lenderId) => {
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."rental" 
@@ -1033,7 +1018,7 @@ const getRentalEarningsByUserId = async (userId) => {
     // Apply the 0.95 multiplier to the rentalFee in each row.
     const earningsWithMultiplier = result.rows.map((row) => ({
       ...row,
-      rentalFee: (parseFloat(row.rentalFee.replace('$', '')) * 0.95).toFixed(2),
+      rentalFee: (parseFloat(row.rentalFee.replace("$", "")) * 0.95).toFixed(2),
     }));
 
     return earningsWithMultiplier;
@@ -1053,7 +1038,7 @@ module.exports = {
   getRentalsByBorrowerId,
   getRentalsByItemId,
   getRentalByRentalId,
-  getAvailByRentalIdAndDate,
+  getAvailByItemIdAndDate,
   getDailyUnavailability,
   getFullDayUnavailability,
   getNextRentalByItemIdAndDate,

@@ -304,12 +304,12 @@ const sharEcoBiz = () => {
                   maxFiles={MAX_FILES}
                 />
 
-                <MessageBox
+                {message && <MessageBox
                   style={{ marginTop: 35, marginBottom: 20 }}
                   success={isSuccessMessage}
                 >
-                  {message || " "}
-                </MessageBox>
+                  {message}
+                </MessageBox>}
               </View>
               <RoundedButton
                 typography={"B1"}

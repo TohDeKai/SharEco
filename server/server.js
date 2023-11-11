@@ -49,6 +49,11 @@ const { AWS_GETFILE_URL } = require("./s3");
 // Choosing port for Express to listen on
 const port = process.env.PORT || 4000;
 
+//http request logger middleware
+app.use(morgan("dev"));
+// retrieve data from body
+app.use(express.json());
+
 // Configure CORS to allow requests from your React app's domain (http://localhost:3000)
 app.use(
   cors({
@@ -61,11 +66,6 @@ app.use(
 app.listen(port, () => {
   console.log(`Server is up and listening on Port ${port}`);
 });
-
-//http request logger middleware
-app.use(morgan("dev"));
-// retrieve data from body
-app.use(express.json());
 
 // User CRUD operations
 app.get("/api/v1/users", async (req, res) => {
@@ -1550,7 +1550,7 @@ app.patch("/api/v1/rental/status/:rentalId", async (req, res) => {
 app.get("/api/v1/item/availability/:itemId/:date", async (req, res) => {
   try {
     console.log("Request Parameters:", req.params);
-    const intervals = await rentaldb.getAvailByRentalIdAndDate(
+    const intervals = await rentaldb.getAvailByItemIdAndDate(
       req.params.itemId,
       req.params.date
     );
@@ -2613,6 +2613,46 @@ app.get("/api/v1/rankedWeekAds", async (req, res) => {
   }
 });
 
+//Get approved ads
+app.get("/api/v1/activeAds", async (req, res) => {
+  try {
+    const ads = await advertisementdb.getActiveAds();
+    if (ads && ads.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ads: ads,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Weekly ads not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Increase visit counter by 1
+app.put("/api/v1/addVisit/adId/:adId", async (req, res) => {
+  try {
+    const ad = await advertisementdb.updateAdVisits(req.params.adId);
+    if (ad) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ad: ad,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Advertisement not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 /**********************          Insights and Dashboard Routes             **************************/
 // create impression
 app.post("/api/v1/impression", async (req, res) => {
@@ -2875,7 +2915,7 @@ app.get("/api/v1/reports", async (req, res) => {
 // GET all reports with DISPUTE type
 app.get("/api/v1/reports/type/:type", async (req, res) => {
   try {
-    reportType = req.params.type;
+    const reportType = req.params.type;
 
     const reports = await reportdb.getReportsByType(reportType);
     res.status(200).json({
@@ -2902,6 +2942,9 @@ app.post("/api/v1/report", async (req, res) => {
     supportingImages,
     responseText,
     responseImages,
+    targetId,
+    reportDate,
+    reportResult,
   } = req.body;
 
   try {
@@ -2913,7 +2956,10 @@ app.post("/api/v1/report", async (req, res) => {
       description,
       supportingImages,
       responseText,
-      responseImages
+      responseImages,
+      targetId,
+      reportDate,
+      reportResult
     );
 
     // Send the newly created user as the response
@@ -2976,6 +3022,68 @@ app.put("/api/v1/report/status/:reportId", async (req, res) => {
       // Handle the case where the report is not found
       res.status(404).json({ error: "Report not found" });
     }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// UPDATE report with supporting images
+app.put("/api/v1/report/images/:reportId", async (req, res) => {
+  try {
+    const images = req.body.images;
+    const reportId = req.params.reportId;
+    const report = await reportdb.updateSupportingImages(images, reportId);
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// GET all reports made by user or against user
+app.get("/api/v1/reports/user/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const reports = await reportdb.getReportsMadeByOrAgainstUser(userId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// GET report by reportId
+app.get("/api/v1/reports/reportId/:reportId", async (req, res) => {
+  try {
+    const reportId = req.params.reportId;
+
+    const reports = await reportdb.getReportsById(reportId);
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
   } catch (err) {
     // Handle the error here if needed
     console.log(err);

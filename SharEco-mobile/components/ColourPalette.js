@@ -10,4 +10,6 @@ export const colours = {
   success: "green",
   fail: "#E3242B",
   red: "#E53131",
+  red30: 'rgba(229, 49, 49, 0.2)',
+  green30: 'rgba(65, 150, 130, 0.2)',
 }

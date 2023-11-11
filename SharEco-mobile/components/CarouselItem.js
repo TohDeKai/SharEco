@@ -37,5 +37,6 @@ const styles = StyleSheet.create({
   },
   image: {
     resizeMode: "contain",
+    alignItems: "center"
   },
 });
