@@ -332,11 +332,35 @@ const ReportCard = ({ report }) => {
             {formatDate(report.reportDate)}
           </RegularText>
         </View>
-        {isReported && (
+        {isReported &&
+          report.type === "DISPUTE" &&
+          report.status === "PENDING" && (
+            <RegularText
+              typography="B3"
+              style={{ textAlign: "right" }} // Adjust the value as needed
+            >
+              {calculateDaysDifference(report.reportDate)}{" "}
+              {calculateDaysDifference(report.reportDate) === 1
+                ? "day"
+                : "days"}{" "}
+              left to respond
+            </RegularText>
+          )}
+        {!isReported &&
+          report.type === "DISPUTE" &&
+          report.status == "PENDING" && (
+            <RegularText
+              typography="B3"
+              style={{ textAlign: "right", marginTop: 10 }}
+            >
+              {calculateDaysDifference(report.reportDate)}{" "}
+              {calculateDaysDifference(report.reportDate) == 1 ? "day" : "days"}{" "}
+              left for other party to respond
+            </RegularText>
+          )}
+        {report.status == "UNDER REVIEW" && (
           <RegularText typography="B3" style={{ textAlign: "right" }}>
-            {calculateDaysDifference(report.reportDate)}{" "}
-            {calculateDaysDifference(report.reportDate) == 1 ? "day" : "days"}{" "}
-            left to respond
+            Your report is under review
           </RegularText>
         )}
       </View>
