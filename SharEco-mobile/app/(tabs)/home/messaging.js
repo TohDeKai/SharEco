@@ -104,11 +104,9 @@ useEffect(() => {
           icon: item.images[0],
         }));
         setItems(formattedItems);
-        setLoading(false);
       }
     } catch (error) {
       console.log(error.message);
-      setLoading(false);
     }
   }
   fetchItemsData();
@@ -131,6 +129,7 @@ useEffect(() => {
         itemId: doc.data().itemId,
       }));
       setChatMessages(msg);
+      setLoading(false)
     });
     return unsubscribe;
   }, []);
