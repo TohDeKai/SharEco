@@ -101,14 +101,7 @@ useEffect(() => {
           category: item.category,
           itemDescription: item.itemDescription,
           itemId: item.itemId,
-          icon: () => (
-            <Image
-              source={{
-                uri: item.images && item.images.length > 0 ? item.images[0] : null,
-              }}
-              style={{ height: 50, width: 50 }}
-            />
-          ),
+          icon: item.images[0],
         }));
         setItems(formattedItems);
         setLoading(false);
@@ -208,16 +201,24 @@ useEffect(() => {
   }
 
   const renderItem = ({ item }) => (
-    <Pressable
-      style={({ pressed }) => ({
-        opacity: pressed ? 0.5 : 1,
-        padding: 10,
-      })}
-      onPress={() => sendItemMessage(item)}
-    >
-      <RegularText>{item.label}</RegularText>
-    </Pressable>
-  );
+		<View style={{flexDirection: "row", gap: 10, marginBottom: 10}}>
+			<Image
+				source={{
+					uri: item.icon,
+				}}
+				style={{ height: 50, width: 50 }}
+			/>
+			<Pressable
+				style={({ pressed }) => ({
+					opacity: pressed ? 0.5 : 1,
+					padding: 10,
+				})}
+				onPress={() => sendItemMessage(item)}
+			>
+				<RegularText>{item.label}</RegularText>
+			</Pressable>
+		</View>
+	);
 
   const flatListRef = useRef(null);
 
@@ -372,7 +373,9 @@ const modalStyles = StyleSheet.create({
     backgroundColor: "white",
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
-    padding: 10,
+    paddingTop: 30,
+    paddingLeft: 20,
+    maxHeight: 300,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
