@@ -39,6 +39,7 @@ import RegularText from "../../../components/text/RegularText";
 import IconTextInput from "../../../components/inputs/LoginTextInputs"
 import DropDownPicker from "react-native-dropdown-picker";
 import axios from "axios";
+import ChatListingCard from "../../../components/containers/Chat/ChatListingCard";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const Messaging = () => {
@@ -191,8 +192,14 @@ useEffect(() => {
             <FlatList
               data={chatMessages}
               renderItem={({ item }) => (
-                <MessageComponent item={item} user={user} />
-              )}
+              <>
+                {item.itemId ? (
+                  <ChatListingCard messageItem={item} user={user}  />
+                ) : (
+                  <MessageComponent item={item} user={user} />
+                )}
+              </>
+            )}
               keyExtractor={(item) => item.id}
             />
           ) : (
@@ -200,12 +207,27 @@ useEffect(() => {
           )}
         </View>
 
+        {/* STUB for testing rendering Listing */}
+        {user && (
+          <ChatListingCard 
+            messageItem={
+              { 
+                "message": "Hello", 
+                "sender": 100,
+                "itemId": 195, 
+              }
+            }
+            user={user} 
+          />
+        )}
+        
         <View style={styles.messaginginputContainer}>
           <TextInput
             style={styles.messaginginput}
             value={message}
             onChangeText={(value) => setMessage(value)}
             placeholder="Write a message"
+            placeholderTextColor={colours.placeholder} 
           />
           {/* <DropDownPicker
             open={open}

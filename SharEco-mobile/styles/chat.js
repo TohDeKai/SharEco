@@ -41,13 +41,12 @@ export const styles = StyleSheet.create({
   messagingscreen: {
     flex: 1,
     height: "100%",
-    backgroundColor: colours.white,
+    backgroundColor: colours.inputbackground,
   },
   messaginginputContainer: {
     width: "100%",
-    minHeight: 80,
     backgroundColor: colours.white,
-    paddingVertical: 20,
+    paddingVertical: 10,
     paddingHorizontal: 15,
     justifyContent: "center",
     flexDirection: "row",
