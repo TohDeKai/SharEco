@@ -14,7 +14,7 @@ import { Rating } from "react-native-stock-star-rating";
 import { Link, router } from "expo-router";
 import RegularText from "./text/RegularText";
 import { colours } from "./ColourPalette";
-const { secondary, dark, black } = colours;
+const { secondary, dark, black, primary, white } = colours;
 import UserAvatar from "./UserAvatar";
 
 const viewportHeightInPixels = (percentage) => {
@@ -27,7 +27,7 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-export default function ListingCard({ item, mine }) {
+export default function ListingCard({ item, mine, isSpotlighted }) {
   const {
     itemId,
     itemTitle,
@@ -53,6 +53,25 @@ export default function ListingCard({ item, mine }) {
   return (
     <Pressable onPress={mine ? toMyListing : toIndivListing}>
       <View style={style.card}>
+        {isSpotlighted && (
+          <View
+            style={{
+              backgroundColor: secondary,
+              paddingVertical: 3,
+              alignItems: "center",
+              top: 40,
+              zIndex: 1,
+              width: 80,
+              borderTopRightRadius: 20,
+              borderBottomRightRadius: 20,
+              marginTop: -21,
+            }}
+          >
+            <RegularText typography="B3" color={colours.white}>
+              Spotlight
+            </RegularText>
+          </View>
+        )}
         <Image
           resizeMode="contain"
           source={{
@@ -60,7 +79,6 @@ export default function ListingCard({ item, mine }) {
           }}
           style={style.image}
         />
-
         <View>
           <RegularText
             numberOfLines={1}
@@ -162,7 +180,7 @@ const style = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 1,
   },
-  insights: { 
+  insights: {
     flexDirection: "row",
     gap: "5px",
     justifyContent: "center",

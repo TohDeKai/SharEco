@@ -2,8 +2,8 @@ import { View, Text } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../../styles/chat";
-import axios from "axios";
 import UserAvatar from "../../../components/UserAvatar";
+import axios from "axios";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 export default function MessageComponent({ item, user }) {
@@ -83,3 +83,7 @@ export default function MessageComponent({ item, user }) {
     </View>
   );
 }
+
+// const toIndivListing = () => {
+//   router.push({ pathname: "home/indivListing", params: { itemId: itemId } });
+// };

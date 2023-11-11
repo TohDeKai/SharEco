@@ -142,7 +142,7 @@ const ItemInformation = () => {
               <View style={{
                 width: viewportWidthInPixels(50),
                 alignSelf: "flex-end",
-                height: 50,
+                height: 46,
                 borderRadius:10,
                 padding:5,
                 backgroundColor: dark,

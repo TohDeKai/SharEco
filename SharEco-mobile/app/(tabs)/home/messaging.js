@@ -22,6 +22,7 @@ import {
   FlatList,
   Pressable,
   Button,
+  Image,
 } from "react-native";
 import { useAuth } from "../../../context/auth";
 import MessageComponent from "../../../components/containers/Chat/MessagingComponent";
@@ -32,12 +33,19 @@ import SafeAreaContainer from "../../../components/containers/SafeAreaContainer"
 import { Ionicons } from "@expo/vector-icons";
 import { colours } from "../../../components/ColourPalette";
 import RegularText from "../../../components/text/RegularText";
+import DropDownPicker from "react-native-dropdown-picker";
+import axios from "axios";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const Messaging = () => {
   const [chatMessages, setChatMessages] = useState();
   const [user, setUser] = useState("");
   const [chatRoomId, setChatRoomId] = useState("");
   const { getUserData } = useAuth();
+
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([]);
 
   // Messages States
   const [message, setMessage] = useState("");
@@ -65,6 +73,30 @@ const Messaging = () => {
         if (userData) {
           setUser(userData);
         }
+        const userItemsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/${user.userId}`
+        );
+        const formattedItems = userItemsResponse.data.data.items.map(
+          (item) => ({
+            label: item.itemTitle,
+            value: item.itemTitle.toLowerCase(),
+            category: item.category,
+            itemDescription: item.itemDescription,
+            icon: () => (
+              <Image
+                source={{
+                  uri:
+                    item.images && item.images.length > 0
+                      ? item.images[0]
+                      : null,
+                }}
+                style={{ height: 50, width: 50 }}
+              />
+            ),
+          })
+        );
+
+        setItems(formattedItems);
       } catch (error) {
         console.log(error.message);
       }
@@ -147,6 +179,15 @@ const Messaging = () => {
             value={message}
             onChangeText={(value) => setMessage(value)}
             placeholder="Write a message"
+          />
+          <DropDownPicker
+            open={open}
+            value={value}
+            items={items}
+            setOpen={setOpen}
+            setValue={setValue}
+            setItems={setItems}
+            placeholder="You can choose your listing to share here"
           />
           <Pressable
             style={styles.messagingbuttonContainer}

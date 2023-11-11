@@ -77,7 +77,7 @@ const getOngoingSpotlights = async () => {
   try {
     // Query the database to find all ongoing spotlights
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."spotlight"
+      `SELECT "itemId" FROM "sharEco-schema"."spotlight"
        WHERE $1 BETWEEN "startDate" AND "endDate"`,
       [currentTimeStamp]
     );
@@ -91,5 +91,5 @@ const getOngoingSpotlights = async () => {
 module.exports = {
   createSpotlight,
   getOngoingSpotlightByItemId,
-  getOngoingSpotlights
+  getOngoingSpotlights,
 };
