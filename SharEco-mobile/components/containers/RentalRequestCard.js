@@ -3,6 +3,16 @@ import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import axios from "axios";
+import { fireStoreDB } from "../../app/utils/firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  or,
+  onSnapshot,
+} from "firebase/firestore";
 
 import { useAuth } from "../../context/auth";
 import SafeAreaContainer from "./SafeAreaContainer";
@@ -195,6 +205,52 @@ const RentalRequestCard = (props) => {
     parseFloat(rental.rentalFee.replace(/\$/g, "")) - platformFee
   ).toFixed(2);
 
+  const toChats = async () => {
+    const chatsRef = collection(fireStoreDB, "chats");
+    const userId = sessionUser.userId;
+    const otherPersonId = user.userId;
+
+    const q = query(
+      chatsRef,
+      where("user1", "in", [userId, otherPersonId]),
+      where("user2", "in", [userId, otherPersonId])
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.size > 0) {
+      // Chat room already exists
+      const chatRoom = querySnapshot.docs[0];
+      router.push({
+        pathname: "home/messaging",
+        params: {
+          name: user.username,
+          chatDocId: chatRoom.id,
+        },
+      });
+    } else {
+      // Chat room doesn't exist, so create a new chat
+      const userData = {
+        user1: userId,
+        user2: otherPersonId,
+      };
+
+      await addDoc(chatsRef, userData)
+        .then((docRef) => {
+          router.push({
+            pathname: "home/messaging",
+            params: {
+              name: user.username,
+              chatDocId: docRef.id,
+            },
+          });
+        })
+        .catch((error) => console.log(error));
+    }
+  };
+
+  
+
   return (
     <View style={styles.container}>
       <Pressable onPress={toggleCollapse}>
@@ -353,7 +409,7 @@ const RentalRequestCard = (props) => {
             </View>
 
             <View style={styles.buttonContainer}>
-              <Pressable>
+              <Pressable onPress={toChats}>
                 <Ionicons name="chatbubble-outline" color={primary} size={35} />
               </Pressable>
               <View style={styles.button}>

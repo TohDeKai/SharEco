@@ -220,7 +220,7 @@ useEffect(() => {
               ...styles.messagingbuttonContainer,
               opacity: pressed ? 0.5 : 1,
             })}
-            onPress={console.log("pressed")}
+            onPress={() => console.log("pressed the attachments icon")}
           >
             <View>
               <Ionicons
@@ -231,7 +231,7 @@ useEffect(() => {
                 }}
               />
             </View>
-        </Pressable>
+          </Pressable>
           <TextInput
             style={styles.messaginginput}
             value={message}
