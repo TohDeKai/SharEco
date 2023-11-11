@@ -25,11 +25,12 @@ import {
   Image,
   KeyboardAvoidingView,
   ActivityIndicator,
+  Modal,
+  StyleSheet
 } from "react-native";
 import { useAuth } from "../../../context/auth";
 import MessageComponent from "../../../components/containers/Chat/MessagingComponent";
 import { styles } from "../../../styles/chat";
-import styled from 'styled-components/native';
 import { useLocalSearchParams, router } from "expo-router";
 import Header from "../../../components/Header";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
@@ -99,6 +100,7 @@ useEffect(() => {
           value: item.itemTitle.toLowerCase(),
           category: item.category,
           itemDescription: item.itemDescription,
+          itemId: item.itemId,
           icon: () => (
             <Image
               source={{
@@ -133,6 +135,7 @@ useEffect(() => {
         // time: formatFirestoreTimestamp(doc.data().time),
         message: doc.data().message,
         sender: doc.data().sender,
+        itemId: doc.data().itemId,
       }));
       setChatMessages(msg);
     });
@@ -160,9 +163,61 @@ useEffect(() => {
       .catch((error) => console.log(error));
   };
 
+  const sendItemMessage = async (item) => {
+    if (!item.itemId) {
+      console.log('itemId is undefined. Aborting sendItemMessage.');
+      return;
+    }
+
+    const timeStamp = serverTimestamp();
+    const messageData = {
+      sender: user.userId,
+      message: "this is an item",
+      time: timeStamp,
+      itemId: item.itemId
+    };
+
+    try {
+      await addDoc(
+        collection(fireStoreDB, "chats", chatDocId, "messages"),
+        messageData
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      closeModal();
+    }
+  };
+
   const handleBack = () => {
     router.back();
   };
+
+  const [showModal, setShowModal] = useState(false);
+
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  const handleToggleModal = () => {
+    setShowModal(!showModal);
+  }
+
+  const renderItem = ({ item }) => (
+    <Pressable
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.5 : 1,
+        padding: 10,
+      })}
+      onPress={() => sendItemMessage(item)}
+    >
+      <RegularText>{item.label}</RegularText>
+    </Pressable>
+  );
 
   return (
     <SafeAreaContainer>
@@ -184,15 +239,17 @@ useEffect(() => {
           {chatMessages ? (
             <FlatList
               data={chatMessages}
-              renderItem={({ item }) => (
-              <>
-                {item.itemId ? (
-                  <ChatListingCard messageItem={item} user={user}  />
-                ) : (
-                  <MessageComponent item={item} user={user} />
-                )}
-              </>
-            )}
+              renderItem={({ item }) => {
+                return (
+                  <>
+                    {item.itemId !== undefined && item.itemId !== null ? (
+                      <ChatListingCard messageItem={item} user={user} />
+                    ) : (
+                      <MessageComponent item={item} user={user} />
+                    )}
+                  </>
+                );
+              }}
               keyExtractor={(item) => item.id}
             />
           ) : (
@@ -214,17 +271,29 @@ useEffect(() => {
           />
         )} */}
         
+        <View>
+          {showModal && (
+            <View style={modalStyles.modalView}>
+              <FlatList
+                data={items}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.value.toString()}
+              />
+            </View>
+          )}
+        </View>
+
         <View style={styles.messaginginputContainer}>
           <Pressable
             style={({pressed}) => ({
               ...styles.messagingbuttonContainer,
               opacity: pressed ? 0.5 : 1,
             })}
-            onPress={() => console.log("pressed the attachments icon")}
+            onPress={handleToggleModal}
           >
             <View>
               <Ionicons
-                name="attach-outline"
+                name= {showModal ? "chevron-down" : "attach-outline"}
                 size={30}
                 style={{
                   color: colours.placeholder,
@@ -272,3 +341,30 @@ useEffect(() => {
 };
 
 export default Messaging;
+
+const modalStyles = StyleSheet.create({
+  modalStyle: {
+    backgroundColor: colours.white,
+    marginVertical: 10,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    backgroundColor: "white",
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+})

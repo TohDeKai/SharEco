@@ -21,7 +21,6 @@ const AWS_GETFILE_URL =
 
 const ChatListingCard = ({messageItem, user}) => {
   const [item, setItem] = useState({});
-  console.log("", messageItem.itemId);
 
   useEffect(() => {
     async function fetchItemData() {
@@ -78,7 +77,6 @@ export default ChatListingCard;
 
 const styles = StyleSheet.create({
   cardDetailsContainer: {
-    marginTop: 15,
     marginBottom: 15,
     backgroundColor: white,
     borderRadius: 8,
