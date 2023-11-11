@@ -155,7 +155,39 @@ const response = ({}) => {
     router.back();
   };
 
-  const handleSubmitReport = async (values) => {};
+  const handleSubmitResponse = async (values) => {
+    try {
+      //handle upload all images and returns the array of uris
+      const uploadedURIs = await uploadImageFiles(imagesResult, reportId);
+
+      const responseData = {
+        responseText: values.responseText,
+        responseImages: uploadedURIs,
+      };
+
+      console.log(JSON.stringify(responseData));
+
+      console.log("REPORT ID: " + reportId);
+      const responseResponse = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/report/response/${reportId}`,
+        responseData
+      );
+
+      if (responseResponse.status == 200) {
+        setImages([null, null, null, null, null]);
+        setImagesResult([null, null, null, null, null]);
+        router.push({
+          pathname: "/activity",
+        });
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 500) {
+        console.log("Internal server error");
+      } else {
+        console.log("Error during item creation: ", error.message);
+      }
+    }
+  };
 
   return (
     <SafeAreaContainer>
@@ -169,11 +201,10 @@ const response = ({}) => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Formik
             initialValues={{
-              existingDamages: "",
-              newDamages: "",
+              responseText: "",
             }}
             onSubmit={(values, actions) => {
-              handleSubmitReport(values);
+              handleSubmitResponse(values);
               actions.resetForm();
             }}
           >
@@ -225,8 +256,8 @@ const response = ({}) => {
                 </RegularText>
                 <StyledTextInput
                   placeholder="Give a short response to support your side of the story"
-                  value={values.description}
-                  onChangeText={handleChange("description")}
+                  value={values.responseText}
+                  onChangeText={handleChange("responseText")}
                   maxLength={300}
                   multiline={true}
                   scrollEnabled={false}
