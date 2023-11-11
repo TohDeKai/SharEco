@@ -2,7 +2,7 @@ import React, {
   useState,
   useEffect,
   useLayoutEffect,
-  useCallback,
+  useRef,
 } from "react";
 import {
   collection,
@@ -219,6 +219,19 @@ useEffect(() => {
     </Pressable>
   );
 
+  const flatListRef = useRef(null);
+
+  useEffect(() => {
+    // Scroll to the bottom when the component mounts or when chatMessages changes
+    scrollToBottom();
+  }, [chatMessages]);
+
+  const scrollToBottom = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  };
+
   return (
     <SafeAreaContainer>
       <Header title={`@${name}`} action="back" onPress={handleBack} />
@@ -238,6 +251,7 @@ useEffect(() => {
           )}
           {chatMessages ? (
             <FlatList
+              ref={flatListRef}
               data={chatMessages}
               renderItem={({ item }) => {
                 return (
@@ -251,6 +265,7 @@ useEffect(() => {
                 );
               }}
               keyExtractor={(item) => item.id}
+              onContentSizeChange={scrollToBottom}
             />
           ) : (
             <RegularText></RegularText>
