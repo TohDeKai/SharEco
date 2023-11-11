@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../../styles/chat";
@@ -10,6 +10,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 export default function MessageComponent({ item, user }) {
   const isUserMessage = item.sender === user.userId;
+  const [loading, setLoading] = useState(true);
   const [otherUser, setOtherUser] = useState("");
   const [otherUserProfileUri, setOtherUserProfileUri] = useState("");
 
@@ -37,9 +38,11 @@ export default function MessageComponent({ item, user }) {
           setSenderProfileUri(
             `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${senderData.userPhotoUrl}.jpeg`
           );
+          setLoading(false);
         }
       } catch (error) {
         console.log(error);
+        setLoading(false);
       }
     }
     fetchUserData();
@@ -52,36 +55,41 @@ export default function MessageComponent({ item, user }) {
           ? [styles.mmessageWrapper, { alignItems: "flex-end" }]
           : styles.mmessageWrapper
       }
-    >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        {!isUserMessage && (
-          <UserAvatar
-            size="small"
-            source={{
-              uri: senderProfileUri,
-            }}
-          />
-        )}
-        <View
-          style={
-            isUserMessage
-              ? [styles.mmessage, { backgroundColor: colours.primary }]
-              : styles.mmessage
-          }
-        >
-          <RegularText typography="Subtitle" color={colours.white}>{item.message}</RegularText>
+    > 
+      {loading &&
+        <ActivityIndicator size="small" color={colours.primary} />
+      }
+      {sender && senderProfileUri && otherUser && otherUserProfileUri && (
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {!isUserMessage && (
+            <UserAvatar
+              size="small"
+              source={{
+                uri: sender && senderProfileUri,
+              }}
+            />
+          )}
+          <View
+            style={
+              isUserMessage
+                ? [styles.mmessage, { backgroundColor: colours.primary }]
+                : styles.mmessage
+            }
+          >
+            <RegularText typography="Subtitle" color={colours.white}>{item.message}</RegularText>
+          </View>
+          {isUserMessage && (
+            <UserAvatar
+              size="small"
+              source={{
+                uri: otherUserProfileUri,
+              }}
+            />
+          )}
+          {/* For time */}
+          {/* <Text style={{ marginLeft: 40 }}>{item.time}</Text> */}
         </View>
-        {isUserMessage && (
-          <UserAvatar
-            size="small"
-            source={{
-              uri: otherUserProfileUri,
-            }}
-          />
-        )}
-      </View>
-      {/* For time */}
-      {/* <Text style={{ marginLeft: 40 }}>{item.time}</Text> */}
+      )}  
     </View>
   );
 }

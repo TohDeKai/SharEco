@@ -40,6 +40,7 @@ export const styles = StyleSheet.create({
   chatemptyText: { fontWeight: "bold", fontSize: 24, paddingBottom: 30 },
   messagingscreen: {
     flex: 1,
+    height: "100%",
     backgroundColor: colours.white,
   },
   messaginginputContainer: {
@@ -55,7 +56,7 @@ export const styles = StyleSheet.create({
     padding: 15,
     flex: 1,
     marginRight: 10,
-    borderRadius: 2,
+    borderRadius: 25,
     backgroundColor: colours.inputbackground,
   },
   messagingbuttonContainer: {

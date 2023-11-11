@@ -23,16 +23,20 @@ import {
   Pressable,
   Button,
   Image,
+  KeyboardAvoidingView,
+  ScrollView,
 } from "react-native";
 import { useAuth } from "../../../context/auth";
 import MessageComponent from "../../../components/containers/Chat/MessagingComponent";
 import { styles } from "../../../styles/chat";
+import styled from 'styled-components/native';
 import { useLocalSearchParams, router } from "expo-router";
 import Header from "../../../components/Header";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import { Ionicons } from "@expo/vector-icons";
 import { colours } from "../../../components/ColourPalette";
 import RegularText from "../../../components/text/RegularText";
+import IconTextInput from "../../../components/inputs/LoginTextInputs"
 import DropDownPicker from "react-native-dropdown-picker";
 import axios from "axios";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -156,11 +160,18 @@ useEffect(() => {
     router.back();
   };
 
+  const LeftIcon = styled.TouchableOpacity`
+    position: absolute;
+    top: 28px;
+    left: 13px;
+    z-index: 1;
+`;
+
   return (
     <SafeAreaContainer>
       <Header title={`@${name}`} action="back" onPress={handleBack} />
 
-      <View style={styles.messagingscreen}>
+      <KeyboardAvoidingView style={styles.messagingscreen}>
         <View
           style={[
             styles.messagingscreen,
@@ -187,7 +198,7 @@ useEffect(() => {
             onChangeText={(value) => setMessage(value)}
             placeholder="Write a message"
           />
-          <DropDownPicker
+          {/* <DropDownPicker
             open={open}
             value={value}
             items={items}
@@ -195,7 +206,7 @@ useEffect(() => {
             setValue={setValue}
             setItems={setItems}
             placeholder="You can choose your listing to share here"
-          />
+          /> */}
           <Pressable
             style={styles.messagingbuttonContainer}
             onPress={sendMessage}
@@ -211,7 +222,7 @@ useEffect(() => {
             </View>
           </Pressable>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaContainer>
   );
 };
