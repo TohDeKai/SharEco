@@ -52,7 +52,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
   },
   messaginginput: {
-    padding: 15,
+    padding: 10,
     flex: 1,
     marginRight: 10,
     borderRadius: 25,

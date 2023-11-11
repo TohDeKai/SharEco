@@ -164,13 +164,6 @@ useEffect(() => {
     router.back();
   };
 
-  const LeftIcon = styled.TouchableOpacity`
-    position: absolute;
-    top: 28px;
-    left: 13px;
-    z-index: 1;
-`;
-
   return (
     <SafeAreaContainer>
       <Header title={`@${name}`} action="back" onPress={handleBack} />
@@ -208,7 +201,7 @@ useEffect(() => {
         </View>
 
         {/* STUB for testing rendering Listing */}
-        {user && (
+        {/* {user && (
           <ChatListingCard 
             messageItem={
               { 
@@ -219,9 +212,26 @@ useEffect(() => {
             }
             user={user} 
           />
-        )}
+        )} */}
         
         <View style={styles.messaginginputContainer}>
+          <Pressable
+            style={({pressed}) => ({
+              ...styles.messagingbuttonContainer,
+              opacity: pressed ? 0.5 : 1,
+            })}
+            onPress={console.log("pressed")}
+          >
+            <View>
+              <Ionicons
+                name="attach-outline"
+                size={30}
+                style={{
+                  color: colours.placeholder,
+                }}
+              />
+            </View>
+        </Pressable>
           <TextInput
             style={styles.messaginginput}
             value={message}
@@ -239,7 +249,10 @@ useEffect(() => {
             placeholder="You can choose your listing to share here"
           /> */}
           <Pressable
-            style={styles.messagingbuttonContainer}
+            style={({pressed}) => ({
+              ...styles.messagingbuttonContainer,
+              opacity: pressed ? 0.5 : 1,
+            })}
             onPress={sendMessage}
           >
             <View>
