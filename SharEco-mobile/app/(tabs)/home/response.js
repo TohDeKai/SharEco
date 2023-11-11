@@ -173,7 +173,12 @@ const response = ({}) => {
         responseData
       );
 
-      if (responseResponse.status == 200) {
+      const responseResponse2 = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/report/status/${reportId}`,
+        { status: "UNDER REVIEW" }
+      );
+
+      if (responseResponse2.status == 200) {
         setImages([null, null, null, null, null]);
         setImagesResult([null, null, null, null, null]);
         router.push({
