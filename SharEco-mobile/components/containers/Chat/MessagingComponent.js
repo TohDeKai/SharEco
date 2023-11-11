@@ -59,7 +59,7 @@ export default function MessageComponent({ item, user }) {
             <UserAvatar
               size="small"
               source={{
-                uri: sender && senderProfileUri,
+                uri: senderProfileUri,
               }}
             />
           )}
