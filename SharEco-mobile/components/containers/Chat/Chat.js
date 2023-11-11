@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useLayoutEffect } from "react";
-import { View, Text, Pressable, SafeAreaView, FlatList } from "react-native";
+import { View, Text, Pressable, SafeAreaView, FlatList, ActivityIndicator } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import ChatComponent from "./ChatComponent";
 import { styles } from "../../../styles/chat";
 import {
@@ -14,6 +15,8 @@ import {
 import { fireStoreDB } from "../../../app/utils/firebase";
 import { useAuth } from "../../../context/auth";
 import RegularText from "../../text/RegularText";
+import Header from "../../Header";
+import { colours } from "../../ColourPalette";
 
 const Chat = (props) => {
   const [chatRooms, setChatRooms] = useState([]);
@@ -73,14 +76,13 @@ const Chat = (props) => {
     return unsubscribe;
   }, []);
 
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
     <SafeAreaView>
-      <View style={styles.chattopContainer}>
-        <View style={styles.chatheader}>
-          <Text style={styles.chatheading}>Chats</Text>
-        </View>
-      </View>
-
+      <Header title="Chat" action="back" onPress={handleBack} />
       <View style={styles.chatlistContainer}>
         {chatRooms.length > 0 ? (
           <FlatList
@@ -92,8 +94,7 @@ const Chat = (props) => {
           />
         ) : (
           <View style={styles.chatemptyContainer}>
-            <Text style={styles.chatemptyText}>No Chats!</Text>
-            <RegularText>Use this chat to communciate with others</RegularText>
+            <ActivityIndicator size="large" color={colours.placeholder} />
           </View>
         )}
       </View>

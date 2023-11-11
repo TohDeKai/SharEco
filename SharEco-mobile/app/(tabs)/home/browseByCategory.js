@@ -241,10 +241,31 @@ const browseByCategory = () => {
     console.log("Active tab: " + tabName);
   };
 
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, [user]);
+
   return (
     <SafeAreaContainer>
       <SearchBarHeader
-        onPressChat={() => {router.push("home/chats")}}
+        onPressChat={() => {
+          router.push({
+            pathname: "home/chats",
+            params: { userId: user.userId },
+          });
+        }}
         onPressWishlist={() => {router.push("home/wishlist")}}
         onPressBack={() => {
           console.log("going back");

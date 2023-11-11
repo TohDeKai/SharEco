@@ -87,10 +87,6 @@ const Content = ({ navigation, activeTab }) => {
   const businessItems = [];
   const privateItems = [];
 
-  const [spotlightIds, setSpotlightIds] = useState([]);
-  const spotlightedItems = [];
-  const nonSpotlightedItems = [];
-
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -146,46 +142,16 @@ const Content = ({ navigation, activeTab }) => {
         console.log(error.message);
       }
     }
-    async function fetchAllOngoingSpotlights() {
-      try {
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/spotlight`
-        );
-        if (response.status === 200) {
-          const spotlightIds = response.data.data.spotlight;
-          const spotlightArr = [];
-
-          for (const spotlightId of spotlightIds) {
-            spotlightArr.push(spotlightId.itemId);
-          }
-
-          setSpotlightIds(spotlightArr);
-        } else {
-          //Shouldn't come here
-          console.log("Failed to retrieve all ongoing spotlight ids");
-        }
-      } catch (error) {
-        console.log(error.message);
-      }
-    }
     fetchAllListings();
-    fetchAllOngoingSpotlights();
   }, []);
 
   for (const item of items) {
-    if (spotlightIds.includes(item.itemId)) {
-      spotlightedItems.push({ item: item, isSpotlight: true });
-    } else {
-      nonSpotlightedItems.push({ item: item, isSpotlight: false });
-    }
     if (item.isBusiness) {
       businessItems.push(item);
     } else {
       privateItems.push(item);
     }
   }
-
-  const combinedItems = [...spotlightedItems, ...nonSpotlightedItems];
 
   return (
     <View style={{ flex: 1 }}>
@@ -237,17 +203,11 @@ const Content = ({ navigation, activeTab }) => {
       {/* renders all listings */}
       {activeTab == "All" && (
         <FlatList
-          data={combinedItems}
+          data={items}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <ListingCard
-              item={item.item}
-              mine={false}
-              isSpotlighted={item.isSpotlight}
-            />
-          )}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -318,7 +278,6 @@ const home = () => {
     <SafeAreaContainer>
       <SearchBarHeader
         onPressChat={() => {
-          // router.push("home/chats");
           router.push({
             pathname: "home/chats",
             params: { userId: user.userId },

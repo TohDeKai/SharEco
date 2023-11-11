@@ -40,22 +40,22 @@ export const styles = StyleSheet.create({
   chatemptyText: { fontWeight: "bold", fontSize: 24, paddingBottom: 30 },
   messagingscreen: {
     flex: 1,
-    backgroundColor: colours.white,
+    height: "100%",
+    backgroundColor: colours.inputbackground,
   },
   messaginginputContainer: {
     width: "100%",
-    minHeight: 100,
     backgroundColor: colours.white,
-    paddingVertical: 30,
+    paddingVertical: 10,
     paddingHorizontal: 15,
     justifyContent: "center",
     flexDirection: "row",
   },
   messaginginput: {
-    padding: 15,
+    padding: 10,
     flex: 1,
     marginRight: 10,
-    borderRadius: 2,
+    borderRadius: 25,
     backgroundColor: colours.inputbackground,
   },
   messagingbuttonContainer: {
@@ -66,15 +66,13 @@ export const styles = StyleSheet.create({
   },
   mmessageWrapper: {
     width: "100%",
-    maxWidth: "90%",
     alignItems: "flex-start",
     marginBottom: 15,
-    marginHorizontal: 10,
   },
   mmessage: {
     maxWidth: "70%",
-    backgroundColor: "#f5ccc2",
-    padding: 15,
+    backgroundColor: colours.placeholder,
+    padding: 10,
     borderRadius: 10,
     marginBottom: 2,
     marginHorizontal: 5,
@@ -111,5 +109,10 @@ export const styles = StyleSheet.create({
   },
   ctime: {
     opacity: 0.5,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
   },
 });
