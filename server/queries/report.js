@@ -64,6 +64,7 @@ const createReport = async (
         responseImages,
         targetId,
         reportDate,
+        reportResult,
       ]
     );
     return result.rows[0];
