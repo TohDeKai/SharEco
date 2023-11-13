@@ -66,8 +66,6 @@ const changePassword = () => {
       contactNumber: user.contactNumber,
       userPhotoUrl: user.userPhotoUrl,
       isBanned: user.isBanned,
-      likedItem: user.likedItem,
-      wishList: user.wishList,
       displayName: user.displayName,
       aboutMe: user.aboutMe,
     };

@@ -132,8 +132,6 @@ const editProfile = () => {
       contactNumber: user.contactNumber,
       userPhotoUrl: imageResult ? "userId-" + user.userId : user.userPhotoUrl, // || image, If user has an image key, keep it. Else, update to new key that links to S3 image
       isBanned: user.isBanned,
-      likedItem: user.likedItem,
-      wishList: user.wishList,
       displayName: details.name || user.displayName, // Use the new value if provided, otherwise keep the original value
       aboutMe: details.aboutMe || user.aboutMe, // Use the new value if provided, otherwise keep the original value
     };

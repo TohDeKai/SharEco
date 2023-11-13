@@ -12,7 +12,8 @@ const spotlightdb = require("./queries/spotlight");
 const wishlistdb = require("./queries/wishlist");
 const impressiondb = require("./queries/impression");
 const transactiondb = require("./queries/transaction");
-const advertisementdb = require("./queries/advertisement")
+const advertisementdb = require("./queries/advertisement");
+const achievementdb = require("./queries/achievement");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -355,8 +356,6 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
       req.body.contactNumber,
       req.body.userPhotoUrl,
       req.body.isBanned,
-      req.body.likedItem,
-      req.body.wishList,
       req.body.displayName,
       req.body.aboutMe
     );
@@ -494,8 +493,6 @@ app.put("/api/v1/users/username/changePassword/:username", async (req, res) => {
       req.body.contactNumber,
       req.body.userPhotoUrl,
       req.body.isBanned,
-      req.body.likedItem,
-      req.body.wishList,
       req.body.displayName,
       req.body.aboutMe
     );
@@ -530,8 +527,6 @@ app.put("/api/v1/users/ban/username", async (req, res) => {
       user.contactNumber,
       user.userPhotoUrl,
       req.body.isBanned,
-      user.likedItem,
-      user.wishList,
       user.displayName,
       user.aboutMe
     );
@@ -2804,6 +2799,108 @@ app.get("/api/v1/likes/userId/:userId", async (req, res) => {
         status: "success",
         data: {
           likes: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+/**********************          Achievement Routes             **************************/
+// unlock badge
+app.post("/api/v1/achievement", async (req, res) => {
+  const { userId, badgeType, badgeTier, badgeProgress } = req.body;
+
+  try {
+    const achievement = await achievementdb.unlockBadge(userId, badgeType, badgeTier, badgeProgress);
+
+    // Send the newly created achievement as response
+    res.status(201).json({
+      status: "success",
+      data: {
+        achievement: achievement,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// update badge progress
+app.put("/api/v1/achievement/update/achievementId/:achievementId", async (req, res) => {
+  try {
+    const achievement = await achievementdb.updateProgress(
+      req.params.achievementId,
+      req.body.progressDelta
+    );
+
+    if (achievement) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievement: achievement,
+        },
+      });
+    } else {
+      // Handle the case where the achievement is not found
+      res.status(404).json({ error: "Achievement not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// upgrade badge tier
+app.put("/api/v1/achievement/upgrade/achievementId/:achievementId", async (req, res) => {
+  try {
+    const achievement = await achievementdb.upgradeBadge(
+      req.params.achievementId,
+      req.body.newBadgeTier
+    );
+
+    if (achievement) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievement: achievement,
+        },
+      });
+    } else {
+      // Handle the case where the achievement is not found
+      res.status(404).json({ error: "Achievement not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// get achievements by userId
+app.get("/api/v1/achievement/userId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const achievements = await achievementdb.getAchievementsByUserId(userId);
+
+    if (achievements.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievements: achievements,
+        },
+      });
+    } else {
+      // if achievements not found
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievements: [],
         },
       });
     }
