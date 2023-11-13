@@ -324,16 +324,6 @@ const home = () => {
           </View>
         </View>
 
-        <View style={styles.achievement}>
-          <View style={styles.badgesContainer}>
-            <RegularText typography="Subtitle2">
-              Badges
-            </RegularText>
-            <View style={styles.badges}>
-              <Image source={'../../components/badges/borrower-bronze.png'} style={{width: '21.09', height: '29.72'}} />
-            </View>
-          </View>
-        </View>
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
           <Content activeTab={activeTab} />
@@ -375,32 +365,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     backgroundColor: primary,
-  },
-  achievement: {
-    flex: 1,
-    marginHorizontal: 23,
-    marginVertical: 10,
-    borderRadius: 7,
-    shadowColor: inputbackground,
-    // shadowOffset: {
-    //   width: 2,
-    //   height: 4,
-    // },
-    // shadowRadius: 2,
-    // shadowOpacity: 0.1,
-    elevation: 1,
-  },
-  badgesContainer: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  badges: {
-    flex: 1,
-    flexDirection: "row",
-    gap: 6,
-    borderColor: inputbackground,
-    borderWidth: 1,
   },
   contentContainer: {
     flex: 4,
