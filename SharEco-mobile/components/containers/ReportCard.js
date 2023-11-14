@@ -58,8 +58,6 @@ const ReportCard = ({ report }) => {
         }
       } catch (error) {
         console.log(error.message);
-        console.log(report.reportResult);
-        console.log("TYPE: " + typeof report.reportResult);
       }
     }
 
