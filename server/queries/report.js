@@ -34,6 +34,21 @@ const getReportsByType = async (type) => {
   }
 };
 
+//Get all unresolved reports
+const getUnresolvedReports = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."report" 
+      WHERE "status" != $1`,
+      ['RESOLVED']
+    );
+    return result.rows;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 // Create new report
 const createReport = async (
   reportType,
@@ -168,4 +183,5 @@ module.exports = {
   updateSupportingImages,
   getReportsMadeByOrAgainstUser,
   getReportsById,
+  getUnresolvedReports
 };

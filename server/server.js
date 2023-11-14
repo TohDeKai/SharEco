@@ -2408,6 +2408,22 @@ app.get("/api/v1/revenue", async (req, res) => {
   }
 });
 
+// Get Week Revenue data
+app.get("/api/v1/weekRevenue", async (req, res) => {
+  try {
+    const revenueData = await transactiondb.getPastWeeksRevenue();
+    res.status(200).json({
+      status: "success",
+      data: {
+        revenue: revenueData
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //ADVERTISEMENT FUNCTIONALITIES
 //Create a new ad request
 app.post("/api/v1/createAd", async (req, res) => {
@@ -2899,6 +2915,23 @@ app.get("/api/v1/likes/userId/:userId", async (req, res) => {
 app.get("/api/v1/reports", async (req, res) => {
   try {
     const reports = await reportdb.getAllReports();
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// GET all unresolved reports
+app.get("/api/v1/reports/unresolved/", async (req, res) => {
+  try {
+    const reports = await reportdb.getUnresolvedReports();
     res.status(200).json({
       status: "success",
       data: {
