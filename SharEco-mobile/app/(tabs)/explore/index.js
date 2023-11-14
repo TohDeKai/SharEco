@@ -334,7 +334,6 @@ const explore = () => {
           EcoWallet
         </RegularText>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
         <ImageBackground
           source={require("./../../../assets/walletbg.png")}
           resizeMode="cover"
@@ -418,7 +417,6 @@ const explore = () => {
         </View>
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <TransactionsContent activeTab={activeTab} />
-      </ScrollView>
     </SafeAreaContainer>
   );
 };
