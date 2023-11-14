@@ -31,14 +31,14 @@ const unlockBadge = async (
 };
 
 // update badge progress
-const updateProgress = async (achievementId, progressDelta) => {
+const updateProgress = async (achievementId, badgeProgress) => {
   try {
     const result = await pool.query(
       `UPDATE "sharEco-schema"."achievement" 
-        SET "badgeProgress" = "badgeProgress" + $1 
+        SET "badgeProgress" = $1 
         WHERE "achievementId" = $2
         RETURNING *`,
-      [progressDelta, achievementId]
+      [badgeProgress, achievementId]
     );
     return result.rows[0];
   } catch (error) {

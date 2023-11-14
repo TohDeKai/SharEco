@@ -2834,7 +2834,7 @@ app.put("/api/v1/achievement/update/achievementId/:achievementId", async (req, r
   try {
     const achievement = await achievementdb.updateProgress(
       req.params.achievementId,
-      req.body.progressDelta
+      req.body.badgeProgress
     );
 
     if (achievement) {
