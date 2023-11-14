@@ -96,6 +96,7 @@ const Listing = ({}) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [itemData, setItemData] = useState([]);
+  const [showAllItems, setShowAllItems] = useState(false);
 
   const [selectedItemId, setSelectedItemId] = React.useState("");
   const [selectedUsername, setSelectedUsername] = React.useState("");
@@ -303,154 +304,179 @@ const Listing = ({}) => {
         >
           <h1>Listings</h1>
 
-          <Paper sx={{ width: "100%", overflow: "hidden" }}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                Filter by Category:
-              </Typography>
-              <Chip
-                label="All"
-                clickable
-                color={selectedCategoryFilter ? "default" : "primary"}
-                onClick={() => handleCategoryFilterChange(null)}
-                sx={{ mb: 1 }}
-              />
-              {categories.map((category) => (
+          <Chip
+            label="Show Item Reports"
+            onClick={() => setShowAllItems(false)}
+            color="primary"
+            variant={!showAllItems ? "filled" : "outlined"}
+            style={{ marginRight: 10, marginBottom: 30 }}
+          />
+          <Chip
+            label="Show All Items"
+            onClick={() => setShowAllItems(true)}
+            color="primary"
+            variant={showAllItems ? "filled" : "outlined"}
+            style={{ marginBottom: 30 }}
+          />
+
+          {showAllItems && (
+            <Paper sx={{ width: "100%", overflow: "hidden" }}>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  Filter by Category:
+                </Typography>
                 <Chip
-                  key={category}
-                  label={category}
+                  label="All"
                   clickable
-                  color={
-                    category === selectedCategoryFilter ? "primary" : "default"
-                  }
-                  onClick={() => handleCategoryFilterChange(category)}
-                  sx={{ mr: 1, mb: 1 }}
+                  color={selectedCategoryFilter ? "default" : "primary"}
+                  onClick={() => handleCategoryFilterChange(null)}
+                  sx={{ mb: 1 }}
                 />
-              ))}
-            </Box>
+                {categories.map((category) => (
+                  <Chip
+                    key={category}
+                    label={category}
+                    clickable
+                    color={
+                      category === selectedCategoryFilter
+                        ? "primary"
+                        : "default"
+                    }
+                    onClick={() => handleCategoryFilterChange(category)}
+                    sx={{ mr: 1, mb: 1 }}
+                  />
+                ))}
+              </Box>
 
-            <TableContainer sx={{ maxHeight: 440 }}>
-              <Table stickyHeader aria-label="sticky table">
-                <TableHead>
-                  <TableRow>
-                    {columns.map((column) => (
-                      <TableCell
-                        key={column.id}
-                        align={column.align}
-                        style={{ minWidth: column.minWidth }}
-                        onClick={() => handleSort(column.id)}
-                      >
-                        {column.label}
-                        {orderBy === column.id && (
-                          <span
-                            style={{ alignItems: "center", paddingLeft: "4px" }}
-                          >
-                            {order === "desc" ? (
-                              <SouthOutlinedIcon sx={{ fontSize: 16 }} />
-                            ) : (
-                              <NorthOutlinedIcon sx={{ fontSize: 16 }} />
-                            )}
-                          </span>
-                        )}
-                      </TableCell>
-                    ))}
-                    <TableCell>Disable/Enable</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {itemData
-                    .filter((row) =>
-                      selectedCategoryFilter
-                        ? row.category === selectedCategoryFilter
-                        : true
-                    )
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .sort((a, b) => {
-                      const aValue =
-                        parseFloat(a[orderBy].replace(/[^\d.-]/g, "")) || 0;
-                      const bValue =
-                        parseFloat(b[orderBy].replace(/[^\d.-]/g, "")) || 0;
-
-                      return order === "asc"
-                        ? aValue - bValue
-                        : bValue - aValue;
-                    })
-                    .map((row) => {
-                      return (
-                        <TableRow
-                          hover
-                          role="checkbox"
-                          tabIndex={-1}
-                          key={row.code}
-                          onClick={() =>
-                            handleClickDetails(
-                              row.itemId,
-                              row.itemDescription,
-                              row.rentalRateHourly,
-                              row.rentalRateDaily,
-                              row.images,
-                              row.collectionLocations,
-                              row.userId,
-                              row.itemTitle,
-                              row.itemOriginalPrice,
-                              row.depositFee,
-                              row.disabled,
-                              row.otherLocation,
-                              row.category,
-                              row.isBusiness
-                            )
-                          }
+              <TableContainer sx={{ maxHeight: 440 }}>
+                <Table stickyHeader aria-label="sticky table">
+                  <TableHead>
+                    <TableRow>
+                      {columns.map((column) => (
+                        <TableCell
+                          key={column.id}
+                          align={column.align}
+                          style={{ minWidth: column.minWidth }}
+                          onClick={() => handleSort(column.id)}
                         >
-                          {columns.map((column) => {
-                            const value = row[column.id];
-                            return (
-                              <TableCell key={column.id} align={column.align}>
-                                {value}
-                              </TableCell>
-                            );
-                          })}
-                          <TableCell>
-                            {row.disabled ? (
-                              <Button
-                                variant="outlined"
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent click event from propagating
-                                  handleEnableClickOpen(
-                                    row.itemTitle,
-                                    row.itemId
-                                  );
-                                }}
-                              >
-                                Enable Item
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="contained"
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent click event from propagating
-                                  handleClickOpen(row.itemTitle, row.itemId);
-                                }}
-                              >
-                                Disable Item
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[10, 25, 100]}
-              component="div"
-              count={itemData.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </Paper>
+                          {column.label}
+                          {orderBy === column.id && (
+                            <span
+                              style={{
+                                alignItems: "center",
+                                paddingLeft: "4px",
+                              }}
+                            >
+                              {order === "desc" ? (
+                                <SouthOutlinedIcon sx={{ fontSize: 16 }} />
+                              ) : (
+                                <NorthOutlinedIcon sx={{ fontSize: 16 }} />
+                              )}
+                            </span>
+                          )}
+                        </TableCell>
+                      ))}
+                      <TableCell>Disable/Enable</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {itemData
+                      .filter((row) =>
+                        selectedCategoryFilter
+                          ? row.category === selectedCategoryFilter
+                          : true
+                      )
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .sort((a, b) => {
+                        const aValue =
+                          parseFloat(a[orderBy].replace(/[^\d.-]/g, "")) || 0;
+                        const bValue =
+                          parseFloat(b[orderBy].replace(/[^\d.-]/g, "")) || 0;
+
+                        return order === "asc"
+                          ? aValue - bValue
+                          : bValue - aValue;
+                      })
+                      .map((row) => {
+                        return (
+                          <TableRow
+                            hover
+                            role="checkbox"
+                            tabIndex={-1}
+                            key={row.code}
+                            onClick={() =>
+                              handleClickDetails(
+                                row.itemId,
+                                row.itemDescription,
+                                row.rentalRateHourly,
+                                row.rentalRateDaily,
+                                row.images,
+                                row.collectionLocations,
+                                row.userId,
+                                row.itemTitle,
+                                row.itemOriginalPrice,
+                                row.depositFee,
+                                row.disabled,
+                                row.otherLocation,
+                                row.category,
+                                row.isBusiness
+                              )
+                            }
+                          >
+                            {columns.map((column) => {
+                              const value = row[column.id];
+                              return (
+                                <TableCell key={column.id} align={column.align}>
+                                  {value}
+                                </TableCell>
+                              );
+                            })}
+                            <TableCell>
+                              {row.disabled ? (
+                                <Button
+                                  variant="outlined"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent click event from propagating
+                                    handleEnableClickOpen(
+                                      row.itemTitle,
+                                      row.itemId
+                                    );
+                                  }}
+                                >
+                                  Enable Item
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="contained"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent click event from propagating
+                                    handleClickOpen(row.itemTitle, row.itemId);
+                                  }}
+                                >
+                                  Disable Item
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={itemData.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </Paper>
+          )}
         </Box>
 
         {/* Dialog for Disable Item */}
