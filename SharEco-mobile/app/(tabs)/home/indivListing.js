@@ -30,6 +30,7 @@ import {
   SecondaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
+import BadgeIcon from "../../../components/BadgeIcon";
 const { white, yellow, red, black, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
@@ -288,6 +289,9 @@ const ItemInformation = () => {
                       ({ratings.numberOfRatings || 0})
                     </RegularText>
                   </View>
+                </View>
+                <View style={style.badges}>
+                    <BadgeIcon type={"borrower"} tier={"bronze"} size={"small"} />
                 </View>
               </View>
             </Pressable>
@@ -628,4 +632,11 @@ const style = StyleSheet.create({
     paddingHorizontal: 5,
     justifyContent: "center",
   },
+  badges: {
+    flexWrap: "wrap",
+    gap: 4,
+    justifyContent: "space-between",
+    alignContent: "center",
+    alignItems: "center",
+  }
 });
