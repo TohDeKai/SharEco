@@ -188,9 +188,14 @@ const transferScreen = () => {
                 style={{ marginBottom: 10 }}
               />
 
-              <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
-                {message || " "}
-              </MessageBox>
+              {message && (
+                <MessageBox
+                  style={{ marginTop: 10 }}
+                  success={isSuccessMessage}
+                >
+                  {message}
+                </MessageBox>
+              )}
               <RoundedButton
                 typography={"B1"}
                 color={white}

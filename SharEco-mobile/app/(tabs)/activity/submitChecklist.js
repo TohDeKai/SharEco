@@ -142,10 +142,13 @@ const submitChecklist = () => {
         if (itemResponse.status === 200) {
           const itemData = itemResponse.data.data.item;
           const numOfCheckboxes = 0;
-          
-          if (itemData.checkListCriteria && itemData.checklistCriteria.length > 0) {
+
+          if (
+            itemData.checkListCriteria &&
+            itemData.checklistCriteria.length > 0
+          ) {
             numOfCheckboxes = itemData.checklistCriteria.length;
-          } 
+          }
           setItem(itemData);
           setCheckboxValues(new Array(numOfCheckboxes).fill(false));
         }
@@ -179,11 +182,12 @@ const submitChecklist = () => {
     timeDifferenceMs = -timeDifferenceMs;
 
     let perHourlyFee = 0;
-    if (rental.isHourly && item && item.rentalRateHourly) { //waits for item to load
-      perHourlyFee = parseFloat(item.rentalRateHourly.replace(/\$/g, ''));
-      console.log("Hourly Fee: " + item.rentalRateHourly)
+    if (rental.isHourly && item && item.rentalRateHourly) {
+      //waits for item to load
+      perHourlyFee = parseFloat(item.rentalRateHourly.replace(/\$/g, ""));
+      console.log("Hourly Fee: " + item.rentalRateHourly);
     } else if (!rental.isHourly && item && item.rentalRateDaily) {
-      perHourlyFee = parseFloat(item.rentalRateDaily.replace(/\$/g, '')) / 24;
+      perHourlyFee = parseFloat(item.rentalRateDaily.replace(/\$/g, "")) / 24;
       console.log("Prorated Hourly Fee: " + item.rentalRateDaily);
     }
 
@@ -201,9 +205,15 @@ const submitChecklist = () => {
 
   // Calculate numOfMonths, numOfDays, numOfHours, and numOfMinutes
   const numOfMonths = Math.floor(timeDifferenceMs / (1000 * 60 * 60 * 24 * 30));
-  const numOfDays = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
-  const numOfHours = Math.floor((timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const numOfMinutes = Math.floor((timeDifferenceMs % (1000 * 60 * 60)) / (1000 * 60));
+  const numOfDays = Math.floor(
+    (timeDifferenceMs % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24)
+  );
+  const numOfHours = Math.floor(
+    (timeDifferenceMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
+  const numOfMinutes = Math.floor(
+    (timeDifferenceMs % (1000 * 60 * 60)) / (1000 * 60)
+  );
 
   let countdown = "";
 
@@ -411,66 +421,74 @@ const submitChecklist = () => {
         );
 
         if (statusResponse.status === 200) {
-
           if (isLate) {
-             //late handover fee paid from borrower to admin 
+            //late handover fee paid from borrower to admin
             const lateHandoverPaymentData = {
               senderId: rental.borrowerId,
               amount: lateFees,
-              transactionType: "LATE_HANDOVER_PAYMENT"
-            }
+              transactionType: "LATE_HANDOVER_PAYMENT",
+            };
             const lateHandoverPaymentResponse = await axios.post(
               `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
               lateHandoverPaymentData
-            )
+            );
 
             //compensate late handover fee to lender
             const lateHandoverRefundData = {
               receiverId: rental.lenderId,
               amount: (lateFees * 0.75).toFixed(2),
-              transactionType: "LATE_HANDOVER_REFUND"
-            }
+              transactionType: "LATE_HANDOVER_REFUND",
+            };
             const lateHandoverRefundResponse = await axios.post(
               `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
               lateHandoverRefundData
-            )
+            );
 
             if (lateHandoverPaymentResponse.status === 200) {
-              console.log("Late handover fee successfully paid to admin: " + lateFees);
+              console.log(
+                "Late handover fee successfully paid to admin: " + lateFees
+              );
             }
             if (lateHandoverRefundResponse.status === 200) {
-              console.log("Late handover fee reimbursed to lender: " +  (lateFees * 0.75).toFixed(2));
+              console.log(
+                "Late handover fee reimbursed to lender: " +
+                  (lateFees * 0.75).toFixed(2)
+              );
             }
           }
 
           if (checklistFormType == "End Rental") {
-            //release fees to lender ecowallet upon complete rental 
-            const platformFee = (parseFloat(rental.rentalFee.replace(/\$/g, '')) * 0.05).toFixed(2);
-            const netEarnings = (parseFloat(rental.rentalFee.replace(/\$/g, '')) - platformFee).toFixed(2);
+            //release fees to lender ecowallet upon complete rental
+            const platformFee = (
+              parseFloat(rental.rentalFee.replace(/\$/g, "")) * 0.05
+            ).toFixed(2);
+            const netEarnings = (
+              parseFloat(rental.rentalFee.replace(/\$/g, "")) - platformFee
+            ).toFixed(2);
 
             const transactionData = {
               receiverId: rental.lenderId,
               amount: netEarnings,
-              transactionType: "RENTAL_INCOME"
+              transactionType: "RENTAL_INCOME",
             };
 
             const transactionResponse = await axios.post(
               `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
               transactionData
-            )
-            
+            );
+
             //refund deposit
-            if (parseFloat(rental.depositFee.replace(/\$/g, '')) > 0) {
+            if (parseFloat(rental.depositFee.replace(/\$/g, "")) > 0) {
               const refundData = {
                 receiverId: rental.borrowerId,
                 amount: rental.depositFee,
-                transactionType: "DEPOSIT_REFUND"
+                transactionType: "DEPOSIT_REFUND",
               };
-  
+
               const refundResponse = await axios.post(
                 `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
                 refundData
-              )
+              );
               if (refundResponse.status === 200) {
                 console.log("Deposit refunded successfully");
               }
@@ -666,7 +684,7 @@ const submitChecklist = () => {
             
 
           } else if (checklistFormType == "Start Rental") {
-            console.log("Rental started")
+            console.log("Rental started");
           }
           console.log(`Status changed to ${nextRentalStatus}`);
           setImages([null, null, null, null, null]);
@@ -731,29 +749,26 @@ const submitChecklist = () => {
                       relevant boxes
                     </RegularText>
                   </View>
-                  ) : ""
-                }
-                
-
-                {item && item.checklistCriteria ? (
-                  item.checklistCriteria.map((criterion, index) => (
-                    <View>
-                      
-                      <View key={index} style={styles.checkboxContainer}>
-                        <Checkbox
-                          value={checkboxValues[index] || false}
-                          onValueChange={(newValue) =>
-                            handleCheckboxChange(newValue, index)
-                          }
-                          color={primary}
-                        />
-                        <RegularText>{criterion}</RegularText>
-                      </View>
-                    </View>
-                  ))
                 ) : (
                   ""
                 )}
+
+                {item && item.checklistCriteria
+                  ? item.checklistCriteria.map((criterion, index) => (
+                      <View>
+                        <View key={index} style={styles.checkboxContainer}>
+                          <Checkbox
+                            value={checkboxValues[index] || false}
+                            onValueChange={(newValue) =>
+                              handleCheckboxChange(newValue, index)
+                            }
+                            color={primary}
+                          />
+                          <RegularText>{criterion}</RegularText>
+                        </View>
+                      </View>
+                    ))
+                  : ""}
 
                 <RegularText typography="H3" style={styles.headerText}>
                   Report Damages
@@ -791,15 +806,16 @@ const submitChecklist = () => {
                   </View>
                 )}
 
-                <MessageBox
-                  style={{ marginTop: 10 }}
-                  success={isSuccessMessage}
-                >
-                  {message || " "}
-                </MessageBox>
-                
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
+
                 {isLate && (
-                  
                   <View style={styles.pricing}>
                     {/* {<View style={styles.pricingRow}>
                       <RegularText typography="Subtitle">You are {countdown} late</RegularText>
@@ -816,7 +832,9 @@ const submitChecklist = () => {
                     </View>
                     <View style={styles.pricingRow}>
                       <View>
-                        <RegularText typography="B1">Late Fee Per Hour</RegularText>
+                        <RegularText typography="B1">
+                          Late Fee Per Hour
+                        </RegularText>
                       </View>
                       <View>
                         <RegularText typography="B1">
@@ -826,12 +844,12 @@ const submitChecklist = () => {
                     </View>
                     <View style={styles.pricingRow}>
                       <View>
-                        <RegularText typography="B1">Total Late Handover Fee</RegularText>
+                        <RegularText typography="B1">
+                          Total Late Handover Fee
+                        </RegularText>
                       </View>
                       <View>
-                        <RegularText typography="B1">
-                          ${lateFees}
-                        </RegularText>
+                        <RegularText typography="B1">${lateFees}</RegularText>
                       </View>
                     </View>
                   </View>

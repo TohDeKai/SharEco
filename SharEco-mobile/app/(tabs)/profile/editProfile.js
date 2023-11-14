@@ -269,12 +269,14 @@ const editProfile = () => {
                   scrollEnabled={false}
                   height={80}
                 />
-                <MessageBox
-                  style={{ marginTop: 50 }}
-                  success={isSuccessMessage}
-                >
-                  {message || " "}
-                </MessageBox>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 50 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
                 <RoundedButton
                   typography={"B1"}
                   color={white}

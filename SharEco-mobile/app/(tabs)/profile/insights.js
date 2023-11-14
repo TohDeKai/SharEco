@@ -30,8 +30,17 @@ import {
   PrimaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
-const { primary, placeholder, white, yellow, dark, black, secondary, inputbackground, red } =
-  colours;
+const {
+  primary,
+  placeholder,
+  white,
+  yellow,
+  dark,
+  black,
+  secondary,
+  inputbackground,
+  red,
+} = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 //const[listingItemId, setListingItemId] = useState();
 
@@ -64,7 +73,7 @@ const Impressions = () => {
         );
         const totalEarningsResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/rentalEarnings/itemId/${itemId}`
-        )
+        );
         const itemResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
         );
@@ -76,16 +85,20 @@ const Impressions = () => {
           setImpressions(impressionsResponse.data.data.impressions);
         }
         if (distinctImpressionsResponse.status === 200) {
-          setDistinctImpressions(distinctImpressionsResponse.data.data.impressions);  
+          setDistinctImpressions(
+            distinctImpressionsResponse.data.data.impressions
+          );
         }
         if (totalEarningsResponse.status === 200) {
-          setTotalEarnings(totalEarningsResponse.data.data.totalEarnings[0].totalEarnings);
+          setTotalEarnings(
+            totalEarningsResponse.data.data.totalEarnings[0].totalEarnings
+          );
         }
       } catch (error) {
         console.log(error.message);
       }
     }
-    fetchInsights(); 
+    fetchInsights();
   }, []);
 
   const barData = [];
@@ -117,39 +130,70 @@ const Impressions = () => {
   // Set the label for today as 'Today'.
   const todayIndex = dayLabels.indexOf(today.getDate());
   if (todayIndex !== -1) {
-    barData[todayIndex].label = 'Today';
+    barData[todayIndex].label = "Today";
   }
 
-  const percentageRecouped = ((parseFloat(totalEarnings.replace('$', '')) / parseFloat(itemOriginalPrice.replace('$', ''))) * 100).toFixed(2);
-  const fullPieData = [
-    {value: 1, color: secondary}
-  ]
-  const pieData = percentageRecouped < 100 ? 
-    [
-      { value: parseFloat(percentageRecouped), color: primary, focused: true },
-      { value: 100 - parseFloat(percentageRecouped), color: placeholder }
-    ] 
-    : fullPieData;
+  const percentageRecouped = (
+    (parseFloat(totalEarnings.replace("$", "")) /
+      parseFloat(itemOriginalPrice.replace("$", ""))) *
+    100
+  ).toFixed(2);
+  const fullPieData = [{ value: 1, color: secondary }];
+  const pieData =
+    percentageRecouped < 100
+      ? [
+          {
+            value: parseFloat(percentageRecouped),
+            color: primary,
+            focused: true,
+          },
+          { value: 100 - parseFloat(percentageRecouped), color: placeholder },
+        ]
+      : fullPieData;
 
   return (
-    <View style={{display:"flex"}}>
-      <RegularText typography="H3" style={{marginBottom: 20}}>All Time Impressions</RegularText>
-      <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
-        <View style={{alignItems: "center"}}>
-          <Ionicons name="people" size={18} color={black}/>
-          <RegularText>{impressions && impressions[0] ? impressions.length : 0}</RegularText>
-          <RegularText typography="Subtitle">Impressions</RegularText>
+    <View style={{ display: "flex" }}>
+      <RegularText typography="H3" style={{ marginBottom: 20 }}>
+        All Time Impressions
+      </RegularText>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View style={styles.analyticsContainer}>
+          <Ionicons
+            name="people"
+            size={30}
+            color={primary}
+            style={{ marginRight: 10 }}
+          />
+          <View>
+            <RegularText typography="H4">Impressions</RegularText>
+            <RegularText typography="H2">
+              {impressions && impressions[0] ? impressions.length : 0}
+            </RegularText>
+          </View>
         </View>
-        <View style={{alignItems: "center"}}>
-          <Ionicons name="person" size={18} color={black}/>
-          <RegularText>{distinctImpressions && distinctImpressions[0] ? distinctImpressions.length : 0}</RegularText>
-          <RegularText typography="Subtitle">Distinct Impressions</RegularText>
+        <View style={styles.analyticsContainer}>
+          <Ionicons
+            name="person"
+            size={24}
+            color={primary}
+            style={{ marginRight: 10 }}
+          />
+          <View>
+            <RegularText typography="H4">Distinct</RegularText>
+            <RegularText typography="H2">
+              {distinctImpressions && distinctImpressions[0]
+                ? distinctImpressions.length
+                : 0}
+            </RegularText>
+          </View>
         </View>
       </View>
 
-      <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Impressions</RegularText>
-      <BarChart 
-        data={barData} 
+      <RegularText typography="H3" style={{ marginBottom: 20 }}>
+        This Week's Impressions
+      </RegularText>
+      <BarChart
+        data={barData}
         vertical
         frontColor={primary}
         isAnimated
@@ -160,58 +204,86 @@ const Impressions = () => {
         initialSpacing={0}
       />
 
-      <RegularText typography="H3" style={{marginTop: 50, marginBottom: 20}}>Revenue</RegularText>      
+      <RegularText typography="H3" style={{ marginTop: 50 }}>
+        Revenue
+      </RegularText>
+      <View style={styles.revenueContainer}>
+        <View style={styles.pricingRow}>
+          <RegularText typography="H4">Total Earnings:</RegularText>
+          <RegularText>
+            {" "}
+            ${parseFloat(totalEarnings.replace("$", "")).toFixed(2)}
+          </RegularText>
+        </View>
 
-      <View style={{alignItems:"center", justifyContent:"center"}}>
+        <View style={styles.pricingRow}>
+          <RegularText typography="H4">Item Original Price: </RegularText>
+          <RegularText>
+            {" "}
+            ${parseFloat(itemOriginalPrice.replace("$", "")).toFixed(2)}
+          </RegularText>
+        </View>
+
+        <View style={styles.pricingRow}>
+          <RegularText typography="H4">Profit: </RegularText>
+          {parseFloat(totalEarnings.replace("$", "")) -
+            parseFloat(itemOriginalPrice.replace("$", "")) >=
+          0 ? (
+            <RegularText>
+              {" "}
+              $
+              {(
+                parseFloat(totalEarnings.replace("$", "")) -
+                parseFloat(itemOriginalPrice.replace("$", ""))
+              ).toFixed(2)}
+            </RegularText>
+          ) : (
+            <RegularText
+              style={{
+                color:
+                  parseFloat(totalEarnings.replace("$", "")) -
+                    parseFloat(itemOriginalPrice.replace("$", "")) <
+                  0
+                    ? "red"
+                    : "black",
+              }}
+            >
+              -$
+              {Math.abs(
+                parseFloat(totalEarnings.replace("$", "")) -
+                  parseFloat(itemOriginalPrice.replace("$", ""))
+              ).toFixed(2)}
+            </RegularText>
+          )}
+        </View>
+      </View>
+
+      <View style={{ alignItems: "center", justifyContent: "center" }}>
         <PieChart
           donut
           radius={140}
           innerRadius={100}
-          textSize={20} 
+          textSize={20}
           data={pieData}
           sectionAutoFocus
         />
-        <View style={{alignItems:"center", justifyContent:"center", position: 'absolute', top: 140}}>
-          <RegularText
-            typography="H3"
-          >
+        <View
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            position: "absolute",
+            top: 140,
+          }}
+        >
+          <RegularText typography="H3">
             {parseFloat(percentageRecouped).toFixed(0)}%
           </RegularText>
           <RegularText>Cost Recouped</RegularText>
         </View>
       </View>
-      <View style={{marginTop: 20}}>
-        <View style={style.pricingRow}>
-          <RegularText typography="H4">Total Earnings:</RegularText>
-          <RegularText> ${parseFloat(totalEarnings.replace('$', '')).toFixed(2)}</RegularText>
-        </View>
-
-        <View style={style.pricingRow}>
-          <RegularText typography="H4">Item Original Price: </RegularText>
-          <RegularText> ${parseFloat(itemOriginalPrice.replace('$', '')).toFixed(2)}</RegularText>
-        </View>
-
-        <View style={style.pricingRow}>
-          <RegularText typography="H4">Profit: </RegularText>
-          {parseFloat(totalEarnings.replace('$', '')) - parseFloat(itemOriginalPrice.replace('$', '')) >= 0 ? (
-            <RegularText> ${(
-              parseFloat(totalEarnings.replace('$', '')) - parseFloat(itemOriginalPrice.replace('$', ''))
-            ).toFixed(2)}</RegularText>
-          ) : (
-            <RegularText style={{ color: parseFloat(totalEarnings.replace('$', '')) - parseFloat(itemOriginalPrice.replace('$', '')) < 0 ? 'red' : 'black' }}>
-              -${(
-                Math.abs(
-                  parseFloat(totalEarnings.replace('$', '')) - parseFloat(itemOriginalPrice.replace('$', ''))
-                ).toFixed(2)
-              )}
-            </RegularText>
-          )}
-        </View>
-
-      </View>
     </View>
-  )
-}
+  );
+};
 
 const ItemInformation = () => {
   const [listingItem, setListingItem] = useState({});
@@ -256,41 +328,45 @@ const ItemInformation = () => {
   } = listingItem;
 
   return (
-    <View style={style.listingDetails}>
-      <Image
-        source={{ uri: images ? images[0] : null }}
-        style={style.image}
-      />
-
+    <View style={styles.listingDetails}>
+      <Image source={{ uri: images ? images[0] : null }} style={styles.image} />
       <View>
         <RegularText
           typography="H4"
           numberOfLines={1}
           ellipsizeMode="tail"
-          style={style.overflowEllipsis}
+          style={styles.overflowEllipsis}
         >
           {itemTitle}
         </RegularText>
-        {rentalRateHourly && (
-          <RegularText
-            typography="Subtitle"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={style.overflowEllipsis}
-          >
-            {rentalRateHourly} / Hour
-          </RegularText>
-        )}
-        {rentalRateDaily && (
-          <RegularText
-            typography="Subtitle"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={style.overflowEllipsis}
-          >
-            {rentalRateDaily}/ Day
-          </RegularText>
-        )}
+        <Text style={styles.headerRates}>
+          {rentalRateHourly !== "$0.00" && rentalRateDaily !== "$0.00" && (
+            <Text>
+              <View style={styles.rateSpacing}>
+                <RegularText typography="B1">{rentalRateHourly}</RegularText>
+                <RegularText typography="Subtitle">/hour</RegularText>
+              </View>
+              <View style={styles.rateSpacing}>
+                <RegularText typography="B1">{rentalRateDaily}</RegularText>
+                <RegularText typography="Subtitle">/day</RegularText>
+              </View>
+            </Text>
+          )}
+          {rentalRateHourly == "$0.00" && (
+            <Text>
+              <RegularText typography="B1">{rentalRateDaily}</RegularText>
+              <RegularText typography="Subtitle">/day</RegularText>
+            </Text>
+          )}
+          {rentalRateDaily == "$0.00" && (
+            <Text>
+              <RegularText typography="B1" style={styles.rateSpacing}>
+                {rentalRateHourly}
+              </RegularText>
+              <RegularText typography="Subtitle">/hour</RegularText>
+            </Text>
+          )}
+        </Text>
       </View>
     </View>
   );
@@ -303,10 +379,12 @@ const insights = () => {
 
   return (
     <SafeAreaContainer>
-      <Header title="Insights" action="back" onPress={handleBack}/>
-      <ScrollView style={style.content}>
-        <ItemInformation/>
-        <Impressions/>
+      <Header title="Insights" action="back" onPress={handleBack} />
+      <ItemInformation />
+      <ScrollView>
+        <View style={styles.content}>
+          <Impressions />
+        </View>
       </ScrollView>
     </SafeAreaContainer>
   );
@@ -316,20 +394,32 @@ export default insights;
 
 const windowWidth = Dimensions.get("window").width;
 
-
-
-const style = StyleSheet.create({
-  imgContainer: {
-    width: windowWidth,
-    aspectRatio: 1,
+const styles = StyleSheet.create({
+  listingDetails: {
+    height: 70,
+    backgroundColor: white,
+    borderBottomWidth: 1,
+    borderColor: inputbackground,
+    paddingHorizontal: viewportWidthInPixels(5),
+    flexDirection: "row",
+    alignItems: "center",
   },
   image: {
     width: 50,
     height: 50,
-    marginLeft: 3,
-    marginRight: viewportWidthInPixels(3),
-    marginVertical: viewportWidthInPixels(3),
-    justifyContent: "flex-start",
+    marginRight: 20,
+    borderRadius: 2,
+  },
+  headerRates: {
+    marginTop: 5,
+  },
+  rateSpacing: {
+    paddingRight: 5,
+    flexDirection: "row",
+  },
+  overflowEllipsis: {
+    overflow: "hidden",
+    maxWidth: viewportWidthInPixels(70),
   },
   content: {
     flex: 1,
@@ -338,19 +428,25 @@ const style = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
   },
-  listingDetails: {
-    height: 80,
+  pricingRow: {
+    flexDirection: "row",
+  },
+  analyticsContainer: {
+    backgroundColor: inputbackground,
     flexDirection: "row",
     alignItems: "center",
-    display: "flex",
+    borderRadius: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginBottom: 30,
+    width: viewportWidthInPixels(40),
   },
-  overflowEllipsis: {
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    maxWidth: viewportWidthInPixels(40),
-  },
-  pricingRow: {
-    flexDirection: "row"
+  revenueContainer: {
+    marginTop: 20,
+    gap: 10,
+    backgroundColor: inputbackground,
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   }
 });

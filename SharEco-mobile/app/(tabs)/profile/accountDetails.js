@@ -117,7 +117,10 @@ const accountDetails = () => {
           }
 
           // Check if phoneNumber is defined and has a length property
-          if (typeof values.phoneNumber !== 'undefined' && values.phoneNumber.length !== 8) {
+          if (
+            typeof values.phoneNumber !== "undefined" &&
+            values.phoneNumber.length !== 8
+          ) {
             setMessage("Phone number must be 8 digits long");
             setIsSuccessMessage(false);
             return;
@@ -131,7 +134,11 @@ const accountDetails = () => {
           }
 
           //checks for empty fields
-          if (values.email === "" || (typeof values.phoneNumber !== 'undefined' && values.phoneNumber === "")) {
+          if (
+            values.email === "" ||
+            (typeof values.phoneNumber !== "undefined" &&
+              values.phoneNumber === "")
+          ) {
             setMessage("Please fill in all fields");
             setIsSuccessMessage(false);
           } else {
@@ -159,9 +166,14 @@ const accountDetails = () => {
                 value={values.phoneNumber}
                 onChangeText={handleChange("phoneNumber")}
               />
-              <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
-                {message || " "}
-              </MessageBox>
+              {message && (
+                <MessageBox
+                  style={{ marginTop: 10 }}
+                  success={isSuccessMessage}
+                >
+                  {message}
+                </MessageBox>
+              )}
             </View>
             <RoundedButton
               typography={"B1"}

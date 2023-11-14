@@ -50,6 +50,8 @@ const ItemInformation = () => {
   const [user, setUser] = useState("");
   const params = useLocalSearchParams();
   const { itemId } = params;
+  const [hasOngoingSpotlight, setHasOngoingSpotlight] = useState(false);
+  const [spotlightEndDate, setSpotlightEndDate] = useState();
   //setListingItemId({itemId});
   const handleBack = () => {
     router.back();
@@ -75,6 +77,23 @@ const ItemInformation = () => {
       } catch (error) {
         console.log(error.message);
       }
+      try {
+        const spotlightData = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/spotlight/${itemId}`
+        );
+        if (spotlightData.status === 200) {
+          const spotlight = spotlightData.data.data.spotlight;
+          if (spotlight != null ) {
+            setHasOngoingSpotlight(true);
+            setSpotlightEndDate(spotlight.endDate);
+          }
+        } else {
+          // Shouldn't come here
+          console.log("Failed to retrieve items");
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
     }
     fetchUserData();
   }, []);
@@ -88,17 +107,9 @@ const ItemInformation = () => {
     rentalRateDaily,
     collectionLocations,
     depositFee,
-    usersLikedCount,
+    otherLocation,
     userId,
   } = listingItem;
-
-  console.log(collectionLocations);
-  const formattedLocations = collectionLocations
-    ? collectionLocations.join(", ")
-    : collectionLocations;
-  console.log(formattedLocations);
-
-  // const collectionLocationValues = Object.values(collectionLocations);
 
   return (
     <View>
@@ -108,9 +119,14 @@ const ItemInformation = () => {
       >
         <View style={style.imgContainer}>
           <View style={style.header}>
-            <Header action="back" onPress={handleBack} />
+            <Ionicons
+              name="chevron-back-outline"
+              size={28}
+              color={black}
+              onPress={handleBack}
+            />
           </View>
-          <View style={{ marginTop: -31 }}>
+          <View style={{ marginTop: -70 }}>
             <CustomSlider data={images} />
           </View>
         </View>
@@ -122,24 +138,49 @@ const ItemInformation = () => {
               marginBottom: viewportHeightInPixels(2),
             }}
           >
-            <PrimaryButton
-              typography="H4"
-              color={white}
-              onPress={() => {
-                router.push({
-                  pathname: "profile/spotlight",
-                  params: { itemId: itemId },
-                });
-              }}
-              style={{
-                width: viewportWidthInPixels(30),
+            {hasOngoingSpotlight ? (
+              <View style={{
+                width: viewportWidthInPixels(50),
                 alignSelf: "flex-end",
-                height: 40,
+                height: 46,
+                borderRadius:10,
+                padding:5,
                 backgroundColor: dark,
-              }}
-            >
-              Spotlight
-            </PrimaryButton>
+                alignItems:"center"
+              }}>
+                <RegularText typography="H4" color={white}>
+                  Spotlighted 
+                </RegularText>
+                <RegularText typography="Subtitle" color={white}>
+                until {new Date(spotlightEndDate).toLocaleDateString("en-GB", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+                </RegularText>
+              </View>
+            ) : (
+              <PrimaryButton
+                typography="H4"
+                color={white}
+                onPress={() => {
+                  router.push({
+                    pathname: "profile/spotlight",
+                    params: { itemId: itemId },
+                  });
+                }}
+                style={{
+                  width: viewportWidthInPixels(30),
+                  alignSelf: "flex-end",
+                  height: 40,
+                  backgroundColor: dark,
+                }}
+              >
+                Spotlight
+              </PrimaryButton>
+            )}
           </View>
 
           <View style={style.title}>
@@ -206,9 +247,18 @@ const ItemInformation = () => {
             <RegularText typography="H3" style={style.topic}>
               Collection & Return Locations
             </RegularText>
-            <RegularText typography="B2" style={style.content}>
-              {formattedLocations}
-            </RegularText>
+            <View style={style.locationContainer}>
+              {collectionLocations &&
+                collectionLocations.map((item) => (
+                  <View style={style.locationButton} key={item}>
+                    <RegularText typography="B2">{item}</RegularText>
+                  </View>
+                ))}
+            </View>
+            <View style={{ marginBottom: 8 }}>
+              <RegularText typography="H4">Additional Comments</RegularText>
+            </View>
+            <RegularText typography="B2">{otherLocation}</RegularText>
           </View>
         </View>
       </ScrollView>
@@ -337,6 +387,10 @@ const style = StyleSheet.create({
   header: {
     top: 30,
     zIndex: 100,
+    marginHorizontal: viewportWidthInPixels(5),
+    marginVertical: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   container: {
     backgroundColor: white,
@@ -440,5 +494,20 @@ const style = StyleSheet.create({
     flex: 0.5,
     paddingHorizontal: 5,
     justifyContent: "center",
+  },
+  locationButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 10,
+    marginRight: 6,
+    borderRadius: 15,
+    borderColor: black,
+    borderWidth: 1,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 7,
+    marginBottom: 10,
   },
 });

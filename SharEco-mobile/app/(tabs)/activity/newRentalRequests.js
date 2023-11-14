@@ -76,9 +76,52 @@ const newRentalRequests = () => {
     return false;
   }  
 
-  const newRentalRequests = userLendings
-    .filter((rental) => rental.status === "PENDING")
-    .sort((a, b) => new Date(a.creationDate) - new Date(b.creationDate));
+  const handleExpiredRentalReq = async (rental) => {
+    try {
+      const response = await axios.patch(
+        `http://${BASE_URL}:4000/api/v1/rental/status/${rental.rentalId}`,
+        { status: "REJECTED" }
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  function shouldAcceptRental(rental) {
+    const createdDate = new Date(rental.creationDate);
+    const startDate = new Date(rental.startDate);
+    const currentDate = new Date();
+  
+    // Calculate the threshold date
+    let thresholdDate = new Date(createdDate);
+    thresholdDate.setDate(createdDate.getDate() + 3);
+
+    if (startDate < thresholdDate) {
+      thresholdDate = startDate;
+    }
+  
+    // Check if the rental is within the threshold
+    if (currentDate <= thresholdDate) {
+      return true;
+    }
+  
+    return false;
+  }  
+
+  // const newRentalRequests = userLendings
+  //   .filter((rental) => rental.status === "PENDING")
+  //   .sort((a, b) => new Date(a.creationDate) - new Date(b.creationDate));
+
+  const newRentalRequests = userLendings.filter((rental) => {
+    if (rental.status === "PENDING" && shouldAcceptRental(rental)) {
+      return true;
+    } else if (rental.status === "PENDING") {
+      handleExpiredRentalReq(rental);
+      return false;
+    } else {
+      return false;
+    }
+  }).sort((a, b) => new Date(a.creationDate) - new Date(b.creationDate));  
 
   const handleBack = () => {
     router.back();

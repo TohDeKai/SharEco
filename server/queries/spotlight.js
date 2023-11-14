@@ -12,41 +12,84 @@ const pool = new Pool({
 
 const currentTimeStamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
-// Create Spotlight
 const createSpotlight = async (duration, price, itemId) => {
   try {
     const durationMap = {
-        "6 hours": 6,
-        "12 hours": 12,
-        "1 day": 24,
-        "3 days": 24 * 3,
-        "1 week": 24 * 7,
-      };
-    
-      const hours = durationMap[duration];
-      var endDate = currentTimeStamp;
-      if (typeof hours !== 'undefined') {
-        endDate = new Date(new Date(currentTimeStamp).getTime() + hours * 60 * 60 * 1000);
-      }
-    
-    const result = await pool.query(
-      `INSERT INTO "sharEco-schema"."spotlight" 
-            ("startDate", "endDate", "duration", "price", "itemId") 
-              values ($1, $2, $3, $4, $5) returning *`,
-      [
-        currentTimeStamp,
-        endDate,
-        duration,
-        price,
-        itemId,
-      ]
+      "6 hours": 6,
+      "12 hours": 12,
+      "1 day": 24,
+      "3 days": 24 * 3,
+      "1 week": 24 * 7,
+    };
+
+    const hours = durationMap[duration];
+    const endDate = hours
+      ? new Date(new Date(currentTimeStamp).getTime() + hours * 60 * 60 * 1000)
+      : currentTimeStamp;
+
+    // Check if there is an ongoing spotlight for the item
+    const existingSpotlight = await pool.query(
+      `SELECT * FROM "sharEco-schema"."spotlight"
+       WHERE "itemId" = $1
+       AND $2 BETWEEN "startDate" AND "endDate"`,
+      [itemId, currentTimeStamp]
     );
+
+    if (existingSpotlight.rows.length > 0) {
+      // Ongoing spotlight exists for the item, return an error
+      throw new Error("Item already has an ongoing spotlight.");
+    }
+
+    // No ongoing spotlight, proceed to create a new one
+    const result = await pool.query(
+      `INSERT INTO "sharEco-schema"."spotlight"
+            ("startDate", "endDate", "duration", "price", "itemId")
+              values ($1, $2, $3, $4, $5) returning *`,
+      [currentTimeStamp, endDate, duration, price, itemId]
+    );
+
     return result.rows[0];
   } catch (err) {
     throw err;
   }
 };
 
+const getOngoingSpotlightByItemId = async (itemId) => {
+  try {
+    // Query the database to find ongoing spotlight for the specified item
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."spotlight"
+       WHERE "itemId" = $1
+       AND $2 BETWEEN "startDate" AND "endDate"`,
+      [itemId, currentTimeStamp]
+    );
+    if (result.rows.length > 0) {
+      return result.rows[0];
+    } else {
+      return null;
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+const getOngoingSpotlights = async () => {
+  try {
+    // Query the database to find all ongoing spotlights
+    const result = await pool.query(
+      `SELECT "itemId" FROM "sharEco-schema"."spotlight"
+       WHERE $1 BETWEEN "startDate" AND "endDate"`,
+      [currentTimeStamp]
+    );
+
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
-    createSpotlight,
+  createSpotlight,
+  getOngoingSpotlightByItemId,
+  getOngoingSpotlights,
 };

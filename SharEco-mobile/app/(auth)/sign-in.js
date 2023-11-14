@@ -1,4 +1,11 @@
-import { Text, View, Image, StyleSheet, Dimensions } from "react-native";
+import {
+  Text,
+  View,
+  Image,
+  StyleSheet,
+  Dimensions,
+  ImageBackground,
+} from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import axios from "axios";
@@ -18,6 +25,10 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const viewportHeightInPixels = (percentage) => {
   const screenHeight = Dimensions.get("window").height;
   return (percentage / 100) * screenHeight;
+};
+const viewportWidthInPixels = (percentage) => {
+  const screenWidth = Dimensions.get("window").width;
+  return (percentage / 100) * screenWidth;
 };
 
 export default function SignIn() {
@@ -80,10 +91,15 @@ export default function SignIn() {
 
   return (
     <SafeAreaContainer>
+      <ImageBackground
+        source={require("./../../assets/topwave.png")}
+        resizeMode="cover"
+        style={styles.imageBg}
+      />
       <View style={styles.container}>
         <Image
           source={require("../../assets/logo-light.png")} // Replace with your logo file path
-          style={{ width: "50%", height: 100 }} // Adjust the width and height as needed
+          style={{ width: "50%", height: 130 }} // Adjust the width and height as needed
         />
         <Formik
           initialValues={{ username: "", password: "" }}
@@ -110,9 +126,14 @@ export default function SignIn() {
                 value={values.password}
                 onChangeText={handleChange("password")}
               />
-              <MessageBox style={{ marginTop: 10 }} success={isSuccessMessage}>
-                {message || " "}
-              </MessageBox>
+              {message && (
+                <MessageBox
+                  style={{ marginTop: 15 }}
+                  success={isSuccessMessage}
+                >
+                  {message}
+                </MessageBox>
+              )}
               <RoundedButton
                 typography={"B1"}
                 color={white}
@@ -124,25 +145,27 @@ export default function SignIn() {
           )}
         </Formik>
       </View>
-      <View style={styles.bottomContainer}>
-        <RegularText typography="B2">
-          Don't have an account?{" "}
+      <View style={{ marginBottom: 10 }}>
+        <View style={styles.bottomContainer}>
           <Link href="/sign-up">
-            <Text style={{ color: primary, textDecorationLine: "underline" }}>
-              Sign up
-            </Text>
+            <RegularText typography="B2">
+              Don't have an account?{" "}
+              <RegularText color={primary} typography="B1">
+                Sign up
+              </RegularText>
+            </RegularText>
           </Link>
-        </RegularText>
-      </View>
-      <View style={styles.bottomContainer}>
-        <RegularText typography="B2">
-          Have not verified your account?{" "}
+        </View>
+        <View style={styles.bottomContainer}>
           <Link href="/verificationResend">
-            <Text style={{ color: primary, textDecorationLine: "underline" }}>
-              Verify
-            </Text>
+            <RegularText typography="B2">
+              Have not verified your account?{" "}
+              <RegularText color={primary} typography="B1">
+                Verify
+              </RegularText>
+            </RegularText>
           </Link>
-        </RegularText>
+        </View>
       </View>
     </SafeAreaContainer>
   );
@@ -153,7 +176,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: white,
-    top: viewportHeightInPixels(20),
   },
   scrollContainer: {
     flexGrow: 1,
@@ -161,7 +183,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bottomContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
     alignSelf: "center", // Center horizontally
+  },
+  imageBg: {
+    height: 180,
+    width: viewportWidthInPixels(100),
+    marginTop: -47,
   },
 });

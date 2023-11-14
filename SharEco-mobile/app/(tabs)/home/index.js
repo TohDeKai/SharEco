@@ -23,44 +23,10 @@ import ListingCard from "../../../components/ListingCard";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import CarouselItem from "../../../components/CarouselItem";
 import { colours } from "../../../components/ColourPalette";
+import AdCarousel from "../../../components/AdCarousel";
 import BadgeIcon from "../../../components/BadgeIcon";
 const { white, primary, inputbackground, dark, black, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
-const { width } = Dimensions.get("window");
-
-const CustomSlider = ({ data }) => {
-  const filteredData = data ? data.filter((item) => item !== null) : null;
-  const settings = {
-    sliderWidth: width,
-    sliderHeight: width,
-    itemWidth: width,
-    data: filteredData,
-    renderItem: CarouselItem,
-    hasParallaxImages: true,
-    onSnapToItem: (index) => setSlideIndex(index),
-  };
-  const [slideIndex, setSlideIndex] = useState(0);
-  return (
-    <View>
-      <Carousel {...settings} />
-      <CustomPaging data={filteredData} activeSlide={slideIndex} />
-    </View>
-  );
-};
-
-const CustomPaging = ({ data, activeSlide }) => {
-  const settings = {
-    dotsLength: data ? data.filter((item) => item !== null).length : 0,
-    activeDotIndex: activeSlide,
-    containerStyle: styles.dotContainer,
-    dotStyle: styles.dotStyle,
-    inactiveDotStyle: styles.inactiveDotStyle,
-    inactiveDotOpacity: 0.4,
-    inactiveDotScale: 0.6,
-  };
-  return <Pagination {...settings} />;
-};
 
 const Tabs = ({ activeTab, handleTabPress }) => {
   return (
@@ -187,7 +153,7 @@ const Content = ({ navigation, activeTab }) => {
       privateItems.push(item);
     }
   }
-  
+
   return (
     <View style={{ flex: 1 }}>
       {/* handles when there are no listings */}
@@ -256,7 +222,7 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -270,7 +236,7 @@ const Content = ({ navigation, activeTab }) => {
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -283,6 +249,21 @@ const Content = ({ navigation, activeTab }) => {
 const home = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [advertisements, setAdvertisements] = useState({});
+  const [user, setUser] = useState("");
+  const { getUserData } = useAuth();
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchUserData();
+  }, [user]);
 
   //suppresses nested scrollview error
   useEffect(() => {
@@ -298,7 +279,10 @@ const home = () => {
     <SafeAreaContainer>
       <SearchBarHeader
         onPressChat={() => {
-          router.push("home/chats");
+          router.push({
+            pathname: "home/chats",
+            params: { userId: user.userId },
+          });
         }}
         onPressWishlist={() => {
           router.push("home/wishlist");
@@ -312,18 +296,7 @@ const home = () => {
         reset={true}
       />
       <View style={{ flex: 1 }}>
-        <View style={styles.advertisementAndAchievementContainer}>
-          <View style={styles.advertisementCarousell}>
-            <CustomSlider
-              data={[
-                "https://t4.ftcdn.net/jpg/04/84/66/01/360_F_484660141_BxpYkEIYA3LsiF3qkqYWyXlNIoFmmXjc.jpg",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCZHwbGnMd9d4uPwckaq4h5pIPlbEhcptJA&usqp=CAU",
-                "https://t2informatik.de/en/wp-content/uploads/sites/2/2023/04/stub.png",
-              ]}
-            />
-          </View>
-        </View>
-
+        <AdCarousel />
         <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
         <View style={styles.contentContainer}>
           <Content activeTab={activeTab} />
@@ -367,10 +340,11 @@ const styles = StyleSheet.create({
     backgroundColor: primary,
   },
   contentContainer: {
-    flex: 4,
+    flex: 1,
     backgroundColor: white,
     paddingHorizontal: "7%",
     justifyContent: "space-evenly",
+    zIndex: 0,
   },
   dotContainer: {
     marginTop: -50,

@@ -389,13 +389,21 @@ const editRentalRequest = () => {
                     </View>
                   </View>
                 </View>
+                {message && (
+                  <MessageBox
+                    style={{ marginTop: 10 }}
+                    success={isSuccessMessage}
+                  >
+                    {message}
+                  </MessageBox>
+                )}
                 <RoundedButton
                   typography={"B1"}
                   color={white}
                   onPress={handleSubmit}
                   style={{ marginBottom: viewportHeightInPixels(3) }}
                 >
-                  Send Request
+                  Update Request
                 </RoundedButton>
               </View>
             )}
@@ -423,11 +431,9 @@ const styles = StyleSheet.create({
   listingDetails: {
     height: 70,
     backgroundColor: white,
-    borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: inputbackground,
     paddingHorizontal: viewportWidthInPixels(5),
-    marginTop: 10,
     flexDirection: "row",
     alignItems: "center",
   },

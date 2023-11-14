@@ -36,20 +36,6 @@ const createAd = async (image, title, description, bidPrice, bizId, link) => {
   }
 };
 
-// Get all PENDING Advertisment
-const getAdsReq = async () => {
-  try {
-    const result = await pool.query(
-      `SELECT COUNT("advertisementId") FROM "sharEco-schema".advertisement 
-    WHERE "status" = $1`,
-      ["PENDING"]
-    );
-    return result.rows[0];
-  } catch (error) {
-    throw error;
-  }
-};
-
 // Update images for an ad
 const updateAdImage = async (adId, image) => {
   try {
@@ -73,18 +59,22 @@ const updateAdImage = async (adId, image) => {
 
 const getStartBidDate = () => {
   const today = new Date();
+  // If it's saturday (vetting period, end of bidding week)
+  if (today.getDay() === 6) {
+    // Move onto next week
+    today.setDate(today.getDate() + 7);
+  }
   const dayOfWeek = today.getDay();
-  const daysUntilSunday = 0 - dayOfWeek + 7 + 1;
+  const daysUntilSunday = 7 - dayOfWeek;
   const nextSunday = new Date(today);
   nextSunday.setDate(today.getDate() + daysUntilSunday);
   nextSunday.setHours(0, 0, 0, 0);
-
+  console.log("Start Bid Date: ", nextSunday);
   return nextSunday;
 };
 
 const editAd = async (adId, image, title, description, bidPrice, link) => {
   try {
-    console.log(description, image);
     const result = await pool.query(
       `UPDATE "sharEco-schema"."advertisement" 
         SET "image" = $1, 
@@ -172,6 +162,62 @@ const rankWeekAds = async () => {
   }
 };
 
+// Get all PENDING Advertisment
+const getAdsReq = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT("advertisementId") FROM "sharEco-schema".advertisement 
+    WHERE "status" = $1`,
+      ["PENDING"]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Get all ACTIVE Advertisement
+const getActiveAds = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "sharEco-schema"."advertisement" 
+      WHERE "status" = $1
+      ORDER BY "bidPrice" DESC`,
+      ["ACTIVE"]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Increase visit counter
+const updateAdVisits = async (adId) => {
+  try {
+    const currentVisitsResult = await pool.query(
+      `SELECT "visits" FROM "sharEco-schema"."advertisement" WHERE "advertisementId" = $1`,
+      [adId]
+    );
+    const currentVisits = currentVisitsResult.rows[0]?.visits;
+    console.log(currentVisits)
+
+    if (currentVisits !== undefined) {
+      const result = await pool.query(
+        `UPDATE "sharEco-schema"."advertisement" 
+        SET "visits" = $1
+        WHERE "advertisementId" = $2
+        RETURNING *`,
+        [currentVisits + 1, adId]
+      );
+      return result.rows[0];
+    } else {
+      throw new Error("Current visits count is undefined");
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createAd,
   updateAdImage,
@@ -182,4 +228,6 @@ module.exports = {
   getWeekAdsByStartDate,
   rankWeekAds,
   getAdsReq,
+  getActiveAds,
+  updateAdVisits,
 };

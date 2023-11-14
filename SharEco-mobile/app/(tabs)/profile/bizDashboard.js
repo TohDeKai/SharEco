@@ -7,6 +7,7 @@ import {
   Pressable,
   FlatList,
   RefreshControl,
+  ImageBackground,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
@@ -25,7 +26,8 @@ import { PrimaryButton } from "../../../components/buttons/RegularButton";
 import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import AdCard from "../../../components/AdCard";
-const { primary, secondary, white, yellow, dark, inputbackground, black } = colours;
+const { primary, secondary, white, yellow, dark, inputbackground, black } =
+  colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const viewportHeightInPixels = (percentage) => {
@@ -38,94 +40,19 @@ const viewportWidthInPixels = (percentage) => {
   return (percentage / 100) * screenWidth;
 };
 
-const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
-  return (
-    <View
-      style={
-        styles.stickyHeader ? styles.stickyTabContainer : styles.tabContainer
-      }
-    >
-      <Pressable
-        onPress={() => handleTabPress("Analytics")}
-        style={({ pressed }) => [
-          { opacity: pressed ? 0.5 : 1 },
-          styles.tab,
-          activeTab === "Analytics" && styles.activeTab,
-        ]}
-      >
-        <RegularText
-          typography="B2"
-          color={activeTab === "Analytics" ? primary : dark}
-        >
-          Analytics
-        </RegularText>
-      </Pressable>
-      <Pressable
-        onPress={() => handleTabPress("Advertise")}
-        style={({ pressed }) => [
-          { opacity: pressed ? 0.5 : 1 },
-          styles.tab,
-          activeTab === "Advertise" && styles.activeTab,
-        ]}
-      >
-        <RegularText
-          typography="B2"
-          color={activeTab === "Advertise" ? primary : dark}
-        >
-          Advertise
-        </RegularText>
-      </Pressable>
-    </View>
-  );
-};
-
-const adPeriod = () => {
-  const today = new Date();
-  const daysUntilSunday = 7 - today.getDay();
-  const startSunday = new Date(today);
-  startSunday.setDate(today.getDate() + daysUntilSunday);
-  startSunday.setHours(0, 0, 0, 0);
-  const endSaturday = new Date(today);
-  endSaturday.setDate(startSunday.getDate() + 6);
-  endSaturday.setHours(0, 0, 0, 0);
-
-  const startString = startSunday.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-  });
-  const endString = endSaturday.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-  });
-
-  return `${startString} - ${endString}`;
-};
-
-const biddingPeriod = () => {
-  const today = new Date();
-  const daysUntilSunday = 7 - today.getDay();
-  const startSunday = new Date(today);
-  startSunday.setDate(today.getDate() + daysUntilSunday);
-  startSunday.setHours(0, 0, 0, 0);
-  const endSaturday = new Date(today);
-  endSaturday.setDate(startSunday.getDate() + 6);
-  endSaturday.setHours(0, 0, 0, 0);
-
-  const startString = startSunday.toISOString().split("T")[0];
-  const endString = endSaturday.toISOString().split("T")[0];
-
-  return `${startString} - ${endString}`;
-};
-
 const dashboard = () => {
   const { getUserData } = useAuth();
-  const adPills = ["Pending", "Active", "Past", "Rejected", "Cancelled"];
-  const analyticsPills = ["Finances", "Impressions", "Likes"]
-  const [activeAdPill, setActiveAdPill] = useState("Pending");
+  const analyticsPills = ["Finances", "Impressions", "Likes"];
   const [activeAnalyticsPill, setActiveAnalyticsPill] = useState("Finances");
   const [userAds, setUserAds] = useState([]);
   const [userId, setUserId] = useState();
   const [refreshing, setRefreshing] = useState(false);
+
+  const [impressions, setImpressions] = useState([]);
+  const [distinctImpressions, setDistinctImpressions] = useState([]);
+  const [totalEarnings, setTotalEarnings] = useState([]);
+  const [total, setTotal] = useState("0.00");
+  const [wishlist, setWishlist] = useState([]);
 
   //Get user ads
   useEffect(() => {
@@ -154,12 +81,6 @@ const dashboard = () => {
     fetchUserAds();
   }, [userId]);
 
-  const [impressions, setImpressions] = useState([]);
-  const [distinctImpressions, setDistinctImpressions] = useState([]);
-  const [totalEarnings, setTotalEarnings] = useState([]);
-  const [total, setTotal] = useState("0.00");
-  const [wishlist, setWishlist] = useState([]);
-
   useEffect(() => {
     async function fetchImpressions() {
       try {
@@ -173,7 +94,10 @@ const dashboard = () => {
           setImpressions(impressionsResponse.data.data.impressions);
         }
         if (distinctImpressionsResponse.status === 200) {
-          setDistinctImpressions(distinctImpressionsResponse.data.data.impressions);        }
+          setDistinctImpressions(
+            distinctImpressionsResponse.data.data.impressions
+          );
+        }
       } catch (error) {
         console.log(error.message);
       }
@@ -187,10 +111,13 @@ const dashboard = () => {
         if (revenueResponse.status === 200) {
           setTotalEarnings(revenueResponse.data.data.totalEarnings);
 
-          const total = revenueResponse.data.data.totalEarnings.reduce((sum, transaction) => {
-            const amount = parseFloat(transaction.rentalFee);
-            return sum + amount;
-          }, 0);
+          const total = revenueResponse.data.data.totalEarnings.reduce(
+            (sum, transaction) => {
+              const amount = parseFloat(transaction.rentalFee);
+              return sum + amount;
+            },
+            0
+          );
 
           setTotal(total.toFixed(2));
         }
@@ -211,10 +138,37 @@ const dashboard = () => {
       }
     }
 
-    fetchImpressions(); 
+    fetchImpressions();
     fetchRevenueData();
     fetchWishlistData();
   }, [userId]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    try {
+      const userData = await getUserData();
+      const userId = userData.userId;
+      setUserId(userId);
+      try {
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`
+        );
+        if (response.status === 200) {
+          const ads = response.data.data.ads;
+          setUserAds(ads);
+        } else {
+          console.log("Failed to retrieve ads");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    setRefreshing(false);
+  };
 
   //POPULATES IMPRESSIONS GRAPH
   const impressionBarData = [];
@@ -246,7 +200,7 @@ const dashboard = () => {
   // Set the label for today as 'Today'.
   const todayIndex = dayLabels.indexOf(today.getDate());
   if (todayIndex !== -1) {
-    impressionBarData[todayIndex].label = 'Today';
+    impressionBarData[todayIndex].label = "Today";
   }
 
   //POPULATES REVENUE GRAPH
@@ -257,7 +211,7 @@ const dashboard = () => {
     const date = new Date(today);
     date.setMonth(today.getMonth() - i);
 
-    const label = date.toLocaleString('default', { month: 'short' }); // Get the month name.
+    const label = date.toLocaleString("default", { month: "short" }); // Get the month name.
     monthLabels.push(label);
 
     // Calculate the total earnings for the current month.
@@ -275,12 +229,14 @@ const dashboard = () => {
     }, 0);
 
     revenueBarData.push({ value, label });
-  } 
+  }
 
   // Set the label for the current month as 'This Month'.
-  const thisMonthIndex = dayLabels.findIndex(label => label === today.toLocaleString('default', { month: 'short' }));
+  const thisMonthIndex = dayLabels.findIndex(
+    (label) => label === today.toLocaleString("default", { month: "short" })
+  );
   if (thisMonthIndex !== -1) {
-    impressionBarData[thisMonthIndex].label = 'This Month';
+    impressionBarData[thisMonthIndex].label = "This Month";
   }
 
   //POPULATES LIKES GRAPH
@@ -312,39 +268,14 @@ const dashboard = () => {
   // Set the label for today as 'Today'.
   const likeTodayIndex = likeDayLabels.indexOf(today.getDate());
   if (likeTodayIndex !== -1) {
-    likeBarData[todayIndex].label = 'Today';
+    likeBarData[todayIndex].label = "Today";
   }
 
-  
-
-  const Pills = ({ pillItems, setActiveAdPill, handlePillPress }) => {
-    return (
-      <View style={styles.pillContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {pillItems.map((pill) => (
-            <Pressable
-              key={pill}
-              onPress={() => handlePillPress(pill)}
-              style={({ pressed }) => [
-                { opacity: pressed ? 0.5 : 1 },
-                styles.pill,
-                activeAdPill === pill && styles.activePill,
-              ]}
-            >
-              <RegularText
-                typography="B1"
-                color={activeAdPill === pill ? primary : dark}
-              >
-                {pill}
-              </RegularText>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-    );
-  };
-
-  const PillsAnalytics = ({ pillItems, setActiveAnalyticsPill, handlePillPress }) => {
+  const PillsAnalytics = ({
+    pillItems,
+    setActiveAnalyticsPill,
+    handlePillPress,
+  }) => {
     return (
       <View style={styles.analyticsPillContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -360,7 +291,7 @@ const dashboard = () => {
             >
               <RegularText
                 typography="B1"
-                color={activeAnalyticsPill === pill ? primary : dark}
+                color={activeAnalyticsPill === pill ? white : secondary}
               >
                 {pill}
               </RegularText>
@@ -373,13 +304,6 @@ const dashboard = () => {
 
   const handleBack = () => {
     router.back();
-  };
-
-  const [activeTab, setActiveTab] = useState("Analytics");
-
-  const handleTabPress = (tabName) => {
-    setActiveTab(tabName);
-    console.log("Active tab: " + tabName);
   };
 
   const Analytics = () => {
@@ -396,18 +320,25 @@ const dashboard = () => {
           handlePillPress={handlePillPress}
         />
         {activeAnalyticsPill === "Finances" && (
-          <View style={{display:"flex"}}>
-            <RegularText typography="H3" style={{marginBottom: 10}}>Total Rental Income</RegularText>
-            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
-              <View style={{justifyContent: "center", alignItems: "center"}}>
-                <Ionicons name="cash" size={18} color={primary}/>
-                <RegularText>${total}</RegularText>
-                <RegularText typography="Subtitle">Rental Income</RegularText>
+          <View style={{ display: "flex" }}>
+            <View style={styles.analyticsContainer}>
+              <Ionicons
+                name="cash"
+                size={40}
+                color={primary}
+                style={{ marginRight: 15 }}
+              />
+              <View>
+                <RegularText typography="H4">Total Rental Income</RegularText>
+                <RegularText typography="H2">${total}</RegularText>
               </View>
-            </View>            
-            <RegularText typography="H3" style={{marginBottom: 20}}>6 Month Rental Income Overview</RegularText>
-            <BarChart 
-              data={revenueBarData} 
+            </View>
+
+            <RegularText typography="H3" style={{ marginBottom: 20 }}>
+              6 Month Rental Income Overview
+            </RegularText>
+            <BarChart
+              data={revenueBarData}
               vertical
               frontColor={primary}
               isAnimated
@@ -418,29 +349,50 @@ const dashboard = () => {
               initialSpacing={0}
               yAxisLabelPrefix="$"
             />
-            
           </View>
         )}
 
         {activeAnalyticsPill === "Impressions" && (
-          <View style={{display:"flex"}}>
-            <RegularText typography="H3" style={{marginBottom: 20}}>All Time Impressions</RegularText>
-            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
-              <View style={{alignItems: "center"}}>
-                <Ionicons name="people" size={18} color={primary}/>
-                <RegularText>{impressions && impressions[0] ? impressions.length : 0}</RegularText>
-                <RegularText typography="Subtitle">Impressions</RegularText>
-              </View>
-              <View style={{alignItems: "center"}}>
-                <Ionicons name="person" size={18} color={primary}/>
-                <RegularText>{distinctImpressions && distinctImpressions[0] ? distinctImpressions.length : 0}</RegularText>
-                <RegularText typography="Subtitle">Distinct Impressions</RegularText>
+          <View style={{ display: "flex" }}>
+            <View style={styles.analyticsContainer}>
+              <Ionicons
+                name="people"
+                size={40}
+                color={primary}
+                style={{ marginRight: 15 }}
+              />
+              <View>
+                <RegularText typography="H4">Total impressions</RegularText>
+                <RegularText typography="H2">
+                  {impressions && impressions[0] ? impressions.length : 0}
+                </RegularText>
               </View>
             </View>
-            <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Impressions</RegularText>
+            <View style={styles.analyticsContainer}>
+              <Ionicons
+                name="person"
+                size={34}
+                color={primary}
+                style={{ marginRight: 15 }}
+              />
+              <View>
+                <RegularText typography="H4">
+                  Total distinct impressions
+                </RegularText>
+                <RegularText typography="H2">
+                  {distinctImpressions && distinctImpressions[0]
+                    ? distinctImpressions.length
+                    : 0}
+                </RegularText>
+              </View>
+            </View>
 
-            <BarChart 
-              data={impressionBarData} 
+            <RegularText typography="H3" style={{ marginBottom: 20 }}>
+              This Week's Impressions
+            </RegularText>
+
+            <BarChart
+              data={impressionBarData}
               vertical
               frontColor={primary}
               isAnimated
@@ -450,25 +402,30 @@ const dashboard = () => {
               xAxisThickness={0}
               initialSpacing={0}
             />
-        
           </View>
         )}
 
         {activeAnalyticsPill === "Likes" && (
-          <View style={{display:"flex"}}>
-            <RegularText typography="H3" style={{marginBottom: 20}}>All Time Likes</RegularText>
-            <View style={{flexDirection: "row", justifyContent: "space-around", marginBottom: 20 }}>
-              <View style={{justifyContent: "center", alignItems: "center"}}>
-                <Ionicons name="heart" size={18} color={primary}/>
-                <RegularText>{wishlist && wishlist[0] ? wishlist.length : 0}</RegularText>
-                <RegularText typography="Subtitle">Likes</RegularText>
+          <View style={{ display: "flex" }}>
+            <View style={styles.analyticsContainer}>
+              <Ionicons
+                name="heart"
+                size={40}
+                color={primary}
+                style={{ marginRight: 15 }}
+              />
+              <View>
+                <RegularText typography="H4">Total Likes</RegularText>
+                <RegularText typography="H2">{wishlist && wishlist[0] ? wishlist.length : 0}</RegularText>
               </View>
             </View>
 
-            <RegularText typography="H3" style={{marginBottom: 20}}>This Week's Likes</RegularText>
+            <RegularText typography="H3" style={{ marginBottom: 20 }}>
+              This Week's Likes
+            </RegularText>
 
-            <BarChart 
-              data={likeBarData} 
+            <BarChart
+              data={likeBarData}
               vertical
               frontColor={primary}
               isAnimated
@@ -478,255 +435,81 @@ const dashboard = () => {
               xAxisThickness={0}
               initialSpacing={0}
             />
-        
-          </View>
-        )}
-      </View>
-    )
-  }
-
-  const Advertise = () => {
-    //Refresh
-    const handleRefresh = async () => {
-      setRefreshing(true);
-
-      try {
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/ads/bizId/${userId}`
-        );
-        console.log(response.status);
-        if (response.status === 200) {
-          const ads = response.data.data.ads;
-          setUserAds(ads);
-        } else {
-          // Handle the error condition appropriately
-          console.log("Failed to retrieve user's items");
-        }
-      } catch (error) {
-        // Handle the axios request error appropriately
-        console.log("Error:", error);
-      }
-
-      // After all the data fetching and updating, set refreshing to false
-      setRefreshing(false);
-    };
-
-    const handlePillPress = (pill) => {
-      setActiveAdPill(pill);
-      console.log("Active pill: " + pill);
-    };
-    const handleCreateNewAd = () => {
-      router.push("profile/createAd");
-    };
-    const handleViewRanks = () => {
-      router.push("profile/rankings");
-    };
-
-    const pendingAds = userAds.filter((ad) => ad.status === "PENDING");
-    const activeAds = userAds.filter((ad) => ad.status === "ACTIVE");
-    const pastAds = userAds.filter((ad) => ad.status === "PAST");
-    const rejectedAds = userAds.filter((ad) => ad.status === "REJECTED");
-    const cancelledAds = userAds.filter((ad) => ad.status === "CANCELLED");
-
-    return (
-      <View>
-        <View style={styles.adHeader}>
-          <View>
-            <RegularText typography="H1">Advertisement</RegularText>
-          </View>
-          <View>
-            <PrimaryButton style={styles.button} onPress={handleCreateNewAd}>
-              <Ionicons name="add" color={white} size={25} />
-              <View style={{ paddingTop: 3, paddingRight: 5 }}>
-                <RegularText typography="H4" color={white}>
-                  Create ad
-                </RegularText>
-              </View>
-            </PrimaryButton>
-          </View>
-        </View>
-        <View style={styles.bidWeek}>
-          <Ionicons name="calendar" size={17} style={{ marginRight: 10 }} />
-          <RegularText typography="B2">Bidding opened for </RegularText>
-          <RegularText typography="H4">{adPeriod()}</RegularText>
-        </View>
-        <Pills
-          pillItems={adPills}
-          setActiveAdPill={activeAdPill}
-          handlePillPress={handlePillPress}
-        />
-        {activeAdPill === "Pending" && (
-          <View>
-            <Pressable style={styles.ranks} onPress={handleViewRanks}>
-              <View style={{ flexDirection: "row" }}>
-                <Ionicons
-                  name="ribbon"
-                  size={17}
-                  style={{ marginRight: 10 }}
-                  color={yellow}
-                />
-                <RegularText typography="H4">View all rankings</RegularText>
-              </View>
-              <Ionicons name="chevron-forward-outline" size={20} />
-            </Pressable>
-            {pendingAds.length > 0 ? (
-              <FlatList
-                data={pendingAds}
-                numColumns={1}
-                scrollsToTop={false}
-                showsVerticalScrollIndicator={false}
-                renderItem={(ad) => <AdCard ad={ad} />}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                  />
-                }
-                style={{
-                  height: viewportHeightInPixels(44.5),
-                  paddingBottom: 15,
-                }}
-              />
-            ) : (
-              <View style={styles.centeredText}>
-                <RegularText typography="H4">
-                  No pending advertisements found!
-                </RegularText>
-              </View>
-            )}
-          </View>
-        )}
-        {activeAdPill === "Active" && (
-          <View>
-            {activeAds.length > 0 ? (
-              <FlatList
-                data={activeAds}
-                numColumns={1}
-                scrollsToTop={false}
-                showsVerticalScrollIndicator={false}
-                renderItem={(ad) => <AdCard ad={ad} />}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                  />
-                }
-                style={{
-                  height: viewportHeightInPixels(44.5),
-                  paddingBottom: 15,
-                }}
-              />
-            ) : (
-              <View style={styles.centeredText}>
-                <RegularText typography="H4">
-                  No active advertisements found!
-                </RegularText>
-              </View>
-            )}
-          </View>
-        )}
-        {activeAdPill === "Past" && (
-          <View>
-            {activeAds.length > 0 ? (
-              <FlatList
-                data={pastAds}
-                numColumns={1}
-                scrollsToTop={false}
-                showsVerticalScrollIndicator={false}
-                renderItem={(ad) => <AdCard ad={ad} />}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                  />
-                }
-                style={{
-                  height: viewportHeightInPixels(44.5),
-                  paddingBottom: 15,
-                }}
-              />
-            ) : (
-              <View style={styles.centeredText}>
-                <RegularText typography="H4">
-                  No past advertisements found!
-                </RegularText>
-              </View>
-            )}
-          </View>
-        )}
-        {activeAdPill === "Rejected" && (
-          <View>
-            {activeAds.length > 0 ? (
-              <FlatList
-                data={rejectedAds}
-                numColumns={1}
-                scrollsToTop={false}
-                showsVerticalScrollIndicator={false}
-                renderItem={(ad) => <AdCard ad={ad} />}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                  />
-                }
-                style={{
-                  height: viewportHeightInPixels(44.5),
-                  paddingBottom: 15,
-                }}
-              />
-            ) : (
-              <View style={styles.centeredText}>
-                <RegularText typography="H4">
-                  No rejected advertisements found!
-                </RegularText>
-              </View>
-            )}
-          </View>
-        )}
-        {activeAdPill === "Cancelled" && (
-          <View>
-            {activeAds.length > 0 ? (
-              <FlatList
-                data={cancelledAds}
-                numColumns={1}
-                scrollsToTop={false}
-                showsVerticalScrollIndicator={false}
-                renderItem={(ad) => <AdCard ad={ad} />}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                  />
-                }
-                style={{
-                  height: viewportHeightInPixels(44.5),
-                  paddingBottom: 15,
-                }}
-              />
-            ) : (
-              <View style={styles.centeredText}>
-                <RegularText typography="H4">
-                  No cancelled advertisements found!
-                </RegularText>
-              </View>
-            )}
           </View>
         )}
       </View>
     );
   };
 
+  const pendingAdCount = userAds.filter((ad) => ad.status === "PENDING").length;
+  const activeAdCount = userAds.filter((ad) => ad.status === "ACTIVE").length;
+  const visitCount = userAds
+    .filter((ad) => ad.status === "ACTIVE")
+    .reduce((sum, ad) => sum + ad.visits, 0);
+
+  const toAdsPage = () => {
+    router.push("profile/advertise");
+  };
+
   return (
     <SafeAreaContainer>
       <View>
         <Header title="Business Dashboard" action="back" onPress={handleBack} />
-        <View style={{ paddingTop: 20 }}>
-          <Tabs activeTab={activeTab} handleTabPress={handleTabPress} />
-        </View>
-        <View style={styles.container}>
-          {activeTab === "Advertise" && <Advertise />}
-          {activeTab ==="Analytics" && <Analytics/> }
-        </View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        >
+          <Pressable onPress={() => toAdsPage()}>
+            <ImageBackground
+              source={require("./../../../assets/bannerwave.png")}
+              resizeMode="contain"
+              style={styles.imageBg}
+            >
+              <View style={styles.adContainer}>
+                <View style={{ gap: 3 }}>
+                  <RegularText typography="Subtitle" color={white}>
+                    Let's grow your customer base together!
+                  </RegularText>
+                  <RegularText typography="H2" color={white}>
+                    Your Advertisements
+                  </RegularText>
+                </View>
+                <Ionicons name="chevron-forward" size={30} color={white} />
+              </View>
+              <View style={styles.adStats}>
+                <View style={styles.indivStats}>
+                  <RegularText typography="H3" color={white}>
+                    {pendingAdCount || "-"}
+                  </RegularText>
+                  <RegularText typography="Subtitle" color={white}>
+                    PENDING
+                  </RegularText>
+                </View>
+                <View style={styles.indivStats}>
+                  <RegularText typography="H3" color={white}>
+                    {activeAdCount || "-"}
+                  </RegularText>
+                  <RegularText typography="Subtitle" color={white}>
+                    ACTIVE
+                  </RegularText>
+                </View>
+                <View style={styles.indivStats}>
+                  <RegularText typography="H3" color={white}>
+                    {visitCount || "-"}
+                  </RegularText>
+                  <RegularText typography="Subtitle" color={white}>
+                    WK VISITS
+                  </RegularText>
+                </View>
+              </View>
+            </ImageBackground>
+          </Pressable>
+          <View style={styles.container}>
+            <Analytics />
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaContainer>
   );
@@ -738,6 +521,7 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 20,
     marginHorizontal: viewportWidthInPixels(5),
+    paddingBottom: 80,
   },
   adHeader: {
     alignItems: "center",
@@ -771,7 +555,7 @@ const styles = StyleSheet.create({
   },
   pillContainer: {
     paddingTop: 18,
-    paddingBottom: 25,
+    paddingBottom: 20,
   },
   analyticsPillContainer: {
     paddingBottom: 25,
@@ -780,13 +564,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: inputbackground,
+    borderColor: secondary,
+    borderWidth: 1,
     marginRight: 13,
   },
   activePill: {
-    backgroundColor: white,
-    borderColor: primary,
-    borderWidth: 1,
+    backgroundColor: secondary,
   },
   centeredText: {
     marginTop: 30,
@@ -797,16 +580,44 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: viewportWidthInPixels(100),
   },
-  tab: {
-    flex: 1,
-    height: 36,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: white,
+  header: {
+    paddingBottom: 10,
+    marginBottom: 15,
     borderBottomWidth: 2,
     borderBottomColor: inputbackground,
   },
-  activeTab: {
-    borderBottomColor: primary,
+  imageBg: {
+    marginTop: 8,
+    height: 150,
+    marginHorizontal: viewportWidthInPixels(3),
+  },
+  adContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: viewportWidthInPixels(7),
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  adStats: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: viewportWidthInPixels(7),
+  },
+  indivStats: {
+    alignItems: "center",
+    backgroundColor: "rgba(252, 252, 252, 0.2)",
+    minWidth: viewportWidthInPixels(25),
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  analyticsContainer: {
+    backgroundColor: inputbackground,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    marginBottom: 20,
   },
 });
