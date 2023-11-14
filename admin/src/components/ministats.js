@@ -11,19 +11,19 @@ const MiniStats = ({ subtitle, number }) => {
             borderRadius: "4px",
             paddingLeft: "16px",
           }}
-          height="100px"
+          height="80px"
           width="170px"
           bgcolor="white"
         >
           <Typography
-            variant="h6"
+            fontSize="20px"
             fontWeight="bold"
-            sx={{ color: "#419682", mt: 1, mb: 2 }}
+            sx={{ color: "#419682", mt: 1, mb: 2, marginBottom:"5px"}}
           >
             ${number}
           </Typography>
           <Typography
-            fontSize="16px"
+            fontSize="12px"
             fontWeight="bold"
             sx={{ color: "#419682" }}
           >

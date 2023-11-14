@@ -396,6 +396,35 @@ const getRevenueData = async () => {
   }
 };
 
+const getPastWeeksRevenue = async () => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        to_char(date_trunc('day', time_series.day), 'YYYY-MM-DD') AS transactionday,
+        COALESCE(SUM(CASE WHEN t."receiverId" = 1 AND t."transactionType" != 'WITHDRAW' THEN (t."amount"::numeric) ELSE 0 END), 0) AS revenue
+      FROM
+        generate_series(current_date - interval '6 days', current_date, '1 day') as time_series(day)
+      LEFT JOIN
+        "sharEco-schema"."transaction" t
+      ON
+        to_char(date_trunc('day', t."transactionDate"), 'YYYY-MM-DD') = to_char(date_trunc('day', time_series.day), 'YYYY-MM-DD')
+      GROUP BY
+        time_series.day
+      ORDER BY
+        time_series.day;
+    `);
+
+    return {
+      status: 'success',
+      data: {
+        revenue: result.rows,
+      },
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createTransaction,
   getTransactionsByReceiverId,
@@ -407,5 +436,6 @@ module.exports = {
   approveWithdrawalRequest,
   getTransactionsByType,
   getRentalEarningsByUserId,
-  getRevenueData
+  getRevenueData,
+  getPastWeeksRevenue
 };
