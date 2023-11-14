@@ -84,12 +84,14 @@ const Content = ({ navigation, activeTab }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState("");
   const { getUserData } = useAuth();
-  const businessItems = [];
-  const privateItems = [];
 
   const [spotlightIds, setSpotlightIds] = useState([]);
   const spotlightedItems = [];
   const nonSpotlightedItems = [];
+  const spotlightedBusinessItems = [];
+  const nonSpotlightedBusinessItems = [];
+  const spotlightedPrivateItems = [];
+  const nonSpotlightedPrivateItems = [];
 
   useEffect(() => {
     async function fetchUserData() {
@@ -158,7 +160,6 @@ const Content = ({ navigation, activeTab }) => {
           for (const spotlightId of spotlightIds) {
             spotlightArr.push(spotlightId.itemId);
           }
-
           setSpotlightIds(spotlightArr);
         } else {
           //Shouldn't come here
@@ -175,17 +176,24 @@ const Content = ({ navigation, activeTab }) => {
   for (const item of items) {
     if (spotlightIds.includes(item.itemId)) {
       spotlightedItems.push({ item: item, isSpotlight: true });
+      if (item.isBusiness) {
+        spotlightedBusinessItems.push({item: item, isSpotlight: true});
+      } else {
+        spotlightedPrivateItems.push({item: item, isSpotlight: true});
+      }
     } else {
       nonSpotlightedItems.push({ item: item, isSpotlight: false });
-    }
-    if (item.isBusiness) {
-      businessItems.push(item);
-    } else {
-      privateItems.push(item);
+      if (item.isBusiness) {
+        nonSpotlightedBusinessItems.push({item: item, isSpotlight: false});
+      } else {
+        nonSpotlightedPrivateItems.push({item: item, isSpotlight: false})
+      }
     }
   }
 
   const combinedItems = [...spotlightedItems, ...nonSpotlightedItems];
+  const combinedPrivateItems = [...spotlightedPrivateItems, ...nonSpotlightedPrivateItems];
+  const combinedBusinessItems = [...spotlightedBusinessItems, ...nonSpotlightedBusinessItems];
 
   return (
     <View style={{ flex: 1 }}>
@@ -205,7 +213,7 @@ const Content = ({ navigation, activeTab }) => {
       )}
       {/* handles when there are no business listings */}
       {activeTab == "Business" &&
-        (businessItems ? businessItems.length : 0) === 0 && (
+        (combinedBusinessItems ? combinedBusinessItems.length : 0) === 0 && (
           <View style={{ marginTop: 160 }}>
             <RegularText
               typography="B2"
@@ -220,7 +228,7 @@ const Content = ({ navigation, activeTab }) => {
         )}
       {/* handles when there are no private listings */}
       {activeTab == "Private" &&
-        (privateItems ? privateItems.length : 0) === 0 && (
+        (combinedPrivateItems ? combinedPrivateItems.length : 0) === 0 && (
           <View style={{ marginTop: 160 }}>
             <RegularText
               typography="B2"
@@ -257,11 +265,17 @@ const Content = ({ navigation, activeTab }) => {
       {/* renders business listings */}
       {activeTab == "Business" && (
         <FlatList
-          data={businessItems}
+          data={combinedBusinessItems}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
+          renderItem={({ item }) => (
+            <ListingCard
+              item={item.item}
+              mine={false}
+              isSpotlighted={item.isSpotlight}
+            />
+          )}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -271,11 +285,17 @@ const Content = ({ navigation, activeTab }) => {
       {/* renders private listings */}
       {activeTab == "Private" && (
         <FlatList
-          data={privateItems}
+          data={combinedPrivateItems}
           numColumns={2}
           scrollsToTop={false}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListingCard item={item} mine={false} />}
+          renderItem={({ item }) => (
+            <ListingCard
+              item={item.item}
+              mine={false}
+              isSpotlighted={item.isSpotlight}
+            />
+          )}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -318,7 +338,6 @@ const home = () => {
     <SafeAreaContainer>
       <SearchBarHeader
         onPressChat={() => {
-          // router.push("home/chats");
           router.push({
             pathname: "home/chats",
             params: { userId: user.userId },

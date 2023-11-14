@@ -1,9 +1,11 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../../styles/chat";
 import UserAvatar from "../../../components/UserAvatar";
 import axios from "axios";
+import { colours } from "../../ColourPalette";
+import RegularText from "../../text/RegularText";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 export default function MessageComponent({ item, user }) {
@@ -50,36 +52,38 @@ export default function MessageComponent({ item, user }) {
           ? [styles.mmessageWrapper, { alignItems: "flex-end" }]
           : styles.mmessageWrapper
       }
-    >
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        {!isUserMessage && (
-          <UserAvatar
-            size="small"
-            source={{
-              uri: senderProfileUri,
-            }}
-          />
-        )}
-        <View
-          style={
-            isUserMessage
-              ? [styles.mmessage, { backgroundColor: "rgb(194, 243, 194)" }]
-              : styles.mmessage
-          }
-        >
-          <Text>{item.message}</Text>
+    > 
+      {sender && senderProfileUri && otherUser && otherUserProfileUri && (
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {!isUserMessage && (
+            <UserAvatar
+              size="small"
+              source={{
+                uri: senderProfileUri,
+              }}
+            />
+          )}
+          <View
+            style={
+              isUserMessage
+                ? [styles.mmessage, { backgroundColor: colours.primary }]
+                : styles.mmessage
+            }
+          >
+            <RegularText typography="Subtitle" color={colours.white}>{item.message}</RegularText>
+          </View>
+          {isUserMessage && (
+            <UserAvatar
+              size="small"
+              source={{
+                uri: otherUserProfileUri,
+              }}
+            />
+          )}
+          {/* For time */}
+          {/* <Text style={{ marginLeft: 40 }}>{item.time}</Text> */}
         </View>
-        {isUserMessage && (
-          <UserAvatar
-            size="small"
-            source={{
-              uri: otherUserProfileUri,
-            }}
-          />
-        )}
-      </View>
-      {/* For time */}
-      {/* <Text style={{ marginLeft: 40 }}>{item.time}</Text> */}
+      )}  
     </View>
   );
 }

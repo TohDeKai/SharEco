@@ -3014,7 +3014,7 @@ app.put("/api/v1/report/response/:reportId", async (req, res) => {
   try {
     const reportId = req.params.reportId;
     const responseText = req.body.responseText;
-    const responseImages = req.params.responseImages;
+    const responseImages = req.body.responseImages;
     const report = await reportdb.addReportResponse(
       responseText,
       responseImages,
