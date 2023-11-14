@@ -18,7 +18,7 @@ const MiniStats = ({ subtitle, number }) => {
           <Typography
             fontSize="20px"
             fontWeight="bold"
-            sx={{ color: "#419682", mt: 1, mb: 2 }}
+            sx={{ color: "#419682", mt: 1, mb: 2, marginBottom:"5px"}}
           >
             ${number}
           </Typography>
