@@ -31,9 +31,10 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import Chip from "@mui/material/Chip";
 
-const columns = [
-  { id: "userId", label: "User ID", minWidth: 170 },
+const userColumns = [
+  { id: "userId", label: "User ID", minWidth: 50 },
   { id: "username", label: "Username", minWidth: 100 },
   {
     id: "email",
@@ -47,11 +48,38 @@ const columns = [
   },
 ];
 
-const Users = ({ username }) => {
+const reportColumn = [
+  { id: "reportId", label: "Report ID", minWidth: 50 },
+  { id: "reportDate", label: "Report Date", minWidth: 100 },
+  {
+    id: "reason",
+    label: "Reason",
+    minWidth: 170,
+  },
+  {
+    id: "description",
+    label: "Description",
+    minWidth: 170,
+  },
+];
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${day.toString().padStart(2, "0")}/${month
+    .toString()
+    .padStart(2, "0")}/${year}`;
+}
+
+const Users = ({}) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
   const [selectedUsername, setSelectedUsername] = React.useState("");
   const [userData, setUserData] = useState([]);
+  const [reportData, setReportData] = useState([]);
+  const [showAllUsers, setShowAllUsers] = useState(false);
 
   // State for Ban Snackbar
   const [banSnackbarOpen, setBanSnackbarOpen] = useState(false);
@@ -69,7 +97,7 @@ const Users = ({ username }) => {
 
   useEffect(() => {
     // Fetch user data when the component mounts
-    async function fetchData() {
+    async function fetchAllUserData() {
       try {
         const response = await axios.get("http://localhost:4000/api/v1/users");
         const users = response.data.data.user;
@@ -78,7 +106,20 @@ const Users = ({ username }) => {
         console.error("Error fetching user data:", error);
       }
     }
-    fetchData();
+    async function fetchAllUserReportData() {
+      try {
+        const response = await axios.get(
+          "http://localhost:4000/api/v1/reports/type/USER"
+        );
+        const reports = response.data.data.report;
+        setReportData(reports);
+      } catch (error) {
+        console.error("Error fetching report data:", error);
+      }
+    }
+
+    fetchAllUserData();
+    fetchAllUserReportData();
   }, []);
 
   const handleChangePage = (event, newPage) => {
@@ -180,12 +221,27 @@ const Users = ({ username }) => {
         >
           <h1>Users</h1>
 
+          <Chip
+            label="Show User Reports"
+            onClick={() => setShowAllUsers(false)}
+            color="primary"
+            variant={!showAllUsers ? "filled" : "outlined"}
+            style={{ marginRight: 10, marginBottom: 30 }}
+          />
+          <Chip
+            label="Show All Users"
+            onClick={() => setShowAllUsers(true)}
+            color="primary"
+            variant={showAllUsers ? "filled" : "outlined"}
+            style={{ marginBottom: 30 }}
+          />
+          {showAllUsers && (
           <Paper sx={{ width: "100%", overflow: "hidden" }}>
             <TableContainer sx={{ maxHeight: 440 }}>
               <Table stickyHeader aria-label="sticky table">
                 <TableHead>
                   <TableRow>
-                    {columns.map((column) => (
+                      {userColumns.map((column) => (
                       <TableCell
                         key={column.id}
                         align={column.align}
@@ -199,7 +255,10 @@ const Users = ({ username }) => {
                 </TableHead>
                 <TableBody>
                   {userData
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
                     .map((row) => {
                       return (
                         <TableRow
@@ -208,7 +267,7 @@ const Users = ({ username }) => {
                           tabIndex={-1}
                           key={row.code}
                         >
-                          {columns.map((column) => {
+                            {userColumns.map((column) => {
                             const value = row[column.id];
                             return (
                               <TableCell key={column.id} align={column.align}>
@@ -251,6 +310,7 @@ const Users = ({ username }) => {
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
           </Paper>
+          )}
         </Box>
 
         {/* Dialog for Ban User */}
