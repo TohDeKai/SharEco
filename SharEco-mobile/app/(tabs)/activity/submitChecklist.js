@@ -32,7 +32,6 @@ import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
 const { white, primary, inputbackground, black } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-const LENDER_BORROWER_PROGRESS_DELTA = 1;
 
 const viewportWidthInPixels = (percentage) => {
   const screenWidth = Dimensions.get("window").width;
@@ -589,26 +588,31 @@ const submitChecklist = () => {
 
                 try {
                   // if borrower criteria is fulfilled, upgrade badge tier
-                  if (borrowerBadge.badgeTier === "BRONZE" && borrowerBadge.badgeProgress >= 30) {
+                  if (borrowerBadge.badgeTier === "BRONZE" 
+                    && borrowerBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 30) {
                     // upgrade to silver
                     await upgradeBadge(borrowerBadge.achievementId, "SILVER", false);
-                  } else if (borrowerBadge.badgeTier === "SILVER" && borrowerBadge.badgeProgress >= 100) {
+                  } else if (borrowerBadge.badgeTier === "SILVER" 
+                    && borrowerBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 100) {
                     // upgrade to gold
                     await upgradeBadge(borrowerBadge.achievementId, "GOLD", false);
                   }
 
                   // if saver criteria is fulfilled, upgrade badge tier
-                  if (saverBadge.badgeTier === "LOCKED" && completedBorrowings.length >= 10 && badgeProgress >= 500) {
+                  if (saverBadge.badgeTier === "LOCKED" && completedBorrowings.length >= 10 
+                    && saverBadge.badgeProgress + rental.rentalFee >= 500) {
                     // upgrade to bronze & reset badgeProgress
                     await upgradeBadge(saverBadge.achievementId, "BRONZE", true);
                     // reward 10
                     await rewardAchievement(10)
-                  } else if (saverBadge.badgeTier === "BRONZE" && badgeProgress >= 1000) {
+                  } else if (saverBadge.badgeTier === "BRONZE" 
+                    && saverBadge.badgeProgress + rental.rentalFee >= 1000) {
                     // upgrade to silver & reset badgeProgress
                     await upgradeBadge(saverBadge.achievementId, "SILVER", true);
                     // reward 30
                     await rewardAchievement(30)
-                  } else if (saverBadge.badgeTier === "SILVER" && badgeProgress >= 1500) {
+                  } else if (saverBadge.badgeTier === "SILVER" 
+                    && saverBadge.badgeProgress + rental.rentalFee >= 1500) {
                     // upgrade to gold & reset badgeProgress
                     await upgradeBadge(saverBadge.achievementId, "GOLD", true);
                     // reward 50
@@ -669,10 +673,12 @@ const submitChecklist = () => {
                 // criteria is fulfilled, upgrade badge tier
                 try {
                   // if lender criteria is fulfilled, upgrade badge tier
-                  if (lenderBadge.badgeTier === "BRONZE" && lenderBadge.badgeProgress >= 30) {
+                  if (lenderBadge.badgeTier === "BRONZE" 
+                    && lenderBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 30) {
                     // upgrade to silver
                     await upgradeBadge(lenderBadge.achievementId, "SILVER", false);
-                  } else if (lenderBadge.badgeTier === "SILVER" && lenderBadge.badgeProgress >= 100) {
+                  } else if (lenderBadge.badgeTier === "SILVER" 
+                    && lenderBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 100) {
                     // upgrade to gold
                     await upgradeBadge(lenderBadge.achievementId, "GOLD", false);
                   }

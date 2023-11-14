@@ -25,7 +25,7 @@ import CarouselItem from "../../../components/CarouselItem";
 import { colours } from "../../../components/ColourPalette";
 import AdCarousel from "../../../components/AdCarousel";
 import BadgeIcon from "../../../components/BadgeIcon";
-const { white, primary, inputbackground, dark, black, placeholder } = colours;
+const { white, primary, inputbackground, dark } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const Tabs = ({ activeTab, handleTabPress }) => {
