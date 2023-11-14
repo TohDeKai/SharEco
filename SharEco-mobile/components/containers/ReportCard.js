@@ -16,6 +16,7 @@ import { colours } from "../ColourPalette";
 import { useAuth } from "../../context/auth";
 import ConfirmationModal from "../ConfirmationModal";
 import axios from "axios";
+import ReportDetailsModal from "../ReportDetailsModal";
 const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const AWS_GETFILE_URL =
@@ -39,6 +40,15 @@ const ReportCard = ({ report }) => {
   const [endTime, setEndTime] = useState("");
   const [hourlyRentalLength, setHourlyRentalLength] = useState(0);
   const [isReported, setIsReported] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  const handleShowDetailsModal = () => {
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
+  };
 
   useEffect(() => {
     async function fetchUserData(userId) {
@@ -406,11 +416,19 @@ const ReportCard = ({ report }) => {
 
   return (
     <View>
-      <View style={styles.activityCard}>
-        <CardHeader />
-        <CardDetails />
-        <CardFooter />
-      </View>
+      <Pressable onPress={handleShowDetailsModal}>
+        <View style={styles.activityCard}>
+          <CardHeader />
+          <CardDetails />
+          <CardFooter />
+        </View>
+      </Pressable>
+      <ReportDetailsModal
+        isVisible={showDetailsModal}
+        onClose={handleCloseDetailsModal}
+        report={report}
+        isReported={isReported}
+      />
     </View>
   );
 };
