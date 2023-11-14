@@ -35,13 +35,15 @@ const createTransaction = async (
 // Create Withdrawal Request (no wallet balance updated)
 const createWithdrawalRequest = async (senderId, amount) => {
   try {
-    const result = await pool.query(
-      `INSERT INTO "sharEco-schema"."transaction" 
-            ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
-              values ($1, $2, $3, $4, $5) returning *`,
-      [new Date(), senderId, 1, amount, "WITHDRAW"]
-    );
-    return result.rows[0];
+
+    const result = transactionToAdmin(senderId, amount, "WITHDRAW");
+    // const result = await pool.query(
+    //   `INSERT INTO "sharEco-schema"."transaction" 
+    //         ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
+    //           values ($1, $2, $3, $4, $5) returning *`,
+    //   [new Date(), senderId, 1, amount, "WITHDRAW"]
+    // );
+    return result;
   } catch (err) {
     throw err;
   }
@@ -74,23 +76,24 @@ const approveWithdrawalRequest = async (transactionId, referenceNumber) => {
       throw new Error("Receiver user not found");
     }
 
-    const updatedSenderResult = await client.query(
-      `UPDATE "sharEco-schema"."user"
-    SET "walletBalance" = ($1 + "walletBalance")
-    WHERE "userId" = $2
-    RETURNING "walletBalance"`,
-      [-amount, senderId]
-    );
+    // const updatedSenderResult = await client.query(
+    //   `UPDATE "sharEco-schema"."user"
+    // SET "walletBalance" = ($1 + "walletBalance")
+    // WHERE "userId" = $2
+    // RETURNING "walletBalance"`,
+    //   [-amount, senderId]
+    // );
 
     // platform withdrawal fees of 5% added to admin wallet (capped at $10)
     const withdrawalFees = Math.min(10, 0.05 * amount);
+    const amountWithdrawnAfterFees = amount - withdrawalFees;
 
     const updatedReceiverResult = await client.query(
       `UPDATE "sharEco-schema"."user"
-    SET "walletBalance" = ($1 + "walletBalance")
+    SET "walletBalance" = ("walletBalance" - $1)
     WHERE "userId" = $2
     RETURNING "walletBalance"`,
-      [withdrawalFees, receiverId]
+      [amountWithdrawnAfterFees, receiverId]
     );
 
     const updatedTransactionResult = await client.query(
@@ -104,7 +107,7 @@ const approveWithdrawalRequest = async (transactionId, referenceNumber) => {
 
     return {
       transaction: result.rows[0],
-      sender_wallet_balance: updatedSenderResult.rows[0].walletBalance,
+      //sender_wallet_balance: updatedSenderResult.rows[0].walletBalance,
       receiver_wallet_balance: updatedReceiverResult.rows[0].walletBalance,
       reference_number: updatedTransactionResult.rows[0],
     };
