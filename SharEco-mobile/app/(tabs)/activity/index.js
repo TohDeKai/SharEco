@@ -827,6 +827,25 @@ const Content = ({ activeTab }) => {
               </ScrollView>
             </View>
           )}
+          {activeReportPill == "Resolved" && (
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.activityCardContainer}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+              >
+                {resolvedReports.map((report) => (
+                  <ReportCard report={report} />
+                ))}
+              </ScrollView>
+            </View>
+          )}
         </View>
       )}
 

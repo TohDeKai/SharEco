@@ -58,6 +58,8 @@ const ReportCard = ({ report }) => {
         }
       } catch (error) {
         console.log(error.message);
+        console.log(report.reportResult);
+        console.log("TYPE: " + typeof report.reportResult);
       }
     }
 
@@ -361,6 +363,14 @@ const ReportCard = ({ report }) => {
         {report.status == "UNDER REVIEW" && (
           <RegularText typography="B3" style={{ textAlign: "right" }}>
             Your report is under review
+          </RegularText>
+        )}
+        {report.status == "RESOLVED" && report.reportResult && (
+          <RegularText
+            typography="B3"
+            style={{ textAlign: "right", marginTop: 10 }}
+          >
+            Outcome: {report.reportResult.replace(/["{}]/g, "").toLowerCase()}
           </RegularText>
         )}
       </View>
