@@ -151,6 +151,42 @@ const Pills = ({ pillItems, activeLendingPill, handlePillPress }) => {
   );
 };
 
+const ReportNotifContainer = ({ numOfPendingDisputes }) => {
+  const handleDisputes = () => {
+    router.push({
+      pathname: "/activity/newDisputes",
+      params: { pendingDisputes: pendingDisputes },
+    });
+  };
+  return (
+    <View style={styles.rentalNotifContainer}>
+      <Pressable
+        onPress={() => handleDisputes()}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.rentalNotif,
+        ]}
+      >
+        <View style={styles.rentalNotifItems}>
+          <Ionicons name="file-tray-full" size={30} color={secondary} />
+          <RegularText typography="B2">Pending Disputes</RegularText>
+        </View>
+
+        <View style={styles.rentalNotifItems}>
+          {numOfPendingDisputes > 0 && (
+            <View style={styles.badge}>
+              <RegularText typography="B2" color={white}>
+                {numOfPendingDisputes >= 9 ? "9+" : numOfPendingDisputes}
+              </RegularText>
+            </View>
+          )}
+          <Ionicons name="chevron-forward" size={23} color={placeholder} />
+        </View>
+      </Pressable>
+    </View>
+  );
+};
+
 const RentalNotifContainer = ({ numOfNewRentalReq, numOfRentalUpdates }) => {
   const handlePress = (route) => {
     router.push(`activity/${route}`);
@@ -247,7 +283,7 @@ const Content = ({ activeTab }) => {
   const [userBorrowings, setUserBorrowings] = useState([]);
   const [userReports, setUserReports] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [userId, setUserId] = useState();
   const [showModal, setShowModal] = useState(false);
 
   const handleShowModal = () => {
@@ -262,6 +298,7 @@ const Content = ({ activeTab }) => {
     try {
       const userData = await getUserData();
       const userId = userData.userId;
+      setUserId(userId);
       try {
         const response1 = await axios.get(
           `http://${BASE_URL}:4000/api/v1/rentals/lenderId/${userId}`
@@ -450,6 +487,13 @@ const Content = ({ activeTab }) => {
 
   const pendingReports = userReports.filter(
     (report) => report.status === "PENDING"
+  );
+
+  const pendingDisputes = userReports.filter(
+    (report) =>
+      report.status === "PENDING" &&
+      report.type === "DISPUTE" &&
+      userId != report.reporterId
   );
 
   const underReviewReports = userReports.filter(
@@ -784,6 +828,7 @@ const Content = ({ activeTab }) => {
       )}
       {activeTab == "Reports" && (
         <View style={{ flex: 1 }}>
+          <ReportNotifContainer numOfPendingDisputes={pendingDisputes.length} />
           <Pills
             pillItems={reportPill}
             activeLendingPill={activeReportPill}
