@@ -43,6 +43,24 @@ const Overview = () => {
           totalBizVerificationReqResponse.data.data.businessVerifications.count
         );
 
+        // Fetch data for total number of rentals
+        const totalRentalsResponse = await axios.get(
+          "http://localhost:4000/api/v1/rentals"
+        );
+
+        setNumberOfRentals(
+          totalRentalsResponse.data.data.rentals.length
+        );
+
+        // Fetch data for total number of unresolved disputes
+        const totalUnresolvedDisputesResponse = await axios.get(
+          "http://localhost:4000/api/v1/reports/unresolved"
+        );
+
+        setNumberOfUnresolvedDisputes(
+          totalUnresolvedDisputesResponse.data.data.report.length
+        );
+
         // Fetch data for number of advertisments request
         const totalAdvertismentsRequestResponse = await axios.get(
           "http://localhost:4000/api/v1/allAds"
@@ -92,8 +110,8 @@ const Overview = () => {
             >
               <StatsBox subtitle="Users" number={numberOfUsers} />
               <StatsBox subtitle="Listings" number={numberOfListings} />
-              <StatsBox subtitle="Rentals" number="PENDING" />
-              <StatsBox subtitle="Unresolved Disputes" number="PENDING DB" />
+              <StatsBox subtitle="Rentals" number={numberOfRentals} />
+              <StatsBox subtitle="Unresolved Disputes" number={numberOfUnresolvedDisputes} />
               <StatsBox
                 subtitle="Biz Verifications Requests"
                 number={numberOfBizVerificationReq}
