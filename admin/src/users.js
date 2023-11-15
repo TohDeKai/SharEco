@@ -89,7 +89,7 @@ const Users = ({}) => {
     React.useState("");
   const [selectedSupportingImages, setSelectedSupportingImages] =
     React.useState([]);
-
+  const [selectedReportId, setSelectedReportId] = React.useState("");
   // State for Ban Snackbar
   const [banSnackbarOpen, setBanSnackbarOpen] = useState(false);
 
@@ -100,8 +100,14 @@ const Users = ({}) => {
   // State for Unban Snackbar
   const [unbanSnackbarOpen, setUnbanSnackbarOpen] = useState(false);
 
+  const [resolveSnackbarOpen, setResolveSnackbarOpen] = useState(false);
+
   const handleUnbanSnackbarClose = () => {
     setUnbanSnackbarOpen(false);
+  };
+
+  const handleResolveSnackbarClose = () => {
+    setResolveSnackbarOpen(false);
   };
 
   useEffect(() => {
@@ -144,12 +150,19 @@ const Users = ({}) => {
   const [openBan, setBanOpen] = React.useState(false);
   const [openUnban, setUnbanOpen] = React.useState(false);
   const [openReport, setReportOpen] = React.useState(false);
+  const [openResolve, setResolveOpen] = React.useState(false);
 
   const [loading, setLoading] = useState(false);
 
   const handleClickOpen = (username) => {
     setSelectedUsername(username);
     setBanOpen(true);
+    setReportOpen(false);
+  };
+
+  const handleResolveClickOpen = (username) => {
+    setSelectedUsername(username);
+    setResolveOpen(true);
     setReportOpen(false);
   };
 
@@ -186,6 +199,7 @@ const Users = ({}) => {
       setSelectedReportDescription(report.description);
       setSelectedReportedUsername(user.username);
       setSelectedSupportingImages(report.supportingImages);
+      setSelectedReportId(report.reportId);
       console.log("SUPPORTING IMAGES: " + report.supportingImages);
       console.log("REPORTER USERNAME: " + reporter.username);
     } catch (error) {
@@ -200,6 +214,7 @@ const Users = ({}) => {
     setBanOpen(false);
     setUnbanOpen(false);
     setReportOpen(false);
+    setResolveOpen(false);
   };
 
   const handleBan = async () => {
@@ -253,6 +268,25 @@ const Users = ({}) => {
         console.log("Unbanned user successfully");
       } else {
         console.log("Unban failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error unbanning user:", error);
+    }
+  };
+
+  const handleResolve = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+        {
+          result: ["INSUFFICIENT EVIDENCE"],
+        }
+      );
+      if (response.status === 200) {
+        console.log("Resolve report successfully");
+      } else {
+        console.log("Resolve failed");
       }
       handleClose();
     } catch (error) {
@@ -487,6 +521,32 @@ const Users = ({}) => {
           </DialogActions>
         </Dialog>
 
+        {/* Dialog for Resolve Report */}
+        <Dialog
+          open={openResolve}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {`You are closing report against ${selectedUsername} without any actions taken`}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Report will be closed without taking any action. Reporter will be
+              informed that there's insufficient evidence
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleResolve} autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Dialog for Report Details */}
         {/* Popup box to show all details of each listing */}
         <Dialog
@@ -548,6 +608,12 @@ const Users = ({}) => {
               onClick={() => handleClickOpen(selectedReportedUsername)}
             >
               Ban User
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => handleResolveClickOpen(selectedReportedUsername)}
+            >
+              Resolve Report
             </Button>
           </DialogActions>
         </Dialog>
