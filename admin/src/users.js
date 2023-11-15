@@ -245,6 +245,7 @@ const Users = ({}) => {
 
   const handleBan = async () => {
     try {
+      console.log(selectedUsername);
       const response = await axios.put(
         `http://localhost:4000/api/v1/users/ban/username`,
         {
@@ -252,6 +253,15 @@ const Users = ({}) => {
           isBanned: true,
         }
       );
+
+      await axios.put(
+        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+        {
+          result: ["USER BANNED"],
+        }
+      );
+
+      refreshData();
       if (response.status === 200) {
         setBanSnackbarOpen(true);
         // Update the user data after banning

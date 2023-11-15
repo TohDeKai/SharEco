@@ -531,8 +531,6 @@ app.put("/api/v1/users/ban/username", async (req, res) => {
       user.contactNumber,
       user.userPhotoUrl,
       req.body.isBanned,
-      user.likedItem,
-      user.wishList,
       user.displayName,
       user.aboutMe
     );
