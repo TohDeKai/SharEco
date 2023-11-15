@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Pressable,
-  Image,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Pressable, Image, StyleSheet, Dimensions } from "react-native";
 
 //components
 import { Ionicons } from "@expo/vector-icons";
@@ -32,8 +26,16 @@ const viewportWidthInPixels = (percentage) => {
 
 export default function AdCard({ ad }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { image, title, description, bidPrice, link, advertisementId } =
-    ad.item;
+  const {
+    image,
+    title,
+    description,
+    bidPrice,
+    link,
+    advertisementId,
+    status,
+    visits,
+  } = ad.item;
   const [showDeleteModal, setShowDeleteModall] = useState(false);
 
   const toggleCollapse = () => {
@@ -69,7 +71,7 @@ export default function AdCard({ ad }) {
 
   const handleShowDeleteModal = () => {
     setShowDeleteModall(true);
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -85,7 +87,12 @@ export default function AdCard({ ad }) {
             >
               {title}
             </RegularText>
-            <RegularText typography="B3">Bid: {bidPrice}</RegularText>
+
+            {status == "ACTIVE" ? (
+              <RegularText typography="B2" color={primary}>{visits} visits</RegularText>
+            ) : (
+              <RegularText typography="B3">Bid: {bidPrice}</RegularText>
+            )}
           </View>
         </View>
         {isExpanded ? (
@@ -126,24 +133,26 @@ export default function AdCard({ ad }) {
               No link provided, we will redirect users to your profile
             </RegularText>
           )}
-          <View style={styles.buttonContainer}>
-            <SecondaryButton
-              typography={"B1"}
-              color={primary}
-              style={styles.button}
-              onPress={handleShowDeleteModal}
-            >
-              Delete
-            </SecondaryButton>
-            <PrimaryButton
-              typography={"B1"}
-              color={white}
-              style={styles.button}
-              onPress={toEditAd}
-            >
-              Edit
-            </PrimaryButton>
-          </View>
+          {status == "PENDING" && (
+            <View style={styles.buttonContainer}>
+              <SecondaryButton
+                typography={"B1"}
+                color={primary}
+                style={styles.button}
+                onPress={handleShowDeleteModal}
+              >
+                Delete
+              </SecondaryButton>
+              <PrimaryButton
+                typography={"B1"}
+                color={white}
+                style={styles.button}
+                onPress={toEditAd}
+              >
+                Edit
+              </PrimaryButton>
+            </View>
+          )}
           {showDeleteModal && (
             <ConfirmationModal
               isVisible={showDeleteModal}
@@ -152,6 +161,16 @@ export default function AdCard({ ad }) {
               style={{ flex: 0 }}
               type="Delete"
             />
+          )}
+          {status == "ACTIVE" && (
+            <View>
+              <RegularText typography="B1" style={styles.headerMargin}>
+                Bid Amount
+              </RegularText>
+              <RegularText typography="Subtitle" style={styles.textMargin}>
+                {bidPrice}
+              </RegularText>
+            </View>
           )}
         </View>
       )}
