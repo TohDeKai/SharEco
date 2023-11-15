@@ -2415,7 +2415,7 @@ app.get("/api/v1/weekRevenue", async (req, res) => {
     res.status(200).json({
       status: "success",
       data: {
-        revenue: revenueData
+        revenue: revenueData,
       },
     });
   } catch (error) {
@@ -3044,6 +3044,30 @@ app.put("/api/v1/report/status/:reportId", async (req, res) => {
     const status = req.body.status;
     const reportId = req.params.reportId;
     const report = await reportdb.updateReportStatus(status, reportId);
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// UPDATE report result
+app.put("/api/v1/report/result/:reportId", async (req, res) => {
+  try {
+    const result = req.body.result;
+    const reportId = req.params.reportId;
+    const report = await reportdb.updateReportResult(result, reportId);
     if (report) {
       res.status(200).json({
         status: "success",
