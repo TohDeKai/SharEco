@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     width: viewportWidthInPixels(85),
     height: viewportHeightInPixels(85),
     justifyContent: "space-between",
-    top: 40,
+    top: 20,
   },
   button: {
     bottom: 40,
