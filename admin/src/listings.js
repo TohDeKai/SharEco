@@ -767,7 +767,7 @@ const Listing = ({}) => {
               <Button
                 variant="contained"
                 onClick={() =>
-                  handleClickOpen(selectedItemId, selectedItemTitle)
+                  handleClickOpen(selectedItemTitle, selectedItemId)
                 }
               >
                 Disable Item
