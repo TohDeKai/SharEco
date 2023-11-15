@@ -100,6 +100,7 @@ const Users = ({}) => {
   // State for Unban Snackbar
   const [unbanSnackbarOpen, setUnbanSnackbarOpen] = useState(false);
 
+  // State for Resolve Snackbar
   const [resolveSnackbarOpen, setResolveSnackbarOpen] = useState(false);
 
   const handleUnbanSnackbarClose = () => {
@@ -311,6 +312,7 @@ const Users = ({}) => {
       if (response.status === 200) {
         console.log("Resolve report successfully");
         refreshData();
+        setResolveSnackbarOpen(true);
       } else {
         console.log("Resolve failed");
       }
@@ -664,6 +666,18 @@ const Users = ({}) => {
         >
           <Alert severity="success" onClose={handleUnbanSnackbarClose}>
             User successfully unbanned!
+          </Alert>
+        </Snackbar>
+
+        {/* Snackbar for Resolve Report */}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={resolveSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleResolveSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleResolveSnackbarClose}>
+            Report successfully resolved!
           </Alert>
         </Snackbar>
       </div>
