@@ -110,6 +110,29 @@ const Users = ({}) => {
     setResolveSnackbarOpen(false);
   };
 
+  const refreshData = async () => {
+    try {
+      const userResponse = await axios.get(
+        "http://localhost:4000/api/v1/users"
+      );
+      const users = userResponse.data.data.user;
+      setUserData(users);
+
+      const reportResponse = await axios.get(
+        "http://localhost:4000/api/v1/reports/type/USER"
+      );
+      const reports = reportResponse.data.data.report;
+
+      setReportData(
+        reports.filter((report) => report.reportResult.length == 2)
+      ); // only if reportResult is empty then it shows
+
+      console.log("Data refreshed successfully");
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
+  };
+
   useEffect(() => {
     // Fetch user data when the component mounts
     async function fetchAllUserData() {
@@ -127,7 +150,9 @@ const Users = ({}) => {
           "http://localhost:4000/api/v1/reports/type/USER"
         );
         const reports = response.data.data.report;
-        setReportData(reports);
+        setReportData(
+          reports.filter((report) => report.reportResult.length == 2)
+        ); // only if reportResult is empty then it shows
       } catch (error) {
         console.error("Error fetching report data:", error);
       }
@@ -285,6 +310,7 @@ const Users = ({}) => {
       );
       if (response.status === 200) {
         console.log("Resolve report successfully");
+        refreshData();
       } else {
         console.log("Resolve failed");
       }
