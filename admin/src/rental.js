@@ -237,12 +237,45 @@ const Rental = () => {
 
   const handleResolve = async () => {
     try {
-      const response = await axios.put(
+      var result = [];
+      selectedOptions.forEach((selectedOption) => {
+        console.log(`Processing option: ${selectedOption}`);
+        if (selectedOption === "Disable Listing") {
+          console.log("Disable Listing");
+          result.push("LISTING REMOVED");
+        } else if (selectedOption === "Close With Insufficient Evidence") {
+          console.log("Close With Insufficient Evidence");
+          result.push("INSUFFICIENT EVIDENCE");
+          axios.put(
+            `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+            {
+              result: ["INSUFFICIENT EVIDENCE"],
+            }
+          );
+        } else if (selectedOption === "Ban Reported User") {
+          console.log("Ban Reported User");
+          result.push("USER BANNED");
+        } else if (selectedOption === "Refund Rental Fee To Borrower") {
+          console.log("Refund Rental Fee To Borrower");
+          result.push("RENTAL FEE REFUNDED");
+        } else if (selectedOption === "Forfeit Deposit Fee To Lender") {
+          console.log("Forfeit Deposit Fee To Lender");
+          result.push("DEPOSIT FEE FORFEITED");
+        } else {
+          // Handle any other cases
+          console.log("Unknown Option");
+        }
+      });
+
+      console.log(result);
+
+      await axios.put(
         `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
         {
-          result: ["INSUFFICIENT EVIDENCE"],
+          result: result,
         }
       );
+
       await axios.put(
         `http://localhost:4000/api/v1/report/status/${selectedReportId}`,
         {
@@ -250,16 +283,11 @@ const Rental = () => {
         }
       );
 
-      if (response.status === 200) {
-        console.log("Resolve report successfully");
-        refreshData();
-        setResolveSnackbarOpen(true);
-      } else {
-        console.log("Resolve failed");
-      }
+      refreshData();
+      setResolveSnackbarOpen(true);
       handleClose();
     } catch (error) {
-      console.error("Error unbanning user:", error);
+      console.error("Error resolving report:", error);
     }
   };
 
