@@ -339,6 +339,36 @@ const Rental = () => {
     padding: "10px", // Adjust padding as needed
   };
 
+  const handleBan = async () => {
+    try {
+      console.log(selectedReportedUsername);
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/users/ban/username`,
+        {
+          username: selectedReportedUsername,
+          isBanned: true,
+        }
+      );
+
+      await axios.put(
+        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+        {
+          result: ["USER BANNED"],
+        }
+      );
+
+      refreshData();
+      if (response.status === 200) {
+        console.log("Banned user successfully");
+      } else {
+        console.log("Ban failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error banning user:", error);
+    }
+  };
+
   return (
     <ThemeProvider theme={styles.shareCoTheme}>
       <div style={{ display: "flex" }}>
