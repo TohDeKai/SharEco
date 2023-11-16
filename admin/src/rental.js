@@ -53,6 +53,8 @@ const Rental = () => {
   );
   const [selectedItemId, setSelectedItemId] = React.useState("");
   const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
+  const [selectedResult, setSelectedResult] = React.useState("");
+
   const [openReport, setReportOpen] = React.useState(false);
   const [openResolve, setResolveOpen] = React.useState(false);
 
@@ -99,6 +101,35 @@ const Rental = () => {
       .toString()
       .padStart(2, "0")}/${year}`;
   }
+
+  const formatString = (inputString) => {
+    // Split the input string into phrases using ","
+    const phrases = inputString.split(",");
+
+    // Clean and format each phrase
+    const formattedStrings = phrases.map((phrase) => {
+      // Remove curly braces and double quotes
+      const cleanedPhrase = phrase.replace(/[{}"]/g, "").trim();
+
+      // Split the cleaned phrase into words
+      const words = cleanedPhrase.split(" ");
+
+      // Capitalize the first letter of each word without changing the rest of the letters
+      const capitalizedWords = words.map(
+        (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      );
+
+      // Join the words back together with a space
+      const formattedPhrase = capitalizedWords.join(" ");
+
+      return formattedPhrase;
+    });
+
+    // Join the formatted phrases back together with a comma
+    const result = formattedStrings.join(", ");
+
+    return result;
+  };
 
   const reportColumn = [
     { id: "reportId", label: "Report ID", minWidth: 50 },
@@ -242,6 +273,8 @@ const Rental = () => {
       setSelectedResponseImages(report.responseImages);
       setSelectedItemId(item.itemId);
       setSelectedItemTitle(item.itemTitle);
+      setSelectedResult(report.reportResult);
+      console.log("RESULTS: " + report.reportResult);
       console.log("SUPPORTING IMAGES: " + report.supportingImages);
       console.log("REPORTER USERNAME: " + reporter.username);
     } catch (error) {
@@ -471,6 +504,12 @@ const Rental = () => {
                       : "No Response Images"}
                   </TableCell>
                 </TableRow>
+                {selectedResult.length != 2 && (
+                  <TableRow>
+                    <TableCell style={cellStyle}>Results</TableCell>
+                    <TableCell>{formatString(selectedResult)}</TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </DialogContent>
