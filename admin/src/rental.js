@@ -160,7 +160,7 @@ const Rental = () => {
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
   const availableOptions = [
-    "Insufficent Evidence",
+    "Close With Insufficent Evidence",
     "Ban Reported User",
     "Refund Rental Fee To Borrower",
     "Forfeit Deposit Fee To Lender",
@@ -437,12 +437,16 @@ const Rental = () => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            {`You are closing report on rental with item: ${selectedItemTitle} on user ${selectedReportedUsername} without any actions taken`}
+            {`You are closing report on rental with item: ${selectedItemTitle} on user ${selectedReportedUsername}`}
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Report will be closed without taking any action. Reporter will be
-              informed that there's insufficient evidence
+              The following actions will be taken:
+              <ul>
+                {selectedOptions.map((option, index) => (
+                  <li key={index}>{option}</li>
+                ))}
+              </ul>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
