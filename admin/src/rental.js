@@ -61,6 +61,9 @@ const Rental = () => {
   // State for Resolve Snackbar
   const [resolveSnackbarOpen, setResolveSnackbarOpen] = useState(false);
 
+  const handleResolveSnackbarClose = () => {
+    setResolveSnackbarOpen(false);
+  };
   const handleStatusFilterChange = (newStatus) => {
     setStatusFilter(newStatus);
   };
@@ -520,7 +523,47 @@ const Rental = () => {
                 handleResolveClickOpen(selectedItemTitle, selectedItemId)
               }
             >
-              Resolve Report
+              Insufficent Evidence
+            </Button>
+          </DialogActions>
+          <DialogActions>
+            <Button
+              variant="contained"
+              onClick={() =>
+                handleResolveClickOpen(selectedItemTitle, selectedItemId)
+              }
+            >
+              Insufficent Evidence
+            </Button>
+          </DialogActions>
+          <DialogActions>
+            <Button
+              variant="contained"
+              onClick={() =>
+                handleResolveClickOpen(selectedItemTitle, selectedItemId)
+              }
+            >
+              Insufficent Evidence
+            </Button>
+          </DialogActions>
+          <DialogActions>
+            <Button
+              variant="contained"
+              onClick={() =>
+                handleResolveClickOpen(selectedItemTitle, selectedItemId)
+              }
+            >
+              Insufficent Evidence
+            </Button>
+          </DialogActions>
+          <DialogActions>
+            <Button
+              variant="contained"
+              onClick={() =>
+                handleResolveClickOpen(selectedItemTitle, selectedItemId)
+              }
+            >
+              Insufficent Evidence
             </Button>
           </DialogActions>
         </Dialog>
