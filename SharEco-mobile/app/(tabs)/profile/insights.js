@@ -7,6 +7,7 @@ import {
   Pressable,
   FlatList,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
@@ -61,6 +62,7 @@ const Impressions = () => {
   const [distinctImpressions, setDistinctImpressions] = useState([]);
   const [totalEarnings, setTotalEarnings] = useState("$0.00");
   const [itemOriginalPrice, setItemOriginalPrice] = useState("0.00");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchInsights() {
@@ -94,8 +96,10 @@ const Impressions = () => {
             totalEarningsResponse.data.data.totalEarnings[0].totalEarnings
           );
         }
+        setLoading(false);
       } catch (error) {
         console.log(error.message);
+        setLoading(false);
       }
     }
     fetchInsights();
@@ -192,6 +196,9 @@ const Impressions = () => {
       <RegularText typography="H3" style={{ marginBottom: 20 }}>
         This Week's Impressions
       </RegularText>
+      {loading ? (
+        <ActivityIndicator size="small" color={primary} />
+    ) : (
       <BarChart
         data={barData}
         vertical
@@ -203,6 +210,7 @@ const Impressions = () => {
         xAxisThickness={0}
         initialSpacing={0}
       />
+    )}
 
       <RegularText typography="H3" style={{ marginTop: 50 }}>
         Revenue

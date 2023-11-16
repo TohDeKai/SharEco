@@ -162,7 +162,7 @@ const Footer = ({ activeButton, spotlightDetails }) => {
   };
 
   return (
-    <View style={{bottom:-viewportHeightInPixels(10)}}>
+    <View>
       <View>
         <MessageBox style={{ marginBottom: 10 }} success={isSuccessMessage}>
           {message || " "}
