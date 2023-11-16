@@ -878,7 +878,7 @@ const Listing = ({}) => {
                 )
               }
             >
-              Resolve Report
+              Close Report
             </Button>
           </DialogActions>
         </Dialog>
@@ -1003,7 +1003,7 @@ const Listing = ({}) => {
                 )
               }
             >
-              Resolve Report
+              Close Report
             </Button>
           </DialogActions>
         </Dialog>
