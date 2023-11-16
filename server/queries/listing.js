@@ -200,10 +200,12 @@ const getOtherUserItems = async (userId) => {
         AND NOT EXISTS (
           SELECT 1
           FROM "sharEco-schema"."report"
-          WHERE "reporterId" = $1
-            AND "type" = 'LISTING'
-            AND "targetId" = "sharEco-schema"."item"."itemId"
-        );`,
+          WHERE (
+            ("reporterId" = $1 AND "type" = 'LISTING' AND "targetId" = "sharEco-schema"."item"."itemId")
+            OR
+            ("reporterId" = $1 AND "type" = 'USER' AND "targetId" = "sharEco-schema"."item"."userId")
+          )
+        )`,
       [userId]
     );
     return result.rows;
@@ -224,9 +226,12 @@ const getOtherUserItemsByKeywords = async (userId, keywords) => {
         AND NOT EXISTS (
           SELECT 1
           FROM "sharEco-schema"."report"
-          WHERE "reporterId" = $1
-            AND "type" = 'LISTING'
-            AND "targetId" = "sharEco-schema"."item"."itemId")
+          WHERE (
+            ("reporterId" = $1 AND "type" = 'LISTING' AND "targetId" = "sharEco-schema"."item"."itemId")
+            OR
+            ("reporterId" = $1 AND "type" = 'USER' AND "targetId" = "sharEco-schema"."item"."userId")
+          )
+        )
         AND "document_with_weights" @@ to_tsquery('english', $2)
       ORDER BY ts_rank("document_with_weights", to_tsquery('english', $2)) DESC;
       `,
@@ -242,13 +247,19 @@ const getOtherUserItemsByKeywords = async (userId, keywords) => {
 const getOtherUserItemsByCategory = async (userId, category) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."item" 
-          WHERE "userId" != $1 AND "category" = $2 AND "disabled" != true AND NOT EXISTS (
-            SELECT 1
-            FROM "sharEco-schema"."report"
-            WHERE "reporterId" = $1
-              AND "type" = 'LISTING'
-              AND "targetId" = "sharEco-schema"."item"."itemId")`,
+      `SELECT *
+      FROM "sharEco-schema"."item"
+      WHERE "userId" != $1
+        AND "disabled" != true
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "sharEco-schema"."report"
+          WHERE (
+            ("reporterId" = $1 AND "type" = 'LISTING' AND "targetId" = "sharEco-schema"."item"."itemId")
+            OR
+            ("reporterId" = $1 AND "type" = 'USER' AND "targetId" = "sharEco-schema"."item"."userId")
+          )
+        ) AND "category" = $2 `,
       [userId, category]
     );
     return result.rows;
@@ -268,16 +279,17 @@ const getOtherUserItemsByCategoryByKeywords = async (
       `
       SELECT *
       FROM "sharEco-schema"."item"
-      WHERE
-        "userId" != $1
-        AND "category" = $2
+      WHERE "userId" != $1
         AND "disabled" != true
         AND NOT EXISTS (
           SELECT 1
           FROM "sharEco-schema"."report"
-          WHERE "reporterId" = $1
-            AND "type" = 'LISTING'
-            AND "targetId" = "sharEco-schema"."item"."itemId")
+          WHERE (
+            ("reporterId" = $1 AND "type" = 'LISTING' AND "targetId" = "sharEco-schema"."item"."itemId")
+            OR
+            ("reporterId" = $1 AND "type" = 'USER' AND "targetId" = "sharEco-schema"."item"."userId")
+          )
+        ) AND "category" = $2
         AND "document_with_weights" @@ to_tsquery('english', $3)
       ORDER BY ts_rank("document_with_weights", to_tsquery('english', $3)) DESC;
       `,
