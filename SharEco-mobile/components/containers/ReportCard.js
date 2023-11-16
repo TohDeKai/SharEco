@@ -185,6 +185,12 @@ const ReportCard = ({ report }) => {
     return daysDifference;
   };
 
+  const getDateThreeDaysLater = (originalDate) => {
+    const threeDaysLater = new Date(originalDate);
+    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+    return threeDaysLater;
+  };
+
   const CardHeader = () => {
     return (
       <View style={[styles.cardHeader, styles.cardHeaderWithCountdown]}>
@@ -349,8 +355,12 @@ const ReportCard = ({ report }) => {
               typography="B3"
               style={{ textAlign: "right" }} // Adjust the value as needed
             >
-              {calculateDaysDifference(report.reportDate)}{" "}
-              {calculateDaysDifference(report.reportDate) === 1
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              )}{" "}
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              ) === 1
                 ? "day"
                 : "days"}{" "}
               left to respond
@@ -363,8 +373,14 @@ const ReportCard = ({ report }) => {
               typography="B3"
               style={{ textAlign: "right", marginTop: 10 }}
             >
-              {calculateDaysDifference(report.reportDate)}{" "}
-              {calculateDaysDifference(report.reportDate) == 1 ? "day" : "days"}{" "}
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              )}{" "}
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              ) == 1
+                ? "day"
+                : "days"}{" "}
               left for other party to respond
             </RegularText>
           )}

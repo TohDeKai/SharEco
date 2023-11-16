@@ -77,9 +77,40 @@ const Listing = ({}) => {
   // State for Enable Listing Snackbar
   const [enableSnackbarOpen, setEnableSnackbarOpen] = useState(false);
   const [openReport, setReportOpen] = React.useState(false);
+  const [openResolve, setResolveOpen] = React.useState(false);
 
   const handleEnableSnackbarClose = () => {
     setEnableSnackbarOpen(false);
+  };
+
+  // State for Resolve Snackbar
+  const [resolveSnackbarOpen, setResolveSnackbarOpen] = useState(false);
+
+  const handleResolveSnackbarClose = () => {
+    setResolveSnackbarOpen(false);
+  };
+
+  const refreshData = async () => {
+    try {
+      const itemResponse = await axios.get(
+        "http://localhost:4000/api/v1/items"
+      );
+      const items = itemResponse.data.data.item;
+      setItemData(items);
+
+      const reportResponse = await axios.get(
+        "http://localhost:4000/api/v1/reports/type/LISTING"
+      );
+      const reports = reportResponse.data.data.report;
+
+      setReportData(
+        reports.filter((report) => report.reportResult.length == 2)
+      ); // only if reportResult is empty then it shows
+
+      console.log("Data refreshed successfully");
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
   };
 
   const [orderBy, setOrderBy] = useState("rentalRateHourly");
@@ -136,6 +167,7 @@ const Listing = ({}) => {
   const [selectedCategory, setSelectedCategory] = React.useState("");
   const [selectedIsBusiness, setSelectedIsBusiness] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState({});
+  const [selectedReportId, setSelectedReportId] = React.useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -167,7 +199,9 @@ const Listing = ({}) => {
           "http://localhost:4000/api/v1/reports/type/LISTING"
         );
         const reports = response.data.data.report;
-        setReportData(reports);
+        setReportData(
+          reports.filter((report) => report.reportResult.length == 2)
+        ); // only if reportResult is empty then it shows
       } catch (error) {
         console.error("Error fetching report data:", error);
       }
@@ -212,6 +246,7 @@ const Listing = ({}) => {
       setSelectedSupportingImages(report.supportingImages);
       setSelectedReportedListingName(item.itemTitle);
       setSelectedItem(item);
+      setSelectedReportId(report.reportId);
       console.log("SUPPORTING IMAGES: " + report.supportingImages);
       console.log(Array.isArray(selectedSupportingImages)); // Should log true if it's an array
     } catch (error) {
@@ -232,6 +267,7 @@ const Listing = ({}) => {
     setSelectedItemId(itemId);
     setDisableOpen(true);
     setReportOpen(false);
+    setDetailsOpen(false);
   };
 
   const handleEnableClickOpen = (title, itemId) => {
@@ -239,6 +275,14 @@ const Listing = ({}) => {
     setSelectedItemId(itemId);
     setEnableOpen(true);
     setReportOpen(false);
+  };
+
+  const handleResolveClickOpen = (title, itemId) => {
+    setSelectedItemTitle(title);
+    setSelectedItemId(itemId);
+    setResolveOpen(true);
+    setReportOpen(false);
+    setDetailsOpen(false);
   };
 
   function formatDate(dateString) {
@@ -308,6 +352,7 @@ const Listing = ({}) => {
       setSelectedOtherLocation(otherLocation);
       setSelectedCategory(category);
       setSelectedIsBusiness(isBusiness);
+
       setLoading(false); // Set loading state to false when the request is complete
       setDetailsOpen(true); // Open the dialog
     }
@@ -318,6 +363,7 @@ const Listing = ({}) => {
     setEnableOpen(false);
     setDetailsOpen(false);
     setReportOpen(false);
+    setResolveOpen(false);
   };
 
   const handleDisable = async () => {
@@ -328,15 +374,23 @@ const Listing = ({}) => {
           disabled: true,
         }
       );
+
+      await axios.put(
+        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+        {
+          result: ["LISTING REMOVED"],
+        }
+      );
+
+      await axios.put(
+        `http://localhost:4000/api/v1/report/status/${selectedReportId}`,
+        {
+          status: "RESOLVED",
+        }
+      );
       if (response.status === 200) {
         // Update the item data after disabling
-        const updatedItemData = itemData.map((item) => {
-          if (item.itemTitle === selectedItemTitle) {
-            item.disabled = true;
-          }
-          return item;
-        });
-        setItemData(updatedItemData);
+        refreshData();
         setDisableSnackbarOpen(true);
         console.log("Disabled item successfully");
       } else {
@@ -373,6 +427,33 @@ const Listing = ({}) => {
       handleClose();
     } catch (error) {
       console.error("Error enabling item:", error);
+    }
+  };
+
+  const handleResolve = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+        {
+          result: ["INSUFFICIENT EVIDENCE"],
+        }
+      );
+      await axios.put(
+        `http://localhost:4000/api/v1/report/status/${selectedReportId}`,
+        {
+          status: "RESOLVED",
+        }
+      );
+      if (response.status === 200) {
+        console.log("Resolve report successfully");
+        refreshData();
+        setResolveSnackbarOpen(true);
+      } else {
+        console.log("Resolve failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error unbanning user:", error);
     }
   };
 
@@ -767,7 +848,7 @@ const Listing = ({}) => {
               <Button
                 variant="contained"
                 onClick={() =>
-                  handleClickOpen(selectedItemId, selectedItemTitle)
+                  handleClickOpen(selectedItemTitle, selectedItemId)
                 }
               >
                 Disable Item
@@ -782,6 +863,43 @@ const Listing = ({}) => {
                 Enable Item
               </Button>
             )}
+            <Button
+              variant="contained"
+              onClick={() =>
+                handleResolveClickOpen(
+                  selectedItem.itemTitle,
+                  selectedItem.itemId
+                )
+              }
+            >
+              Close Report
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog for Resolve Report */}
+        <Dialog
+          open={openResolve}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {`You are closing report on Item: ${selectedItemTitle} without any actions taken`}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Report will be closed without taking any action. Reporter will be
+              informed that there's insufficient evidence
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleResolve} autoFocus>
+              Confirm
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -870,6 +988,17 @@ const Listing = ({}) => {
             >
               Disable Item
             </Button>
+            <Button
+              variant="contained"
+              onClick={() =>
+                handleResolveClickOpen(
+                  selectedItem.itemTitle,
+                  selectedItem.itemId
+                )
+              }
+            >
+              Close Report
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -893,6 +1022,17 @@ const Listing = ({}) => {
         >
           <Alert severity="success" onClose={handleDisableSnackbarClose}>
             Listing successfully disabled!
+          </Alert>
+        </Snackbar>
+        {/* Snackbar for Resolve Report */}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={resolveSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleResolveSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleResolveSnackbarClose}>
+            Report successfully resolved!
           </Alert>
         </Snackbar>
       </div>

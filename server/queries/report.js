@@ -40,7 +40,7 @@ const getUnresolvedReports = async () => {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."report" 
       WHERE "status" != $1`,
-      ['RESOLVED']
+      ["RESOLVED"]
     );
     return result.rows;
   } catch (err) {
@@ -175,6 +175,24 @@ const getReportsById = async (reportId) => {
     throw err;
   }
 };
+
+// Add result to report
+const updateReportResult = async (reportResult, reportId) => {
+  try {
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."report" 
+          SET 
+          "reportResult" = $1
+          WHERE "reportId" = $2
+          RETURNING *`,
+      [reportResult, reportId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   getAllReports,
   getReportsByType,
@@ -184,5 +202,6 @@ module.exports = {
   updateSupportingImages,
   getReportsMadeByOrAgainstUser,
   getReportsById,
-  getUnresolvedReports
+  getUnresolvedReports,
+  updateReportResult,
 };

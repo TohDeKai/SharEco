@@ -89,7 +89,7 @@ const Users = ({}) => {
     React.useState("");
   const [selectedSupportingImages, setSelectedSupportingImages] =
     React.useState([]);
-
+  const [selectedReportId, setSelectedReportId] = React.useState("");
   // State for Ban Snackbar
   const [banSnackbarOpen, setBanSnackbarOpen] = useState(false);
 
@@ -100,8 +100,38 @@ const Users = ({}) => {
   // State for Unban Snackbar
   const [unbanSnackbarOpen, setUnbanSnackbarOpen] = useState(false);
 
+  // State for Resolve Snackbar
+  const [resolveSnackbarOpen, setResolveSnackbarOpen] = useState(false);
+
   const handleUnbanSnackbarClose = () => {
     setUnbanSnackbarOpen(false);
+  };
+
+  const handleResolveSnackbarClose = () => {
+    setResolveSnackbarOpen(false);
+  };
+
+  const refreshData = async () => {
+    try {
+      const userResponse = await axios.get(
+        "http://localhost:4000/api/v1/users"
+      );
+      const users = userResponse.data.data.user;
+      setUserData(users);
+
+      const reportResponse = await axios.get(
+        "http://localhost:4000/api/v1/reports/type/USER"
+      );
+      const reports = reportResponse.data.data.report;
+
+      setReportData(
+        reports.filter((report) => report.reportResult.length == 2)
+      ); // only if reportResult is empty then it shows
+
+      console.log("Data refreshed successfully");
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
   };
 
   useEffect(() => {
@@ -121,7 +151,9 @@ const Users = ({}) => {
           "http://localhost:4000/api/v1/reports/type/USER"
         );
         const reports = response.data.data.report;
-        setReportData(reports);
+        setReportData(
+          reports.filter((report) => report.reportResult.length == 2)
+        ); // only if reportResult is empty then it shows
       } catch (error) {
         console.error("Error fetching report data:", error);
       }
@@ -144,12 +176,19 @@ const Users = ({}) => {
   const [openBan, setBanOpen] = React.useState(false);
   const [openUnban, setUnbanOpen] = React.useState(false);
   const [openReport, setReportOpen] = React.useState(false);
+  const [openResolve, setResolveOpen] = React.useState(false);
 
   const [loading, setLoading] = useState(false);
 
   const handleClickOpen = (username) => {
     setSelectedUsername(username);
     setBanOpen(true);
+    setReportOpen(false);
+  };
+
+  const handleResolveClickOpen = (username) => {
+    setSelectedUsername(username);
+    setResolveOpen(true);
     setReportOpen(false);
   };
 
@@ -186,6 +225,7 @@ const Users = ({}) => {
       setSelectedReportDescription(report.description);
       setSelectedReportedUsername(user.username);
       setSelectedSupportingImages(report.supportingImages);
+      setSelectedReportId(report.reportId);
       console.log("SUPPORTING IMAGES: " + report.supportingImages);
       console.log("REPORTER USERNAME: " + reporter.username);
     } catch (error) {
@@ -200,10 +240,12 @@ const Users = ({}) => {
     setBanOpen(false);
     setUnbanOpen(false);
     setReportOpen(false);
+    setResolveOpen(false);
   };
 
   const handleBan = async () => {
     try {
+      console.log(selectedUsername);
       const response = await axios.put(
         `http://localhost:4000/api/v1/users/ban/username`,
         {
@@ -211,6 +253,22 @@ const Users = ({}) => {
           isBanned: true,
         }
       );
+
+      await axios.put(
+        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+        {
+          result: ["USER BANNED"],
+        }
+      );
+
+      await axios.put(
+        `http://localhost:4000/api/v1/report/status/${selectedReportId}`,
+        {
+          status: "RESOLVED",
+        }
+      );
+
+      refreshData();
       if (response.status === 200) {
         setBanSnackbarOpen(true);
         // Update the user data after banning
@@ -253,6 +311,34 @@ const Users = ({}) => {
         console.log("Unbanned user successfully");
       } else {
         console.log("Unban failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error unbanning user:", error);
+    }
+  };
+
+  const handleResolve = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+        {
+          result: ["INSUFFICIENT EVIDENCE"],
+        }
+      );
+
+      await axios.put(
+        `http://localhost:4000/api/v1/report/status/${selectedReportId}`,
+        {
+          status: "RESOLVED",
+        }
+      );
+      if (response.status === 200) {
+        console.log("Resolve report successfully");
+        refreshData();
+        setResolveSnackbarOpen(true);
+      } else {
+        console.log("Resolve failed");
       }
       handleClose();
     } catch (error) {
@@ -487,6 +573,32 @@ const Users = ({}) => {
           </DialogActions>
         </Dialog>
 
+        {/* Dialog for Resolve Report */}
+        <Dialog
+          open={openResolve}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {`You are closing report against ${selectedUsername} without any actions taken`}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Report will be closed without taking any action. Reporter will be
+              informed that there's insufficient evidence
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleResolve} autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Dialog for Report Details */}
         {/* Popup box to show all details of each listing */}
         <Dialog
@@ -549,6 +661,12 @@ const Users = ({}) => {
             >
               Ban User
             </Button>
+            <Button
+              variant="contained"
+              onClick={() => handleResolveClickOpen(selectedReportedUsername)}
+            >
+              Resolve Report
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -572,6 +690,18 @@ const Users = ({}) => {
         >
           <Alert severity="success" onClose={handleUnbanSnackbarClose}>
             User successfully unbanned!
+          </Alert>
+        </Snackbar>
+
+        {/* Snackbar for Resolve Report */}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={resolveSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleResolveSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleResolveSnackbarClose}>
+            Report successfully resolved!
           </Alert>
         </Snackbar>
       </div>
