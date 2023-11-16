@@ -536,36 +536,6 @@ const Rental = () => {
               Insufficent Evidence
             </Button>
           </DialogActions>
-          <DialogActions>
-            <Button
-              variant="contained"
-              onClick={() =>
-                handleResolveClickOpen(selectedItemTitle, selectedItemId)
-              }
-            >
-              Insufficent Evidence
-            </Button>
-          </DialogActions>
-          <DialogActions>
-            <Button
-              variant="contained"
-              onClick={() =>
-                handleResolveClickOpen(selectedItemTitle, selectedItemId)
-              }
-            >
-              Insufficent Evidence
-            </Button>
-          </DialogActions>
-          <DialogActions>
-            <Button
-              variant="contained"
-              onClick={() =>
-                handleResolveClickOpen(selectedItemTitle, selectedItemId)
-              }
-            >
-              Insufficent Evidence
-            </Button>
-          </DialogActions>
         </Dialog>
 
         {/* Snackbar for Resolve Report */}
