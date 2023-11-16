@@ -57,7 +57,14 @@ const createAd = () => {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUser(userData);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -84,6 +91,24 @@ const createAd = () => {
     }
     fetchAdsData();
   }, []);
+
+  const handleRefreshWallet = async () => {
+    try {
+      const userData = await getUserData();
+      if (userData) {
+        try {
+          const updatedUserData = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+          );
+          setUser(updatedUserData.data.data.user);
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
 
   const Top10BidRange = () => {
     if (rankedAds && rankedAds.length > 0) {
@@ -297,6 +322,12 @@ const createAd = () => {
                   setMessage("Minimum bid is $20");
                   setIsSuccessMessage(false);
                 } else if (
+                  values.bidPrice >
+                  parseFloat(user.walletBalance.replace("$", ""))
+                ) {
+                  setMessage("Please top up EcoWallet");
+                  setIsSuccessMessage(false);
+                }else if (
                   values.title == "" ||
                   values.description == "" ||
                   values.bidPrice < 20 ||
@@ -393,13 +424,14 @@ const createAd = () => {
                   <View style={styles.bidPrice}>
                     <View>
                       <RegularText typography="H3">Bid Price ($)</RegularText>
+                      <Pressable style={{alignContent: "center", justifyContent: "center"}} onPress={handleRefreshWallet}>
                       <RegularText
                         typography="Subtitle"
-                        color={primary}
+                        color={secondary}
                         style={{ paddingTop: 6 }}
                       >
-                        Wallet Balance: {user.walletBalance}
-                      </RegularText>
+                        Wallet Balance: {user.walletBalance} <Ionicons name="refresh-circle" size={20} color={secondary}/>
+                      </RegularText></Pressable>
                     </View>
                     <StyledTextInput
                       value={values.bidPrice.toString()}

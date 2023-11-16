@@ -124,25 +124,27 @@ const Footer = ({ activeButton, spotlightDetails }) => {
           itemId: itemId, //stub
         };
 
-        const transactionData = {
-          senderId: user.userId,
-          amount: details.price,
-          transactionType: "SPOTLIGHT",
-        };
-
         const response = await axios.post(
           `http://${BASE_URL}:4000/api/v1/spotlight`,
           spotlightData
         );
 
-        const transactionResponse = await axios.post(
-          `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
-          transactionData
-        );
+        if (response.status === 200) {
+          const transactionData = {
+            senderId: user.userId,
+            amount: details.price,
+            transactionType: "SPOTLIGHT",
+          };
 
-        if (response.status === 200 && transactionResponse.status === 200) {
-          console.log("Spotlight created successfully");
-          router.replace("/profile");
+          const transactionResponse = await axios.post(
+            `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+            transactionData
+          );
+          
+          if(transactionResponse.status === 200) {
+            console.log("Spotlight created successfully");
+            router.replace("/profile");
+          }
         } else {
           //shouldnt come here
           console.log("Spotlight creation unsuccessful");
@@ -268,7 +270,7 @@ const styles = StyleSheet.create({
   nav: {
     width: "100%",
     position: "absolute",
-    height: 80,
+    height: viewportHeightInPixels(12),
     justifyContent: "center",
     backgroundColor: white,
     flex: 1,
