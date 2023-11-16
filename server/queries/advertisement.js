@@ -230,6 +230,54 @@ const updateAdVisits = async (adId) => {
   }
 };
 
+const updateWeeklyAdsToPast = async () => {
+  try {
+    // Update ads from "ACTIVE" to "PAST" where status is "ACTIVE"
+    const updateActiveAdsToPast = await pool.query(
+      `UPDATE "sharEco-schema"."advertisement" 
+        SET "status" = 'PAST'
+        WHERE "status" = 'ACTIVE'`
+    );
+
+    return {
+      updatedActiveAds: updateActiveAdsToPast.rowCount,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateWeeklyAdsToActive = async () => {
+  try {
+    // Update ads from "APPROVED" to "ACTIVE" where status is "APPROVED"
+    const updateApprovedAdsToActive = await pool.query(
+      `UPDATE "sharEco-schema"."advertisement" 
+        SET "status" = 'ACTIVE'
+        WHERE "status" = 'APPROVED'`
+    );
+
+    return {
+      updatedApprovedAds: updateApprovedAdsToActive.rowCount,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateWeeklyAds = async () => {
+  try {
+    const resultToPast = await updateWeeklyAdsToPast();
+    const resultToActive = await updateWeeklyAdsToActive();
+
+    return {
+      ...resultToPast,
+      ...resultToActive,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createAd,
   updateAdImage,
@@ -243,4 +291,7 @@ module.exports = {
   getActiveAds,
   updateAdVisits,
   getAllAds,
+  updateWeeklyAdsToPast,
+  updateWeeklyAdsToActive,
+  updateWeeklyAds,
 };
