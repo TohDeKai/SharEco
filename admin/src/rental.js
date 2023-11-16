@@ -160,7 +160,7 @@ const Rental = () => {
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
   const availableOptions = [
-    "Close With Insufficent Evidence",
+    "Close With Insufficient Evidence",
     "Ban Reported User",
     "Refund Rental Fee To Borrower",
     "Forfeit Deposit Fee To Lender",
@@ -169,17 +169,34 @@ const Rental = () => {
 
   const [selectedOptions, setSelectedOptions] = useState([]);
 
+  // ... (other imports and code)
+  // ... (other imports and code)
+
+  // ... (other imports and code)
+
   const handleOptionsChange = (option) => {
     setSelectedOptions((prevSelectedOptions) => {
-      if (prevSelectedOptions.includes(option)) {
-        // If option is already selected, remove it
-        return prevSelectedOptions.filter(
-          (selectedOption) => selectedOption !== option
-        );
-      } else {
-        // If option is not selected, add it
-        return [...prevSelectedOptions, option];
+      // If "Close with Insufficient Evidence" is selected, only include that option
+      if (option === "Close With Insufficient Evidence") {
+        return [option];
       }
+
+      // If any other option is selected, toggle its selection and deselect "Close with Insufficient Evidence"
+      const updatedOptions = prevSelectedOptions.includes(option)
+        ? prevSelectedOptions.filter(
+            (selectedOption) =>
+              selectedOption !== option &&
+              selectedOption !== "Close With Insufficient Evidence"
+          )
+        : [
+            ...prevSelectedOptions.filter(
+              (selectedOption) =>
+                selectedOption !== "Close With Insufficient Evidence"
+            ),
+            option,
+          ];
+
+      return updatedOptions;
     });
   };
 
