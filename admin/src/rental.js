@@ -557,6 +557,10 @@ const Rental = () => {
             <Table>
               <TableBody>
                 <TableRow>
+                  <TableCell style={cellStyle}>Item</TableCell>
+                  <TableCell>{selectedItemTitle}</TableCell>
+                </TableRow>
+                <TableRow>
                   <TableCell style={cellStyle}>Reason</TableCell>
                   <TableCell>{selectedReportReason}</TableCell>
                 </TableRow>
