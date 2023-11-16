@@ -159,6 +159,30 @@ const Rental = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
+  const availableOptions = [
+    "Insufficent Evidence",
+    "Ban Reported User",
+    "Refund Rental Fee To Borrower",
+    "Forfeit Deposit Fee To Lender",
+    "Disable Listing",
+  ];
+
+  const [selectedOptions, setSelectedOptions] = useState([]);
+
+  const handleOptionsChange = (option) => {
+    setSelectedOptions((prevSelectedOptions) => {
+      if (prevSelectedOptions.includes(option)) {
+        // If option is already selected, remove it
+        return prevSelectedOptions.filter(
+          (selectedOption) => selectedOption !== option
+        );
+      } else {
+        // If option is not selected, add it
+        return [...prevSelectedOptions, option];
+      }
+    });
+  };
+
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
@@ -558,7 +582,7 @@ const Rental = () => {
                 handleResolveClickOpen(selectedItemTitle, selectedItemId)
               }
             >
-              Insufficent Evidence
+              Resolve Report
             </Button>
           </DialogActions>
         </Dialog>
