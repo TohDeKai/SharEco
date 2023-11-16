@@ -193,8 +193,17 @@ const getAllItems = async () => {
 const getOtherUserItems = async (userId) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM "sharEco-schema"."item" 
-          WHERE "userId" != $1 AND "disabled" != true`,
+      `SELECT *
+      FROM "sharEco-schema"."item"
+      WHERE "userId" != $1
+        AND "disabled" != true
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "sharEco-schema"."report"
+          WHERE "reporterId" = $1
+            AND "type" = 'LISTING'
+            AND "targetId" = "sharEco-schema"."item"."itemId"
+        );`,
       [userId]
     );
     return result.rows;
@@ -210,9 +219,14 @@ const getOtherUserItemsByKeywords = async (userId, keywords) => {
       `
       SELECT *
       FROM "sharEco-schema"."item"
-      WHERE
-        "userId" != $1
+      WHERE "userId" != $1
         AND "disabled" != true
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "sharEco-schema"."report"
+          WHERE "reporterId" = $1
+            AND "type" = 'LISTING'
+            AND "targetId" = "sharEco-schema"."item"."itemId")
         AND "document_with_weights" @@ to_tsquery('english', $2)
       ORDER BY ts_rank("document_with_weights", to_tsquery('english', $2)) DESC;
       `,
@@ -229,7 +243,12 @@ const getOtherUserItemsByCategory = async (userId, category) => {
   try {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."item" 
-          WHERE "userId" != $1 AND "category" = $2 AND "disabled" != true`,
+          WHERE "userId" != $1 AND "category" = $2 AND "disabled" != true AND NOT EXISTS (
+            SELECT 1
+            FROM "sharEco-schema"."report"
+            WHERE "reporterId" = $1
+              AND "type" = 'LISTING'
+              AND "targetId" = "sharEco-schema"."item"."itemId")`,
       [userId, category]
     );
     return result.rows;
@@ -253,6 +272,12 @@ const getOtherUserItemsByCategoryByKeywords = async (
         "userId" != $1
         AND "category" = $2
         AND "disabled" != true
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "sharEco-schema"."report"
+          WHERE "reporterId" = $1
+            AND "type" = 'LISTING'
+            AND "targetId" = "sharEco-schema"."item"."itemId")
         AND "document_with_weights" @@ to_tsquery('english', $3)
       ORDER BY ts_rank("document_with_weights", to_tsquery('english', $3)) DESC;
       `,
