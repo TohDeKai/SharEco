@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Button from "@mui/material/Button";
 import Sidebar from "./sidebar";
 import { styles } from "./styles";
 import { ThemeProvider } from "@mui/material/styles";
@@ -6,7 +7,12 @@ import {
   Box,
   Toolbar,
   Typography,
-  Chip,
+  TextField,
+  FormControl,
+  InputLabel,
+  Input,
+  InputAdornment,
+  FilledInput,
   Paper,
   Table,
   TableBody,
@@ -16,10 +22,36 @@ import {
   TablePagination,
   TableRow,
 } from "@mui/material";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import axios from "axios";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import Chip from "@mui/material/Chip";
 
 const Rental = () => {
+  const [loading, setLoading] = useState(false);
+
+  const [selectedReportedUsername, setSelectedReportedUsername] =
+    React.useState("");
+  const [selectedReportReason, setSelectedReportReason] = React.useState("");
+  const [selectedReportDescription, setSelectedReportDescription] =
+    React.useState("");
+  const [selectedReporterUsername, setSelectedReporterUsername] =
+    React.useState("");
+  const [selectedSupportingImages, setSelectedSupportingImages] =
+    React.useState([]);
+  const [selectedReportId, setSelectedReportId] = React.useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedResponseText, setselectedResponseText] = React.useState("");
+  const [selectedResponseImages, setSelectedResponseImages] = React.useState(
+    []
+  );
+  const [openReport, setReportOpen] = React.useState(false);
 
   const handleStatusFilterChange = (newStatus) => {
     setStatusFilter(newStatus);
@@ -75,6 +107,11 @@ const Rental = () => {
       label: "Description",
       minWidth: 170,
     },
+    {
+      id: "responseText",
+      label: "Response",
+      minWidth: 170,
+    },
   ];
 
   const [page, setPage] = React.useState(0);
@@ -87,6 +124,72 @@ const Rental = () => {
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
+  };
+
+  const handleClose = () => {
+    setReportOpen(false);
+  };
+
+  const handleViewReport = async (reportId) => {
+    setLoading(true); // Set loading state to true
+    try {
+      const reportResponse = await axios.get(
+        `http://localhost:4000/api/v1/reports/reportId/${reportId}`
+      );
+
+      const report = reportResponse.data.data.report[0];
+
+      console.log("REPORT: " + JSON.stringify(report));
+      console.log("TARGET ID: " + report.targetId);
+      const rentalResponse = await axios.get(
+        `http://localhost:4000/api/v1/rentals/rentalId/${report.targetId}`
+      );
+
+      const rental = rentalResponse.data.data.rental;
+
+      const borrowerResponse = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${rental.borrowerId}`
+      );
+
+      const borrower = borrowerResponse.data.data.user;
+
+      const lenderResponse = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${rental.lenderId}`
+      );
+
+      const lender = borrowerResponse.data.data.user;
+
+      const reporterResponse = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${report.reporterId}`
+      );
+
+      const reporter = reporterResponse.data.data.user;
+
+      setSelectedReporterUsername(reporter.username);
+      setSelectedReportReason(report.reason);
+      setSelectedReportDescription(report.description);
+      setSelectedReportedUsername(
+        borrower.username == reporter.username
+          ? lender.username
+          : borrower.username
+      );
+      setSelectedSupportingImages(report.supportingImages);
+      setSelectedReportId(report.reportId);
+      setselectedResponseText(report.responseText);
+      setSelectedResponseImages(report.responseImages);
+      console.log("SUPPORTING IMAGES: " + report.supportingImages);
+      console.log("REPORTER USERNAME: " + reporter.username);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false); // Set loading state to false when the request is complete
+      setReportOpen(true);
+    }
+  };
+
+  const cellStyle = {
+    borderRight: "1px solid #e0e0e0", // Add a border at the bottom of each cell
+    padding: "10px", // Adjust padding as needed
   };
 
   return (
@@ -145,6 +248,7 @@ const Rental = () => {
                       {column.label}
                     </TableCell>
                   ))}
+                  <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -169,12 +273,21 @@ const Rental = () => {
                             </TableCell>
                           );
                         })}
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            onClick={() => handleViewReport(row.reportId)}
+                          >
+                            View Report
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
               </TableBody>
             </Table>
           </TableContainer>
+
           <TablePagination
             rowsPerPageOptions={[10, 25, 100]}
             component="div"
@@ -185,6 +298,92 @@ const Rental = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Box>
+
+        {/* Dialog for Report Details */}
+        {/* Popup box to show all details of each listing */}
+        <Dialog
+          open={!loading && openReport}
+          onClose={handleClose}
+          scroll="paper"
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{`Reported User: ${selectedReportedUsername}`}</DialogTitle>
+          <DialogContent>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell style={cellStyle}>Reason</TableCell>
+                  <TableCell>{selectedReportReason}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Description</TableCell>
+                  <TableCell>
+                    {selectedReportDescription
+                      ? selectedReportDescription
+                      : "No Description Given"}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Reporter Username</TableCell>
+                  <TableCell>{selectedReporterUsername}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={cellStyle}>Supporting Images</TableCell>
+                  <TableCell>
+                    {selectedSupportingImages.length > 0
+                      ? selectedSupportingImages.map((imageUrl, index) =>
+                          imageUrl ? (
+                            <img
+                              key={index}
+                              src={imageUrl}
+                              alt={`Image ${index + 1}`}
+                              style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                marginRight: "5px",
+                              }}
+                            />
+                          ) : null
+                        )
+                      : "No Supporting Images"}
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell style={cellStyle}>Response Text</TableCell>
+                  <TableCell>
+                    {selectedResponseText
+                      ? selectedResponseText
+                      : "No Response"}
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell style={cellStyle}>Response Images</TableCell>
+                  <TableCell>
+                    {selectedResponseImages.length > 0
+                      ? selectedResponseImages.map((imageUrl, index) =>
+                          imageUrl ? (
+                            <img
+                              key={index}
+                              src={imageUrl}
+                              alt={`Image ${index + 1}`}
+                              style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                marginRight: "5px",
+                              }}
+                            />
+                          ) : null
+                        )
+                      : "No Response Images"}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </DialogContent>
+        </Dialog>
       </div>
     </ThemeProvider>
   );
