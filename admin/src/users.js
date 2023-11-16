@@ -326,6 +326,13 @@ const Users = ({}) => {
           result: ["INSUFFICIENT EVIDENCE"],
         }
       );
+
+      await axios.put(
+        `http://localhost:4000 /api/v1/report/status/${selectedReportId}`,
+        {
+          status: ["RESOLVED"],
+        }
+      );
       if (response.status === 200) {
         console.log("Resolve report successfully");
         refreshData();
