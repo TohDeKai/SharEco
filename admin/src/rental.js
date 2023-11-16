@@ -524,6 +524,18 @@ const Rental = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Snackbar for Resolve Report */}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={resolveSnackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleResolveSnackbarClose}
+        >
+          <Alert severity="success" onClose={handleResolveSnackbarClose}>
+            Report successfully resolved!
+          </Alert>
+        </Snackbar>
       </div>
     </ThemeProvider>
   );
