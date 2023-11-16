@@ -55,6 +55,7 @@ const Rental = () => {
   const [borrower, setBorrower] = React.useState({});
   const [lender, setLender] = React.useState({});
   const [selectedItem, setSelectedItem] = React.useState({});
+  const [selectedRental, setSelectedRental] = React.useState({});
   const [openReport, setReportOpen] = React.useState(false);
   const [openResolve, setResolveOpen] = React.useState(false);
 
@@ -264,10 +265,18 @@ const Rental = () => {
             isBanned: true,
           });
         } else if (selectedOption === "Refund Rental Fee To Borrower") {
+          const refundData = {
+            receiverId: borrower.userId,
+            amount: selectedRental.rentalFee,
+            transactionType: "REFUND",
+          };
+          axios.post(
+            `http://localhost:4000/api/v1/transaction/fromAdmin`,
+            refundData
+          );
           console.log("Refund Rental Fee To Borrower");
           result.push("RENTAL FEE REFUNDED");
         } else if (selectedOption === "Forfeit Deposit Fee To Lender") {
-          console.log("LENDER" + lender.reportId);
           const refundData = {
             receiverId: lender.userId,
             amount: selectedItem.depositFee,
@@ -325,6 +334,8 @@ const Rental = () => {
       );
 
       const rental = rentalResponse.data.data.rental;
+
+      setSelectedRental(rental);
 
       const itemResponse = await await axios.get(
         `http://localhost:4000/api/v1/items/itemId/${rental.itemId}`
