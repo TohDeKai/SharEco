@@ -212,11 +212,10 @@ const Rental = () => {
     fetchAllDisputeReportData();
   };
 
-  const handleResolveClickOpen = (title, itemId) => {
-    setSelectedItemTitle(title);
-    setSelectedItemId(itemId);
+  const handleResolveClickOpen = () => {
     setResolveOpen(true);
     setReportOpen(false);
+    console.log(selectedOptions);
   };
 
   const handleResolve = async () => {
@@ -578,9 +577,7 @@ const Rental = () => {
           <DialogActions>
             <Button
               variant="contained"
-              onClick={() =>
-                handleResolveClickOpen(selectedItemTitle, selectedItemId)
-              }
+              onClick={() => handleResolveClickOpen()}
             >
               Resolve Report
             </Button>
