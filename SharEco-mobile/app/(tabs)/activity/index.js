@@ -322,6 +322,45 @@ const Content = ({ activeTab }) => {
         );
         if (response3.status === 200) {
           const reports = response3.data.data.report;
+          const currentDate = new Date(); // Get the current date
+
+          for (const report of reports) {
+            console.log(report.reason);
+            const reportDate = new Date(report.reportDate); // Convert reportDate to a Date object
+
+            // Calculate the difference in days
+            const daysDifference = Math.floor(
+              (currentDate - reportDate) / (24 * 60 * 60 * 1000)
+            );
+
+            // Check if currentDate is 3 days after reportDate
+            if (daysDifference >= 3) {
+              // Make an API call to update the report status
+              try {
+                const response = await axios.put(
+                  `http://${BASE_URL}:4000/api/v1/report/status/${report.reportId}`,
+                  {
+                    status: "UNDER REVIEW",
+                  }
+                );
+
+                if (response.status === 200) {
+                  console.log(
+                    `Report ${report.reportId} status updated to UNDER REVIEW`
+                  );
+                } else {
+                  console.log(
+                    `Failed to update status for report ${report.reportId}`
+                  );
+                }
+              } catch (error) {
+                console.error(
+                  `Error updating status for report ${report.reportId}:`,
+                  error
+                );
+              }
+            }
+          }
           setUserReports(reports);
         } else {
           // Handle the error condition appropriately
@@ -385,6 +424,43 @@ const Content = ({ activeTab }) => {
         if (response3.status === 200) {
           const reports = response3.data.data.report;
           setUserReports(reports);
+          for (const report of reports) {
+            console.log(report.reason);
+            const reportDate = new Date(report.reportDate); // Convert reportDate to a Date object
+            const currentDate = new Date(); // Get the current date
+            // Calculate the difference in days
+            const daysDifference = Math.floor(
+              (currentDate - reportDate) / (24 * 60 * 60 * 1000)
+            );
+
+            // Check if currentDate is 3 days after reportDate
+            if (daysDifference >= 3) {
+              // Make an API call to update the report status
+              try {
+                const response = await axios.put(
+                  `http://${BASE_URL}:4000/api/v1/report/status/${report.reportId}`,
+                  {
+                    status: "UNDER REVIEW",
+                  }
+                );
+
+                if (response.status === 200) {
+                  console.log(
+                    `Report ${report.reportId} status updated to UNDER REVIEW`
+                  );
+                } else {
+                  console.log(
+                    `Failed to update status for report ${report.reportId}`
+                  );
+                }
+              } catch (error) {
+                console.error(
+                  `Error updating status for report ${report.reportId}:`,
+                  error
+                );
+              }
+            }
+          }
         } else {
           // Handle the error condition appropriately
           console.log("Failed to retrieve reports");
