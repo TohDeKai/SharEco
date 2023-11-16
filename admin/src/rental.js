@@ -243,6 +243,12 @@ const Rental = () => {
         if (selectedOption === "Disable Listing") {
           console.log("Disable Listing");
           result.push("LISTING REMOVED");
+          axios.put(
+            `http://localhost:4000/api/v1/items/disable/itemId/${selectedItemId}`,
+            {
+              disabled: true,
+            }
+          );
         } else if (selectedOption === "Close With Insufficient Evidence") {
           console.log("Close With Insufficient Evidence");
           result.push("INSUFFICIENT EVIDENCE");
