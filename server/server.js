@@ -2415,7 +2415,7 @@ app.get("/api/v1/weekRevenue", async (req, res) => {
     res.status(200).json({
       status: "success",
       data: {
-        revenue: revenueData
+        revenue: revenueData,
       },
     });
   } catch (error) {
@@ -2582,6 +2582,23 @@ app.get("/api/v1/ads/bizId/:bizId", async (req, res) => {
       res.status(404).json({ error: "Business user not found" });
     }
   } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//Get all ads
+app.get("/api/v1/allAdvertisments", async (req, res) => {
+  try {
+    const ads = await advertisementdb.getAllAds();
+    res.status(200).json({
+      status: "success",
+      data: {
+        ads: ads,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
     console.log(err);
     res.status(500).json({ error: "Database error" });
   }

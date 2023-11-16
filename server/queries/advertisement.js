@@ -162,6 +162,18 @@ const rankWeekAds = async () => {
   }
 };
 
+// Get all Advertisment
+const getAllAds = async () => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM "sharEco-schema"."advertisement" ORDER BY "startDate" DESC'
+    );
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Get all PENDING Advertisment
 const getAdsReq = async () => {
   try {
@@ -199,7 +211,7 @@ const updateAdVisits = async (adId) => {
       [adId]
     );
     const currentVisits = currentVisitsResult.rows[0]?.visits;
-    console.log(currentVisits)
+    console.log(currentVisits);
 
     if (currentVisits !== undefined) {
       const result = await pool.query(
@@ -230,4 +242,5 @@ module.exports = {
   getAdsReq,
   getActiveAds,
   updateAdVisits,
+  getAllAds,
 };
