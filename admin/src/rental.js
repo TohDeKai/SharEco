@@ -54,6 +54,8 @@ const Rental = () => {
   const [selectedItemId, setSelectedItemId] = React.useState("");
   const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
   const [selectedResult, setSelectedResult] = React.useState("");
+  const [borrower, setBorrower] = React.useState({});
+  const [lender, setLender] = React.useState({});
 
   const [openReport, setReportOpen] = React.useState(false);
   const [openResolve, setResolveOpen] = React.useState(false);
@@ -250,11 +252,15 @@ const Rental = () => {
 
       const borrower = borrowerResponse.data.data.user;
 
+      setBorrower(borrower);
+
       const lenderResponse = await axios.get(
         `http://localhost:4000/api/v1/users/userId/${rental.lenderId}`
       );
 
-      const lender = borrowerResponse.data.data.user;
+      const lender = lenderResponse.data.data.user;
+
+      setLender(lender);
 
       const reporterResponse = await axios.get(
         `http://localhost:4000/api/v1/users/userId/${report.reporterId}`
@@ -435,7 +441,12 @@ const Rental = () => {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">{`Reported User: ${selectedReportedUsername}`}</DialogTitle>
+          <DialogTitle id="alert-dialog-title">{`Reported User: ${selectedReportedUsername} ${
+            selectedReportedUsername == borrower.username
+              ? "(Borrower)"
+              : "(Lender)"
+          }
+          `}</DialogTitle>
           <DialogContent>
             <Table>
               <TableBody>
@@ -453,7 +464,12 @@ const Rental = () => {
                 </TableRow>
                 <TableRow>
                   <TableCell style={cellStyle}>Reporter Username</TableCell>
-                  <TableCell>{selectedReporterUsername}</TableCell>
+                  <TableCell>
+                    {selectedReporterUsername}{" "}
+                    {selectedReporterUsername == borrower.username
+                      ? "(Borrower)"
+                      : "(Lender)"}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell style={cellStyle}>Supporting Images</TableCell>
@@ -507,25 +523,34 @@ const Rental = () => {
                       : "No Response Images"}
                   </TableCell>
                 </TableRow>
-                {selectedResult.length != 2 && (
+                {selectedResult.length != 2 ? (
                   <TableRow>
                     <TableCell style={cellStyle}>Results</TableCell>
                     <TableCell>{formatString(selectedResult)}</TableCell>
+                  </TableRow>
+                ) : (
+                  <TableRow>
+                    <TableCell style={cellStyle}>Actions Taken</TableCell>
+                    <TableCell>
+                      {availableOptions.map((option) => (
+                        <Chip
+                          key={option}
+                          label={option}
+                          color={
+                            selectedOptions.includes(option)
+                              ? "primary"
+                              : "default"
+                          }
+                          onClick={() => handleOptionsChange(option)}
+                          style={{ margin: "4px" }}
+                        />
+                      ))}
+                    </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
           </DialogContent>
-          <DialogActions>
-            <Button
-              variant="contained"
-              onClick={() =>
-                handleResolveClickOpen(selectedItemTitle, selectedItemId)
-              }
-            >
-              Insufficent Evidence
-            </Button>
-          </DialogActions>
           <DialogActions>
             <Button
               variant="contained"
