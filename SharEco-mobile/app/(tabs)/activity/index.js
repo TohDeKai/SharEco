@@ -241,6 +241,32 @@ const NoRental = ({ rentalStatus }) => {
   );
 };
 
+const NoReport = ({ reportStatus }) => {
+  let message;
+  switch (reportStatus) {
+    case "PENDING":
+      message = "No pending disputes";
+      break;
+    case "UNDER REVIEW":
+      message = "No reports under review";
+      break;
+    case "RESOLVED":
+      message = "No resolved reports";
+      break;
+  }
+
+  return (
+    <View style={{ marginTop: 100, paddingHorizontal: 30 }}>
+      <RegularText
+        typography="H3"
+        style={{ marginBottom: 5, textAlign: "center" }}
+      >
+        {message}
+      </RegularText>
+    </View>
+  );
+};
+
 const Content = ({ activeTab }) => {
   const { getUserData } = useAuth();
   const [userLendings, setUserLendings] = useState([]);
@@ -805,6 +831,9 @@ const Content = ({ activeTab }) => {
                 {pendingReports.map((report) => (
                   <ReportCard report={report} />
                 ))}
+                {pendingReports.length === 0 && (
+                  <NoReport reportStatus="PENDING" />
+                )}
               </ScrollView>
             </View>
           )}
@@ -824,6 +853,9 @@ const Content = ({ activeTab }) => {
                 {underReviewReports.map((report) => (
                   <ReportCard report={report} />
                 ))}
+                {underReviewReports.length === 0 && (
+                  <NoReport reportStatus="UNDER REVIEW" />
+                )}
               </ScrollView>
             </View>
           )}
@@ -843,6 +875,9 @@ const Content = ({ activeTab }) => {
                 {resolvedReports.map((report) => (
                   <ReportCard report={report} />
                 ))}
+                {resolvedReports.length === 0 && (
+                  <NoReport reportStatus="RESOLVED" />
+                )}
               </ScrollView>
             </View>
           )}
