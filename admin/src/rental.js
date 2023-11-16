@@ -51,7 +51,13 @@ const Rental = () => {
   const [selectedResponseImages, setSelectedResponseImages] = React.useState(
     []
   );
+  const [selectedItemId, setSelectedItemId] = React.useState("");
+  const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
   const [openReport, setReportOpen] = React.useState(false);
+  const [openResolve, setResolveOpen] = React.useState(false);
+
+  // State for Resolve Snackbar
+  const [resolveSnackbarOpen, setResolveSnackbarOpen] = useState(false);
 
   const handleStatusFilterChange = (newStatus) => {
     setStatusFilter(newStatus);
@@ -128,6 +134,57 @@ const Rental = () => {
 
   const handleClose = () => {
     setReportOpen(false);
+    setResolveOpen(false);
+  };
+
+  const refreshData = async () => {
+    async function fetchAllDisputeReportData() {
+      try {
+        const response = await axios.get(
+          "http://localhost:4000/api/v1/reports/type/DISPUTE"
+        );
+        const reports = response.data.data.report;
+        setReportData(reports);
+      } catch (error) {
+        console.error("Error fetching report data:", error);
+      }
+    }
+    fetchAllDisputeReportData();
+  };
+
+  const handleResolveClickOpen = (title, itemId) => {
+    setSelectedItemTitle(title);
+    setSelectedItemId(itemId);
+    setResolveOpen(true);
+    setReportOpen(false);
+  };
+
+  const handleResolve = async () => {
+    try {
+      const response = await axios.put(
+        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
+        {
+          result: ["INSUFFICIENT EVIDENCE"],
+        }
+      );
+      await axios.put(
+        `http://localhost:4000/api/v1/report/status/${selectedReportId}`,
+        {
+          status: "RESOLVED",
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Resolve report successfully");
+        refreshData();
+        setResolveSnackbarOpen(true);
+      } else {
+        console.log("Resolve failed");
+      }
+      handleClose();
+    } catch (error) {
+      console.error("Error unbanning user:", error);
+    }
   };
 
   const handleViewReport = async (reportId) => {
@@ -146,6 +203,12 @@ const Rental = () => {
       );
 
       const rental = rentalResponse.data.data.rental;
+
+      const itemResponse = await await axios.get(
+        `http://localhost:4000/api/v1/items/itemId/${rental.itemId}`
+      );
+
+      const item = itemResponse.data.data.item;
 
       const borrowerResponse = await axios.get(
         `http://localhost:4000/api/v1/users/userId/${rental.borrowerId}`
@@ -177,6 +240,8 @@ const Rental = () => {
       setSelectedReportId(report.reportId);
       setselectedResponseText(report.responseText);
       setSelectedResponseImages(report.responseImages);
+      setSelectedItemId(item.itemId);
+      setSelectedItemTitle(item.itemTitle);
       console.log("SUPPORTING IMAGES: " + report.supportingImages);
       console.log("REPORTER USERNAME: " + reporter.username);
     } catch (error) {
@@ -299,6 +364,32 @@ const Rental = () => {
           />
         </Box>
 
+        {/* Dialog for Resolve Report */}
+        <Dialog
+          open={openResolve}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {`You are closing report on rental with item: ${selectedItemTitle} on user ${selectedReportedUsername} without any actions taken`}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Report will be closed without taking any action. Reporter will be
+              informed that there's insufficient evidence
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleResolve} autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Dialog for Report Details */}
         {/* Popup box to show all details of each listing */}
         <Dialog
@@ -383,6 +474,16 @@ const Rental = () => {
               </TableBody>
             </Table>
           </DialogContent>
+          <DialogActions>
+            <Button
+              variant="contained"
+              onClick={() =>
+                handleResolveClickOpen(selectedItemTitle, selectedItemId)
+              }
+            >
+              Resolve Report
+            </Button>
+          </DialogActions>
         </Dialog>
       </div>
     </ThemeProvider>
