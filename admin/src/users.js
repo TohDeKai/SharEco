@@ -262,9 +262,9 @@ const Users = ({}) => {
       );
 
       await axios.put(
-        `http://localhost:4000 /api/v1/report/status/${selectedReportId}`,
+        `http://localhost:4000/api/v1/report/status/${selectedReportId}`,
         {
-          status: ["RESOLVED"],
+          status: "RESOLVED",
         }
       );
 
@@ -328,9 +328,9 @@ const Users = ({}) => {
       );
 
       await axios.put(
-        `http://localhost:4000 /api/v1/report/status/${selectedReportId}`,
+        `http://localhost:4000/api/v1/report/status/${selectedReportId}`,
         {
-          status: ["RESOLVED"],
+          status: "RESOLVED",
         }
       );
       if (response.status === 200) {
