@@ -205,7 +205,13 @@ const getOtherUserItems = async (userId) => {
             OR
             ("reporterId" = $1 AND "type" = 'USER' AND "targetId" = "sharEco-schema"."item"."userId")
           )
-        )`,
+        )
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "sharEco-schema"."user"
+          WHERE "userId" = "sharEco-schema"."item"."userId" AND "isBanned" = true
+        );
+      `,
       [userId]
     );
     return result.rows;
@@ -231,6 +237,11 @@ const getOtherUserItemsByKeywords = async (userId, keywords) => {
             OR
             ("reporterId" = $1 AND "type" = 'USER' AND "targetId" = "sharEco-schema"."item"."userId")
           )
+        )
+        AND NOT EXISTS (
+          SELECT 1
+          FROM "sharEco-schema"."user"
+          WHERE "userId" = "sharEco-schema"."item"."userId" AND "isBanned" = true
         )
         AND "document_with_weights" @@ to_tsquery('english', $2)
       ORDER BY ts_rank("document_with_weights", to_tsquery('english', $2)) DESC;
@@ -259,7 +270,12 @@ const getOtherUserItemsByCategory = async (userId, category) => {
             OR
             ("reporterId" = $1 AND "type" = 'USER' AND "targetId" = "sharEco-schema"."item"."userId")
           )
-        ) AND "category" = $2 `,
+        ) AND NOT EXISTS (
+          SELECT 1
+          FROM "sharEco-schema"."user"
+          WHERE "userId" = "sharEco-schema"."item"."userId" AND "isBanned" = true
+        )
+        AND "category" = $2 `,
       [userId, category]
     );
     return result.rows;
@@ -289,7 +305,12 @@ const getOtherUserItemsByCategoryByKeywords = async (
             OR
             ("reporterId" = $1 AND "type" = 'USER' AND "targetId" = "sharEco-schema"."item"."userId")
           )
-        ) AND "category" = $2
+        ) AND NOT EXISTS (
+          SELECT 1
+          FROM "sharEco-schema"."user"
+          WHERE "userId" = "sharEco-schema"."item"."userId" AND "isBanned" = true
+        )
+        AND "category" = $2
         AND "document_with_weights" @@ to_tsquery('english', $3)
       ORDER BY ts_rank("document_with_weights", to_tsquery('english', $3)) DESC;
       `,
