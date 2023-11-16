@@ -283,7 +283,7 @@ const response = ({}) => {
                   onPress={handleSubmit}
                   style={{ marginBottom: viewportHeightInPixels(3) }}
                 >
-                  Submit Report
+                  Submit Response
                 </RoundedButton>
               </View>
             )}
