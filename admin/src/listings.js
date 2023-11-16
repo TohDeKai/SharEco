@@ -390,13 +390,7 @@ const Listing = ({}) => {
       );
       if (response.status === 200) {
         // Update the item data after disabling
-        const updatedItemData = itemData.map((item) => {
-          if (item.itemTitle === selectedItemTitle) {
-            item.disabled = true;
-          }
-          return item;
-        });
-        setItemData(updatedItemData);
+        refreshData();
         setDisableSnackbarOpen(true);
         console.log("Disabled item successfully");
       } else {
