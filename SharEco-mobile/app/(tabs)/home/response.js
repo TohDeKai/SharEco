@@ -109,7 +109,7 @@ const response = ({}) => {
     const uploadPromises = files.map(async (file, index) => {
       try {
         const img = await fetchImageUri(file.uri);
-        const key = `reportId-${reportId}-${index + 1}.jpeg`;
+        const key = `reportId-${reportId}-response-${index + 1}.jpeg`;
 
         // Upload the image with the unique key
         await Storage.put(key, img, {
