@@ -255,6 +255,10 @@ const Rental = () => {
         } else if (selectedOption === "Ban Reported User") {
           console.log("Ban Reported User");
           result.push("USER BANNED");
+          axios.put(`http://localhost:4000/api/v1/users/ban/username`, {
+            username: selectedReportedUsername,
+            isBanned: true,
+          });
         } else if (selectedOption === "Refund Rental Fee To Borrower") {
           console.log("Refund Rental Fee To Borrower");
           result.push("RENTAL FEE REFUNDED");
