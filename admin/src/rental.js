@@ -51,12 +51,10 @@ const Rental = () => {
   const [selectedResponseImages, setSelectedResponseImages] = React.useState(
     []
   );
-  const [selectedItemId, setSelectedItemId] = React.useState("");
-  const [selectedItemTitle, setSelectedItemTitle] = React.useState("");
   const [selectedResult, setSelectedResult] = React.useState("");
   const [borrower, setBorrower] = React.useState({});
   const [lender, setLender] = React.useState({});
-
+  const [selectedItem, setSelectedItem] = React.useState({});
   const [openReport, setReportOpen] = React.useState(false);
   const [openResolve, setResolveOpen] = React.useState(false);
 
@@ -244,7 +242,7 @@ const Rental = () => {
           console.log("Disable Listing");
           result.push("LISTING REMOVED");
           axios.put(
-            `http://localhost:4000/api/v1/items/disable/itemId/${selectedItemId}`,
+            `http://localhost:4000/api/v1/items/disable/itemId/${selectedItem.itemId}`,
             {
               disabled: true,
             }
@@ -269,6 +267,16 @@ const Rental = () => {
           console.log("Refund Rental Fee To Borrower");
           result.push("RENTAL FEE REFUNDED");
         } else if (selectedOption === "Forfeit Deposit Fee To Lender") {
+          console.log("LENDER" + lender.reportId);
+          const refundData = {
+            receiverId: lender.userId,
+            amount: selectedItem.depositFee,
+            transactionType: "DEPOSIT_FORFEIT",
+          };
+          axios.post(
+            `http://localhost:4000/api/v1/transaction/fromAdmin`,
+            refundData
+          );
           console.log("Forfeit Deposit Fee To Lender");
           result.push("DEPOSIT FEE FORFEITED");
         } else {
@@ -324,6 +332,8 @@ const Rental = () => {
 
       const item = itemResponse.data.data.item;
 
+      setSelectedItem(item);
+
       const borrowerResponse = await axios.get(
         `http://localhost:4000/api/v1/users/userId/${rental.borrowerId}`
       );
@@ -358,8 +368,6 @@ const Rental = () => {
       setSelectedReportId(report.reportId);
       setselectedResponseText(report.responseText);
       setSelectedResponseImages(report.responseImages);
-      setSelectedItemId(item.itemId);
-      setSelectedItemTitle(item.itemTitle);
       setSelectedResult(report.reportResult);
       console.log("RESULTS: " + report.reportResult);
       console.log("SUPPORTING IMAGES: " + report.supportingImages);
@@ -375,36 +383,6 @@ const Rental = () => {
   const cellStyle = {
     borderRight: "1px solid #e0e0e0", // Add a border at the bottom of each cell
     padding: "10px", // Adjust padding as needed
-  };
-
-  const handleBan = async () => {
-    try {
-      console.log(selectedReportedUsername);
-      const response = await axios.put(
-        `http://localhost:4000/api/v1/users/ban/username`,
-        {
-          username: selectedReportedUsername,
-          isBanned: true,
-        }
-      );
-
-      await axios.put(
-        `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
-        {
-          result: ["USER BANNED"],
-        }
-      );
-
-      refreshData();
-      if (response.status === 200) {
-        console.log("Banned user successfully");
-      } else {
-        console.log("Ban failed");
-      }
-      handleClose();
-    } catch (error) {
-      console.error("Error banning user:", error);
-    }
   };
 
   return (
@@ -522,7 +500,7 @@ const Rental = () => {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            {`You are closing report on rental with item: ${selectedItemTitle} on user ${selectedReportedUsername}`}
+            {`You are closing report on rental with item: ${selectedItem.itemTitle} on user ${selectedReportedUsername}`}
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
@@ -564,7 +542,7 @@ const Rental = () => {
               <TableBody>
                 <TableRow>
                   <TableCell style={cellStyle}>Item</TableCell>
-                  <TableCell>{selectedItemTitle}</TableCell>
+                  <TableCell>{selectedItem.itemTitle}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell style={cellStyle}>Reason</TableCell>
