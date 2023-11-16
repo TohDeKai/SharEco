@@ -656,14 +656,16 @@ const Rental = () => {
               </TableBody>
             </Table>
           </DialogContent>
-          <DialogActions>
-            <Button
-              variant="contained"
-              onClick={() => handleResolveClickOpen()}
-            >
-              Resolve Report
-            </Button>
-          </DialogActions>
+          {selectedResult.length == 2 && (
+            <DialogActions>
+              <Button
+                variant="contained"
+                onClick={() => handleResolveClickOpen()}
+              >
+                Resolve Report
+              </Button>
+            </DialogActions>
+          )}
         </Dialog>
 
         {/* Snackbar for Resolve Report */}
