@@ -261,6 +261,13 @@ const Users = ({}) => {
         }
       );
 
+      await axios.put(
+        `http://localhost:4000 /api/v1/report/status/${selectedReportId}`,
+        {
+          status: ["RESOLVED"],
+        }
+      );
+
       refreshData();
       if (response.status === 200) {
         setBanSnackbarOpen(true);

@@ -374,10 +374,18 @@ const Listing = ({}) => {
           disabled: true,
         }
       );
+
       await axios.put(
         `http://localhost:4000/api/v1/report/result/${selectedReportId}`,
         {
           result: ["LISTING REMOVED"],
+        }
+      );
+
+      await axios.put(
+        `http://localhost:4000 /api/v1/report/status/${selectedReportId}`,
+        {
+          status: ["RESOLVED"],
         }
       );
       if (response.status === 200) {
