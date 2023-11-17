@@ -19,6 +19,7 @@ import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
 import ListingCard from "../../../components/ListingCard";
 import ReviewsCard from "../../../components/containers/ReviewsCard";
+import BadgeIcon from "../../../components/BadgeIcon";
 import { fireStoreDB } from "../../../app/utils/firebase";
 import {
   collection,
@@ -50,6 +51,7 @@ const ProfileHeader = () => {
   const [user, setUser] = useState("");
   const [profileUri, setProfileUri] = useState();
   const [ratings, setRatings] = useState({});
+  const [achievements, setAchievements] = useState({});
   const [business, setBusiness] = useState({});
 
   useEffect(() => {
@@ -97,8 +99,27 @@ const ProfileHeader = () => {
         console.log(error.message);
       }
     }
+    async function fetchAchievements() {
+      try {
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
+        );
+  
+        if (response.status === 200) {
+          const achievements = response.data.data.achievements;
+          console.log(achievements)
+          setAchievements(achievements);
+        } else {
+          // Handle the error condition appropriately
+          console.log("Failed to retrieve achievements");
+        }
+      } catch (error) {
+        console.log("fetch achievement", error);
+      }
+    }
+    fetchAchievements();
     fetchBusinessVerification();
-  }, [user.businessVerificationId]);
+  }, [user.businessVerificationId, user.userId]);
 
   // const toChats = () => {
   //   // router.push("home/chats");
@@ -196,9 +217,29 @@ const ProfileHeader = () => {
         >
           @{user.username} bitch
         </RegularText>
-        <RegularText typography="B2" style={{ marginTop: 8 }}>
-          {user.aboutMe}
-        </RegularText>
+        {user.aboutMe !== "" && (
+          <RegularText typography="B2" style={{ marginTop: 8 }}>
+            {user.aboutMe}
+          </RegularText>
+        )}
+
+        <View style={styles.badges}>
+          {achievements.length > 0 && (
+            achievements.map((ach) => (
+              ach.badgeTier !== "LOCKED" && (
+                <View style={styles.badgeContainer}>
+                  <BadgeIcon 
+                    key={ach.achievementId}
+                    tier={ach.badgeTier} 
+                    type={ach.badgeType} 
+                    size={"medium"} 
+                    pressable={true}
+                  />
+                </View>
+              )
+            ))
+          )}
+        </View>
       </View>
       <View style={styles.avatarContainer}>
         <UserAvatar
@@ -632,4 +673,17 @@ const styles = StyleSheet.create({
   activityCardContainer: {
     width: Dimensions.get("window").width - 46,
   },
+  badgeContainer: {
+    height: 40,
+    width: 40,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  badges: {
+    paddingVertical: 10,
+    borderColor: secondary, 
+    borderWidth: 2,
+    alignItems: "center",
+    flexDirection: "row",
+  }
 });

@@ -13,6 +13,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import Checkbox from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../../../context/auth";
 import axios from "axios";
 
 // AWS Amplify
@@ -50,8 +51,22 @@ const submitChecklist = () => {
   const [rental, setRental] = useState({});
   const [item, setItem] = useState({});
   const [checkboxValues, setCheckboxValues] = useState([]);
+  const [user, setUser] = useState("");
+  const {getUserData} = useAuth();
 
   useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      }
+      catch (error) {
+        console.log(error);
+      }
+    }
+
     async function fetchRentalData() {
       try {
         const rentalResponse = await axios.get(
@@ -65,8 +80,58 @@ const submitChecklist = () => {
         console.log(error.message);
       }
     }
+    fetchUserData();
     fetchRentalData();
   }, []);
+
+  async function fetchUserLendings() {
+    try {
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/rentals/lenderId/${user.userId}`
+      );
+      if (response.status === 200) {
+        const lendings = response.data.data.rental;
+        return lendings;
+      } else {
+        // Handle the error condition appropriately
+        console.log("Failed to retrieve lendings");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  async function fetchUserBorrowings() {
+    try {
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/rentals/borrowerId/${user.userId}`
+      );
+      if (response.status === 200) {
+        const borrowings = response.data.data.rental;
+        console.log("borrowings", borrowings);
+        return borrowings;
+      } else {
+        // Handle the error condition appropriately
+        console.log("Failed to retrieve items");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  async function fetchUserAchievements() {
+    const response = await axios.get(
+      `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
+    );
+
+    if (response.status === 200) {
+      const achievements = response.data.data.achievements;
+      return achievements;
+    } else{
+      // Handle the error condition appropriately
+      console.log("Failed to retrieve achievements");
+    }
+  }
 
   useEffect(() => {
     async function fetchItemData() {
@@ -272,6 +337,53 @@ const submitChecklist = () => {
     router.back();
   };
 
+  const upgradeBadge = async (achievementId, newBadgeTier, resetProgress) => {
+    try {
+      // upgrade badge
+      const response = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/achievement/upgrade/achievementId/${achievementId}`,
+        { newBadgeTier: newBadgeTier }
+      );
+
+      if (response.status === 200) {
+        console.log("Badge upgraded successfully to", newBadgeTier);
+      }
+
+      if (resetProgress) {
+        const progressResponse = await axios.put(
+          `http://${BASE_URL}:4000//api/v1/achievement/update/achievementId/${achievementId}`,
+          { badgeProgress: 0 }
+        )
+
+        if (progressResponse.status === 200) {
+          console.log("Badge progress reset successfully.")
+        }
+      }
+    } catch (error) {
+      throw error;
+    }      
+  }
+
+  const rewardAchievement = async (rewardAmount) => {
+    try {
+      const reward = {
+        receiverId: user.userId,
+        amount: rewardAmount,
+        transactionType: "REWARD"
+      }
+      const rewardResponse = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+        reward
+      );
+
+      if (rewardResponse.status === 200) {
+        console.log("Reward successfully credited to user: $" + rewardAmount);
+      } 
+    } catch (error) {
+      throw error;
+    }
+  }
+
   const handleSubmitHandoverForm = async (values) => {
     try {
       //handle upload all images and returns the array of uris
@@ -385,6 +497,206 @@ const submitChecklist = () => {
             if (transactionResponse.status === 200) {
               console.log(`Rental fee released to lender`);
             }
+
+            // handle achievement
+            const LENDER_BORROWER_PROGRESS_DELTA = 1;
+            const feeWithoutSymbol = parseInt(rental.rentalFee.replace('$', ''), 10);
+            if (user && user.userId === rental.borrowerId) {
+              const borrowings = await fetchUserBorrowings();
+              console.log("borrowings", borrowings);
+              const completedBorrowings = borrowings
+                .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false);
+              
+              if (completedBorrowings.length === 1) {
+                // User completed their first borrowing, create the borrower and locked saver badge
+                const borrowerBadgeData = {
+                  userId: user.userId,
+                  badgeType: "BORROWER",
+                  badgeTier: "BRONZE",
+                  badgeProgress: LENDER_BORROWER_PROGRESS_DELTA,
+                };
+
+                console.log("rentalfee", feeWithoutSymbol);
+                const saverBadgeData = {
+                  userId: user.userId,
+                  badgeType: "SAVER",
+                  badgeTier: "LOCKED",
+                  badgeProgress: feeWithoutSymbol,
+                };
+
+                // create borrower badge
+                try {
+                  const borrowerBadge = await axios.post(
+                    `http://${BASE_URL}:4000/api/v1/achievement/`,
+                    borrowerBadgeData
+                  )
+
+                  if (borrowerBadge.status === 201) {
+                    console.log("Borrower badge created successfully.");
+                  }
+                }
+                catch (error) {
+                  console.log(error);
+                }
+                
+                // create locked saver badge to track progress
+                try {
+                  const saverBadge = await axios.post(
+                    `http://${BASE_URL}:4000/api/v1/achievement/`,
+                    saverBadgeData
+                  )
+
+                  if (saverBadge.status === 201) {
+                    console.log("Saver badge created successfully.");
+                  }
+                }
+                catch (error) {
+                  console.log(error);
+                }
+              }
+              else {
+                // user has completed >1 rental, update progress
+                const achievements = await fetchUserAchievements();
+                const borrowerBadge = achievements
+                  .find((achievement) => achievement.badgeType === "BORROWER");
+                const saverBadge = achievements
+                  .find((achievement) => achievement.badgeType === "SAVER");
+                const borrowerBadgeProgress = parseInt(borrowerBadge.badgeProgress);
+                const saverBadgeProgress = parseInt(saverBadge.badgeProgress);
+
+                // update borrower badge progress
+                try {
+                  console.log("bp+del", borrowerBadgeProgress + LENDER_BORROWER_PROGRESS_DELTA);
+                  console.log("del", LENDER_BORROWER_PROGRESS_DELTA);
+                  console.log("bp", borrowerBadgeProgress)
+                  const response = await axios.put(
+                    `http://${BASE_URL}:4000/api/v1/achievement/update/achievementId/${borrowerBadge.achievementId}`,
+                    { badgeProgress: borrowerBadgeProgress + LENDER_BORROWER_PROGRESS_DELTA }
+                  );
+                  
+                  if (response.status === 200) {
+                    console.log("Borrower badge progress updated successfully.")
+                  }
+                } catch (error) {
+                  console.log(error);
+                }
+                
+                // update saver badge progress
+                try {
+                  const response = await axios.put(
+                    `http://${BASE_URL}:4000/api/v1/achievement/update/achievementId/${saverBadge.achievementId}`,
+                    { badgeProgress: saverBadgeProgress + feeWithoutSymbol }
+                  );
+
+                  if (response.status === 200) {
+                    console.log("Saver badge progress updated successfully.")
+                  }
+                } catch (error) {
+                  console.log(error);
+                }
+
+                try {
+                  // if borrower criteria is fulfilled, upgrade badge tier
+                  if (borrowerBadge.badgeTier === "BRONZE" 
+                    && borrowerBadgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 30) {
+                    // upgrade to silver
+                    await upgradeBadge(borrowerBadge.achievementId, "SILVER", false);
+                  } else if (borrowerBadge.badgeTier === "SILVER" 
+                    && borrowerBadgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 100) {
+                    // upgrade to gold
+                    await upgradeBadge(borrowerBadge.achievementId, "GOLD", false);
+                  }
+
+                  // if saver criteria is fulfilled, upgrade badge tier
+                  if (saverBadge.badgeTier === "LOCKED" && completedBorrowings.length >= 10 
+                    && saverBadgeProgress + feeWithoutSymbol >= 500) {
+                    // upgrade to bronze & reset badgeProgress
+                    await upgradeBadge(saverBadge.achievementId, "BRONZE", true);
+                    // reward 10
+                    await rewardAchievement(10)
+                  } else if (saverBadge.badgeTier === "BRONZE" 
+                    && saverBadgeProgress + feeWithoutSymbol >= 1000) {
+                    // upgrade to silver & reset badgeProgress
+                    await upgradeBadge(saverBadge.achievementId, "SILVER", true);
+                    // reward 30
+                    await rewardAchievement(30)
+                  } else if (saverBadge.badgeTier === "SILVER" 
+                    && saverBadgeProgress + feeWithoutSymbol >= 1500) {
+                    // upgrade to gold & reset badgeProgress
+                    await upgradeBadge(saverBadge.achievementId, "GOLD", true);
+                    // reward 50
+                    await rewardAchievement(50);
+                  }
+                } catch (error) {
+                  console.log(error);
+                }
+              }
+            } else if (user && user.userId === rental.lenderId) {
+              const lendings = await fetchUserLendings();
+              const completedLendings = lendings
+                .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false);
+              if (completedLendings.length === 1) {
+                // User completed their first lending, create the lender badge
+                const lenderBadgeData = {
+                  userId: user.userId,
+                  badgeType: "LENDER",
+                  badgeTier: "BRONZE",
+                  badgeProgress: LENDER_BORROWER_PROGRESS_DELTA,
+                };
+
+                // create lender badge
+                try {
+                  const lenderBadge = await axios.post(
+                    `http://${BASE_URL}:4000/api/v1/achievement/`,
+                    lenderBadgeData
+                  )
+
+                  if (lenderBadge.status === 201) {
+                    console.log("Lender badge created successfully.");
+                  }
+                }
+                catch (error) {
+                  console.log(error);
+                }
+              }
+              else {
+                // user has fulfilled >1 rental, update progress
+                const achievements = await fetchUserAchievements();
+                const lenderBadge = achievements
+                  .find((achievement) => achievement.badgeType === "LENDER");
+
+                // update lender badge progress
+                try {
+                  const response = await axios.put(
+                    `http://${BASE_URL}:4000/api/v1/achievement/update/achievementId/${lenderBadge.achievementId}`,
+                    { badgeProgress: lenderBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA }
+                  );
+
+                  if (response.status === 200) {
+                    console.log("Lender badge progress updated successfully.")
+                  }
+                } catch (error) {
+                  console.log(error);
+                }
+
+                // criteria is fulfilled, upgrade badge tier
+                try {
+                  // if lender criteria is fulfilled, upgrade badge tier
+                  if (lenderBadge.badgeTier === "BRONZE" 
+                    && lenderBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 30) {
+                    // upgrade to silver
+                    await upgradeBadge(lenderBadge.achievementId, "SILVER", false);
+                  } else if (lenderBadge.badgeTier === "SILVER" 
+                    && lenderBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 100) {
+                    // upgrade to gold
+                    await upgradeBadge(lenderBadge.achievementId, "GOLD", false);
+                  }
+                } catch (error) {
+                  console.log("Error upgrading lender badge", error);
+                }
+              }
+            }
+
           } else if (checklistFormType == "Start Rental") {
             console.log("Rental started");
           }

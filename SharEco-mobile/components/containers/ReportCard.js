@@ -16,6 +16,7 @@ import { colours } from "../ColourPalette";
 import { useAuth } from "../../context/auth";
 import ConfirmationModal from "../ConfirmationModal";
 import axios from "axios";
+import ReportDetailsModal from "../ReportDetailsModal";
 const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const AWS_GETFILE_URL =
@@ -39,6 +40,15 @@ const ReportCard = ({ report }) => {
   const [endTime, setEndTime] = useState("");
   const [hourlyRentalLength, setHourlyRentalLength] = useState(0);
   const [isReported, setIsReported] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  const handleShowDetailsModal = () => {
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
+  };
 
   useEffect(() => {
     async function fetchUserData(userId) {
@@ -173,6 +183,12 @@ const ReportCard = ({ report }) => {
     const timeDifference = endDateTime.getTime() - currentDate.getTime();
     const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
     return daysDifference;
+  };
+
+  const getDateThreeDaysLater = (originalDate) => {
+    const threeDaysLater = new Date(originalDate);
+    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+    return threeDaysLater;
   };
 
   const CardHeader = () => {
@@ -339,8 +355,12 @@ const ReportCard = ({ report }) => {
               typography="B3"
               style={{ textAlign: "right" }} // Adjust the value as needed
             >
-              {calculateDaysDifference(report.reportDate)}{" "}
-              {calculateDaysDifference(report.reportDate) === 1
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              )}{" "}
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              ) === 1
                 ? "day"
                 : "days"}{" "}
               left to respond
@@ -353,14 +373,28 @@ const ReportCard = ({ report }) => {
               typography="B3"
               style={{ textAlign: "right", marginTop: 10 }}
             >
-              {calculateDaysDifference(report.reportDate)}{" "}
-              {calculateDaysDifference(report.reportDate) == 1 ? "day" : "days"}{" "}
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              )}{" "}
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              ) == 1
+                ? "day"
+                : "days"}{" "}
               left for other party to respond
             </RegularText>
           )}
         {report.status == "UNDER REVIEW" && (
           <RegularText typography="B3" style={{ textAlign: "right" }}>
             Your report is under review
+          </RegularText>
+        )}
+        {report.status == "RESOLVED" && report.reportResult && (
+          <RegularText
+            typography="B3"
+            style={{ textAlign: "right", marginTop: 10 }}
+          >
+            Outcome: {report.reportResult.replace(/["{}]/g, "").toLowerCase()}
           </RegularText>
         )}
       </View>
@@ -398,11 +432,19 @@ const ReportCard = ({ report }) => {
 
   return (
     <View>
-      <View style={styles.activityCard}>
-        <CardHeader />
-        <CardDetails />
-        <CardFooter />
-      </View>
+      <Pressable onPress={handleShowDetailsModal}>
+        <View style={styles.activityCard}>
+          <CardHeader />
+          <CardDetails />
+          <CardFooter />
+        </View>
+      </Pressable>
+      <ReportDetailsModal
+        isVisible={showDetailsModal}
+        onClose={handleCloseDetailsModal}
+        report={report}
+        isReported={isReported}
+      />
     </View>
   );
 };

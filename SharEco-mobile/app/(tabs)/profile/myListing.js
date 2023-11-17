@@ -83,7 +83,7 @@ const ItemInformation = () => {
         );
         if (spotlightData.status === 200) {
           const spotlight = spotlightData.data.data.spotlight;
-          if (spotlight != null ) {
+          if (spotlight != null) {
             setHasOngoingSpotlight(true);
             setSpotlightEndDate(spotlight.endDate);
           }
@@ -139,26 +139,29 @@ const ItemInformation = () => {
             }}
           >
             {hasOngoingSpotlight ? (
-              <View style={{
-                width: viewportWidthInPixels(50),
-                alignSelf: "flex-end",
-                height: 46,
-                borderRadius:10,
-                padding:5,
-                backgroundColor: dark,
-                alignItems:"center"
-              }}>
+              <View
+                style={{
+                  width: viewportWidthInPixels(50),
+                  alignSelf: "flex-end",
+                  height: 46,
+                  borderRadius: 10,
+                  padding: 5,
+                  backgroundColor: dark,
+                  alignItems: "center",
+                }}
+              >
                 <RegularText typography="H4" color={white}>
-                  Spotlighted 
+                  Spotlighted
                 </RegularText>
                 <RegularText typography="Subtitle" color={white}>
-                until {new Date(spotlightEndDate).toLocaleDateString("en-GB", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+                  until{" "}
+                  {new Date(spotlightEndDate).toLocaleDateString("en-GB", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </RegularText>
               </View>
             ) : (
@@ -243,7 +246,7 @@ const ItemInformation = () => {
             </RegularText>
           </View>
 
-          <View>
+          <View style={{marginBottom: 10}}>
             <RegularText typography="H3" style={style.topic}>
               Collection & Return Locations
             </RegularText>
@@ -255,10 +258,13 @@ const ItemInformation = () => {
                   </View>
                 ))}
             </View>
-            <View style={{ marginBottom: 8 }}>
-              <RegularText typography="H4">Additional Comments</RegularText>
-            </View>
-            <RegularText typography="B2">{otherLocation}</RegularText>
+            {otherLocation && otherLocation.trim() != 0 && (
+              <View>
+                <View style={{ marginBottom: 8 }}>
+                  <RegularText typography="H4">Additional Comments</RegularText>
+                </View>
+                <RegularText typography="B2">{otherLocation || "N/A"}</RegularText>
+              </View>)}
           </View>
         </View>
       </ScrollView>

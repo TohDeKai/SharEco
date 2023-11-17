@@ -44,6 +44,8 @@ const wishlist = () => {
         const wishlist = response.data.data.wishlist;
         console.log(wishlist)
         setItems(wishlist);
+      } else if (response.status === 404) {
+        setItems([]);
       } else {
         console.log("Failed to retrieve wishlist items");
       }

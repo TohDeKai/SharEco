@@ -29,7 +29,8 @@ import MessageBox from "../../../components/text/MessageBox";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
-const { white, primary, inputbackground, black, dark, fail } = colours;
+const { white, primary, inputbackground, black, dark, fail, secondary } =
+  colours;
 import { useAuth } from "../../../context/auth";
 import Calendar from "../../../components/DatePicker";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
@@ -203,7 +204,7 @@ const createRentals = () => {
 
   function formatDate(inputDate) {
     const date = new Date(inputDate);
-    const options = { year: "numeric", month: "long", day: "numeric" };
+    const options = { year: "numeric", month: "short", day: "numeric" };
     return date.toLocaleDateString("en-US", options);
   }
 
@@ -764,6 +765,24 @@ const createRentals = () => {
     [unavailFullDays]
   );
 
+  const handleRefreshWallet = async () => {
+    try {
+      const userData = await getUserData();
+      if (userData) {
+        try {
+          const updatedUserData = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+          );
+          setUser(updatedUserData.data.data.user);
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   const handleCreateRentalRequest = async (values) => {
     try {
       const reqData = {
@@ -1092,7 +1111,7 @@ const createRentals = () => {
                 0
               ) {
                 setMessage(
-                  "You have insufficient balance to make a rental request. Please top up your EcoWallet"
+                  "You have insufficient balance. Please top up your EcoWallet"
                 );
                 setIsSuccessMessage(false);
               } else {
@@ -1184,8 +1203,8 @@ const createRentals = () => {
                 </View>
 
                 {user && user.walletBalance && (
-                  <View style={styles.pricing}>
-                    <View style={styles.pricingRow}>
+                  <View style={styles.walletBal}>
+                    {/* <View style={styles.pricingRow}>
                       <View>
                         <RegularText typography="H3">
                           EcoWallet Balance
@@ -1209,26 +1228,33 @@ const createRentals = () => {
                           ).toFixed(2)}
                         </RegularText>
                       </View>
+                    </View> */}
+                    <View>
+                      <Pressable
+                        style={{
+                          alignContent: "center",
+                          justifyContent: "center",
+                        }}
+                        onPress={handleRefreshWallet}
+                      >
+                        <View style={{ flexDirection: "row" }}>
+                          <RegularText typography="H3" color={white}>
+                            EcoWallet Balance
+                          </RegularText>
+                          <Ionicons
+                            name="refresh-circle"
+                            size={20}
+                            color={white}
+                            style={{ marginLeft: 5 }}
+                          />
+                        </View>
+                      </Pressable>
                     </View>
-                    <View style={styles.pricingRow}>
-                      <View>
-                        <RegularText typography="H3">Available</RegularText>
-                      </View>
-                      <View>
-                        <RegularText typography="H3">
-                          {user.walletBalance}
-                        </RegularText>
-                      </View>
-                    </View>
-                    <View style={styles.pricingRow}>
-                      <View>
-                        <RegularText typography="H3">Booking Total</RegularText>
-                      </View>
-                      <View>
-                        <RegularText typography="H3">
-                          ${totalCost(activeTab)}
-                        </RegularText>
-                      </View>
+
+                    <View>
+                      <RegularText typography="H3" color={white}>
+                        {user.walletBalance}
+                      </RegularText>
                     </View>
                   </View>
                 )}
@@ -1295,6 +1321,17 @@ const styles = StyleSheet.create({
   dateTimePicker: {
     flexDirection: "row",
     alignItems: "flex-end",
+  },
+  walletBal: {
+    backgroundColor: secondary,
+    width: viewportWidthInPixels(90),
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
   },
   selector: {
     flexDirection: "column",

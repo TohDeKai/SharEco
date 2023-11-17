@@ -73,6 +73,9 @@ const TransactionCard = ({ transaction, isIncoming }) => {
     case "TOP_UP":
       iconName = "arrow-up-outline";
       break;
+    case "REWARD":
+      iconName = "ribbon";
+      break;
     default:
       iconName = "receipt";
       break;

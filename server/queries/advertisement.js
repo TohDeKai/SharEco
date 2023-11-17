@@ -162,6 +162,18 @@ const rankWeekAds = async () => {
   }
 };
 
+// Get all Advertisment
+const getAllAds = async () => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM "sharEco-schema"."advertisement" ORDER BY "startDate" DESC'
+    );
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Get all PENDING Advertisment
 const getAdsReq = async () => {
   try {
@@ -199,7 +211,7 @@ const updateAdVisits = async (adId) => {
       [adId]
     );
     const currentVisits = currentVisitsResult.rows[0]?.visits;
-    console.log(currentVisits)
+    console.log(currentVisits);
 
     if (currentVisits !== undefined) {
       const result = await pool.query(
@@ -218,6 +230,68 @@ const updateAdVisits = async (adId) => {
   }
 };
 
+const updateWeeklyAdsToPast = async () => {
+  try {
+    // Update ads from "ACTIVE" to "PAST" where status is "ACTIVE"
+    const updateActiveAdsToPast = await pool.query(
+      `UPDATE "sharEco-schema"."advertisement" 
+        SET "status" = 'PAST'
+        WHERE "status" = 'ACTIVE'`
+    );
+
+    return {
+      updatedActiveAds: updateActiveAdsToPast.rowCount,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateWeeklyAdsToActive = async () => {
+  try {
+    // Update ads from "APPROVED" to "ACTIVE" where status is "APPROVED"
+    const updateApprovedAdsToActive = await pool.query(
+      `UPDATE "sharEco-schema"."advertisement" 
+        SET "status" = 'ACTIVE'
+        WHERE "status" = 'APPROVED'`
+    );
+
+    return {
+      updatedApprovedAds: updateApprovedAdsToActive.rowCount,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateWeeklyAds = async () => {
+  try {
+    const resultToPast = await updateWeeklyAdsToPast();
+    const resultToActive = await updateWeeklyAdsToActive();
+
+    return {
+      ...resultToPast,
+      ...resultToActive,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateAdsStatus = async (newStatus, advertismentId) => {
+  try {
+    // Update ads from "APPROVED" to "ACTIVE" where status is "APPROVED"
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."advertisement" 
+        SET "status" = $1 WHERE "advertisementId" = $2 RETURNING *`,
+      [newStatus, advertismentId]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createAd,
   updateAdImage,
@@ -230,4 +304,9 @@ module.exports = {
   getAdsReq,
   getActiveAds,
   updateAdVisits,
+  getAllAds,
+  updateWeeklyAdsToPast,
+  updateWeeklyAdsToActive,
+  updateWeeklyAds,
+  updateAdsStatus,
 };

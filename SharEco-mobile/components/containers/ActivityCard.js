@@ -562,23 +562,9 @@ const ActivityCard = ({ rental, type }) => {
             <View style={styles.buttons}>
               {/* to be implemented */}
               <Pressable>
-                <Ionicons
-                  name="chatbubble-outline"
-                  color={primary}
-                  size={35}
-                />
+                <Ionicons name="chatbubble-outline" color={primary} size={35} />
               </Pressable>
-              {/* to be implemented */}
-              <View style={styles.buttonContainer}>
-                <SecondaryButton
-                  typography="B3"
-                  color={primary}
-                  style={{ paddingVertical: 0 }}
-                  onPress={handleReport}
-                >
-                  Report
-                </SecondaryButton>
-              </View>
+
               <View style={styles.buttonContainer}>
                 <SecondaryButton
                   typography="B3"
@@ -625,11 +611,7 @@ const ActivityCard = ({ rental, type }) => {
           <View style={styles.buttons}>
             {/* to be implemented */}
             <Pressable>
-              <Ionicons
-                name="chatbubble-outline"
-                color={primary}
-                size={35}
-              />
+              <Ionicons name="chatbubble-outline" color={primary} size={35} />
             </Pressable>
             {/* to be implemented */}
             <View style={styles.buttonContainer}>
@@ -741,11 +723,7 @@ const ActivityCard = ({ rental, type }) => {
         {rental.status === "ONGOING" && (
           <View style={styles.buttons}>
             <Pressable>
-              <Ionicons
-                name="chatbubble-outline"
-                color={primary}
-                size={35}
-              />
+              <Ionicons name="chatbubble-outline" color={primary} size={35} />
             </Pressable>
             <View style={styles.buttonContainer}>
               <SecondaryButton

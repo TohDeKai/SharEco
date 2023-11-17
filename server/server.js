@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { application } = require("express");
+const cron = require("node-cron");
 const express = require("express");
 const morgan = require("morgan");
 const userdb = require("./queries/user");
@@ -13,7 +14,8 @@ const wishlistdb = require("./queries/wishlist");
 const impressiondb = require("./queries/impression");
 const transactiondb = require("./queries/transaction");
 const advertisementdb = require("./queries/advertisement");
-const reportdb = require("./queries/report");
+const reportdb = require("./queries/report");;
+const achievementdb = require("./queries/achievement");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -356,8 +358,6 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
       req.body.contactNumber,
       req.body.userPhotoUrl,
       req.body.isBanned,
-      req.body.likedItem,
-      req.body.wishList,
       req.body.displayName,
       req.body.aboutMe
     );
@@ -495,8 +495,6 @@ app.put("/api/v1/users/username/changePassword/:username", async (req, res) => {
       req.body.contactNumber,
       req.body.userPhotoUrl,
       req.body.isBanned,
-      req.body.likedItem,
-      req.body.wishList,
       req.body.displayName,
       req.body.aboutMe
     );
@@ -531,8 +529,6 @@ app.put("/api/v1/users/ban/username", async (req, res) => {
       user.contactNumber,
       user.userPhotoUrl,
       req.body.isBanned,
-      user.likedItem,
-      user.wishList,
       user.displayName,
       user.aboutMe
     );
@@ -1934,6 +1930,34 @@ app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
   }
 });
 
+// Get Reviews by reviewerId
+app.get("/api/v1/reviews/reviewerId/:reviewerId", async (req, res) => {
+  try {
+    const reviews = await reviewdb.getReviewsByReviewerId(
+      req.params.reviewerId
+    );
+    if (reviews.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          reviews: reviews,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(200).json({
+        data: {
+          reviews: [],
+        },
+      });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Create a Review
 app.post("/api/v1/reviews", async (req, res) => {
   const {
@@ -2408,6 +2432,22 @@ app.get("/api/v1/revenue", async (req, res) => {
   }
 });
 
+// Get Week Revenue data
+app.get("/api/v1/weekRevenue", async (req, res) => {
+  try {
+    const revenueData = await transactiondb.getPastWeeksRevenue();
+    res.status(200).json({
+      status: "success",
+      data: {
+        revenue: revenueData,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //ADVERTISEMENT FUNCTIONALITIES
 //Create a new ad request
 app.post("/api/v1/createAd", async (req, res) => {
@@ -2474,6 +2514,31 @@ app.put("/api/v1/ad/adId/:adId/image", async (req, res) => {
       });
     } else {
       res.status(404).json({ error: "Ad not found or image update failed" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+//update ad status only
+app.put("/api/v1/ad/adId/:adId/status", async (req, res) => {
+  const newStatus = req.body.status;
+  console.log(newStatus);
+  try {
+    const adId = req.params.adId;
+
+    const ad = await advertisementdb.updateAdsStatus(newStatus, adId);
+
+    if (ad) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ad: ad,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Ad not found or status update failed" });
     }
   } catch (err) {
     console.log(err);
@@ -2571,6 +2636,23 @@ app.get("/api/v1/ads/bizId/:bizId", async (req, res) => {
   }
 });
 
+//Get all ads
+app.get("/api/v1/allAdvertisments", async (req, res) => {
+  try {
+    const ads = await advertisementdb.getAllAds();
+    res.status(200).json({
+      status: "success",
+      data: {
+        ads: ads,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Get ads for the week
 app.get("/api/v1/weekAds/startDate/:startDate", async (req, res) => {
   try {
@@ -2652,6 +2734,36 @@ app.put("/api/v1/addVisit/adId/:adId", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+//Update weekly active ads
+app.put("/api/v1/weeklyAds", async (req, res) => {
+  try {
+    const result = await advertisementdb.updateWeeklyAds();
+    res.status(200).json({
+      message: "Weekly ads update successful",
+      updatedActiveAdsCount: result.updatedActiveAds,
+      updatedApprovedAdsCount: result.updatedApprovedAds,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+cron.schedule(
+  "0 0 * * 0",
+  async () => {
+    try {
+      console.log("Running updateWeeklyAds job...");
+      const result = await advertisementdb.updateWeeklyAds();
+      console.log("Weekly ads update:", result);
+    } catch (error) {
+      console.error("Error running updateWeeklyAds:", error);
+    }
+  },
+  {
+    timezone: "Asia/Singapore",
+  }
+);
 
 /**********************          Insights and Dashboard Routes             **************************/
 // create impression
@@ -2912,6 +3024,23 @@ app.get("/api/v1/reports", async (req, res) => {
   }
 });
 
+// GET all unresolved reports
+app.get("/api/v1/reports/unresolved/", async (req, res) => {
+  try {
+    const reports = await reportdb.getUnresolvedReports();
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // GET all reports with DISPUTE type
 app.get("/api/v1/reports/type/:type", async (req, res) => {
   try {
@@ -3029,6 +3158,30 @@ app.put("/api/v1/report/status/:reportId", async (req, res) => {
   }
 });
 
+// UPDATE report result
+app.put("/api/v1/report/result/:reportId", async (req, res) => {
+  try {
+    const result = req.body.result;
+    const reportId = req.params.reportId;
+    const report = await reportdb.updateReportResult(result, reportId);
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // UPDATE report with supporting images
 app.put("/api/v1/report/images/:reportId", async (req, res) => {
   try {
@@ -3087,6 +3240,109 @@ app.get("/api/v1/reports/reportId/:reportId", async (req, res) => {
   } catch (err) {
     // Handle the error here if needed
     console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+
+/**********************          Achievement Routes             **************************/
+// unlock badge
+app.post("/api/v1/achievement", async (req, res) => {
+  const { userId, badgeType, badgeTier, badgeProgress } = req.body;
+
+  try {
+    const achievement = await achievementdb.unlockBadge(userId, badgeType, badgeTier, badgeProgress);
+
+    // Send the newly created achievement as response
+    res.status(201).json({
+      status: "success",
+      data: {
+        achievement: achievement,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// update badge progress
+app.put("/api/v1/achievement/update/achievementId/:achievementId", async (req, res) => {
+  try {
+    const achievement = await achievementdb.updateProgress(
+      req.params.achievementId,
+      req.body.badgeProgress
+    );
+
+    if (achievement) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievement: achievement,
+        },
+      });
+    } else {
+      // Handle the case where the achievement is not found
+      res.status(404).json({ error: "Achievement not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// upgrade badge tier
+app.put("/api/v1/achievement/upgrade/achievementId/:achievementId", async (req, res) => {
+  try {
+    const achievement = await achievementdb.upgradeBadge(
+      req.params.achievementId,
+      req.body.newBadgeTier
+    );
+
+    if (achievement) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievement: achievement,
+        },
+      });
+    } else {
+      // Handle the case where the achievement is not found
+      res.status(404).json({ error: "Achievement not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// get achievements by userId
+app.get("/api/v1/achievement/userId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const achievements = await achievementdb.getAchievementsByUserId(userId);
+
+    if (achievements.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievements: achievements,
+        },
+      });
+    } else {
+      // if achievements not found
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievements: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Database error" });
   }
 });

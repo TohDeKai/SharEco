@@ -1,9 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-} from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import {
   collection,
   addDoc,
@@ -26,7 +21,7 @@ import {
   KeyboardAvoidingView,
   ActivityIndicator,
   Modal,
-  StyleSheet
+  StyleSheet,
 } from "react-native";
 import { useAuth } from "../../../context/auth";
 import MessageComponent from "../../../components/containers/Chat/MessagingComponent";
@@ -37,7 +32,7 @@ import SafeAreaContainer from "../../../components/containers/SafeAreaContainer"
 import { Ionicons } from "@expo/vector-icons";
 import { colours } from "../../../components/ColourPalette";
 import RegularText from "../../../components/text/RegularText";
-import IconTextInput from "../../../components/inputs/LoginTextInputs"
+import IconTextInput from "../../../components/inputs/LoginTextInputs";
 import DropDownPicker from "react-native-dropdown-picker";
 import axios from "axios";
 import ChatListingCard from "../../../components/containers/Chat/ChatListingCard";
@@ -73,42 +68,44 @@ const Messaging = () => {
   }
 
   // Fetch user data
-useEffect(() => {
-  async function fetchUserData() {
-    try {
-      const userData = await getUserData();
-      if (userData) {
-        setUser(userData);
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.log(error.message);
       }
-    } catch (error) {
-      console.log(error.message);
     }
-  }
-  fetchUserData();
-}, []); // Empty dependency array, runs only once when the component mounts
+    fetchUserData();
+  }, []); // Empty dependency array, runs only once when the component mounts
 
-// Fetch items data
-useEffect(() => {
-  async function fetchItemsData() {
-    try {
-      const userItemsResponse = await axios.get(
-        `http://${BASE_URL}:4000/api/v1/items/${otherPersonId}`
-      );
-      const formattedItems = userItemsResponse.data.data.items.map((item) => ({
-        label: item.itemTitle,
-        value: item.itemTitle.toLowerCase(),
-        category: item.category,
-        itemDescription: item.itemDescription,
-        itemId: item.itemId,
-        icon: item.images[0],
-      }));
-      setItems(formattedItems);
-    } catch (error) {
-      console.log(error.message);
+  // Fetch items data
+  useEffect(() => {
+    async function fetchItemsData() {
+      try {
+        const userItemsResponse = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/items/${otherPersonId}`
+        );
+        const formattedItems = userItemsResponse.data.data.items.map(
+          (item) => ({
+            label: item.itemTitle,
+            value: item.itemTitle.toLowerCase(),
+            category: item.category,
+            itemDescription: item.itemDescription,
+            itemId: item.itemId,
+            icon: item.images[0],
+          })
+        );
+        setItems(formattedItems);
+      } catch (error) {
+        console.log(error.message);
+      }
     }
-  }
-  fetchItemsData();
-}, []); 
+    fetchItemsData();
+  }, []);
 
   useLayoutEffect(() => {
     const collectionRef = collection(
@@ -127,7 +124,7 @@ useEffect(() => {
         itemId: doc.data().itemId,
       }));
       setChatMessages(msg);
-      setLoading(false)
+      setLoading(false);
     });
     return unsubscribe;
   }, []);
@@ -155,7 +152,7 @@ useEffect(() => {
 
   const sendItemMessage = async (item) => {
     if (!item.itemId) {
-      console.log('itemId is undefined. Aborting sendItemMessage.');
+      console.log("itemId is undefined. Aborting sendItemMessage.");
       return;
     }
 
@@ -164,7 +161,7 @@ useEffect(() => {
       sender: user.userId,
       message: "this is an item",
       time: timeStamp,
-      itemId: item.itemId
+      itemId: item.itemId,
     };
 
     try {
@@ -195,27 +192,27 @@ useEffect(() => {
 
   const handleToggleModal = () => {
     setShowModal(!showModal);
-  }
+  };
 
   const renderItem = ({ item }) => (
-		<View style={{flexDirection: "row", gap: 10, marginBottom: 10}}>
-			<Image
-				source={{
-					uri: item.icon,
-				}}
-				style={{ height: 50, width: 50 }}
-			/>
-			<Pressable
-				style={({ pressed }) => ({
-					opacity: pressed ? 0.5 : 1,
-					padding: 10,
-				})}
-				onPress={() => sendItemMessage(item)}
-			>
-				<RegularText>{item.label}</RegularText>
-			</Pressable>
-		</View>
-	);
+    <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
+      <Image
+        source={{
+          uri: item.icon,
+        }}
+        style={{ height: 50, width: 50 }}
+      />
+      <Pressable
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.5 : 1,
+          padding: 10,
+        })}
+        onPress={() => sendItemMessage(item)}
+      >
+        <RegularText>{item.label}</RegularText>
+      </Pressable>
+    </View>
+  );
 
   const flatListRef = useRef(null);
 
@@ -233,9 +230,10 @@ useEffect(() => {
   return (
     <SafeAreaContainer>
       <Header title={`@${name}`} action="back" onPress={handleBack} />
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        style={styles.messagingscreen}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.messagingscreen}
+      >
         <View
           style={[
             styles.messagingscreen,
@@ -270,7 +268,7 @@ useEffect(() => {
           )}
         </View>
 
-        {/* STUB for testing rendering Listing */}
+        {/* STUB for testing rendering Listing asd*/}
         {/* {user && (
           <ChatListingCard 
             messageItem={
@@ -283,7 +281,7 @@ useEffect(() => {
             user={user} 
           />
         )} */}
-        
+
         <View>
           {showModal && (
             <View style={modalStyles.modalView}>
@@ -298,7 +296,7 @@ useEffect(() => {
 
         <View style={styles.messaginginputContainer}>
           <Pressable
-            style={({pressed}) => ({
+            style={({ pressed }) => ({
               ...styles.messagingbuttonContainer,
               opacity: pressed ? 0.5 : 1,
             })}
@@ -306,7 +304,7 @@ useEffect(() => {
           >
             <View>
               <Ionicons
-                name= {showModal ? "chevron-down" : "attach-outline"}
+                name={showModal ? "chevron-down" : "attach-outline"}
                 size={30}
                 style={{
                   color: colours.placeholder,
@@ -319,7 +317,7 @@ useEffect(() => {
             value={message}
             onChangeText={(value) => setMessage(value)}
             placeholder="Write a message"
-            placeholderTextColor={colours.placeholder} 
+            placeholderTextColor={colours.placeholder}
           />
           {/* <DropDownPicker
             open={open}
@@ -331,7 +329,7 @@ useEffect(() => {
             placeholder="You can choose your listing to share here"
           /> */}
           <Pressable
-            style={({pressed}) => ({
+            style={({ pressed }) => ({
               ...styles.messagingbuttonContainer,
               opacity: pressed ? 0.5 : 1,
             })}
@@ -382,4 +380,4 @@ const modalStyles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-})
+});

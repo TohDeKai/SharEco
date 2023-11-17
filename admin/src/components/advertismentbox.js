@@ -22,9 +22,9 @@ const Advertismentbox = ({ title }) => {
               <Grid item xs={12} sm={6}>
                 <Box>
                   <Typography
-                    fontSize="16px"
+                    fontSize="24px"
                     fontWeight="bold"
-                    sx={{ color: "#222222", mt: 1, mb: 2 }}
+                    sx={{ color: "#222222", mt: 1, mb: 2, padding:"20px" }}
                   >
                     {title}
                   </Typography>
@@ -34,7 +34,7 @@ const Advertismentbox = ({ title }) => {
                 <Box>
                   <Typography
                     fontSize="16px"
-                    sx={{ color: "gray", mt: 1, mb: 2 }}
+                    sx={{ color: "gray", mt: 1, mb: 2, paddingTop:"28px" }}
                   >
                     <span>Complete in </span>
                     <span style={{ fontWeight: "bold", color: "#000" }}>
