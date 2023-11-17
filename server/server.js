@@ -2710,6 +2710,18 @@ cron.schedule('0 0 * * 0', async () => {
 }, {
   timezone: 'Asia/Singapore', 
 });
+// FSR REFRESH EVERY MIN
+// cron.schedule('* * * * *', async () => {
+//   try {
+//     console.log('Running updateWeeklyAds job...');
+//     const result = await advertisementdb.updateWeeklyAds();
+//     console.log('Weekly ads update:', result);
+//   } catch (error) {
+//     console.error('Error running updateWeeklyAds:', error);
+//   }
+// }, {
+//   timezone: 'Asia/Singapore', 
+// });
 
 /**********************          Insights and Dashboard Routes             **************************/
 // create impression
