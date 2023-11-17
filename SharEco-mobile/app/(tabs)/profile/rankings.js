@@ -174,7 +174,7 @@ export default viewRankings;
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 20,
-    height: viewportHeightInPixels(80),
+    height: viewportHeightInPixels(75),
   },
   info: {
     paddingVertical: 10,

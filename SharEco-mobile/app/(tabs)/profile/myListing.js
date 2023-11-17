@@ -7,6 +7,7 @@ import {
   Pressable,
   FlatList,
   Image,
+  RefreshControl,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/auth";
@@ -52,6 +53,7 @@ const ItemInformation = () => {
   const { itemId } = params;
   const [hasOngoingSpotlight, setHasOngoingSpotlight] = useState(false);
   const [spotlightEndDate, setSpotlightEndDate] = useState();
+  const [refreshing, setRefreshing] = useState(false);
   //setListingItemId({itemId});
   const handleBack = () => {
     router.back();
@@ -98,6 +100,47 @@ const ItemInformation = () => {
     fetchUserData();
   }, []);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const userData = await getUserData();
+      setUser(userData);
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/items/itemId/${itemId}`
+      );
+      console.log("get");
+      console.log(response.status);
+      if (response.status === 200) {
+        const item = response.data.data.item;
+        setListingItem(item);
+      } else {
+        // Shouldn't come here
+        console.log("Failed to retrieve items");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+    try {
+      const spotlightData = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/spotlight/${itemId}`
+      );
+      if (spotlightData.status === 200) {
+        const spotlight = spotlightData.data.data.spotlight;
+        if (spotlight != null) {
+          setHasOngoingSpotlight(true);
+          setSpotlightEndDate(spotlight.endDate);
+        }
+      } else {
+        // Shouldn't come here
+        console.log("Failed to retrieve items");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+
+    setRefreshing(false);
+  };
+
   const {
     itemTitle,
     images,
@@ -116,6 +159,9 @@ const ItemInformation = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ marginBottom: 50 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
         <View style={style.imgContainer}>
           <View style={style.header}>
@@ -246,7 +292,7 @@ const ItemInformation = () => {
             </RegularText>
           </View>
 
-          <View style={{marginBottom: 10}}>
+          <View style={{ marginBottom: 10 }}>
             <RegularText typography="H3" style={style.topic}>
               Collection & Return Locations
             </RegularText>
@@ -263,8 +309,11 @@ const ItemInformation = () => {
                 <View style={{ marginBottom: 8 }}>
                   <RegularText typography="H4">Additional Comments</RegularText>
                 </View>
-                <RegularText typography="B2">{otherLocation || "N/A"}</RegularText>
-              </View>)}
+                <RegularText typography="B2">
+                  {otherLocation || "N/A"}
+                </RegularText>
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>

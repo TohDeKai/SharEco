@@ -143,7 +143,7 @@ const Footer = ({ activeButton, spotlightDetails }) => {
           
           if(transactionResponse.status === 200) {
             console.log("Spotlight created successfully");
-            router.replace("/profile");
+            router.back();
           }
         } else {
           //shouldnt come here

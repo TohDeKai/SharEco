@@ -138,7 +138,7 @@ const getWeekAdsByStartDate = async (startDate) => {
   try {
     const result = await pool.query(
       `SELECT * FROM "sharEco-schema"."advertisement" 
-             WHERE "startDate" >= $1 AND "startDate" <= $2
+             WHERE "startDate" >= $1 AND "endDate" <= $2
              ORDER BY "bidPrice" DESC`,
       [startDate, endDate.toISOString().split("T")[0]]
     );
@@ -154,9 +154,10 @@ const rankWeekAds = async () => {
   try {
     const startDate = getStartBidDate();
     const ads = await getWeekAdsByStartDate(startDate);
-    ads.sort((ad1, ad2) => ad2.bidPrice - ad1.bidPrice);
+    const pendingAds = ads.filter((ad) => ad.status === "PENDING");
+    pendingAds.sort((ad1, ad2) => ad2.bidPrice - ad1.bidPrice);
     console.log(ads);
-    return ads;
+    return pendingAds;
   } catch (err) {
     throw err;
   }
