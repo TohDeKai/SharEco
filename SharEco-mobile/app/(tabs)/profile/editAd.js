@@ -200,7 +200,7 @@ const editAd = () => {
       if (response.status === 200) {
         const priceDifference =
         parseFloat(values.bidPrice.replace("$", "")) - parseFloat(bidPrice.replace("$", ""));
-        const walletBalance = parseFloat(user.walletBalance.replace("$", ""));
+        const formattedBalance = parseFloat(user.walletBalance.replace(/[^0-9.-]+/g,""));
 
         if (priceDifference < 0) {
           const transactionData = {
@@ -215,7 +215,7 @@ const editAd = () => {
           if (transactionResponse.status === 200) {
             console.log(`Refund completed`);
           }
-        } else if (priceDifference > 0 && walletBalance > priceDifference) {
+        } else if (priceDifference > 0 && formattedBalance > priceDifference) {
           const transactionData = {
             senderId: user.userId,
             amount: priceDifference,
