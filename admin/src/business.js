@@ -87,6 +87,7 @@ const Business = ({}) => {
   const [selectedAdImage, setSelectedAdImage] = useState();
   const [selectedAdStatus, setSelectedAdStatus] = useState();
   const [selectedAdLink, setSelectedAdLink] = useState();
+  const [selectedBiz, setSelectedBiz] = useState();
 
   const [openAdsDetails, setOpenAdsDetails] = useState(false);
   const [openPastAdsDetails, setOpenPastAdsDetails] = useState(false);
@@ -149,6 +150,7 @@ const Business = ({}) => {
       setSelectedAdStatus(advertisment.status);
       setSelectedAdLink(advertisment.link);
       setSelectedAdId(advertisment.advertisementId);
+      setSelectedBiz(advertisment.bizId);
     } catch (error) {
       console.log(error);
     } finally {
@@ -188,7 +190,11 @@ const Business = ({}) => {
     }
   };
 
-  const handleRejected = async (advertismentId) => {
+  const handleRejected = async (
+    advertismentId,
+    selectedBiz,
+    selectedAdBidPrice
+  ) => {
     const newStatus = {
       status: "REJECTED",
     };
@@ -198,7 +204,27 @@ const Business = ({}) => {
         `http://localhost:4000/api/v1/ad/adId/${advertismentId}/status`,
         newStatus
       );
-      if (advertismentResponse.status === 200) {
+
+      // getting that user based on the business Id of the Ads
+      const businessResponse = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${selectedBiz}`
+      );
+
+      const forTransaction = {
+        receiverId: businessResponse.data.data.user.userId,
+        amount: selectedAdBidPrice,
+        transactionType: "ADS",
+      };
+
+      const transactionResponse = await axios.post(
+        `http://localhost:4000/api/v1/transaction/fromAdmin`,
+        forTransaction
+      );
+
+      if (
+        advertismentResponse.status === 200 &&
+        transactionResponse.status === 200
+      ) {
         console.log("rejected ad");
       }
       handleClose();
@@ -471,7 +497,7 @@ const Business = ({}) => {
               variant="contained"
               style={{ width: "160px" }}
               disabled={
-                !(today.getDay() === 5 && remainingApprovalCount > 0) ||
+                !(today.getDay() === 6 && remainingApprovalCount > 0) ||
                 selectedAdStatus !== "PENDING"
               }
               onClick={() => handleApproved(selectedAdId)}
@@ -485,7 +511,9 @@ const Business = ({}) => {
                 !(today.getDay() === 5 && remainingApprovalCount > 0) ||
                 selectedAdStatus !== "PENDING"
               }
-              onClick={() => handleRejected(selectedAdId)}
+              onClick={() =>
+                handleRejected(selectedAdId, selectedBiz, selectedAdBidPrice)
+              }
             >
               Reject
             </Button>
