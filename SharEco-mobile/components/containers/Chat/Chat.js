@@ -20,6 +20,7 @@ import { colours } from "../../ColourPalette";
 
 const Chat = (props) => {
   const [chatRooms, setChatRooms] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); 
 
   useLayoutEffect(() => {
     const chatsRef = collection(fireStoreDB, "chats");
@@ -72,6 +73,7 @@ const Chat = (props) => {
 
       await Promise.all(promises);
       setChatRooms(chatRoomsData);
+      setIsLoading(false);
     });
     return unsubscribe;
   }, []);
@@ -84,7 +86,11 @@ const Chat = (props) => {
     <SafeAreaView>
       <Header title="Chat" action="back" onPress={handleBack} />
       <View style={styles.chatlistContainer}>
-        {chatRooms.length > 0 ? (
+        {isLoading ? ( // Show loading indicator
+          <View style={styles.chatemptyContainer}>
+            <ActivityIndicator size="large" color={colours.placeholder} />
+          </View>
+        ) : chatRooms.length > 0 ? ( // Show chats if available
           <FlatList
             data={chatRooms}
             renderItem={({ item }) => (
@@ -92,9 +98,10 @@ const Chat = (props) => {
             )}
             keyExtractor={(item) => item.id}
           />
-        ) : (
+        ) : ( // Show text if no chats
           <View style={styles.chatemptyContainer}>
-            <ActivityIndicator size="large" color={colours.placeholder} />
+            <RegularText typography="H3">No chats</RegularText>
+            <RegularText>Create a chat to communicate with others</RegularText>
           </View>
         )}
       </View>
