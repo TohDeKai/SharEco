@@ -344,10 +344,13 @@ const ItemInformation = () => {
                   </View>
                 ))}
             </View>
-            <View style={{ marginBottom: 8 }}>
-              <RegularText typography="H4">Seller's Comments</RegularText>
-            </View>
-            <RegularText typography="B2">{otherLocation}</RegularText>
+            {otherLocation && otherLocation.trim() != 0 && (
+              <View>
+                <View style={{ marginBottom: 8 }}>
+                  <RegularText typography="H4">Additional Comments</RegularText>
+                </View>
+                <RegularText typography="B2">{otherLocation || "N/A"}</RegularText>
+              </View>)}
           </View>
         </View>
       </ScrollView>
