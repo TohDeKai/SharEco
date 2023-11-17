@@ -123,12 +123,13 @@ const withdrawScreen = () => {
         <Formik
           initialValues={{ amount: 0 }}
           onSubmit={(values, setSubmitting) => {
+            const formattedBalance = user.walletBalance.replace(/[^0-9.-]+/g,"");
             if (parseFloat(values.amount) <= 1) {
               setMessage("Input amount cannot be less than or equal to $1.");
               setIsSuccessMessage(false);
             } else if (
               parseFloat(values.amount) >
-              parseFloat(user.walletBalance.replace("$", ""))
+              parseFloat(formattedBalance)
             ) {
               setMessage(
                 "Withdrawal amount cannot be greater than wallet balance."

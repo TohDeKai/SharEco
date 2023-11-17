@@ -130,7 +130,8 @@ const transferScreen = () => {
         <Formik
           initialValues={{ receiverUsername: "", amount: 0 }}
           onSubmit={(values, setSubmitting) => {
-            if (parseFloat(user.walletBalance.replace("$", "")) <= 0) {
+            const formattedBalance = user.walletBalance.replace(/[^0-9.-]+/g,"");
+            if (parseFloat(formattedBalance) <= 0) {
               setMessage("Please top up your EcoWallet before transferring.");
               setIsSuccessMessage(false);
             } else if (values.amount == "") {
@@ -144,7 +145,7 @@ const transferScreen = () => {
               setIsSuccessMessage(false);
             } else if (
               parseFloat(values.amount) >
-              parseFloat(user.walletBalance.replace("$", ""))
+              parseFloat(formattedBalance)
             ) {
               setMessage(
                 "Transfer amount cannot be greater than wallet balance."

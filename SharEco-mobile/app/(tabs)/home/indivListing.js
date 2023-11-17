@@ -30,6 +30,7 @@ import {
   SecondaryButton,
 } from "../../../components/buttons/RegularButton";
 import CarouselItem from "../../../components/CarouselItem";
+import BadgeIcon from "../../../components/BadgeIcon";
 const { white, yellow, red, black, inputbackground, primary, dark } = colours;
 import { fireStoreDB } from "../../../app/utils/firebase";
 import {
@@ -67,6 +68,7 @@ const ItemInformation = () => {
   const [user, setUser] = useState("");
   const [sessionUser, setSessionUser] = useState("");
   const [ratings, setRatings] = useState({});
+  const [achievements, setAchievements] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
   const { itemId } = params;
@@ -174,9 +176,27 @@ const ItemInformation = () => {
         console.error(error.message);
       }
     }
-
+    async function fetchAchievements() {
+      try {
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
+        );
+  
+        if (response.status === 200) {
+          const achievements = response.data.data.achievements;
+          console.log(achievements)
+          setAchievements(achievements);
+        } else {
+          // Handle the error condition appropriately
+          console.log("Failed to retrieve achievements");
+        }
+      } catch (error) {
+        console.log("fetch achievement", error);
+      }
+    }
+    fetchAchievements();
     fetchData();
-  }, [itemId, BASE_URL]);
+  }, [itemId, BASE_URL, user.userId]);
 
   const {
     itemTitle,
@@ -301,32 +321,49 @@ const ItemInformation = () => {
               }
             >
               <View style={style.seller}>
-                <View style={style.avatarContainer}>
-                  <UserAvatar
-                    size="medium"
-                    source={{
-                      uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
-                    }}
-                  />
-                </View>
-                <View style={style.profile}>
-                  <RegularText typography="H3">{user.displayName}</RegularText>
-                  <RegularText typography="Subtitle">
-                    @{user.username}
-                  </RegularText>
-                  <View style={style.ratingsContainer}>
-                    <RegularText typography="Subtitle">
-                      {ratings.averageRating || 0}
-                    </RegularText>
-                    <Rating
-                      stars={ratings.starsToDisplay || 0}
-                      size={18}
-                      color={yellow}
+                <View style={style.sellerProfile}>
+                  <View style={style.avatarContainer}>
+                    <UserAvatar
+                      size="medium"
+                      source={{
+                        uri: `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${user.userPhotoUrl}.jpeg`,
+                      }}
                     />
-                    <RegularText typography="Subtitle">
-                      ({ratings.numberOfRatings || 0})
-                    </RegularText>
                   </View>
+                  <View style={style.profile}>
+                    <RegularText typography="H3">{user.displayName}</RegularText>
+                    <RegularText typography="Subtitle">
+                      @{user.username}
+                    </RegularText>
+                    <View style={style.ratingsContainer}>
+                      <RegularText typography="Subtitle">
+                        {ratings.averageRating || 0}
+                      </RegularText>
+                      <Rating
+                        stars={ratings.starsToDisplay || 0}
+                        size={18}
+                        color={yellow}
+                      />
+                      <RegularText typography="Subtitle">
+                        ({ratings.numberOfRatings || 0})
+                      </RegularText>
+                    </View>
+                  </View>
+                </View>
+                  
+                <View style={style.badges}>
+                  {achievements.length > 0 && (
+                    achievements.map((ach) => (
+                      <BadgeIcon 
+                      key={ach.achievementId}
+                      type={ach.badgeType}
+                      tier={ach.badgeTier}
+                      size={"small"} 
+                      pressable={false}
+                    />
+                    ))
+                  )}
+                    
                 </View>
               </View>
             </Pressable>
@@ -675,11 +712,17 @@ const style = StyleSheet.create({
   seller: {
     display: "flex",
     flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     backgroundColor: inputbackground,
     paddingHorizontal: viewportWidthInPixels(5),
     paddingVertical: 15,
     borderRadius: 15,
     marginBottom: 20,
+  },
+  sellerProfile: {
+    flexDirection: "row",
+    alignItems: "center"
   },
   profile: {
     display: "flex",
@@ -746,4 +789,14 @@ const style = StyleSheet.create({
     marginTop: 7,
     marginBottom: 10,
   },
+  badges: {
+    flexWrap: "wrap",
+    flexDirection: "row",
+    width: 53,
+    height: 63,
+    gap: 4,
+    justifyContent: "space-between",
+    alignContent: "center",
+    alignItems: "center",
+  }
 });

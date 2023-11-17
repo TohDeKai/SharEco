@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { application } = require("express");
-const cron = require('node-cron');
+const cron = require("node-cron");
 const express = require("express");
 const morgan = require("morgan");
 const userdb = require("./queries/user");
@@ -14,7 +14,8 @@ const wishlistdb = require("./queries/wishlist");
 const impressiondb = require("./queries/impression");
 const transactiondb = require("./queries/transaction");
 const advertisementdb = require("./queries/advertisement");
-const reportdb = require("./queries/report");
+const reportdb = require("./queries/report");;
+const achievementdb = require("./queries/achievement");
 const auth = require("./auth.js");
 const userAuth = require("./userAuth");
 const app = express();
@@ -357,8 +358,6 @@ app.put("/api/v1/users/username/:username", async (req, res) => {
       req.body.contactNumber,
       req.body.userPhotoUrl,
       req.body.isBanned,
-      req.body.likedItem,
-      req.body.wishList,
       req.body.displayName,
       req.body.aboutMe
     );
@@ -496,8 +495,6 @@ app.put("/api/v1/users/username/changePassword/:username", async (req, res) => {
       req.body.contactNumber,
       req.body.userPhotoUrl,
       req.body.isBanned,
-      req.body.likedItem,
-      req.body.wishList,
       req.body.displayName,
       req.body.aboutMe
     );
@@ -1933,6 +1930,34 @@ app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
   }
 });
 
+// Get Reviews by reviewerId
+app.get("/api/v1/reviews/reviewerId/:reviewerId", async (req, res) => {
+  try {
+    const reviews = await reviewdb.getReviewsByReviewerId(
+      req.params.reviewerId
+    );
+    if (reviews.length != 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          reviews: reviews,
+        },
+      });
+    } else {
+      // Handle the case where the rental request is not found
+      res.status(200).json({
+        data: {
+          reviews: [],
+        },
+      });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Create a Review
 app.post("/api/v1/reviews", async (req, res) => {
   const {
@@ -2496,6 +2521,31 @@ app.put("/api/v1/ad/adId/:adId/image", async (req, res) => {
   }
 });
 
+//update ad status only
+app.put("/api/v1/ad/adId/:adId/status", async (req, res) => {
+  const newStatus = req.body.status;
+  console.log(newStatus);
+  try {
+    const adId = req.params.adId;
+
+    const ad = await advertisementdb.updateAdsStatus(newStatus, adId);
+
+    if (ad) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ad: ad,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Ad not found or status update failed" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Edit ad
 app.put("/api/v1/editAd/adId/:adId", async (req, res) => {
   try {
@@ -2686,16 +2736,16 @@ app.put("/api/v1/addVisit/adId/:adId", async (req, res) => {
 });
 
 //Update weekly active ads
-app.put('/api/v1/weeklyAds', async (req, res) => {
+app.put("/api/v1/weeklyAds", async (req, res) => {
   try {
     const result = await advertisementdb.updateWeeklyAds();
     res.status(200).json({
-      message: 'Weekly ads update successful',
+      message: "Weekly ads update successful",
       updatedActiveAdsCount: result.updatedActiveAds,
       updatedApprovedAdsCount: result.updatedApprovedAds,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -2722,6 +2772,7 @@ cron.schedule('0 0 * * 0', async () => {
 // }, {
 //   timezone: 'Asia/Singapore', 
 // });
+
 
 /**********************          Insights and Dashboard Routes             **************************/
 // create impression
@@ -3198,6 +3249,109 @@ app.get("/api/v1/reports/reportId/:reportId", async (req, res) => {
   } catch (err) {
     // Handle the error here if needed
     console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+
+/**********************          Achievement Routes             **************************/
+// unlock badge
+app.post("/api/v1/achievement", async (req, res) => {
+  const { userId, badgeType, badgeTier, badgeProgress } = req.body;
+
+  try {
+    const achievement = await achievementdb.unlockBadge(userId, badgeType, badgeTier, badgeProgress);
+
+    // Send the newly created achievement as response
+    res.status(201).json({
+      status: "success",
+      data: {
+        achievement: achievement,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// update badge progress
+app.put("/api/v1/achievement/update/achievementId/:achievementId", async (req, res) => {
+  try {
+    const achievement = await achievementdb.updateProgress(
+      req.params.achievementId,
+      req.body.badgeProgress
+    );
+
+    if (achievement) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievement: achievement,
+        },
+      });
+    } else {
+      // Handle the case where the achievement is not found
+      res.status(404).json({ error: "Achievement not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// upgrade badge tier
+app.put("/api/v1/achievement/upgrade/achievementId/:achievementId", async (req, res) => {
+  try {
+    const achievement = await achievementdb.upgradeBadge(
+      req.params.achievementId,
+      req.body.newBadgeTier
+    );
+
+    if (achievement) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievement: achievement,
+        },
+      });
+    } else {
+      // Handle the case where the achievement is not found
+      res.status(404).json({ error: "Achievement not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// get achievements by userId
+app.get("/api/v1/achievement/userId/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const achievements = await achievementdb.getAchievementsByUserId(userId);
+
+    if (achievements.length > 0) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievements: achievements,
+        },
+      });
+    } else {
+      // if achievements not found
+      res.status(200).json({
+        status: "success",
+        data: {
+          achievements: [],
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Database error" });
   }
 });

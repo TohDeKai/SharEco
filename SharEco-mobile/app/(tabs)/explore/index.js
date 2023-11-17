@@ -58,6 +58,7 @@ const explore = () => {
             );
             setUser(updatedUserData.data.data.user);
             setWalletBalance(updatedUserData.data.data.user.walletBalance);
+            console.log(updatedUserData.data.data.user.username);
           } catch (error) {
             console.log(error.message);
           }

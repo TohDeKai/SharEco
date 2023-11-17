@@ -279,6 +279,20 @@ const updateWeeklyAds = async () => {
   }
 };
 
+const updateAdsStatus = async (newStatus, advertismentId) => {
+  try {
+    // Update ads from "APPROVED" to "ACTIVE" where status is "APPROVED"
+    const result = await pool.query(
+      `UPDATE "sharEco-schema"."advertisement" 
+        SET "status" = $1 WHERE "advertisementId" = $2 RETURNING *`,
+      [newStatus, advertismentId]
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createAd,
   updateAdImage,
@@ -295,4 +309,5 @@ module.exports = {
   updateWeeklyAdsToPast,
   updateWeeklyAdsToActive,
   updateWeeklyAds,
+  updateAdsStatus,
 };

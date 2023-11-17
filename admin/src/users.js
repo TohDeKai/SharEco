@@ -417,7 +417,6 @@ const Users = ({}) => {
                                 : row[column.id]}
                             </TableCell>
                           ))}
-
                           <TableCell>
                             <Button
                               variant="contained"

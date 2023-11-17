@@ -74,8 +74,8 @@ const getUserByUsernameAndPassword = async (username, password) => {
 };
 
 // Create a user
-// User will be created with isBanned = false, likedItem & wishList = []
-// Each user will not be banned and have an empty likedItem and wishList upon creation
+// User will be created with isBanned = false
+// Each user will not be banned
 const createUser = async (
   password,
   email,
@@ -87,7 +87,7 @@ const createUser = async (
   try {
     const result = await pool.query(
       `INSERT INTO "sharEco-schema"."user" 
-        (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "likedItem", "wishList", "displayName", "aboutMe", "walletBalance", "walletId","verification") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning *`,
+        (username, password, email, "contactNumber", "userPhotoUrl", "isBanned", "displayName", "aboutMe", "walletBalance", "walletId","verification") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) returning *`,
       [
         username,
         password,
@@ -95,8 +95,6 @@ const createUser = async (
         contactNumber,
         null,
         false,
-        [],
-        [],
         displayName,
         "",
         0,
