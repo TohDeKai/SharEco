@@ -52,6 +52,7 @@ const transferScreen = () => {
               `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
             );
             setUser(updatedUserData.data.data.user);
+            console.log(updatedUserData.data.data.user.username);
           } catch (error) {
             console.log(error.message);
           }

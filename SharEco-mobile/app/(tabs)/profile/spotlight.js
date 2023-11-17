@@ -38,7 +38,7 @@ const SpotlightButtons = ({
   handleButtonPress,
 }) => {
   return (
-    <View style={{ alignItems: "center" }}>
+    <View style={styles.container}>
       {spotlightDetails.map((detail) => (
         <Pressable
           key={detail.id}
@@ -143,7 +143,7 @@ const Footer = ({ activeButton, spotlightDetails }) => {
           
           if(transactionResponse.status === 200) {
             console.log("Spotlight created successfully");
-            router.replace("/profile");
+            router.back();
           }
         } else {
           //shouldnt come here
@@ -206,7 +206,7 @@ const Content = () => {
   };
 
   return (
-    <View style={{ height: viewportHeightInPixels(60) }}>
+    <View>
       <Header title="Spotlight" action="back" onPress={handleBack} />
       <View style={{ marginVertical: 30 }}>
         <RegularText
@@ -244,8 +244,9 @@ const Spotlight = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: viewportHeightInPixels(58),
     backgroundColor: white,
+    alignItems: "center",
   },
   spotlightButtonContainer: {
     alignItems: "center",
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
   nav: {
     width: "100%",
     position: "absolute",
-    height: viewportHeightInPixels(12),
+    height: viewportHeightInPixels(10),
     justifyContent: "center",
     backgroundColor: white,
     flex: 1,

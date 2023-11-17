@@ -132,7 +132,7 @@ const withdrawScreen = () => {
               parseFloat(formattedBalance)
             ) {
               setMessage(
-                "Withdrawal amount cannot be greater than wallet balance.."
+                "Withdrawal amount cannot be greater than wallet balance."
               );
               setIsSuccessMessage(false);
             } else {

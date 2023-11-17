@@ -39,9 +39,13 @@ const ConfirmationModal = ({
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
 
-  let totalCancellationFee;
-  const rentalFee = parseFloat(props.rental.rentalFee.replace(/[^0-9.]/g, ""));
-  totalCancellationFee = 0.3 * rentalFee;
+  if (props.rental) {
+    let totalCancellationFee;
+    const rentalFee = parseFloat(
+      props.rental.rentalFee.replace(/[^0-9.]/g, "")
+    );
+    totalCancellationFee = 0.3 * rentalFee;
+  }
 
   let formattedStartDate;
   let formattedEndDate;
@@ -259,7 +263,9 @@ const ConfirmationModal = ({
                   color={black}
                   style={styles.modalStyle}
                 >
-                  <Text style={styles.heading}>You are accepting this rental</Text>
+                  <Text style={styles.heading}>
+                    You are accepting this rental
+                  </Text>
                   {"\n"}
                   {"\n"}
                   <Text style={styles.subHeading}>

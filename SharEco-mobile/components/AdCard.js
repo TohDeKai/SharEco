@@ -93,7 +93,7 @@ export default function AdCard({ ad }) {
               {title}
             </RegularText>
 
-            {status == "ACTIVE" ? (
+            {(status == "ACTIVE" || status === "PAST") ? (
               <RegularText typography="B2" color={primary}>{visits} visits</RegularText>
             ) : (
               <RegularText typography="B3">Bid: {bidPrice}</RegularText>
