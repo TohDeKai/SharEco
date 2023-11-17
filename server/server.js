@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { application } = require("express");
-const cron = require('node-cron');
+const cron = require("node-cron");
 const express = require("express");
 const morgan = require("morgan");
 const userdb = require("./queries/user");
@@ -2496,6 +2496,31 @@ app.put("/api/v1/ad/adId/:adId/image", async (req, res) => {
   }
 });
 
+//update ad status only
+app.put("/api/v1/ad/adId/:adId/status", async (req, res) => {
+  const newStatus = req.body.status;
+  console.log(newStatus);
+  try {
+    const adId = req.params.adId;
+
+    const ad = await advertisementdb.updateAdsStatus(newStatus, adId);
+
+    if (ad) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          ad: ad,
+        },
+      });
+    } else {
+      res.status(404).json({ error: "Ad not found or status update failed" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Edit ad
 app.put("/api/v1/editAd/adId/:adId", async (req, res) => {
   try {
@@ -2686,30 +2711,34 @@ app.put("/api/v1/addVisit/adId/:adId", async (req, res) => {
 });
 
 //Update weekly active ads
-app.put('/api/v1/weeklyAds', async (req, res) => {
+app.put("/api/v1/weeklyAds", async (req, res) => {
   try {
     const result = await advertisementdb.updateWeeklyAds();
     res.status(200).json({
-      message: 'Weekly ads update successful',
+      message: "Weekly ads update successful",
       updatedActiveAdsCount: result.updatedActiveAds,
       updatedApprovedAdsCount: result.updatedApprovedAds,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-cron.schedule('0 0 * * 0', async () => {
-  try {
-    console.log('Running updateWeeklyAds job...');
-    const result = await advertisementdb.updateWeeklyAds();
-    console.log('Weekly ads update:', result);
-  } catch (error) {
-    console.error('Error running updateWeeklyAds:', error);
+cron.schedule(
+  "0 0 * * 0",
+  async () => {
+    try {
+      console.log("Running updateWeeklyAds job...");
+      const result = await advertisementdb.updateWeeklyAds();
+      console.log("Weekly ads update:", result);
+    } catch (error) {
+      console.error("Error running updateWeeklyAds:", error);
+    }
+  },
+  {
+    timezone: "Asia/Singapore",
   }
-}, {
-  timezone: 'Asia/Singapore', 
-});
+);
 
 /**********************          Insights and Dashboard Routes             **************************/
 // create impression
