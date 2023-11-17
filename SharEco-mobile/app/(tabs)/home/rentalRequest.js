@@ -204,7 +204,7 @@ const createRentals = () => {
 
   function formatDate(inputDate) {
     const date = new Date(inputDate);
-    const options = { year: "numeric", month: "long", day: "numeric" };
+    const options = { year: "numeric", month: "short", day: "numeric" };
     return date.toLocaleDateString("en-US", options);
   }
 
@@ -1203,7 +1203,7 @@ const createRentals = () => {
                 </View>
 
                 {user && user.walletBalance && (
-                  <View style={styles.pricing}>
+                  <View style={styles.walletBal}>
                     {/* <View style={styles.pricingRow}>
                       <View>
                         <RegularText typography="H3">
@@ -1229,59 +1229,33 @@ const createRentals = () => {
                         </RegularText>
                       </View>
                     </View> */}
-                    <View style={styles.pricingRow}>
-                      <View>
-                        <Pressable
-                          style={{
-                            alignContent: "center",
-                            justifyContent: "center",
-                          }}
-                          onPress={handleRefreshWallet}
-                        >
-                          <View style={{flexDirection:"row"}}>
-                            <RegularText typography="H3">EcoWallet Balance</RegularText>
-                            <Ionicons
-                              name="refresh-circle"
-                              size={20}
-                              color={secondary}
-                              style={{marginLeft:5}}
-                            />
-                          </View>
-                        </Pressable>
-                      </View>
-
-                      <View>
-                        {/* <RegularText typography="H3">
-                          {user.walletBalance}
-                        </RegularText> */}
-                        <RegularText
-                          typography="H3"
-                          color={
-                            parseFloat(user.walletBalance.replace(/\$/g, "")) -
-                              totalCost(activeTab) <
-                            0
-                              ? fail
-                              : black
-                          }
-                        >
-                          $
-                          {(
-                            parseFloat(user.walletBalance.replace(/\$/g, "")) -
-                            totalCost(activeTab)
-                          ).toFixed(2)}
-                        </RegularText>
-                      </View>
+                    <View>
+                      <Pressable
+                        style={{
+                          alignContent: "center",
+                          justifyContent: "center",
+                        }}
+                        onPress={handleRefreshWallet}
+                      >
+                        <View style={{ flexDirection: "row" }}>
+                          <RegularText typography="H3" color={white}>
+                            EcoWallet Balance
+                          </RegularText>
+                          <Ionicons
+                            name="refresh-circle"
+                            size={20}
+                            color={white}
+                            style={{ marginLeft: 5 }}
+                          />
+                        </View>
+                      </Pressable>
                     </View>
-                    {/* <View style={styles.pricingRow}>
-                      <View>
-                        <RegularText typography="H3">Booking Total</RegularText>
-                      </View>
-                      <View>
-                        <RegularText typography="H3">
-                          ${totalCost(activeTab)}
-                        </RegularText>
-                      </View>
-                    </View> */}
+
+                    <View>
+                      <RegularText typography="H3" color={white}>
+                        {user.walletBalance}
+                      </RegularText>
+                    </View>
                   </View>
                 )}
 
@@ -1347,6 +1321,17 @@ const styles = StyleSheet.create({
   dateTimePicker: {
     flexDirection: "row",
     alignItems: "flex-end",
+  },
+  walletBal: {
+    backgroundColor: secondary,
+    width: viewportWidthInPixels(90),
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
   },
   selector: {
     flexDirection: "column",
