@@ -52,6 +52,7 @@ const transferScreen = () => {
               `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
             );
             setUser(updatedUserData.data.data.user);
+            console.log(updatedUserData.data.data.user.username);
           } catch (error) {
             console.log(error.message);
           }
@@ -146,7 +147,7 @@ const transferScreen = () => {
               parseFloat(user.walletBalance.replace("$", ""))
             ) {
               setMessage(
-                "Withdrawal amount cannot be greater than wallet balance.."
+                "Transfer amount cannot be greater than wallet balance."
               );
               setIsSuccessMessage(false);
             } else {
