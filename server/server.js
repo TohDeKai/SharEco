@@ -1932,7 +1932,7 @@ app.get("/api/v1/reviews/revieweeId/:revieweeId", async (req, res) => {
 // Get Reviews by reviewerId
 app.get("/api/v1/reviews/reviewerId/:reviewerId", async (req, res) => {
   try {
-    const reviews = await reviewdb.getReviewsByRevieweeId(
+    const reviews = await reviewdb.getReviewsByReviewerId(
       req.params.reviewerId
     );
     if (reviews.length != 0) {

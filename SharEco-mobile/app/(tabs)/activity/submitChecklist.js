@@ -108,6 +108,7 @@ const submitChecklist = () => {
       );
       if (response.status === 200) {
         const borrowings = response.data.data.rental;
+        console.log("borrowings", borrowings);
         return borrowings;
       } else {
         // Handle the error condition appropriately
@@ -499,8 +500,10 @@ const submitChecklist = () => {
 
             // handle achievement
             const LENDER_BORROWER_PROGRESS_DELTA = 1;
+            const feeWithoutSymbol = parseInt(rental.rentalFee.replace('$', ''), 10);
             if (user && user.userId === rental.borrowerId) {
-              const borrowings = fetchUserBorrowings();
+              const borrowings = await fetchUserBorrowings();
+              console.log("borrowings", borrowings);
               const completedBorrowings = borrowings
                 .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false);
               
@@ -513,11 +516,12 @@ const submitChecklist = () => {
                   badgeProgress: LENDER_BORROWER_PROGRESS_DELTA,
                 };
 
+                console.log("rentalfee", feeWithoutSymbol);
                 const saverBadgeData = {
                   userId: user.userId,
                   badgeType: "SAVER",
                   badgeTier: "LOCKED",
-                  badgeProgress: rental.rentalFee,
+                  badgeProgress: feeWithoutSymbol,
                 };
 
                 // create borrower badge
@@ -552,19 +556,24 @@ const submitChecklist = () => {
               }
               else {
                 // user has completed >1 rental, update progress
-                const achievements = fetchUserAchievements();
+                const achievements = await fetchUserAchievements();
                 const borrowerBadge = achievements
-                  .filter((achievement) => achievement.badgeType === "BORROWER");
+                  .find((achievement) => achievement.badgeType === "BORROWER");
                 const saverBadge = achievements
-                  .filter((achievement) => achievement.badgeType === "SAVER");
+                  .find((achievement) => achievement.badgeType === "SAVER");
+                const borrowerBadgeProgress = parseInt(borrowerBadge.badgeProgress);
+                const saverBadgeProgress = parseInt(saverBadge.badgeProgress);
 
                 // update borrower badge progress
                 try {
+                  console.log("bp+del", borrowerBadgeProgress + LENDER_BORROWER_PROGRESS_DELTA);
+                  console.log("del", LENDER_BORROWER_PROGRESS_DELTA);
+                  console.log("bp", borrowerBadgeProgress)
                   const response = await axios.put(
-                    `http://${BASE_URL}:4000/api/v1/update/achievementId/${borrowerBadge.achievementId}`,
-                    { badgeProgress: borrowerBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA }
+                    `http://${BASE_URL}:4000/api/v1/achievement/update/achievementId/${borrowerBadge.achievementId}`,
+                    { badgeProgress: borrowerBadgeProgress + LENDER_BORROWER_PROGRESS_DELTA }
                   );
-
+                  
                   if (response.status === 200) {
                     console.log("Borrower badge progress updated successfully.")
                   }
@@ -575,8 +584,8 @@ const submitChecklist = () => {
                 // update saver badge progress
                 try {
                   const response = await axios.put(
-                    `http://${BASE_URL}:4000/api/v1/update/achievementId/${saverBadge.achievementId}`,
-                    { badgeProgress: saverBadge.badgeProgress + rental.rentalFee }
+                    `http://${BASE_URL}:4000/api/v1/achievement/update/achievementId/${saverBadge.achievementId}`,
+                    { badgeProgress: saverBadgeProgress + feeWithoutSymbol }
                   );
 
                   if (response.status === 200) {
@@ -589,30 +598,30 @@ const submitChecklist = () => {
                 try {
                   // if borrower criteria is fulfilled, upgrade badge tier
                   if (borrowerBadge.badgeTier === "BRONZE" 
-                    && borrowerBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 30) {
+                    && borrowerBadgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 30) {
                     // upgrade to silver
                     await upgradeBadge(borrowerBadge.achievementId, "SILVER", false);
                   } else if (borrowerBadge.badgeTier === "SILVER" 
-                    && borrowerBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 100) {
+                    && borrowerBadgeProgress + LENDER_BORROWER_PROGRESS_DELTA >= 100) {
                     // upgrade to gold
                     await upgradeBadge(borrowerBadge.achievementId, "GOLD", false);
                   }
 
                   // if saver criteria is fulfilled, upgrade badge tier
                   if (saverBadge.badgeTier === "LOCKED" && completedBorrowings.length >= 10 
-                    && saverBadge.badgeProgress + rental.rentalFee >= 500) {
+                    && saverBadgeProgress + feeWithoutSymbol >= 500) {
                     // upgrade to bronze & reset badgeProgress
                     await upgradeBadge(saverBadge.achievementId, "BRONZE", true);
                     // reward 10
                     await rewardAchievement(10)
                   } else if (saverBadge.badgeTier === "BRONZE" 
-                    && saverBadge.badgeProgress + rental.rentalFee >= 1000) {
+                    && saverBadgeProgress + feeWithoutSymbol >= 1000) {
                     // upgrade to silver & reset badgeProgress
                     await upgradeBadge(saverBadge.achievementId, "SILVER", true);
                     // reward 30
                     await rewardAchievement(30)
                   } else if (saverBadge.badgeTier === "SILVER" 
-                    && saverBadge.badgeProgress + rental.rentalFee >= 1500) {
+                    && saverBadgeProgress + feeWithoutSymbol >= 1500) {
                     // upgrade to gold & reset badgeProgress
                     await upgradeBadge(saverBadge.achievementId, "GOLD", true);
                     // reward 50
@@ -623,7 +632,7 @@ const submitChecklist = () => {
                 }
               }
             } else if (user && user.userId === rental.lenderId) {
-              const lendings = fetchUserLendings();
+              const lendings = await fetchUserLendings();
               const completedLendings = lendings
                 .filter((rental) => rental.status === "COMPLETED" && rental.isBlockOut === false);
               if (completedLendings.length === 1) {
@@ -652,14 +661,14 @@ const submitChecklist = () => {
               }
               else {
                 // user has fulfilled >1 rental, update progress
-                const achievements = fetchUserAchievements();
+                const achievements = await fetchUserAchievements();
                 const lenderBadge = achievements
-                  .filter((achievement) => achievement.badgeType === "LENDER");
+                  .find((achievement) => achievement.badgeType === "LENDER");
 
                 // update lender badge progress
                 try {
                   const response = await axios.put(
-                    `http://${BASE_URL}:4000/api/v1/update/achievementId/${lenderBadge.achievementId}`,
+                    `http://${BASE_URL}:4000/api/v1/achievement/update/achievementId/${lenderBadge.achievementId}`,
                     { badgeProgress: lenderBadge.badgeProgress + LENDER_BORROWER_PROGRESS_DELTA }
                   );
 
@@ -687,7 +696,6 @@ const submitChecklist = () => {
                 }
               }
             }
-            
 
           } else if (checklistFormType == "Start Rental") {
             console.log("Rental started");

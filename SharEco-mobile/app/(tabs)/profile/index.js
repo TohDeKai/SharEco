@@ -21,6 +21,7 @@ import { colours } from "../../../components/ColourPalette";
 import UserAvatar from "../../../components/UserAvatar";
 import ListingCard from "../../../components/ListingCard";
 import ReviewsCard from "../../../components/containers/ReviewsCard";
+import BadgeIcon from "../../../components/BadgeIcon";
 import axios from "axios";
 const { primary, secondary, white, yellow, dark, inputbackground } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -41,6 +42,7 @@ const ProfileHeader = () => {
   const { getUserData } = useAuth();
   const [business, setBusiness] = useState({});
   const [ratings, setRatings] = useState({});
+  const [achievements, setAchievements] = useState([]);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -90,8 +92,28 @@ const ProfileHeader = () => {
         console.log(error.message);
       }
     }
+
+    async function fetchAchievements() {
+      try {
+        const response = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
+        );
+  
+        if (response.status === 200) {
+          const achievements = response.data.data.achievements;
+          console.log(achievements)
+          setAchievements(achievements);
+        } else {
+          // Handle the error condition appropriately
+          console.log("Failed to retrieve achievements");
+        }
+      } catch (error) {
+        console.log("fetch achievement", error);
+      }
+    }
+    fetchAchievements();
     fetchBusinessVerification();
-  }, [user.businessVerificationId]);
+  }, [user.businessVerificationId, user.userId]);
 
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
@@ -169,9 +191,44 @@ const ProfileHeader = () => {
         >
           @{user.username}
         </RegularText>
-        <RegularText typography="B2" style={{ marginTop: 8 }}>
-          {user.aboutMe}
-        </RegularText>
+        {user.aboutMe !== "" &&  (
+          <RegularText typography="B2" style={{ marginTop: 8 }}>
+            {user.aboutMe}
+          </RegularText>
+        )}
+
+        <View style={styles.badges}>
+          {achievements.length > 0 && (
+            achievements.map((ach) => (
+              ach.badgeTier !== "LOCKED" && (
+                <View style={styles.badgeContainer}>
+                  <BadgeIcon 
+                    key={ach.achievementId}
+                    tier={ach.badgeTier} 
+                    type={ach.badgeType} 
+                    size={"medium"} 
+                    pressable={false}
+                  />
+                </View>
+              )
+            ))
+          )}
+          
+          <Pressable 
+            onPress={() => {
+              router.push("profile/achievement");
+            }}
+            style={styles.badgePress}
+          >
+            <RegularText typography="Subtitle">
+              Badges
+            </RegularText>
+            <Ionicons
+              name='chevron-forward'
+              size={15}
+            />
+          </Pressable>
+        </View>
       </View>
       <View style={styles.avatarContainer}>
         <UserAvatar
@@ -614,4 +671,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 4,
   },
+  badgeContainer: {
+    height: 40,
+    width: 40,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  badgePress: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  badges: {
+    paddingVertical: 10,
+    borderColor: secondary, 
+    borderWidth: 2,
+    alignItems: "center",
+    flexDirection: "row",
+  }
 });

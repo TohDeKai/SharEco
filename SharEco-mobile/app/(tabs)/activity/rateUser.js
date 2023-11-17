@@ -199,7 +199,9 @@ const rateUser = () => {
           if (values.comments && values.comments.length >= 150) {
             const RATER_BADGE_DELTA = 1;
             // fetch user's reviews
-            const reviews = fetchUserReviews();
+            const reviews = await fetchUserReviews();
+            console.log("reviews", reviews)
+            console.log("reviews", reviews.length)
             // if review length is 1, create locked rater badge
             if (reviews.length === 1) {
               const raterBadgeData = {
@@ -224,15 +226,16 @@ const rateUser = () => {
                 console.log(error);
               }
             } else {
-              const achievements = fetchUserAchievements();
+              const achievements = await fetchUserAchievements();
               const raterBadge = achievements
-                .filter((achievement) => achievement.badgeType === "RATER");
+                .find((achievement) => achievement.badgeType === "RATER");
+              const raterBadgeProgress = parseInt(raterBadge.badgeProgress);
 
               // update rater badge progress
               try {
                 const response = await axios.put(
-                  `http://${BASE_URL}:4000/api/v1/update/achievementId/${raterBadge.achievementId}`,
-                  { badgeProgress: raterBadge.badgeProgress + RATER_BADGE_DELTA }
+                  `http://${BASE_URL}:4000/api/v1/achievement/update/achievementId/${raterBadge.achievementId}`,
+                  { badgeProgress: raterBadgeProgress + RATER_BADGE_DELTA }
                 );
 
                 if (response.status === 200) {
@@ -245,19 +248,19 @@ const rateUser = () => {
               try {
                 // if rater criteria is fulfilled, upgrade badge tier
                 if (raterBadge.badgeTier === "LOCKED"
-                  && raterBadge.badgeProgress + RATER_BADGE_DELTA >= 5) {
+                  && raterBadgeProgress + RATER_BADGE_DELTA >= 5) {
                   // upgrade to bronze & reset badgeProgress
                   await upgradeBadge(raterBadge.achievementId, "BRONZE");
                   // reward 5
                   await rewardAchievement(5)
                 } else if (raterBadge.badgeTier === "BRONZE" 
-                  && raterBadge.badgeProgress + RATER_BADGE_DELTA >= 20) {
+                  && raterBadgeProgress + RATER_BADGE_DELTA >= 20) {
                   // upgrade to silver & reset badgeProgress
                   await upgradeBadge(raterBadge.achievementId, "SILVER");
                   // reward 10
                   await rewardAchievement(10)
                 } else if (raterBadge.badgeTier === "SILVER" 
-                  && raterBadge.badgeProgress + RATER_BADGE_DELTA >= 50) {
+                  && raterBadgeProgress + RATER_BADGE_DELTA >= 50) {
                   // upgrade to gold & reset badgeProgress
                   await upgradeBadge(raterBadge.achievementId, "GOLD");
                   // reward 30
@@ -268,7 +271,6 @@ const rateUser = () => {
               }
             }
           }
-            
 
           console.log("Rental updated with reviewId");
           router.back();
