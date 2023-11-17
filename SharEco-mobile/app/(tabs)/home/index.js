@@ -8,7 +8,7 @@ import {
   RefreshControl,
   LogBox,
   Dimensions,
-  Modal,
+  Image,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Link, router, Drawer } from "expo-router";
@@ -24,7 +24,8 @@ import Carousel, { Pagination } from "react-native-snap-carousel";
 import CarouselItem from "../../../components/CarouselItem";
 import { colours } from "../../../components/ColourPalette";
 import AdCarousel from "../../../components/AdCarousel";
-const { white, primary, inputbackground, dark, black } = colours;
+import BadgeIcon from "../../../components/BadgeIcon";
+const { white, primary, inputbackground, dark } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const Tabs = ({ activeTab, handleTabPress }) => {
@@ -383,6 +384,20 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomColor: primary,
+  },
+  advertisementAndAchievementContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    gap: 10,
+  },
+  advertisementCarousell: {
+    flex: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    backgroundColor: primary,
   },
   contentContainer: {
     flex: 1,

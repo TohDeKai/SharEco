@@ -66,8 +66,6 @@ const accountDetails = () => {
       contactNumber: details.phoneNumber || user.contactNumber, // Use the new value if provided, otherwise keep the original value
       userPhotoUrl: user.userPhotoUrl,
       isBanned: user.isBanned,
-      likedItem: user.likedItem,
-      wishList: user.wishList,
       displayName: user.displayName,
       aboutMe: user.aboutMe,
     };

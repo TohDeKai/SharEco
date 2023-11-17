@@ -11,6 +11,7 @@ import React, { useState, useEffect } from "react";
 import { Formik, Field } from "formik";
 import { router, useLocalSearchParams } from "expo-router";
 import { RatingInput } from "react-native-stock-star-rating";
+import { useAuth } from "../../../context/auth";
 import axios from "axios";
 
 // AWS Amplify
@@ -45,6 +46,7 @@ const rateUser = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("false");
   const params = useLocalSearchParams();
   const { rentalId, revieweeIsLender } = params;
+  const { getUserData } = useAuth();
   //not sure why, but revieweeIsLender even when passed as boolean, is received as a string
   const revieweeIsLenderBoolean = revieweeIsLender === "true";
 
@@ -52,8 +54,22 @@ const rateUser = () => {
   const [reviewerId, setReviewerId] = useState(-1);
   const [revieweeId, setRevieweeId] = useState(-1);
   const [rating, setRating] = useState(0);
+  const [user, setUser] = useState("");
+
 
   useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const userData = await getUserData();
+        if (userData) {
+          setUser(userData);
+        }
+      }
+      catch (error) {
+        console.log(error);
+      }
+    }
+
     async function fetchRentalData() {
       try {
         const rentalResponse = await axios.get(
@@ -74,8 +90,76 @@ const rateUser = () => {
         console.log(error.message);
       }
     }
+    fetchUserData();
     fetchRentalData();
   }, []);
+
+  async function fetchUserReviews() {
+    try {
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/reviews/reviewerId/${user.userId}`
+      );
+      if (response.status === 200) {
+        const reviews = response.data.data.reviews;
+        return reviews;
+      } else {
+        // Handle the error condition appropriately
+        console.log("Failed to retrieve reviews");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  async function fetchUserAchievements() {
+    const response = await axios.get(
+      `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
+    );
+
+    if (response.status === 200) {
+      const achievements = response.data.data.achievements;
+      return achievements;
+    } else{
+      // Handle the error condition appropriately
+      console.log("Failed to retrieve achievements");
+    }
+  }
+
+  const upgradeBadge = async (achievementId, newBadgeTier) => {
+    try {
+      // upgrade badge
+      const response = await axios.put(
+        `http://${BASE_URL}:4000/api/v1/achievement/upgrade/achievementId/${achievementId}`,
+        { newBadgeTier: newBadgeTier }
+      );
+
+      if (response.status === 200) {
+        console.log("Badge upgraded successfully to", newBadgeTier);
+      }
+    } catch (error) {
+      throw error;
+    }      
+  }
+
+  const rewardAchievement = async (rewardAmount) => {
+    try {
+      const reward = {
+        receiverId: user.userId,
+        amount: rewardAmount,
+        transactionType: "REWARD"
+      }
+      const rewardResponse = await axios.post(
+        `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+        reward
+      );
+
+      if (rewardResponse.status === 200) {
+        console.log("Reward successfully credited to user: $" + rewardAmount);
+      } 
+    } catch (error) {
+      throw error;
+    }
+  }
 
   const handleBack = () => {
     router.back();
@@ -111,6 +195,83 @@ const rateUser = () => {
         const updateResponse = await axios.patch(url);
 
         if (updateResponse.status === 200) {
+          // handle achievement if review comments is >150 chars
+          if (values.comments && values.comments.length >= 150) {
+            const RATER_BADGE_DELTA = 1;
+            // fetch user's reviews
+            const reviews = await fetchUserReviews();
+            console.log("reviews", reviews)
+            console.log("reviews", reviews.length)
+            // if review length is 1, create locked rater badge
+            if (reviews.length === 1) {
+              const raterBadgeData = {
+                userId: user.userId,
+                badgeType: "RATER",
+                badgeTier: "LOCKED",
+                badgeProgress: 1,
+              };
+
+              // create rater badge
+              try {
+                const raterBadge = await axios.post(
+                  `http://${BASE_URL}:4000/api/v1/achievement/`,
+                  raterBadgeData
+                )
+
+                if (raterBadge.status === 201) {
+                  console.log("Rater badge created successfully.");
+                }
+              }
+              catch (error) {
+                console.log(error);
+              }
+            } else {
+              const achievements = await fetchUserAchievements();
+              const raterBadge = achievements
+                .find((achievement) => achievement.badgeType === "RATER");
+              const raterBadgeProgress = parseInt(raterBadge.badgeProgress);
+
+              // update rater badge progress
+              try {
+                const response = await axios.put(
+                  `http://${BASE_URL}:4000/api/v1/achievement/update/achievementId/${raterBadge.achievementId}`,
+                  { badgeProgress: raterBadgeProgress + RATER_BADGE_DELTA }
+                );
+
+                if (response.status === 200) {
+                  console.log("Rater badge progress updated successfully.")
+                }
+              } catch (error) {
+                console.log(error);
+              }
+
+              try {
+                // if rater criteria is fulfilled, upgrade badge tier
+                if (raterBadge.badgeTier === "LOCKED"
+                  && raterBadgeProgress + RATER_BADGE_DELTA >= 5) {
+                  // upgrade to bronze & reset badgeProgress
+                  await upgradeBadge(raterBadge.achievementId, "BRONZE");
+                  // reward 5
+                  await rewardAchievement(5)
+                } else if (raterBadge.badgeTier === "BRONZE" 
+                  && raterBadgeProgress + RATER_BADGE_DELTA >= 20) {
+                  // upgrade to silver & reset badgeProgress
+                  await upgradeBadge(raterBadge.achievementId, "SILVER");
+                  // reward 10
+                  await rewardAchievement(10)
+                } else if (raterBadge.badgeTier === "SILVER" 
+                  && raterBadgeProgress + RATER_BADGE_DELTA >= 50) {
+                  // upgrade to gold & reset badgeProgress
+                  await upgradeBadge(raterBadge.achievementId, "GOLD");
+                  // reward 30
+                  await rewardAchievement(30);
+                }
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          }
+
           console.log("Rental updated with reviewId");
           router.back();
         }
