@@ -29,7 +29,8 @@ import MessageBox from "../../../components/text/MessageBox";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
-const { white, primary, inputbackground, black, dark, fail } = colours;
+const { white, primary, inputbackground, black, dark, fail, secondary } =
+  colours;
 import { useAuth } from "../../../context/auth";
 import Calendar from "../../../components/DatePicker";
 import { PrimaryButton } from "../../../components/buttons/RegularButton";
@@ -764,6 +765,24 @@ const createRentals = () => {
     [unavailFullDays]
   );
 
+  const handleRefreshWallet = async () => {
+    try {
+      const userData = await getUserData();
+      if (userData) {
+        try {
+          const updatedUserData = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+          );
+          setUser(updatedUserData.data.data.user);
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   const handleCreateRentalRequest = async (values) => {
     try {
       const reqData = {
@@ -1092,7 +1111,7 @@ const createRentals = () => {
                 0
               ) {
                 setMessage(
-                  "You have insufficient balance to make a rental request. Please top up your EcoWallet"
+                  "You have insufficient balance. Please top up your EcoWallet"
                 );
                 setIsSuccessMessage(false);
               } else {
@@ -1185,7 +1204,7 @@ const createRentals = () => {
 
                 {user && user.walletBalance && (
                   <View style={styles.pricing}>
-                    <View style={styles.pricingRow}>
+                    {/* <View style={styles.pricingRow}>
                       <View>
                         <RegularText typography="H3">
                           EcoWallet Balance
@@ -1209,18 +1228,51 @@ const createRentals = () => {
                           ).toFixed(2)}
                         </RegularText>
                       </View>
-                    </View>
+                    </View> */}
                     <View style={styles.pricingRow}>
                       <View>
-                        <RegularText typography="H3">Available</RegularText>
+                        <Pressable
+                          style={{
+                            alignContent: "center",
+                            justifyContent: "center",
+                          }}
+                          onPress={handleRefreshWallet}
+                        >
+                          <View style={{flexDirection:"row"}}>
+                            <RegularText typography="H3">EcoWallet Balance</RegularText>
+                            <Ionicons
+                              name="refresh-circle"
+                              size={20}
+                              color={secondary}
+                              style={{marginLeft:5}}
+                            />
+                          </View>
+                        </Pressable>
                       </View>
+
                       <View>
-                        <RegularText typography="H3">
+                        {/* <RegularText typography="H3">
                           {user.walletBalance}
+                        </RegularText> */}
+                        <RegularText
+                          typography="H3"
+                          color={
+                            parseFloat(user.walletBalance.replace(/\$/g, "")) -
+                              totalCost(activeTab) <
+                            0
+                              ? fail
+                              : black
+                          }
+                        >
+                          $
+                          {(
+                            parseFloat(user.walletBalance.replace(/\$/g, "")) -
+                            totalCost(activeTab)
+                          ).toFixed(2)}
                         </RegularText>
                       </View>
                     </View>
-                    <View style={styles.pricingRow}>
+                    {/* <View style={styles.pricingRow}>
                       <View>
                         <RegularText typography="H3">Booking Total</RegularText>
                       </View>
@@ -1229,7 +1281,7 @@ const createRentals = () => {
                           ${totalCost(activeTab)}
                         </RegularText>
                       </View>
-                    </View>
+                    </View> */}
                   </View>
                 )}
 
