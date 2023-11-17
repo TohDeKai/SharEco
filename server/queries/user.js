@@ -119,8 +119,6 @@ const updateUser = async (
   contactNumber,
   userPhotoUrl,
   isBanned,
-  likedItem,
-  wishList,
   displayName,
   aboutMe
 ) => {
@@ -133,10 +131,8 @@ const updateUser = async (
       "contactNumber" = $5,
       "userPhotoUrl" = $6,
       "isBanned" = $7,
-      "likedItem" = $8,
-      "wishList" = $9,
-      "displayName" = $10,
-      "aboutMe" = $11
+      "displayName" = $8,
+      "aboutMe" = $9
       WHERE "username" = $1
       RETURNING *`,
       [
@@ -147,8 +143,6 @@ const updateUser = async (
         contactNumber,
         userPhotoUrl,
         isBanned,
-        likedItem,
-        wishList,
         displayName,
         aboutMe,
       ]

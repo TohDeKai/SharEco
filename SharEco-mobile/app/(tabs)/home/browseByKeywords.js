@@ -118,8 +118,14 @@ import {
     const [refreshing, setRefreshing] = useState(false);
     const [user, setUser] = useState("");
     const { getUserData } = useAuth();
-    const businessItems = [];
-    const privateItems = [];
+
+    const [spotlightIds, setSpotlightIds] = useState([]);
+    const spotlightedItems = [];
+    const nonSpotlightedItems = [];
+    const spotlightedBusinessItems = [];
+    const nonSpotlightedBusinessItems = [];
+    const spotlightedPrivateItems = [];
+    const nonSpotlightedPrivateItems = [];
   
     useEffect(() => {
       async function fetchUserData() {
@@ -178,16 +184,52 @@ import {
           console.log(error.message);
         }
       }
+      async function fetchAllOngoingSpotlights() {
+        try {
+          const response = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/spotlight`
+          );
+          if (response.status === 200) {
+            const spotlightIds = response.data.data.spotlight;
+            const spotlightArr = [];
+  
+            for (const spotlightId of spotlightIds) {
+              spotlightArr.push(spotlightId.itemId);
+            }
+            setSpotlightIds(spotlightArr);
+          } else {
+            //Shouldn't come here
+            console.log("Failed to retrieve all ongoing spotlight ids");
+          }
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
       fetchAllListingsByKeywords();
+      fetchAllOngoingSpotlights();
     }, [keywords]);
   
     for (const item of items) {
-      if (item.isBusiness) {
-        businessItems.push(item);
+      if (spotlightIds.includes(item.itemId)) {
+        spotlightedItems.push({ item: item, isSpotlight: true });
+        if (item.isBusiness) {
+          spotlightedBusinessItems.push({item: item, isSpotlight: true});
+        } else {
+          spotlightedPrivateItems.push({item: item, isSpotlight: true});
+        }
       } else {
-        privateItems.push(item);
+        nonSpotlightedItems.push({ item: item, isSpotlight: false });
+        if (item.isBusiness) {
+          nonSpotlightedBusinessItems.push({item: item, isSpotlight: false});
+        } else {
+          nonSpotlightedPrivateItems.push({item: item, isSpotlight: false})
+        }
       }
     }
+  
+    const combinedItems = [...spotlightedItems, ...nonSpotlightedItems];
+    const combinedPrivateItems = [...spotlightedPrivateItems, ...nonSpotlightedPrivateItems];
+    const combinedBusinessItems = [...spotlightedBusinessItems, ...nonSpotlightedBusinessItems];
   
     return (
       <View style={{ flex: 1 }}>
@@ -206,7 +248,7 @@ import {
           </View>
         )}
         {/* handles when there are no business listings */}
-        {activeTab == "Business" && (businessItems ? businessItems.length : 0) === 0 && (
+        {activeTab == "Business" && (combinedBusinessItems ? combinedBusinessItems.length : 0) === 0 && (
           <View style={{ marginTop: 160 }}>
             <RegularText
               typography="B2"
@@ -220,7 +262,7 @@ import {
           </View>
         )}
         {/* handles when there are no private listings */}
-        {activeTab == "Private" && (privateItems ? privateItems.length : 0) === 0 && (
+        {activeTab == "Private" && (combinedPrivateItems ? combinedPrivateItems.length : 0) === 0 && (
           <View style={{ marginTop: 160 }}>
             <RegularText
               typography="B2"
@@ -237,11 +279,17 @@ import {
         {/* renders all listings */}
         {activeTab == "All" && (
           <FlatList
-            data={items}
+            data={combinedItems}
             numColumns={2}
             scrollsToTop={false}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => <ListingCard item={item} mine={false} />}
+            renderItem={({ item }) => (
+              <ListingCard
+                item={item.item}
+                mine={false}
+                isSpotlighted={item.isSpotlight}
+              />
+            )}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
             }
@@ -251,11 +299,17 @@ import {
         {/* renders business listings */}
         {activeTab == "Business" && (
           <FlatList
-            data={businessItems}
+            data={combinedBusinessItems}
             numColumns={2}
             scrollsToTop={false}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+            renderItem={({ item }) => (
+              <ListingCard
+                item={item.item}
+                mine={false}
+                isSpotlighted={item.isSpotlight}
+              />
+            )}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
             }
@@ -265,11 +319,17 @@ import {
         {/* renders private listings */}
         {activeTab == "Private" && (
           <FlatList
-            data={privateItems}
+            data={combinedPrivateItems}
             numColumns={2}
             scrollsToTop={false}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => <ListingCard item={item} mine={false}/>}
+            renderItem={({ item }) => (
+              <ListingCard
+                item={item.item}
+                mine={false}
+                isSpotlighted={item.isSpotlight}
+              />
+            )}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
             }
@@ -294,12 +354,31 @@ import {
       setActiveTab(tabName);
       console.log("Active tab: " + tabName);
     };
+
+    const [user, setUser] = useState("");
+    const { getUserData } = useAuth();
+    useEffect(() => {
+      async function fetchUserData() {
+        try {
+          const userData = await getUserData();
+          if (userData) {
+            setUser(userData);
+          }
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+      fetchUserData();
+    }, [user]);
   
     return (
       <SafeAreaContainer>
         <SearchBarHeader
           onPressChat={() => {
-            router.push("home/chats");
+            router.push({
+              pathname: "home/chats",
+              params: { userId: user.userId },
+            });
           }}
           onPressWishlist={() => {
             router.push("home/wishlist");

@@ -28,7 +28,7 @@ import MessageBox from "../../../components/text/MessageBox";
 import StyledTextInput from "../../../components/inputs/LoginTextInputs";
 import RegularText from "../../../components/text/RegularText";
 import { colours } from "../../../components/ColourPalette";
-const { white, primary, inputbackground, black } = colours;
+const { white, primary, inputbackground, black, secondary } = colours;
 import { useAuth } from "../../../context/auth";
 import DropDownPicker from "react-native-dropdown-picker";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -48,18 +48,27 @@ const editAd = () => {
   const [isSuccessMessage, setIsSuccessMessage] = useState("true");
   const [newImage, setNewImage] = useState();
   const [imageResult, setImageResult] = useState();
-  const [userId, setUserId] = useState("");
+  const [user, setUser] = useState("");
   const { getUserData } = useAuth();
   const params = useLocalSearchParams();
   const { adId } = params;
   const [ad, setAd] = useState({});
+  const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(() => {
     async function fetchUserData() {
       try {
         const userData = await getUserData();
         if (userData) {
-          setUserId(userData.userId);
+          try {
+            const updatedUserData = await axios.get(
+              `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+            );
+            setUser(updatedUserData.data.data.user);
+            setWalletBalance(updatedUserData.data.data.user.walletBalance);
+          } catch (error) {
+            console.log(error.message);
+          }
         }
       } catch (error) {
         console.log(error.message);
@@ -67,6 +76,24 @@ const editAd = () => {
     }
     fetchUserData();
   }, []);
+
+  const handleRefreshWallet = async () => {
+    try {
+      const userData = await getUserData();
+      if (userData) {
+        try {
+          const updatedUserData = await axios.get(
+            `http://${BASE_URL}:4000/api/v1/users/userId/${userData.userId}`
+          );
+          setUser(updatedUserData.data.data.user);
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
 
   useEffect(() => {
     async function fetchAdData() {
@@ -153,7 +180,7 @@ const editAd = () => {
   const handleEditAd = async (values) => {
     try {
       const reqData = {
-        bizId: userId,
+        bizId: user.userId,
         title: values.title || title,
         image: newImage || image,
         description: values.description || description,
@@ -171,6 +198,42 @@ const editAd = () => {
       // save image to S3
       console.log(response.data);
       if (response.status === 200) {
+        const priceDifference =
+        parseFloat(values.bidPrice.replace("$", "")) - parseFloat(bidPrice.replace("$", ""));
+        const walletBalance = parseFloat(user.walletBalance.replace("$", ""));
+
+        if (priceDifference < 0) {
+          const transactionData = {
+            receiverId: user.userId,
+            amount: -priceDifference,
+            transactionType: "REFUND",
+          };
+          const transactionResponse = await axios.post(
+            `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+            transactionData
+          );
+          if (transactionResponse.status === 200) {
+            console.log(`Refund completed`);
+          }
+        } else if (priceDifference > 0 && walletBalance > priceDifference) {
+          const transactionData = {
+            senderId: user.userId,
+            amount: priceDifference,
+            transactionType: "ADS",
+          };
+          const transactionResponse = await axios.post(
+            `http://${BASE_URL}:4000/api/v1/transaction/toAdmin`,
+            transactionData
+          );
+          if (transactionResponse.status === 200) {
+            console.log(`Paid the price difference`);
+          }
+        }
+        // else {
+        //   setMessage("Please top up EcoWallet");
+        //   setIsSuccessMessage(false);
+        // }
+
         if (newImage) {
           const adId = response.data.data.ad.advertisementId;
           console.log("adId: ", adId);
@@ -181,6 +244,7 @@ const editAd = () => {
             { image: uploadedImage }
           );
           console.log("UpdateAdImage: ", updateAdImage.data.image);
+
           if (updateAdImage.status === 200) {
             console.log("Image created successfully");
             router.back();
@@ -218,6 +282,12 @@ const editAd = () => {
               onSubmit={(values, actions) => {
                 if (values.bidPrice < 20) {
                   setMessage("Minimum bid is $20");
+                  setIsSuccessMessage(false);
+                } else if (
+                  parseFloat(values.bidPrice.replace("$", "")) - parseFloat(bidPrice.replace("$", "")) >
+                  parseFloat(user.walletBalance.replace("$", ""))
+                ) {
+                  setMessage("Please top up EcoWallet");
                   setIsSuccessMessage(false);
                 } else if (
                   values.title == "" ||
@@ -272,7 +342,9 @@ const editAd = () => {
                   {!image && (
                     <Pressable
                       onPress={handleOpenGallery}
-                      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                      style={({ pressed }) => ({
+                        opacity: pressed ? 0.5 : 1,
+                      })}
                     >
                       <View style={styles.uploadContainer}>
                         <Ionicons name="add" color={primary} size={20} />
@@ -315,7 +387,17 @@ const editAd = () => {
                   />
 
                   <View style={styles.bidPrice}>
-                    <RegularText typography="H3">Bid Price ($)</RegularText>
+                    <View>
+                      <RegularText typography="H3">Bid Price ($)</RegularText>
+                      <Pressable style={{alignContent: "center", justifyContent: "center"}} onPress={handleRefreshWallet}>
+                      <RegularText
+                        typography="Subtitle"
+                        color={secondary}
+                        style={{ paddingTop: 6 }}
+                      >
+                        Wallet Balance: {user.walletBalance} <Ionicons name="refresh-circle" size={20} color={secondary}/>
+                      </RegularText></Pressable>
+                    </View>
                     <StyledTextInput
                       value={values.bidPrice}
                       onChangeText={handleChange("bidPrice")}

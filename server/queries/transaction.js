@@ -35,13 +35,15 @@ const createTransaction = async (
 // Create Withdrawal Request (no wallet balance updated)
 const createWithdrawalRequest = async (senderId, amount) => {
   try {
-    const result = await pool.query(
-      `INSERT INTO "sharEco-schema"."transaction" 
-            ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
-              values ($1, $2, $3, $4, $5) returning *`,
-      [new Date(), senderId, 1, amount, "WITHDRAW"]
-    );
-    return result.rows[0];
+
+    const result = transactionToAdmin(senderId, amount, "WITHDRAW");
+    // const result = await pool.query(
+    //   `INSERT INTO "sharEco-schema"."transaction" 
+    //         ("transactionDate", "senderId", "receiverId", "amount", "transactionType") 
+    //           values ($1, $2, $3, $4, $5) returning *`,
+    //   [new Date(), senderId, 1, amount, "WITHDRAW"]
+    // );
+    return result;
   } catch (err) {
     throw err;
   }
@@ -74,23 +76,24 @@ const approveWithdrawalRequest = async (transactionId, referenceNumber) => {
       throw new Error("Receiver user not found");
     }
 
-    const updatedSenderResult = await client.query(
-      `UPDATE "sharEco-schema"."user"
-    SET "walletBalance" = ($1 + "walletBalance")
-    WHERE "userId" = $2
-    RETURNING "walletBalance"`,
-      [-amount, senderId]
-    );
+    // const updatedSenderResult = await client.query(
+    //   `UPDATE "sharEco-schema"."user"
+    // SET "walletBalance" = ($1 + "walletBalance")
+    // WHERE "userId" = $2
+    // RETURNING "walletBalance"`,
+    //   [-amount, senderId]
+    // );
 
     // platform withdrawal fees of 5% added to admin wallet (capped at $10)
     const withdrawalFees = Math.min(10, 0.05 * amount);
+    const amountWithdrawnAfterFees = amount - withdrawalFees;
 
     const updatedReceiverResult = await client.query(
       `UPDATE "sharEco-schema"."user"
-    SET "walletBalance" = ($1 + "walletBalance")
+    SET "walletBalance" = ("walletBalance" - $1)
     WHERE "userId" = $2
     RETURNING "walletBalance"`,
-      [withdrawalFees, receiverId]
+      [amountWithdrawnAfterFees, receiverId]
     );
 
     const updatedTransactionResult = await client.query(
@@ -104,7 +107,7 @@ const approveWithdrawalRequest = async (transactionId, referenceNumber) => {
 
     return {
       transaction: result.rows[0],
-      sender_wallet_balance: updatedSenderResult.rows[0].walletBalance,
+      //sender_wallet_balance: updatedSenderResult.rows[0].walletBalance,
       receiver_wallet_balance: updatedReceiverResult.rows[0].walletBalance,
       reference_number: updatedTransactionResult.rows[0],
     };
@@ -393,6 +396,35 @@ const getRevenueData = async () => {
   }
 };
 
+const getPastWeeksRevenue = async () => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        to_char(date_trunc('day', time_series.day), 'YYYY-MM-DD') AS transactionday,
+        COALESCE(SUM(CASE WHEN t."receiverId" = 1 AND t."transactionType" != 'WITHDRAW' THEN (t."amount"::numeric) ELSE 0 END), 0) AS revenue
+      FROM
+        generate_series(current_date - interval '6 days', current_date, '1 day') as time_series(day)
+      LEFT JOIN
+        "sharEco-schema"."transaction" t
+      ON
+        to_char(date_trunc('day', t."transactionDate"), 'YYYY-MM-DD') = to_char(date_trunc('day', time_series.day), 'YYYY-MM-DD')
+      GROUP BY
+        time_series.day
+      ORDER BY
+        time_series.day;
+    `);
+
+    return {
+      status: 'success',
+      data: {
+        revenue: result.rows,
+      },
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   createTransaction,
   getTransactionsByReceiverId,
@@ -404,5 +436,6 @@ module.exports = {
   approveWithdrawalRequest,
   getTransactionsByType,
   getRentalEarningsByUserId,
-  getRevenueData
+  getRevenueData,
+  getPastWeeksRevenue
 };

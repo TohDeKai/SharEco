@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { application } = require("express");
+const cron = require('node-cron');
 const express = require("express");
 const morgan = require("morgan");
 const userdb = require("./queries/user");
@@ -531,8 +532,6 @@ app.put("/api/v1/users/ban/username", async (req, res) => {
       user.contactNumber,
       user.userPhotoUrl,
       req.body.isBanned,
-      user.likedItem,
-      user.wishList,
       user.displayName,
       user.aboutMe
     );
@@ -2408,6 +2407,22 @@ app.get("/api/v1/revenue", async (req, res) => {
   }
 });
 
+// Get Week Revenue data
+app.get("/api/v1/weekRevenue", async (req, res) => {
+  try {
+    const revenueData = await transactiondb.getPastWeeksRevenue();
+    res.status(200).json({
+      status: "success",
+      data: {
+        revenue: revenueData,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //ADVERTISEMENT FUNCTIONALITIES
 //Create a new ad request
 app.post("/api/v1/createAd", async (req, res) => {
@@ -2571,6 +2586,23 @@ app.get("/api/v1/ads/bizId/:bizId", async (req, res) => {
   }
 });
 
+//Get all ads
+app.get("/api/v1/allAdvertisments", async (req, res) => {
+  try {
+    const ads = await advertisementdb.getAllAds();
+    res.status(200).json({
+      status: "success",
+      data: {
+        ads: ads,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Get ads for the week
 app.get("/api/v1/weekAds/startDate/:startDate", async (req, res) => {
   try {
@@ -2651,6 +2683,32 @@ app.put("/api/v1/addVisit/adId/:adId", async (req, res) => {
     console.log(err);
     res.status(500).json({ error: "Database error" });
   }
+});
+
+//Update weekly active ads
+app.put('/api/v1/weeklyAds', async (req, res) => {
+  try {
+    const result = await advertisementdb.updateWeeklyAds();
+    res.status(200).json({
+      message: 'Weekly ads update successful',
+      updatedActiveAdsCount: result.updatedActiveAds,
+      updatedApprovedAdsCount: result.updatedApprovedAds,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+cron.schedule('0 0 * * 0', async () => {
+  try {
+    console.log('Running updateWeeklyAds job...');
+    const result = await advertisementdb.updateWeeklyAds();
+    console.log('Weekly ads update:', result);
+  } catch (error) {
+    console.error('Error running updateWeeklyAds:', error);
+  }
+}, {
+  timezone: 'Asia/Singapore', 
 });
 
 /**********************          Insights and Dashboard Routes             **************************/
@@ -2912,6 +2970,23 @@ app.get("/api/v1/reports", async (req, res) => {
   }
 });
 
+// GET all unresolved reports
+app.get("/api/v1/reports/unresolved/", async (req, res) => {
+  try {
+    const reports = await reportdb.getUnresolvedReports();
+    res.status(200).json({
+      status: "success",
+      data: {
+        report: reports,
+      },
+    });
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // GET all reports with DISPUTE type
 app.get("/api/v1/reports/type/:type", async (req, res) => {
   try {
@@ -2981,7 +3056,7 @@ app.put("/api/v1/report/response/:reportId", async (req, res) => {
   try {
     const reportId = req.params.reportId;
     const responseText = req.body.responseText;
-    const responseImages = req.params.responseImages;
+    const responseImages = req.body.responseImages;
     const report = await reportdb.addReportResponse(
       responseText,
       responseImages,
@@ -3011,6 +3086,30 @@ app.put("/api/v1/report/status/:reportId", async (req, res) => {
     const status = req.body.status;
     const reportId = req.params.reportId;
     const report = await reportdb.updateReportStatus(status, reportId);
+    if (report) {
+      res.status(200).json({
+        status: "success",
+        data: {
+          report: report,
+        },
+      });
+    } else {
+      // Handle the case where the report is not found
+      res.status(404).json({ error: "Report not found" });
+    }
+  } catch (err) {
+    // Handle the error here if needed
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// UPDATE report result
+app.put("/api/v1/report/result/:reportId", async (req, res) => {
+  try {
+    const result = req.body.result;
+    const reportId = req.params.reportId;
+    const report = await reportdb.updateReportResult(result, reportId);
     if (report) {
       res.status(200).json({
         status: "success",

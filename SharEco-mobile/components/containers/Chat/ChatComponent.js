@@ -49,35 +49,38 @@ const ChatComponent = ({ item, userId }) => {
       params: {
         name: otherPerson.username,
         chatDocId: item.chatRoomId,
+        otherPersonId: otherPersonId,
       },
     });
   };
 
   return (
-    <Pressable style={styles.cchat} onPress={handleNavigation}>
-      <View style={styles.cavatar}>
-        <UserAvatar
-          size="medium"
-          source={{
-            uri: profileUri,
-          }}
-        />
-      </View>
-      <View style={styles.crightContainer}>
-        <View>
-          <Text style={styles.cusername}>@{otherPerson.username}</Text>
+    otherPerson && profileUri && (
+      <Pressable style={styles.cchat} onPress={handleNavigation}>
+        <View style={styles.cavatar}>
+          <UserAvatar
+            size="medium"
+            source={{
+              uri: profileUri,
+            }}
+          />
+        </View>
+        <View style={styles.crightContainer}>
+          <View>
+            <Text style={styles.cusername}>@{otherPerson.username}</Text>
 
-          <Text style={styles.cmessage}>
-            {messages?.text ? messages.text : "Tap to start chatting"}
-          </Text>
+            <Text style={styles.cmessage}>
+              {messages?.text ? messages.text : "Tap to start chatting"}
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.ctime}>
+              {messages?.time ? messages.time : "now"}
+            </Text>
+          </View>
         </View>
-        <View>
-          <Text style={styles.ctime}>
-            {messages?.time ? messages.time : "now"}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
+      </Pressable>
+    )
   );
 };
 

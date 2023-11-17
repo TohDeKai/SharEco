@@ -16,6 +16,7 @@ import { colours } from "../ColourPalette";
 import { useAuth } from "../../context/auth";
 import ConfirmationModal from "../ConfirmationModal";
 import axios from "axios";
+import ReportDetailsModal from "../ReportDetailsModal";
 const { inputbackground, primary, white, placeholder } = colours;
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 const AWS_GETFILE_URL =
@@ -23,6 +24,7 @@ const AWS_GETFILE_URL =
 
 const ReportCard = ({ report }) => {
   const [reportedUser, setReportedUser] = useState({});
+  const [reporterUser, setReporterUser] = useState({});
   const { getUserData } = useAuth();
   const [item, setItem] = useState({});
   const [rental, setRental] = useState({});
@@ -38,6 +40,15 @@ const ReportCard = ({ report }) => {
   const [endTime, setEndTime] = useState("");
   const [hourlyRentalLength, setHourlyRentalLength] = useState(0);
   const [isReported, setIsReported] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  const handleShowDetailsModal = () => {
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
+  };
 
   useEffect(() => {
     async function fetchUserData(userId) {
@@ -45,9 +56,15 @@ const ReportCard = ({ report }) => {
         const userResponse = await axios.get(
           `http://${BASE_URL}:4000/api/v1/users/userId/${userId}`
         );
+
+        const userResponse2 = await axios.get(
+          `http://${BASE_URL}:4000/api/v1/users/userId/${report.reporterId}`
+        );
         if (userResponse.status === 200) {
           const userData = userResponse.data.data.user;
+          const userData2 = userResponse2.data.data.user;
           setReportedUser(userData);
+          setReporterUser(userData2);
         }
       } catch (error) {
         console.log(error.message);
@@ -168,6 +185,12 @@ const ReportCard = ({ report }) => {
     return daysDifference;
   };
 
+  const getDateThreeDaysLater = (originalDate) => {
+    const threeDaysLater = new Date(originalDate);
+    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+    return threeDaysLater;
+  };
+
   const CardHeader = () => {
     return (
       <View style={[styles.cardHeader, styles.cardHeaderWithCountdown]}>
@@ -181,6 +204,34 @@ const ReportCard = ({ report }) => {
               {reportedUser.username}
             </RegularText>
           </View>
+        ) : isReported ? (
+          <Pressable
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+            onPress={() =>
+              router.push({
+                pathname: "home/othersProfile",
+                params: { userId: reporterUser.userId },
+              })
+            }
+          >
+            <View style={styles.username}>
+              {reportedUser && (
+                <UserAvatar
+                  size="xsmall"
+                  source={{
+                    uri: `${AWS_GETFILE_URL}${reporterUser.userPhotoUrl}.jpeg`,
+                  }}
+                />
+              )}
+              {reporterUser && (
+                <RegularText typography="Subtitle">
+                  @{reporterUser.username} ({isLending ? "Borrower" : "Lender"})
+                </RegularText>
+              )}
+            </View>
+          </Pressable>
         ) : (
           <Pressable
             style={({ pressed }) => ({
@@ -297,11 +348,53 @@ const ReportCard = ({ report }) => {
             {formatDate(report.reportDate)}
           </RegularText>
         </View>
-        {isReported && (
+        {isReported &&
+          report.type === "DISPUTE" &&
+          report.status === "PENDING" && (
+            <RegularText
+              typography="B3"
+              style={{ textAlign: "right" }} // Adjust the value as needed
+            >
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              )}{" "}
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              ) === 1
+                ? "day"
+                : "days"}{" "}
+              left to respond
+            </RegularText>
+          )}
+        {!isReported &&
+          report.type === "DISPUTE" &&
+          report.status == "PENDING" && (
+            <RegularText
+              typography="B3"
+              style={{ textAlign: "right", marginTop: 10 }}
+            >
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              )}{" "}
+              {calculateDaysDifference(
+                getDateThreeDaysLater(report.reportDate)
+              ) == 1
+                ? "day"
+                : "days"}{" "}
+              left for other party to respond
+            </RegularText>
+          )}
+        {report.status == "UNDER REVIEW" && (
           <RegularText typography="B3" style={{ textAlign: "right" }}>
-            {calculateDaysDifference(report.reportDate)}{" "}
-            {calculateDaysDifference(report.reportDate) == 1 ? "day" : "days"}{" "}
-            left to respond
+            Your report is under review
+          </RegularText>
+        )}
+        {report.status == "RESOLVED" && report.reportResult && (
+          <RegularText
+            typography="B3"
+            style={{ textAlign: "right", marginTop: 10 }}
+          >
+            Outcome: {report.reportResult.replace(/["{}]/g, "").toLowerCase()}
           </RegularText>
         )}
       </View>
@@ -309,7 +402,16 @@ const ReportCard = ({ report }) => {
   };
 
   const CardFooter = () => {
-    const handleRespond = () => {};
+    const handleRespond = () => {
+      router.push({
+        pathname: "/home/response",
+        params: {
+          reportId: report.reportId,
+          reason: report.reason,
+          description: report.description == null ? "" : report.description,
+        },
+      });
+    };
 
     return (
       <View>
@@ -330,11 +432,19 @@ const ReportCard = ({ report }) => {
 
   return (
     <View>
-      <View style={styles.activityCard}>
-        <CardHeader />
-        <CardDetails />
-        <CardFooter />
-      </View>
+      <Pressable onPress={handleShowDetailsModal}>
+        <View style={styles.activityCard}>
+          <CardHeader />
+          <CardDetails />
+          <CardFooter />
+        </View>
+      </Pressable>
+      <ReportDetailsModal
+        isVisible={showDetailsModal}
+        onClose={handleCloseDetailsModal}
+        report={report}
+        isReported={isReported}
+      />
     </View>
   );
 };
