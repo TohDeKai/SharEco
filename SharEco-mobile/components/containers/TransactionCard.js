@@ -29,10 +29,10 @@ const TransactionCard = ({ transaction, isIncoming }) => {
           const senderData = await axios.get(
             `http://${BASE_URL}:4000/api/v1/users/userId/${transaction.senderId}`
           );
-          console.log(senderData.status);
+          // console.log(senderData.status);
           if (senderData.status === 200) {
             setOtherPerson(senderData.data.data.user);
-            console.log(senderData.data.data);
+            // console.log(senderData.data.data);
           }
         } catch (error) {
           console.log(error.message);

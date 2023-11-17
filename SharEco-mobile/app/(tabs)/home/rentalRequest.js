@@ -1099,6 +1099,7 @@ const createRentals = () => {
               addComments: "",
             }}
             onSubmit={(values, actions) => {
+              const formattedBalance = user.walletBalance.replace(/[^0-9.-]+/g,"");
               if (selectedLocation == null) {
                 setMessage("Please select a location");
                 setIsSuccessMessage(false);
@@ -1106,7 +1107,7 @@ const createRentals = () => {
                 setMessage("Please select a valid rental period");
                 setIsSuccessMessage(false);
               } else if (
-                parseFloat(user.walletBalance.replace(/\$/g, "")) -
+                parseFloat(formattedBalance) -
                   totalCost(activeTab) <
                 0
               ) {
