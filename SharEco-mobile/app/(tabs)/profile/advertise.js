@@ -291,7 +291,7 @@ const advertise = () => {
                   />
                 }
                 style={{
-                  height: viewportHeightInPixels(44.5),
+                  height: viewportHeightInPixels(50.5),
                   paddingBottom: 15,
                 }}
               />
@@ -320,7 +320,7 @@ const advertise = () => {
                   />
                 }
                 style={{
-                  height: viewportHeightInPixels(44.5),
+                  height: viewportHeightInPixels(50.5),
                   paddingBottom: 15,
                 }}
               />
@@ -349,7 +349,7 @@ const advertise = () => {
                   />
                 }
                 style={{
-                  height: viewportHeightInPixels(44.5),
+                  height: viewportHeightInPixels(50.5),
                   paddingBottom: 15,
                 }}
               />
@@ -378,7 +378,7 @@ const advertise = () => {
                   />
                 }
                 style={{
-                  height: viewportHeightInPixels(44.5),
+                  height: viewportHeightInPixels(50.5),
                   paddingBottom: 15,
                 }}
               />

@@ -65,6 +65,11 @@ export default function AdCard({ ad }) {
     }
   };
 
+  const costPerVisit = () => {
+    let cpv = (parseFloat(bidPrice.substring(1)) / visits).toFixed(2);
+    return `$${cpv !== "Infinity" ? cpv : "N/A"}`;
+  }
+
   const handleCloseDeleteModal = () => {
     setShowDeleteModall(false);
   };
@@ -162,13 +167,20 @@ export default function AdCard({ ad }) {
               type="Delete"
             />
           )}
-          {status == "ACTIVE" && (
+          {(status == "ACTIVE" || status == "PAST") && (
             <View>
               <RegularText typography="B1" style={styles.headerMargin}>
                 Bid Amount
               </RegularText>
               <RegularText typography="Subtitle" style={styles.textMargin}>
                 {bidPrice}
+              </RegularText>
+
+              <RegularText typography="B1" style={styles.headerMargin}>
+                Cost Per Visit
+              </RegularText>
+              <RegularText typography="Subtitle" style={styles.textMargin}>
+                {costPerVisit()}
               </RegularText>
             </View>
           )}
