@@ -858,10 +858,10 @@ const Content = ({ activeTab }) => {
       )}
 
       {activeTab == "Others" && (
-        <View style={{ flex: 1, padding: 10 }}>
+        <View style={{ flex: 1, padding: 10, alignItems: "center" }}>
           <ScrollView
             showsVerticalScrollIndicator={false}
-            style={styles.activityCardContainer}
+            style={[styles.activityCardContainer, {flex: 1}]}
             contentContainerStyle={{ flexGrow: 1 }}
             refreshControl={
               <RefreshControl

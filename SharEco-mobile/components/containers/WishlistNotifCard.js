@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Image, StyleSheet } from "react-native";
+import { View, Image, StyleSheet, Dimensions } from "react-native";
 import axios from "axios";
 
 import RegularText from "../text/RegularText";
@@ -80,7 +80,8 @@ export default WishlistNotifCard;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    width: Dimensions.get("screen").width - 23,
+    paddingVertical: 10,
     flexDirection: "row",
     gap: 15,
     justifyContent: "flex-start",

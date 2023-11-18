@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import axios from "axios";
 import { useAuth } from "../../context/auth";
@@ -11,10 +11,10 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const AchievementCard = (props) => {
   const achievement = props.achievement;
+  const [rentalDelta, setRentalDelta] = useState();
   const { getUserData } = useAuth();
   const SAVER_UNLOCK_RENTAL = 10;
 
-  let rentalDelta;
   useEffect(() => {
     async function fetchBorrowings() {
       try {
@@ -27,7 +27,8 @@ const AchievementCard = (props) => {
         if (response.status === 200) {
           const borrowing = response.data.data.rental;
           const completedBorrowings = borrowing.filter((rental) => rental.status === "COMPLETED");
-          rentalDelta = SAVER_UNLOCK_RENTAL - completedBorrowings.length;
+          const rentalData = SAVER_UNLOCK_RENTAL- completedBorrowings.length;
+          setRentalDelta(rentalData);
         } else if (response.status === 404) {
           // Handle the error condition appropriately
           console.log("Failed to retrieve borrowings");
@@ -51,6 +52,8 @@ const AchievementCard = (props) => {
     RATER_BRONZE: 20,
     RATER_SILVER: 50,
   }
+
+  console.log(rentalDelta)
 
   const criteria = criterias[`${achievement.badgeType}_${achievement.badgeTier}`]
   const delta = criteria - achievement.badgeProgress;
