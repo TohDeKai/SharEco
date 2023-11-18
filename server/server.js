@@ -2700,6 +2700,22 @@ app.get("/api/v1/rankedWeekAds", async (req, res) => {
   }
 });
 
+//Get remaining approval count for the week
+app.get("/api/v1/remainingAdsCount", async (req, res) => {
+  try {
+    const remainingCount = await advertisementdb.getAllWeeklyAds();
+    res.status(200).json({
+      status: "success",
+      data: {
+        count: remainingCount,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 //Get approved ads
 app.get("/api/v1/activeAds", async (req, res) => {
   try {
