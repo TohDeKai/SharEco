@@ -509,14 +509,14 @@ const submitChecklist = () => {
             if (completedBorrowings.length === 1) {
               // User completed their first borrowing, create the borrower and locked saver badge
               const borrowerBadgeData = {
-                userId: user.userId,
+                userId: rental.borrowerId,
                 badgeType: "BORROWER",
                 badgeTier: "BRONZE",
                 badgeProgress: LENDER_BORROWER_PROGRESS_DELTA,
               };
 
               const saverBadgeData = {
-                userId: user.userId,
+                userId: rental.borrowerId,
                 badgeType: "SAVER",
                 badgeTier: "LOCKED",
                 badgeProgress: feeWithoutSymbol,
@@ -636,7 +636,7 @@ const submitChecklist = () => {
             if (completedLendings.length === 1) {
               // User completed their first lending, create the lender badge
               const lenderBadgeData = {
-                userId: user.userId,
+                userId: rental.lenderId,
                 badgeType: "LENDER",
                 badgeTier: "BRONZE",
                 badgeProgress: LENDER_BORROWER_PROGRESS_DELTA,

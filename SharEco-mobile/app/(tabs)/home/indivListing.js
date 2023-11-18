@@ -176,6 +176,10 @@ const ItemInformation = () => {
         console.error(error.message);
       }
     }
+    fetchData();
+  }, [itemId, BASE_URL]);
+
+  useEffect(() => {
     async function fetchAchievements() {
       try {
         const response = await axios.get(
@@ -195,8 +199,7 @@ const ItemInformation = () => {
       }
     }
     fetchAchievements();
-    fetchData();
-  }, [itemId, BASE_URL, user.userId]);
+  }, [user.userId])
 
   const {
     itemTitle,
