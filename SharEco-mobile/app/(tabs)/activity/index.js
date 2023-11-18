@@ -100,7 +100,7 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
       >
         <RegularText
           typography="B2"
-          color={activeTab === "Others" ? primary : dark}
+          color={activeTab === "Reports" ? primary : dark}
         >
           Reports
         </RegularText>

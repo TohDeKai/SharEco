@@ -128,56 +128,81 @@ const ProfileHeader = () => {
   return (
     <View style={styles.header}>
       <View style={styles.headerGreen}>
-        {business.approved && (
+        <View style={styles.iconButtons}>
+          {business.approved && (
+            <Pressable
+              onPress={toBizDashboard}
+              style={[
+                ({ pressed }) => ({
+                  opacity: pressed ? 0.5 : 1,
+                }),
+                styles.bizButton,
+              ]}
+            >
+              <Ionicons
+                name="briefcase"
+                color={primary}
+                size={20}
+                style={styles.headerIcon}
+              />
+              <RegularText
+                color={secondary}
+                typography="B1"
+                style={{ paddingHorizontal: 5 }}
+              >
+                Manage Biz
+              </RegularText>
+            </Pressable>
+          )}
           <Pressable
-            onPress={toBizDashboard}
-            style={[
-              ({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-              }),
-              styles.bizButton,
-            ]}
+            onPress={toEditProfile}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
           >
             <Ionicons
-              name="briefcase"
-              color={primary}
-              size={20}
+              name="create-outline"
+              color={white}
+              size={26}
               style={styles.headerIcon}
             />
-            <RegularText
-              color={secondary}
-              typography="B1"
-              style={{ paddingHorizontal: 5 }}
-            >
-              Manage Biz
-            </RegularText>
           </Pressable>
-        )}
-        <Pressable
-          onPress={toEditProfile}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.5 : 1,
-          })}
+          <Pressable
+            onPress={toAccountSettings}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <Ionicons
+              name="settings-outline"
+              color={white}
+              size={26}
+              style={styles.headerIcon}
+            />
+          </Pressable>
+        </View>
+        
+        <Pressable 
+          onPress={() => {
+            router.push("profile/achievement");
+          }}
+          style={styles.badgePress}
         >
-          <Ionicons
-            name="create-outline"
-            color={white}
-            size={26}
-            style={styles.headerIcon}
-          />
-        </Pressable>
-        <Pressable
-          onPress={toAccountSettings}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.5 : 1,
-          })}
-        >
-          <Ionicons
-            name="settings-outline"
-            color={white}
-            size={26}
-            style={styles.headerIcon}
-          />
+          {achievements.length > 0 && (
+            achievements.map((ach) => (
+              ach.badgeTier !== "LOCKED" && (
+                <View style={styles.badgeContainer}>
+                  <BadgeIcon 
+                    key={ach.achievementId}
+                    tier={ach.badgeTier} 
+                    type={ach.badgeType} 
+                    size={"medium"} 
+                    pressable={false}
+                  />
+                </View>
+              )
+            ))
+          )}
         </Pressable>
       </View>
       <View style={styles.headerWhite}>
@@ -196,39 +221,6 @@ const ProfileHeader = () => {
             {user.aboutMe}
           </RegularText>
         )}
-
-        <View style={styles.badges}>
-          {achievements.length > 0 && (
-            achievements.map((ach) => (
-              ach.badgeTier !== "LOCKED" && (
-                <View style={styles.badgeContainer}>
-                  <BadgeIcon 
-                    key={ach.achievementId}
-                    tier={ach.badgeTier} 
-                    type={ach.badgeType} 
-                    size={"medium"} 
-                    pressable={false}
-                  />
-                </View>
-              )
-            ))
-          )}
-          
-          <Pressable 
-            onPress={() => {
-              router.push("profile/achievement");
-            }}
-            style={styles.badgePress}
-          >
-            <RegularText typography="Subtitle">
-              Badges
-            </RegularText>
-            <Ionicons
-              name='chevron-forward'
-              size={15}
-            />
-          </Pressable>
-        </View>
       </View>
       <View style={styles.avatarContainer}>
         <UserAvatar
@@ -576,11 +568,17 @@ const styles = StyleSheet.create({
   },
   headerGreen: {
     flex: 1,
+    paddingTop: 5,
+    alignItems: "flex-end",
+    justifyContent:"space-between",
+    paddingHorizontal: 25,
+    backgroundColor: secondary,
+  },
+  iconButtons: {
+    flex: 1,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    paddingHorizontal: 25,
-    backgroundColor: secondary,
   },
   headerWhite: {
     flex: 1,
@@ -678,15 +676,10 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   badgePress: {
+    paddingVertical: 10,
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center"
-  },
-  badges: {
-    paddingVertical: 10,
-    borderColor: secondary, 
-    borderWidth: 2,
     alignItems: "center",
-    flexDirection: "row",
-  }
+
+  },
 });
