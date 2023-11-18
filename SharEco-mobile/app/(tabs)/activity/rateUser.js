@@ -227,6 +227,7 @@ const rateUser = () => {
               }
             } else {
               const achievements = await fetchUserAchievements();
+              
               const raterBadge = achievements
                 .find((achievement) => achievement.badgeType === "RATER");
               const raterBadgeProgress = parseInt(raterBadge.badgeProgress);

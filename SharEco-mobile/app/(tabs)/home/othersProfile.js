@@ -179,50 +179,34 @@ const ProfileHeader = () => {
   return (
     <View style={styles.header}>
       <View style={styles.headerGreen}>
-        <Pressable
-          onPress={toChats}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.5 : 1,
-          })}
-        >
-          <Ionicons
-            name="chatbubble-outline"
-            color={white}
-            size={26}
-            style={styles.headerIcon}
-          />
-        </Pressable>
-        <Pressable
-          onPress={handleReport}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.5 : 1,
-          })}
-        >
-          <Ionicons
-            name="alert-circle-outline"
-            color={white}
-            size={26}
-            style={styles.headerIcon}
-          />
-        </Pressable>
-      </View>
-      <View style={styles.headerWhite}>
-        <RegularText typography="H2" style={{ marginTop: 40 }}>
-          {user.displayName}
-        </RegularText>
-        <RegularText
-          typography="Subtitle"
-          style={{ marginTop: 5 }}
-          color={secondary}
-        >
-          @{user.username} bitch
-        </RegularText>
-        {user.aboutMe !== "" && (
-          <RegularText typography="B2" style={{ marginTop: 8 }}>
-            {user.aboutMe}
-          </RegularText>
-        )}
-
+        <View style={styles.iconButtons}>
+          <Pressable
+            onPress={toChats}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <Ionicons
+              name="chatbubble-outline"
+              color={white}
+              size={26}
+              style={styles.headerIcon}
+            />
+          </Pressable>
+          <Pressable
+            onPress={handleReport}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <Ionicons
+              name="alert-circle-outline"
+              color={white}
+              size={26}
+              style={styles.headerIcon}
+            />
+          </Pressable>
+        </View>
         <View style={styles.badges}>
           {achievements.length > 0 && (
             achievements.map((ach) => (
@@ -240,6 +224,23 @@ const ProfileHeader = () => {
             ))
           )}
         </View>
+      </View>
+      <View style={styles.headerWhite}>
+        <RegularText typography="H2" style={{ marginTop: 40 }}>
+          {user.displayName}
+        </RegularText>
+        <RegularText
+          typography="Subtitle"
+          style={{ marginTop: 5 }}
+          color={secondary}
+        >
+          @{user.username} bitch
+        </RegularText>
+        {user.aboutMe !== "" && (
+          <RegularText typography="B2" style={{ marginTop: 8 }}>
+            {user.aboutMe}
+          </RegularText>
+        )}
       </View>
       <View style={styles.avatarContainer}>
         <UserAvatar
@@ -586,11 +587,17 @@ const styles = StyleSheet.create({
   },
   headerGreen: {
     flex: 1,
+    paddingTop: 5,
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    paddingHorizontal: 25,
+    backgroundColor: secondary,
+  },
+  iconButtons: {
+    flex: 1,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    paddingHorizontal: 25,
-    backgroundColor: secondary,
   },
   headerWhite: {
     flex: 1,
