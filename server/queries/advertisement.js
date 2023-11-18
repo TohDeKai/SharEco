@@ -62,7 +62,7 @@ const getStartBidDate = () => {
   // If it's saturday (vetting period, end of bidding week)
   if (today.getDay() === 6) {
     // Move onto next week
-    today.setDate(today.getDate() + 7);
+    today.setDate(today.getDate() + 8);
   }
   const dayOfWeek = today.getDay();
   const daysUntilSunday = 7 - dayOfWeek;

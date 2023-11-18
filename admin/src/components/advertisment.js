@@ -1,12 +1,44 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Avatar from "@mui/material/Avatar";
 import { Box, Typography, Grid, Button } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { grey } from "@mui/material/colors";
 import Divider from "@mui/material/Divider";
+import axios from "axios";
 
-const Advertisment = ({ advertismentName, price, username, status }) => {
+const Advertisment = ({
+  advertismentName,
+  price,
+  bizId,
+  status,
+  adImageUrl,
+}) => {
+  const [username, setUsername] = useState("");
+  const [userImageUrl, setUserImageUrl] = useState("");
+  const [advertismentUrl, setAdvertismentUrl] = useState("");
+
+  async function fetchData() {
+    try {
+      // getting that user based on the business Id of the Ads
+      const businessResponse = await axios.get(
+        `http://localhost:4000/api/v1/users/userId/${bizId}`
+      );
+
+      setUsername(businessResponse.data.data.user.username);
+      setUserImageUrl(
+        `https://sharecomobile1f650a0a27cd4f42bd1c864b278ff20c181529-dev.s3.ap-southeast-1.amazonaws.com/public/${businessResponse.data.data.user.userPhotoUrl}.jpeg`
+      );
+      setAdvertismentUrl(adImageUrl);
+    } catch (error) {
+      console.error("Error fetching advertisement data:", error);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   return (
     <>
       <Box width="100%" sx={{ mt: 2, mb: 2 }}>
@@ -19,10 +51,8 @@ const Advertisment = ({ advertismentName, price, username, status }) => {
                 <Avatar
                   sx={{ bgcolor: grey[300], height: "55px", width: "55px" }}
                   variant="rounded"
-                >
-                  {/* replace with badge icon */}
-                  <AssignmentIcon />
-                </Avatar>
+                  src={advertismentUrl}
+                ></Avatar>
               </Grid>
               <Grid item xs={6}>
                 {/* Content for the 2nd sub-column */}
@@ -31,7 +61,7 @@ const Advertisment = ({ advertismentName, price, username, status }) => {
                   <Stack direction="row">
                     <Avatar
                       alt="S"
-                      src="/static/images/avatar/1.jpg"
+                      src={userImageUrl}
                       sx={{ width: 25, height: 25, mt: 1, mr: 1 }}
                     />
                     <Typography
@@ -50,7 +80,7 @@ const Advertisment = ({ advertismentName, price, username, status }) => {
             <Stack direction="column" sx={{ paddingLeft: 8 }}>
               <Typography fontSize="13px">Bid Amount</Typography>
               <Typography fontSize="20px" sx={{ mt: 0.5 }}>
-                ${price}
+                {price}
               </Typography>
             </Stack>
           </Grid>
@@ -80,11 +110,11 @@ const Advertisment = ({ advertismentName, price, username, status }) => {
                 borderRadius: "4px",
                 textAlign: "center",
                 backgroundColor:
-                  status === "Approved"
+                  status === "APPROVED"
                     ? "green"
-                    : status === "Pending"
+                    : status === "PENDING"
                     ? "orange"
-                    : status === "Rejected"
+                    : status === "REJECTED"
                     ? "red"
                     : "gray", // Default color if needed
               }}

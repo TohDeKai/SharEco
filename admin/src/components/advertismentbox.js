@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography, Grid } from "@mui/material";
 import Advertisment from "./advertisment";
 
-const Advertismentbox = ({ title }) => {
+const Advertismentbox = ({ title, AllAdsData }) => {
   return (
     <Box width="100%" sx={{ marginTop: 2 }}>
       <Box display="flex" justifyContent="space-between">
@@ -24,7 +24,7 @@ const Advertismentbox = ({ title }) => {
                   <Typography
                     fontSize="24px"
                     fontWeight="bold"
-                    sx={{ color: "#222222", mt: 1, mb: 2, padding:"20px" }}
+                    sx={{ color: "#222222", mt: 1, mb: 2, padding: "20px" }}
                   >
                     {title}
                   </Typography>
@@ -34,13 +34,13 @@ const Advertismentbox = ({ title }) => {
                 <Box>
                   <Typography
                     fontSize="16px"
-                    sx={{ color: "gray", mt: 1, mb: 2, paddingTop:"28px" }}
+                    sx={{ color: "gray", mt: 1, mb: 2, paddingTop: "28px" }}
                   >
-                    <span>Complete in </span>
+                    {/* <span>Ads for the week </span>
                     <span style={{ fontWeight: "bold", color: "#000" }}>
-                      {/* change here */}
+                      
                       04 hrs 23 min 10s
-                    </span>
+                    </span> */}
                   </Typography>
                 </Box>
               </Grid>
@@ -48,7 +48,7 @@ const Advertismentbox = ({ title }) => {
           </Box>
           <Box>
             {/* just map out the advertisment here */}
-            <Advertisment
+            {/* <Advertisment
               advertismentName="Ad 1"
               price="1200"
               username="user123"
@@ -95,7 +95,17 @@ const Advertismentbox = ({ title }) => {
               price="400"
               username="user123"
               status="Approved"
-            />
+            /> */}
+            {AllAdsData.map((ad) => (
+              <Advertisment
+                key={ad.advertismentId} // Make sure to use a unique key for each item
+                advertismentName={ad.title}
+                price={ad.bidPrice}
+                bizId={ad.bizId}
+                status={ad.status}
+                adImageUrl={ad.image}
+              />
+            ))}
           </Box>
         </Box>
       </Box>

@@ -17,6 +17,7 @@ const Overview = () => {
   const [numberOfBizAdsReq, setNumberOfBizAdsReq] = useState("");
   const [numberOfUnresolvedDisputes, setNumberOfUnresolvedDisputes] =
     useState("");
+  const [adData, setAdData] = useState([]);
 
   useEffect(() => {
     async function fetchOverviewData() {
@@ -26,6 +27,14 @@ const Overview = () => {
           "http://localhost:4000/api/v1/allusers"
         );
         setNumberOfUsers(totalUserResponse.data.data.user.count);
+
+        // Fetch data for Ads for the week
+        const adsForTheWeekResponse = await axios.get(
+          "http://localhost:4000/api/v1/rankedWeekAds"
+        );
+
+        const ads = adsForTheWeekResponse.data.data.ads;
+        setAdData(ads);
 
         // Fetch data for number of listings
         const totalListingsResponse = await axios.get(
@@ -48,9 +57,7 @@ const Overview = () => {
           "http://localhost:4000/api/v1/rentals"
         );
 
-        setNumberOfRentals(
-          totalRentalsResponse.data.data.rentals.length
-        );
+        setNumberOfRentals(totalRentalsResponse.data.data.rentals.length);
 
         // Fetch data for total number of unresolved disputes
         const totalUnresolvedDisputesResponse = await axios.get(
@@ -111,7 +118,10 @@ const Overview = () => {
               <StatsBox subtitle="Users" number={numberOfUsers} />
               <StatsBox subtitle="Listings" number={numberOfListings} />
               <StatsBox subtitle="Rentals" number={numberOfRentals} />
-              <StatsBox subtitle="Unresolved Disputes" number={numberOfUnresolvedDisputes} />
+              <StatsBox
+                subtitle="Unresolved Disputes"
+                number={numberOfUnresolvedDisputes}
+              />
               <StatsBox
                 subtitle="Biz Verifications Requests"
                 number={numberOfBizVerificationReq}
@@ -134,7 +144,10 @@ const Overview = () => {
                 <GraphBox title="Ratings" />
               </Grid>
               <Grid item xs={6}>
-                <Advertismentbox title="Ad Bidding Approval" />
+                <Advertismentbox
+                  title="Ads for the Upcoming Week"
+                  AllAdsData={adData}
+                />
               </Grid>
             </Grid>
           </Box>

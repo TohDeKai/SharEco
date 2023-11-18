@@ -98,21 +98,21 @@ const Business = ({}) => {
 
   async function fetchData() {
     try {
+      const allAdsResponse = await axios.get(
+        "http://localhost:4000/api/v1/allAdvertisments"
+      );
+      setAllAdsData(allAdsResponse.data.data.ads);
+      console.log("all ads", allAdsResponse.data.data.ads);
+
       const response = await axios.get(
         "http://localhost:4000/api/v1/rankedWeekAds"
       );
-      console.log(response);
+      console.log("response data", response);
       const ads = response.data.data.ads;
       setAdData(ads);
 
       const test = ads.filter((ad) => ad.status === "APPROVED");
       setRemainingApprovalCount(10 - test.length);
-
-      const allAdsResponse = await axios.get(
-        "http://localhost:4000/api/v1/allAdvertisments"
-      );
-
-      setAllAdsData(allAdsResponse.data.data.ads);
     } catch (error) {
       console.error("Error fetching advertisement data:", error);
     }
@@ -290,47 +290,51 @@ const Business = ({}) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {adData
-                      .slice(
-                        page * rowsPerPage,
-                        page * rowsPerPage + rowsPerPage
-                      )
-                      .map((row) => {
-                        return (
-                          <TableRow
-                            hover
-                            role="checkbox"
-                            tabIndex={-1}
-                            key={row.code}
-                          >
-                            {columns.map((column) => {
-                              const value =
-                                column.id === "startDate" ||
-                                column.id === "endDate"
-                                  ? formatDate(row[column.id]) // Use formatDate for startDate and endDate
-                                  : row[column.id];
-                              return (
-                                <TableCell key={column.id} align={column.align}>
-                                  {value}
-                                </TableCell>
-                              );
-                            })}
-                            <TableCell>
-                              <Button
-                                variant="contained"
-                                onClick={() =>
-                                  handleViewDetails(
-                                    row.advertisementId,
-                                    "For the week"
-                                  )
-                                }
-                              >
-                                View Details
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
+                    {adData &&
+                      adData
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage
+                        )
+                        .map((row) => {
+                          return (
+                            <TableRow
+                              hover
+                              role="checkbox"
+                              tabIndex={-1}
+                              key={row.code}
+                            >
+                              {columns.map((column) => {
+                                const value =
+                                  column.id === "startDate" ||
+                                  column.id === "endDate"
+                                    ? formatDate(row[column.id]) // Use formatDate for startDate and endDate
+                                    : row[column.id];
+                                return (
+                                  <TableCell
+                                    key={column.id}
+                                    align={column.align}
+                                  >
+                                    {value}
+                                  </TableCell>
+                                );
+                              })}
+                              <TableCell>
+                                <Button
+                                  variant="contained"
+                                  onClick={() =>
+                                    handleViewDetails(
+                                      row.advertisementId,
+                                      "For the week"
+                                    )
+                                  }
+                                >
+                                  View Details
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                   </TableBody>
                 </Table>
               </TableContainer>
