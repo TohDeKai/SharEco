@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import axios from "axios";
 import { useAuth } from "../../context/auth";
@@ -63,7 +63,7 @@ const AchievementCard = (props) => {
     SAVER: 'Super Saver',
   };
 
-  const badgeName = badgeNames[achievement.badgeType];
+  const badgeName = achievement.badgeTier === "LOCKED" ? "???" : badgeNames[achievement.badgeType];
 
   let message = "";
   if (achievement.badgeTier === "GOLD") {
@@ -78,7 +78,7 @@ const AchievementCard = (props) => {
     if (achievement.badgeTier === "LOCKED") {
       message = "Leave " + delta + " more reviews of 150 or more characters to unlock this badge and get rewarded!";
     } else {
-      message = "Leave " + delta + " more reviews of 150 or more characters to upgrade this badge and get rewarded!";
+      message = "Leave " + delta + " more reviews of 150 or more characters to upgrade this badge and be rewarded!";
     }
   } else {
     message = "Fulfill " + delta + " more rentals as " + badgeName + " to upgrade this badge to the next tier!"
