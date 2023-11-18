@@ -14,6 +14,7 @@ import axios from "axios";
 import SafeAreaContainer from "../../../components/containers/SafeAreaContainer";
 import RegularText from "../../../components/text/RegularText";
 import ActivityCard from "../../../components/containers/ActivityCard";
+import WishlistNotifCard from "../../../components/containers/WishlistNotifCard";
 import { colours } from "../../../components/ColourPalette";
 import { useAuth } from "../../../context/auth";
 import ReportCard from "../../../components/containers/ReportCard";
@@ -246,6 +247,7 @@ const Content = ({ activeTab }) => {
   const [userLendings, setUserLendings] = useState([]);
   const [userBorrowings, setUserBorrowings] = useState([]);
   const [userReports, setUserReports] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
@@ -307,6 +309,7 @@ const Content = ({ activeTab }) => {
     } catch (error) {
       console.log(error.message);
     }
+    fetchWishlistNotif();
     // After all the data fetching and updating, set refreshing to false
     setRefreshing(false);
   };
@@ -369,7 +372,29 @@ const Content = ({ activeTab }) => {
     }
     fetchRentals();
     fetchReports();
+    fetchWishlistNotif();
   }, []);
+
+  async function fetchWishlistNotif() {
+    try {
+      const userData = await getUserData();
+      const userId = userData.userId;
+      
+      const response4 = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/likes/userId/${userId}`
+      );
+
+      if (response4.status === 200) {
+        const wishlist = response4.data.data.likes;
+        console.log(wishlist);
+        setWishlist(wishlist);
+      } else {
+        console.log("Failed to retrieve wishlist by item owner id");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const [activeLendingPill, setActiveLendingPill] = useState("Upcoming");
   const [activeBorrowingPill, setActiveBorrowingPill] = useState("Pending");
@@ -459,6 +484,8 @@ const Content = ({ activeTab }) => {
   const resolvedReports = userReports.filter(
     (report) => report.status === "RESOLVED"
   );
+
+  const orderedWishlist = wishlist.sort((a, b) => new Date(b.wishlistDate) - new Date(a.wishlistDate));
 
   // to include activeBorrowingPill
   const handlePillPress = (pill) => {
@@ -831,25 +858,33 @@ const Content = ({ activeTab }) => {
       )}
 
       {activeTab == "Others" && (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Ionicons
-            name="construct"
-            color={primary}
-            size={30}
-            style={{ marginBottom: 20, alignItems: "center" }}
-          />
-          <RegularText
-            typography="H3"
-            style={{ marginBottom: 5, textAlign: "center" }}
+        <View style={{ flex: 1, padding: 10 }}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={styles.activityCardContainer}
+            contentContainerStyle={{ flexGrow: 1 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+              />
+            }
           >
-            Under Construction
-          </RegularText>
+            {orderedWishlist.length > 0 ? (
+              orderedWishlist.map((wl) => (
+                <WishlistNotifCard key={wl.wishlistId} wishlist={wl} />
+              ))
+            ) : (
+              <View style={{ marginTop: 100, paddingHorizontal: 30 }}>
+                <RegularText
+                  typography="H3"
+                  style={{ marginBottom: 5, textAlign: "center" }}
+                >
+                  No likes on your item yet.
+                </RegularText>
+              </View>
+            )}
+          </ScrollView>
         </View>
       )}
     </View>
