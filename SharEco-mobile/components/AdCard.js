@@ -35,6 +35,7 @@ export default function AdCard({ ad }) {
     advertisementId,
     status,
     visits,
+    bizId
   } = ad.item;
   const [showDeleteModal, setShowDeleteModall] = useState(false);
 
@@ -57,8 +58,20 @@ export default function AdCard({ ad }) {
 
       console.log(response.status);
       if (response.status === 200) {
-        console.log("Ad successfully deleted");
-        handleCloseDeleteModal();
+        const paymentData = {
+          receiverId: bizId,
+          amount: bidPrice,
+          transactionType: "REFUND",
+        };
+  
+        const refundResponse = await axios.post(
+          `http://${BASE_URL}:4000/api/v1/transaction/fromAdmin`,
+          paymentData
+        );
+        if (refundResponse.status === 200){
+          console.log("Ad successfully deleted");
+          handleCloseDeleteModal(); 
+        }
       }
     } catch (error) {
       console.log(error.message);
