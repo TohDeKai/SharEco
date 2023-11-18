@@ -111,8 +111,10 @@ const Business = ({}) => {
       const ads = response.data.data.ads;
       setAdData(ads);
 
-      const test = ads.filter((ad) => ad.status === "APPROVED");
-      setRemainingApprovalCount(10 - test.length);
+      const remainingAdsCount = await axios.get(
+        "http://localhost:4000/api/v1/remainingAdsCount"
+      );
+      setRemainingApprovalCount(10 - remainingAdsCount.data.data.count);
     } catch (error) {
       console.error("Error fetching advertisement data:", error);
     }
@@ -512,7 +514,7 @@ const Business = ({}) => {
               variant="contained"
               style={{ width: "160px" }}
               disabled={
-                !(today.getDay() === 5 && remainingApprovalCount > 0) ||
+                !(today.getDay() === 6 && remainingApprovalCount > 0) ||
                 selectedAdStatus !== "PENDING"
               }
               onClick={() =>

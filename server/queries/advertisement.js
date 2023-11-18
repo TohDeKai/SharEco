@@ -62,7 +62,7 @@ const getStartBidDate = () => {
   // If it's saturday (vetting period, end of bidding week)
   if (today.getDay() === 6) {
     // Move onto next week
-    today.setDate(today.getDate() + 8);
+    today.setDate(today.getDate() + 7);
   }
   const dayOfWeek = today.getDay();
   const daysUntilSunday = 7 - dayOfWeek;
@@ -158,6 +158,20 @@ const rankWeekAds = async () => {
     pendingAds.sort((ad1, ad2) => ad2.bidPrice - ad1.bidPrice);
     console.log(ads);
     return pendingAds;
+  } catch (err) {
+    throw err;
+  }
+};
+
+// Get remaining approved ads
+const getAllWeeklyAds = async () => {
+  try {
+    const startDate = getStartBidDate();
+    const ads = await getWeekAdsByStartDate(startDate);
+    const pendingAds = ads.filter((ad) => ad.status === "PENDING");
+    const remaining = ads.length - pendingAds.length;
+    console.log(remaining);
+    return remaining;
   } catch (err) {
     throw err;
   }
@@ -310,4 +324,5 @@ module.exports = {
   updateWeeklyAdsToActive,
   updateWeeklyAds,
   updateAdsStatus,
+  getAllWeeklyAds,
 };
