@@ -280,12 +280,13 @@ const editAd = () => {
                 bidPrice: ad.bidPrice,
               }}
               onSubmit={(values, actions) => {
+                const formattedBalance = user.walletBalance.replace(/[^0-9.-]+/g,"");
                 if (values.bidPrice < 20) {
                   setMessage("Minimum bid is $20");
                   setIsSuccessMessage(false);
                 } else if (
                   parseFloat(values.bidPrice.replace("$", "")) - parseFloat(bidPrice.replace("$", "")) >
-                  parseFloat(user.walletBalance.replace("$", ""))
+                  parseFloat(formattedBalance)
                 ) {
                   setMessage("Please top up EcoWallet");
                   setIsSuccessMessage(false);
