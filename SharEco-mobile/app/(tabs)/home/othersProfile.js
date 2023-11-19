@@ -234,7 +234,7 @@ const ProfileHeader = () => {
           style={{ marginTop: 5 }}
           color={secondary}
         >
-          @{user.username} bitch
+          @{user.username}
         </RegularText>
         {user.aboutMe !== "" && (
           <RegularText typography="B2" style={{ marginTop: 8 }}>
