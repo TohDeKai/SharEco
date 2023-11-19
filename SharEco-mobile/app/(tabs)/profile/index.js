@@ -43,6 +43,7 @@ const ProfileHeader = () => {
   const [business, setBusiness] = useState({});
   const [ratings, setRatings] = useState({});
   const [achievements, setAchievements] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -93,27 +94,32 @@ const ProfileHeader = () => {
       }
     }
 
-    async function fetchAchievements() {
-      try {
-        const response = await axios.get(
-          `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
-        );
-
-        if (response.status === 200) {
-          const achievements = response.data.data.achievements;
-          console.log(achievements);
-          setAchievements(achievements);
-        } else {
-          // Handle the error condition appropriately
-          console.log("Failed to retrieve achievements");
-        }
-      } catch (error) {
-        console.log("fetch achievement", error);
-      }
-    }
     fetchAchievements();
     fetchBusinessVerification();
   }, [user.businessVerificationId, user.userId]);
+
+  async function fetchAchievements() {
+    try {
+      const response = await axios.get(
+        `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
+      );
+
+      if (response.status === 200) {
+        const achievements = response.data.data.achievements;
+        console.log(achievements);
+        setAchievements(achievements);
+      } else {
+        // Handle the error condition appropriately
+        console.log("Failed to retrieve achievements");
+      }
+    } catch (error) {
+      console.log("fetch achievement", error);
+    }
+  }
+
+  useEffect(() => {
+    fetchAchievements();
+  }, [refreshing]);
 
   const toAccountSettings = () => {
     router.push("profile/accountSettings");
@@ -129,122 +135,139 @@ const ProfileHeader = () => {
     router.push("profile/achievement");
   };
 
+  const handleRefresh = () => {
+    setRefreshing(true);
+  };
+
   return (
-    <View style={styles.header}>
-      <View style={styles.headerGreen}>
-        <View style={styles.iconButtons}>
-          {business.approved && (
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
+    >
+      <View style={styles.header}>
+        <View style={styles.headerGreen}>
+          <View style={styles.iconButtons}>
+            {business.approved && (
+              <Pressable
+                onPress={toBizDashboard}
+                style={[
+                  ({ pressed }) => ({
+                    opacity: pressed ? 0.5 : 1,
+                  }),
+                  styles.bizButton,
+                ]}
+              >
+                <Ionicons
+                  name="briefcase"
+                  color={primary}
+                  size={20}
+                  style={styles.headerIcon}
+                />
+                <RegularText
+                  color={secondary}
+                  typography="B1"
+                  style={{ paddingHorizontal: 5 }}
+                >
+                  Manage Biz
+                </RegularText>
+              </Pressable>
+            )}
             <Pressable
-              onPress={toBizDashboard}
-              style={[
-                ({ pressed }) => ({
-                  opacity: pressed ? 0.5 : 1,
-                }),
-                styles.bizButton,
-              ]}
+              onPress={toEditProfile}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+              })}
             >
               <Ionicons
-                name="briefcase"
-                color={primary}
-                size={20}
+                name="create-outline"
+                color={white}
+                size={26}
                 style={styles.headerIcon}
               />
-              <RegularText
-                color={secondary}
-                typography="B1"
-                style={{ paddingHorizontal: 5 }}
-              >
-                Manage Biz
-              </RegularText>
             </Pressable>
-          )}
-          <Pressable
-            onPress={toEditProfile}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <Ionicons
-              name="create-outline"
-              color={white}
-              size={26}
-              style={styles.headerIcon}
-            />
-          </Pressable>
-          <Pressable
-            onPress={toAccountSettings}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <Ionicons
-              name="settings-outline"
-              color={white}
-              size={26}
-              style={styles.headerIcon}
-            />
+            <Pressable
+              onPress={toAccountSettings}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Ionicons
+                name="settings-outline"
+                color={white}
+                size={26}
+                style={styles.headerIcon}
+              />
+            </Pressable>
+          </View>
+
+          <Pressable onPress={toAchievement} style={styles.badgePress}>
+            {achievements.length > 0 &&
+              achievements.map(
+                (ach) =>
+                  ach.badgeTier !== "LOCKED" && (
+                    <View style={styles.badgeContainer}>
+                      <BadgeIcon
+                        key={ach.achievementId}
+                        tier={ach.badgeTier}
+                        type={ach.badgeType}
+                        size={"medium"}
+                        pressable={false}
+                      />
+                    </View>
+                  )
+              )}
+            <Ionicons name="chevron-forward" color={white} size={25} />
           </Pressable>
         </View>
-
-        <Pressable onPress={toAchievement} style={styles.badgePress}>
-          {achievements.length > 0 &&
-            achievements.map(
-              (ach) =>
-                ach.badgeTier !== "LOCKED" && (
-                  <View style={styles.badgeContainer}>
-                    <BadgeIcon
-                      key={ach.achievementId}
-                      tier={ach.badgeTier}
-                      type={ach.badgeType}
-                      size={"medium"}
-                      pressable={false}
-                    />
-                  </View>
-                )
-            )}
-          <Ionicons name="chevron-forward" color={white} size={25} />
-        </Pressable>
-      </View>
-      <View style={styles.headerWhite}>
-        <RegularText typography="H2" style={{ marginTop: 40 }}>
-          {user.displayName}
-        </RegularText>
-        <RegularText
-          typography="Subtitle"
-          style={{ marginTop: 5 }}
-          color={secondary}
-        >
-          @{user.username}
-        </RegularText>
-        {user.aboutMe !== "" && (
-          <RegularText typography="B2" style={{ marginTop: 8 }}>
-            {user.aboutMe}
+        <View style={styles.headerWhite}>
+          <RegularText typography="H2" style={{ marginTop: 40 }}>
+            {user.displayName}
           </RegularText>
-        )}
-      </View>
-      <View style={styles.avatarContainer}>
-        <UserAvatar
-          size="big"
-          source={{
-            uri: profileUri,
-          }}
-        />
-        {business.approved && (
-          <View style={styles.businessBadge}>
-            <RegularText typography="B3" color={white}>
-              BIZ
+          <RegularText
+            typography="Subtitle"
+            style={{ marginTop: 5 }}
+            color={secondary}
+          >
+            @{user.username}
+          </RegularText>
+          {user.aboutMe !== "" && (
+            <RegularText typography="B2" style={{ marginTop: 8 }}>
+              {user.aboutMe}
             </RegularText>
-          </View>
-        )}
+          )}
+        </View>
+        <View style={styles.avatarContainer}>
+          <UserAvatar
+            size="big"
+            source={{
+              uri: profileUri,
+            }}
+          />
+          {business.approved && (
+            <View style={styles.businessBadge}>
+              <RegularText typography="B3" color={white}>
+                BIZ
+              </RegularText>
+            </View>
+          )}
+        </View>
+        <View style={styles.ratingsContainer}>
+          <RegularText typography="B1">
+            {ratings.averageRating || 0}
+          </RegularText>
+          <Rating
+            stars={ratings.starsToDisplay || 0}
+            size={20}
+            color={yellow}
+          />
+          <RegularText typography="B1">
+            ({ratings.numberOfRatings || 0})
+          </RegularText>
+        </View>
       </View>
-      <View style={styles.ratingsContainer}>
-        <RegularText typography="B1">{ratings.averageRating || 0}</RegularText>
-        <Rating stars={ratings.starsToDisplay || 0} size={20} color={yellow} />
-        <RegularText typography="B1">
-          ({ratings.numberOfRatings || 0})
-        </RegularText>
-      </View>
-    </View>
+    </ScrollView>
   );
 };
 
