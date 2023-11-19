@@ -514,7 +514,7 @@ const Business = ({}) => {
               variant="contained"
               style={{ width: "160px" }}
               disabled={
-                !(today.getDay() === 6 && remainingApprovalCount > 0) ||
+                !(today.getDay() === 0 && remainingApprovalCount > 0) ||
                 selectedAdStatus !== "PENDING"
               }
               onClick={() =>
