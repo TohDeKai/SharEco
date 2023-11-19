@@ -321,7 +321,7 @@ const Content = ({ activeTab }) => {
             );
 
             // Check if currentDate is 3 days after reportDate
-            if (daysDifference >= 3) {
+            if (daysDifference >= 3 && report.status == "PENDING") {
               // Make an API call to update the report status
               try {
                 const response = await axios.put(
@@ -466,7 +466,7 @@ const Content = ({ activeTab }) => {
     try {
       const userData = await getUserData();
       const userId = userData.userId;
-      
+
       const response4 = await axios.get(
         `http://${BASE_URL}:4000/api/v1/likes/userId/${userId}`
       );
@@ -572,7 +572,9 @@ const Content = ({ activeTab }) => {
     (report) => report.status === "RESOLVED"
   );
 
-  const orderedWishlist = wishlist.sort((a, b) => new Date(b.wishlistDate) - new Date(a.wishlistDate));
+  const orderedWishlist = wishlist.sort(
+    (a, b) => new Date(b.wishlistDate) - new Date(a.wishlistDate)
+  );
 
   // to include activeBorrowingPill
   const handlePillPress = (pill) => {
