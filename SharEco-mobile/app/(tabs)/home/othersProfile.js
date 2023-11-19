@@ -104,10 +104,10 @@ const ProfileHeader = () => {
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
         );
-  
+
         if (response.status === 200) {
           const achievements = response.data.data.achievements;
-          console.log(achievements)
+          console.log(achievements);
           setAchievements(achievements);
         } else {
           // Handle the error condition appropriately
@@ -208,21 +208,21 @@ const ProfileHeader = () => {
           </Pressable>
         </View>
         <View style={styles.badges}>
-          {achievements.length > 0 && (
-            achievements.map((ach) => (
-              ach.badgeTier !== "LOCKED" && (
-                <View style={styles.badgeContainer}>
-                  <BadgeIcon 
-                    key={ach.achievementId}
-                    tier={ach.badgeTier} 
-                    type={ach.badgeType} 
-                    size={"medium"} 
-                    pressable={true}
-                  />
-                </View>
-              )
-            ))
-          )}
+          {achievements.length > 0 &&
+            achievements.map(
+              (ach) =>
+                ach.badgeTier !== "LOCKED" && (
+                  <View style={styles.badgeContainer}>
+                    <BadgeIcon
+                      key={ach.achievementId}
+                      tier={ach.badgeTier}
+                      type={ach.badgeType}
+                      size={"medium"}
+                      pressable={true}
+                    />
+                  </View>
+                )
+            )}
         </View>
       </View>
       <View style={styles.headerWhite}>
@@ -234,7 +234,7 @@ const ProfileHeader = () => {
           style={{ marginTop: 5 }}
           color={secondary}
         >
-          @{user.username} bitch
+          @{user.username}
         </RegularText>
         {user.aboutMe !== "" && (
           <RegularText typography="B2" style={{ marginTop: 8 }}>
@@ -684,13 +684,13 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   badges: {
     paddingVertical: 10,
-    borderColor: secondary, 
+    borderColor: secondary,
     borderWidth: 2,
     alignItems: "center",
     flexDirection: "row",
-  }
+  },
 });
