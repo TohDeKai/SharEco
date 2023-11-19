@@ -98,10 +98,10 @@ const ProfileHeader = () => {
         const response = await axios.get(
           `http://${BASE_URL}:4000/api/v1/achievement/userId/${user.userId}`
         );
-  
+
         if (response.status === 200) {
           const achievements = response.data.data.achievements;
-          console.log(achievements)
+          console.log(achievements);
           setAchievements(achievements);
         } else {
           // Handle the error condition appropriately
@@ -123,6 +123,10 @@ const ProfileHeader = () => {
   };
   const toBizDashboard = () => {
     router.push("profile/bizDashboard");
+  };
+
+  const toAchievement = () => {
+    router.push("profile/achievement");
   };
 
   return (
@@ -181,28 +185,24 @@ const ProfileHeader = () => {
             />
           </Pressable>
         </View>
-        
-        <Pressable 
-          onPress={() => {
-            router.push("profile/achievement");
-          }}
-          style={styles.badgePress}
-        >
-          {achievements.length > 0 && (
-            achievements.map((ach) => (
-              ach.badgeTier !== "LOCKED" && (
-                <View style={styles.badgeContainer}>
-                  <BadgeIcon 
-                    key={ach.achievementId}
-                    tier={ach.badgeTier} 
-                    type={ach.badgeType} 
-                    size={"medium"} 
-                    pressable={false}
-                  />
-                </View>
-              )
-            ))
-          )}
+
+        <Pressable onPress={toAchievement} style={styles.badgePress}>
+          {achievements.length > 0 &&
+            achievements.map(
+              (ach) =>
+                ach.badgeTier !== "LOCKED" && (
+                  <View style={styles.badgeContainer}>
+                    <BadgeIcon
+                      key={ach.achievementId}
+                      tier={ach.badgeTier}
+                      type={ach.badgeType}
+                      size={"medium"}
+                      pressable={false}
+                    />
+                  </View>
+                )
+            )}
+          <Ionicons name="chevron-forward" color={white} size={25} />
         </Pressable>
       </View>
       <View style={styles.headerWhite}>
@@ -216,7 +216,7 @@ const ProfileHeader = () => {
         >
           @{user.username}
         </RegularText>
-        {user.aboutMe !== "" &&  (
+        {user.aboutMe !== "" && (
           <RegularText typography="B2" style={{ marginTop: 8 }}>
             {user.aboutMe}
           </RegularText>
@@ -418,7 +418,7 @@ const Content = ({ navigation, activeTab }) => {
   };
 
   return (
-    <View style={{ flex: 1, marginBottom: 20, }}>
+    <View style={{ flex: 1, marginBottom: 20 }}>
       {activeTab == "Listings" && (userItems ? userItems.length : 0) === 0 && (
         <View style={{ marginTop: 160 }}>
           <RegularText
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 5,
     alignItems: "flex-end",
-    justifyContent:"space-between",
+    justifyContent: "space-between",
     paddingHorizontal: 25,
     backgroundColor: secondary,
   },
@@ -673,13 +673,12 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   badgePress: {
     paddingVertical: 10,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-
   },
 });

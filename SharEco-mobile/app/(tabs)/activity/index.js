@@ -106,6 +106,21 @@ const Tabs = ({ activeTab, handleTabPress, stickyHeader }) => {
           Reports
         </RegularText>
       </Pressable>
+      <Pressable
+        onPress={() => handleTabPress("Others")}
+        style={({ pressed }) => [
+          { opacity: pressed ? 0.5 : 1 },
+          styles.tab,
+          activeTab === "Others" && styles.activeTab,
+        ]}
+      >
+        <RegularText
+          typography="B2"
+          color={activeTab === "Others" ? primary : dark}
+        >
+          Others
+        </RegularText>
+      </Pressable>
     </View>
   );
 };
